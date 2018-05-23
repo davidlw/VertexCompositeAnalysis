@@ -3,7 +3,7 @@
 // Package:    DiMuProducer
 // Class:      DiMuFitter
 // 
-/**\class DiMuFitter DiMuFitter.h VertexCompositeAnalysis/HadronCompositeProducer/interface/DiMuFitter.h
+/**\class DiMuFitter DiMuFitter.h VertexCompositeAnalysis/VertexCompositeProducer/interface/DiMuFitter.h
 
  Description: <one line class summary>
 

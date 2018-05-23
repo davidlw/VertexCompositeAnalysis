@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    HadronCompositeProducer
+// Package:    VertexCompositeProducer
 // Class:      D0Producer
 // 
-/**\class D0Producer D0Producer.h VertexCompositeAnalysis/HadronCompositeProducer/interface/D0Producer.h
+/**\class D0Producer D0Producer.h VertexCompositeAnalysis/VertexCompositeProducer/interface/D0Producer.h
 
  Description: <one line class summary>
 
@@ -35,7 +35,7 @@
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"
 
-#include "VertexCompositeAnalysis/HadronCompositeProducer/interface/D0Fitter.h"
+#include "VertexCompositeAnalysis/VertexCompositeProducer/interface/D0Fitter.h"
 
 class D0Producer : public edm::EDProducer {
 public:

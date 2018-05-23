@@ -3,11 +3,11 @@
 // Package:    DiMuProducer
 // Class:      DiMuFitter
 // 
-/**\class DiMuFitter DiMuFitter.cc VertexCompositeAnalysis/HadronCompositeProducer/src/DiMuFitter.cc
+/**\class DiMuFitter DiMuFitter.cc VertexCompositeAnalysis/VertexCompositeProducer/src/DiMuFitter.cc
 //
 */
 
-#include "VertexCompositeAnalysis/HadronCompositeProducer/interface/DiMuFitter.h"
+#include "VertexCompositeAnalysis/VertexCompositeProducer/interface/DiMuFitter.h"
 #include "CommonTools/CandUtils/interface/AddFourMomenta.h"
 
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"

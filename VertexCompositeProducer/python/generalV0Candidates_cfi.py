@@ -12,12 +12,15 @@ generalV0Candidates = cms.EDProducer("V0Producer",
     selectLambdas = cms.bool(True),
     selectPhis = cms.bool(False),
     selectD0s = cms.bool(False),
-    selectDSs = cms.bool(False),
+    selectDSToKsKs = cms.bool(False),
+    selectDSToPhiPis = cms.bool(False),
     selectDPMs = cms.bool(False),
     selectLambdaCToLamPis = cms.bool(False),
     selectLambdaCToKsPs = cms.bool(False),
     selectXis = cms.bool(True),
     selectOmegas = cms.bool(True),
+
+    doVertexFit = cms.bool(True),
 
     # Recommend leaving this one as is.
     vertexFitter = cms.InputTag('KalmanVertexFitter'),
@@ -56,6 +59,9 @@ generalV0Candidates = cms.EDProducer("V0Producer",
     #   m_pipi calculated at PCA of tracks <
     mPiPiCutMin = cms.double(0.0),
     mPiPiCutMax = cms.double(0.6),
+    #   m_pipi calculated at PCA of tracks <
+    mKKCutMin = cms.double(0.0),
+    mKKCutMax = cms.double(100000.0),
     #   PCA distance between tracks <
     tkDCACut = cms.double(1.),
 

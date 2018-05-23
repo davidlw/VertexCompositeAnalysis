@@ -4,7 +4,7 @@
 //
 // Class:      DiMuProducer
 // 
-/**\class DiMuProducer DiMuProducer.cc VertexCompositeAnalysis/HadronCompositeProducer/src/DiMuProducer.cc
+/**\class DiMuProducer DiMuProducer.cc VertexCompositeAnalysis/VertexCompositeProducer/src/DiMuProducer.cc
 
  Description: <one line class summary>
 
@@ -20,7 +20,7 @@
 // system include files
 #include <memory>
 
-#include "VertexCompositeAnalysis/HadronCompositeProducer/interface/DiMuProducer.h"
+#include "VertexCompositeAnalysis/VertexCompositeProducer/interface/DiMuProducer.h"
 
 // Constructor
 DiMuProducer::DiMuProducer(const edm::ParameterSet& iConfig) :

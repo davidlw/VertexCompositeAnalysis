@@ -1,10 +1,10 @@
 // -*- C++ -*-
 //
-// Package:    HadronCompositeProducer
+// Package:    VertexCompositeProducer
 //
 // Class:      D0Producer
 // 
-/**\class D0Producer D0Producer.cc VertexCompositeAnalysis/HadronCompositeProducer/src/D0Producer.cc
+/**\class D0Producer D0Producer.cc VertexCompositeAnalysis/VertexCompositeProducer/src/D0Producer.cc
 
  Description: <one line class summary>
 
@@ -20,7 +20,7 @@
 // system include files
 #include <memory>
 
-#include "VertexCompositeAnalysis/HadronCompositeProducer/interface/D0Producer.h"
+#include "VertexCompositeAnalysis/VertexCompositeProducer/interface/D0Producer.h"
 
 // Constructor
 D0Producer::D0Producer(const edm::ParameterSet& iConfig) :

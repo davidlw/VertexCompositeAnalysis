@@ -79,6 +79,12 @@ generalDsToPhiPiCandidatesNew = generalV0Candidates.clone (
     selectXis = cms.bool(False),
     selectOmegas = cms.bool(False),
 
+#    doVertexFit = cms.bool(False),
+#    vertexFitter = cms.InputTag('None'),
+
+    mKKCutMin = cms.double(1.0),
+    mKKCutMax = cms.double(1.04),
+
     trackQualities = cms.vstring('highPurity'),
     collinearityCut = cms.double(-2.0),
     dauTransImpactSigCut = cms.double(-1.),
@@ -147,6 +153,12 @@ generalPhiCandidatesNew = generalV0Candidates.clone(
     selectPhis = cms.bool(True),
     selectXis = cms.bool(False),
     selectOmegas = cms.bool(False),
+
+    doVertexFit = cms.bool(False),
+    vertexFitter = cms.InputTag('None'),
+
+    mKKCutMin = cms.double(0.98),
+    mKKCutMax = cms.double(1.06),
 
     trackQualities = cms.vstring('highPurity'),
     collinearityCut = cms.double(-2.0),

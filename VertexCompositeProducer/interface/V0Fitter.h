@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    HadronCompositeProducer
+// Package:    VertexCompositeProducer
 // Class:      V0Fitter
 // 
-/**\class V0Fitter V0Fitter.h VertexCompositeAnalysis/HadronCompositeProducer/interface/V0Fitter.h
+/**\class V0Fitter V0Fitter.h VertexCompositeAnalysis/VertexCompositeProducer/interface/V0Fitter.h
 
  Description: <one line class summary>
 
@@ -125,6 +125,8 @@ class V0Fitter {
   bool doLambdaCToLamPis;
   bool doLambdaCToKsPs;
 
+  bool doVertexFit;
+
   /*bool doPostFitCuts;
     bool doTkQualCuts;*/
 
@@ -160,6 +162,8 @@ class V0Fitter {
   double batDauLongImpactSigCut;
   double mPiPiCutMin;
   double mPiPiCutMax;
+  double mKKCutMin;
+  double mKKCutMax;
   double innerHitPosCut;
 
   std::vector<reco::TrackBase::TrackQuality> qualities;

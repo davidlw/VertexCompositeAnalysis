@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    HadronCompositeProducer
+// Package:    VertexCompositeProducer
 // Class:      D0Fitter
 // 
-/**\class D0Fitter D0Fitter.cc VertexCompositeAnalysis/HadronCompositeProducer/src/D0Fitter.cc
+/**\class D0Fitter D0Fitter.cc VertexCompositeAnalysis/VertexCompositeProducer/src/D0Fitter.cc
 
  Description: <one line class summary>
 
@@ -14,7 +14,7 @@
 //
 //
 
-#include "VertexCompositeAnalysis/HadronCompositeProducer/interface/D0Fitter.h"
+#include "VertexCompositeAnalysis/VertexCompositeProducer/interface/D0Fitter.h"
 #include "CommonTools/CandUtils/interface/AddFourMomenta.h"
 
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"

@@ -3,7 +3,7 @@
 // Package:    DiMuProducer
 // Class:      DiMuProducer
 // 
-/**\class DiMuProducer DiMuProducer.h VertexCompositeAnalysis/HadronCompositeProducer/interface/DiMuProducer.h
+/**\class DiMuProducer DiMuProducer.h VertexCompositeAnalysis/VertexCompositeProducer/interface/DiMuProducer.h
 
  Description: <one line class summary>
 
@@ -35,7 +35,7 @@
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"
 
-#include "VertexCompositeAnalysis/HadronCompositeProducer/interface/DiMuFitter.h"
+#include "VertexCompositeAnalysis/VertexCompositeProducer/interface/DiMuFitter.h"
 
 class DiMuProducer : public edm::EDProducer {
 public:

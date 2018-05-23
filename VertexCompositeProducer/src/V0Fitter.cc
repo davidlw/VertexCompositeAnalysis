@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    HadronCompositeProducer
+// Package:    VertexCompositeProducer
 // Class:      V0Fitter
 // 
-/**\class V0Fitter V0Fitter.cc VertexCompositeAnalysis/HadronCompositeProducer/src/V0Fitter.cc
+/**\class V0Fitter V0Fitter.cc VertexCompositeAnalysis/VertexCompositeProducer/src/V0Fitter.cc
 
  Description: <one line class summary>
 
@@ -14,7 +14,7 @@
 //
 //
 
-#include "VertexCompositeAnalysis/HadronCompositeProducer/interface/V0Fitter.h"
+#include "VertexCompositeAnalysis/VertexCompositeProducer/interface/V0Fitter.h"
 #include "CommonTools/CandUtils/interface/AddFourMomenta.h"
 
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
@@ -107,6 +107,8 @@ V0Fitter::V0Fitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollect
   doLambdaCToLamPis = theParameters.getParameter<bool>(string("selectLambdaCToLamPis"));
   doLambdaCToKsPs = theParameters.getParameter<bool>(string("selectLambdaCToKsPs"));
 
+  doVertexFit = theParameters.getParameter<bool>(string("doVertexFit"));
+
   // Second, initialize post-fit cuts
   tkDCACut = theParameters.getParameter<double>(string("tkDCACut"));
   tkChi2Cut = theParameters.getParameter<double>(string("tkChi2Cut"));
@@ -141,6 +143,8 @@ V0Fitter::V0Fitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollect
   batDauLongImpactSigCut = theParameters.getParameter<double>(string("batDauLongImpactSigCut"));
   mPiPiCutMin = theParameters.getParameter<double>(string("mPiPiCutMin"));
   mPiPiCutMax = theParameters.getParameter<double>(string("mPiPiCutMax"));
+  mKKCutMin = theParameters.getParameter<double>(string("mKKCutMin"));
+  mKKCutMax = theParameters.getParameter<double>(string("mKKCutMax"));
   vtxFitter = theParameters.getParameter<edm::InputTag>("vertexFitter");
   innerHitPosCut = theParameters.getParameter<double>(string("innerHitPosCut"));
   std::vector<std::string> qual = theParameters.getParameter<std::vector<std::string> >("trackQualities");
@@ -339,12 +343,6 @@ void V0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
       if( !posTSCP.isValid() || !negTSCP.isValid() ) continue;
 
-
-      /*double posESq = posTSCP.momentum().mag2() + piMassSquared;
-      double negESq = negTSCP.momentum().mag2() + piMassSquared;
-      double posE = sqrt(posESq);
-      double negE = sqrt(negESq);
-      double totalE = posE + negE;*/
       double totalE = sqrt( posTSCP.momentum().mag2() + piMassSquared ) +
 	              sqrt( negTSCP.momentum().mag2() + piMassSquared );
       double totalESq = totalE*totalE;
@@ -352,9 +350,16 @@ void V0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	( posTSCP.momentum() + negTSCP.momentum() ).mag2();
       double mass = sqrt( totalESq - totalPSq);
 
-      //mPiPiMassOut << mass << std::endl;
-
       if( mass > mPiPiCutMax || mass < mPiPiCutMin ) continue;
+
+      totalE = sqrt( posTSCP.momentum().mag2() + kaonMassSquared ) +
+               sqrt( negTSCP.momentum().mag2() + kaonMassSquared );
+      totalESq = totalE*totalE;
+      totalPSq =
+        ( posTSCP.momentum() + negTSCP.momentum() ).mag2();
+      mass = sqrt( totalESq - totalPSq);
+
+      if( mass > mKKCutMax || mass < mKKCutMin ) continue;
 
       // Create the vertex fitter object and vertex the tracks
       TransientVertex theRecoVertex;
@@ -377,14 +382,19 @@ void V0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	theRecoVertex = theAdaptiveFitter.vertex(transTracks);
       }
     
-      // If the vertex is valid, make a VertexCompositeCandidate with it
-
-      if( !theRecoVertex.isValid() || theRecoVertex.totalChiSquared() < 0. ) {
-	continue;
-      }
-
       // Create reco::Vertex object for use in creating the Candidate
-      reco::Vertex theVtx = theRecoVertex;
+      reco::Vertex theVtx;
+      // If do not fit vertex, assign a dummy vertex using the beam spot
+      if(!doVertexFit) {
+        theVtx = reco::Vertex(theBeamSpotHandle->position(), 
+	                      theBeamSpotHandle->rotatedCovariance3D(),0.,0.,0);
+      }
+      // If the vertex is valid, make a VertexCompositeCandidate with it
+      else if( theRecoVertex.isValid() && theRecoVertex.totalChiSquared() >= 0. ) {
+        theVtx = theRecoVertex;
+      }
+      else continue;
+
       // Create and fill vector of refitted TransientTracks
       //  (iff they've been created by the KVF)
       std::vector<TransientTrack> refittedTrax;
