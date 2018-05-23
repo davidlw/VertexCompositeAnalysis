@@ -66,7 +66,7 @@ process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 #process.dEdx_step = cms.Path( process.eventFilter_HM * process.produceEnergyLoss )
 
 ########## V0 candidate rereco ###############################################################
-process.load("VertexCompositeAnalysis.HadronCompositeProducer.generalV0Candidates_cff")
+process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalV0Candidates_cff")
 process.v0rereco_step = cms.Path( process.eventFilter_HM * process.generalV0CandidatesNew )
 process.cascaderereco_step = cms.Path( process.eventFilter_HM * process.generalCascadeCandidatesNew )
 ###############################################################################################

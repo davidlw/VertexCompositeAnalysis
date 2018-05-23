@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-from VertexCompositeAnalysis.HadronCompositeProducer.generalDiMuCandidates_cfi import *
+from VertexCompositeAnalysis.VertexCompositeProducer.generalDiMuCandidates_cfi import *
 
 generalJPsiMuMuCandidates = generalDiMuCandidates.clone()
 

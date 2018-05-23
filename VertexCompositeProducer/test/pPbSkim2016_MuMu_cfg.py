@@ -68,7 +68,7 @@ process.eventFilter_HM = cms.Sequence(
 
 process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 
-process.load("VertexCompositeAnalysis.HadronCompositeProducer.generalDiMuCandidates_cff")
+process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalDiMuCandidates_cff")
 process.mumurereco_step = cms.Path( process.eventFilter_HM * process.generalMuMuContinuimOneStTightCandidates * process.generalMuMuContinuimOneStTightPFCandidates * process.generalMuMuContinuimPFCandidates)
 
 ###############################################################################################

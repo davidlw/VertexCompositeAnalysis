@@ -67,7 +67,7 @@ process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 #process.dEdx_step = cms.Path( process.eventFilter_HM * process.produceEnergyLoss )
 
 ########## DPM candidate rereco ###############################################################
-process.load("VertexCompositeAnalysis.HadronCompositeProducer.generalV0Candidates_cff")
+process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalV0Candidates_cff")
 process.dpmrereco_step = cms.Path( process.eventFilter_HM * process.generalDpmCandidatesNew )
 
 ###############################################################################################

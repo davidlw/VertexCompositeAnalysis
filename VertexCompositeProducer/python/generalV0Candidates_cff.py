@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-from VertexCompositeAnalysis.HadronCompositeProducer.generalV0Candidates_cfi import *
+from VertexCompositeAnalysis.VertexCompositeProducer.generalV0Candidates_cfi import *
 
 generalV0CandidatesNew = generalV0Candidates.clone (
     selectD0s = cms.bool(False),

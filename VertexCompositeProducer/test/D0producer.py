@@ -37,7 +37,7 @@ process.SimpleMemoryCheck = cms.Service("SimpleMemoryCheck",
     ignoreTotal = cms.untracked.int32(1)
 )
  
-process.load("VertexCompositeAnalysis.HadronCompositeProducer.generalD0Candidates_cff")
+process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalD0Candidates_cff")
 
 process.p = cms.Path(process.generalD0Candidates)
 

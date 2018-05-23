@@ -10,7 +10,7 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-process.MessageLogger.cerr.FwkReport.reportEvery = 20
+process.MessageLogger.cerr.FwkReport.reportEvery = 200
 
 process.source = cms.Source("PoolSource",
    fileNames = cms.untracked.vstring(
@@ -67,7 +67,7 @@ process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 #process.dEdx_step = cms.Path( process.eventFilter_HM * process.produceEnergyLoss )
 
 ########## Ds candidate rereco ###############################################################
-process.load("VertexCompositeAnalysis.HadronCompositeProducer.generalV0Candidates_cff")
+process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalV0Candidates_cff")
 process.phirereco_step = cms.Path( process.eventFilter_HM * process.generalPhiCandidatesNew )
 
 ###############################################################################################
