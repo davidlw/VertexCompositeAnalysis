@@ -40,7 +40,7 @@ secondaryFileNames = cms.untracked.vstring(
 )
                             )
 
-process.D0para = cms.EDAnalyzer('HadronCompositeNtupleProducer',
+process.D0para = cms.EDAnalyzer('VertexCompositeNtupleProducer',
 doRecoNtuple = cms.untracked.bool(True),
 doGenNtuple = cms.untracked.bool(True),
 doGenMatching = cms.untracked.bool(True),

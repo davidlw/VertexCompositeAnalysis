@@ -72,10 +72,10 @@
 
 using namespace std;
 
-class HadronCompositeNtupleProducer : public edm::EDAnalyzer {
+class VertexCompositeNtupleProducer : public edm::EDAnalyzer {
 public:
-  explicit HadronCompositeNtupleProducer(const edm::ParameterSet&);
-  ~HadronCompositeNtupleProducer();
+  explicit VertexCompositeNtupleProducer(const edm::ParameterSet&);
+  ~VertexCompositeNtupleProducer();
 
 
 private:
@@ -87,7 +87,7 @@ private:
 
   // ----------member data ---------------------------
     
-    TTree* HadronCompositeNtuple;
+    TTree* VertexCompositeNtuple;
     
     //options
     bool doRecoNtuple_;
@@ -253,7 +253,7 @@ private:
 // constructors and destructor
 //
 
-HadronCompositeNtupleProducer::HadronCompositeNtupleProducer(const edm::ParameterSet& iConfig)
+VertexCompositeNtupleProducer::VertexCompositeNtupleProducer(const edm::ParameterSet& iConfig)
 {
     //options
     doRecoNtuple_ = iConfig.getUntrackedParameter<bool>("doRecoNtuple");
@@ -275,7 +275,7 @@ HadronCompositeNtupleProducer::HadronCompositeNtupleProducer(const edm::Paramete
     //input tokens
     tok_offlinePV_ = consumes<reco::VertexCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCollection"));
     tok_generalTrk_ = consumes<reco::TrackCollection>(iConfig.getUntrackedParameter<edm::InputTag>("TrackCollection"));
-    recoVertexCompositeCandidateCollection_Token_ = consumes<reco::VertexCompositeCandidateCollection>(iConfig.getUntrackedParameter<edm::InputTag>("HadronCompositeCollection"));
+    recoVertexCompositeCandidateCollection_Token_ = consumes<reco::VertexCompositeCandidateCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCompositeCollection"));
     tok_muon_ = consumes<reco::MuonCollection>(iConfig.getUntrackedParameter<edm::InputTag>("MuonCollection"));
 
     Dedx_Token1_ = consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxHarmonic2"));
@@ -285,7 +285,7 @@ HadronCompositeNtupleProducer::HadronCompositeNtupleProducer(const edm::Paramete
 }
 
 
-HadronCompositeNtupleProducer::~HadronCompositeNtupleProducer()
+VertexCompositeNtupleProducer::~VertexCompositeNtupleProducer()
 {
  
   // do anything here that needs to be done at desctruction time
@@ -300,7 +300,7 @@ HadronCompositeNtupleProducer::~HadronCompositeNtupleProducer()
 
 // ------------ method called to for each event  ------------
 void
-HadronCompositeNtupleProducer::analyze(const edm::Event& iEvent, const edm::EventSetup&
+VertexCompositeNtupleProducer::analyze(const edm::Event& iEvent, const edm::EventSetup&
 iSetup)
 {
     using std::vector;
@@ -312,12 +312,12 @@ iSetup)
     //Reco info
     if(doRecoNtuple_) fillRECO(iEvent,iSetup);
     
-    HadronCompositeNtuple->Fill();
+    VertexCompositeNtuple->Fill();
     
 }
 
 void
-HadronCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
     //get collections
     edm::Handle<reco::VertexCollection> vertices;
@@ -854,7 +854,7 @@ HadronCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
 }
 
 void
-HadronCompositeNtupleProducer::fillGEN(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+VertexCompositeNtupleProducer::fillGEN(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
     edm::Handle<reco::GenParticleCollection> genpars;
     iEvent.getByToken(tok_genParticle_,genpars);
@@ -895,7 +895,7 @@ HadronCompositeNtupleProducer::fillGEN(const edm::Event& iEvent, const edm::Even
 // ------------ method called once each job just before starting event
 //loop  ------------
 void
-HadronCompositeNtupleProducer::beginJob()
+VertexCompositeNtupleProducer::beginJob()
 {
     edm::Service<TFileService> fs;
     
@@ -912,134 +912,134 @@ HadronCompositeNtupleProducer::beginJob()
         cout<<"Muons cannot be coming from two layer decay!! Fix config!!"<<endl; return;
     }
     
-    HadronCompositeNtuple = fs->make< TTree>("HadronCompositeNtuple","HadronCompositeNtuple");
+    VertexCompositeNtuple = fs->make< TTree>("VertexCompositeNtuple","VertexCompositeNtuple");
     
     if(doRecoNtuple_)
     {
         //Event info
-        HadronCompositeNtuple->Branch("Ntrkoffline",&Ntrkoffline,"Ntrkoffline/I");
-        HadronCompositeNtuple->Branch("bestvtxX",&bestvx,"bestvtxX/F");
-        HadronCompositeNtuple->Branch("bestvtxY",&bestvy,"bestvtxY/F");
-        HadronCompositeNtuple->Branch("bestvtxZ",&bestvz,"bestvtxZ/F");
+        VertexCompositeNtuple->Branch("Ntrkoffline",&Ntrkoffline,"Ntrkoffline/I");
+        VertexCompositeNtuple->Branch("bestvtxX",&bestvx,"bestvtxX/F");
+        VertexCompositeNtuple->Branch("bestvtxY",&bestvy,"bestvtxY/F");
+        VertexCompositeNtuple->Branch("bestvtxZ",&bestvz,"bestvtxZ/F");
         
         //Composite candidate info RECO
-        HadronCompositeNtuple->Branch("candSize",&candSize,"candSize/I");
-        HadronCompositeNtuple->Branch("pT",&pt,"pT[candSize]/F");
-        HadronCompositeNtuple->Branch("eta",&eta,"eta[candSize]/F");
-        HadronCompositeNtuple->Branch("y",&y,"y[candSize]/F");
-        HadronCompositeNtuple->Branch("mass",&mass,"mass[candSize]/F");
-        HadronCompositeNtuple->Branch("VtxProb",&VtxProb,"VtxProb[candSize]/F");
-        HadronCompositeNtuple->Branch("VtxChi2",&vtxChi2,"VtxChi2[candSize]/F");
-        HadronCompositeNtuple->Branch("VtxNDF",&ndf,"VtxNDF[candSize]/I");
-        HadronCompositeNtuple->Branch("3DCosPointingAngle",&agl,"3DCosPointingAngle[candSize]/F");
-        HadronCompositeNtuple->Branch("3DPointingAngle",&agl_abs,"3DPointingAngle[candSize]/F");
-        HadronCompositeNtuple->Branch("2DCosPointingAngle",&agl2D,"2DCosPointingAngle[candSize]/F");
-        HadronCompositeNtuple->Branch("2DPointingAngle",&agl2D_abs,"2DPointingAngle[candSize]/F");
-        HadronCompositeNtuple->Branch("3DDecayLengthSignificance",&dlos,"3DDecayLengthSignificance[candSize]/F");
-        HadronCompositeNtuple->Branch("3DDecayLength",&dl,"3DDecayLength[candSize]/F");
-        HadronCompositeNtuple->Branch("3DDecayLengthError",&dlerror,"3DDecayLengthError[candSize]/F");
-        HadronCompositeNtuple->Branch("2DDecayLengthSignificance",&dlos2D,"2DDecayLengthSignificance[candSize]/F");
+        VertexCompositeNtuple->Branch("candSize",&candSize,"candSize/I");
+        VertexCompositeNtuple->Branch("pT",&pt,"pT[candSize]/F");
+        VertexCompositeNtuple->Branch("eta",&eta,"eta[candSize]/F");
+        VertexCompositeNtuple->Branch("y",&y,"y[candSize]/F");
+        VertexCompositeNtuple->Branch("mass",&mass,"mass[candSize]/F");
+        VertexCompositeNtuple->Branch("VtxProb",&VtxProb,"VtxProb[candSize]/F");
+        VertexCompositeNtuple->Branch("VtxChi2",&vtxChi2,"VtxChi2[candSize]/F");
+        VertexCompositeNtuple->Branch("VtxNDF",&ndf,"VtxNDF[candSize]/I");
+        VertexCompositeNtuple->Branch("3DCosPointingAngle",&agl,"3DCosPointingAngle[candSize]/F");
+        VertexCompositeNtuple->Branch("3DPointingAngle",&agl_abs,"3DPointingAngle[candSize]/F");
+        VertexCompositeNtuple->Branch("2DCosPointingAngle",&agl2D,"2DCosPointingAngle[candSize]/F");
+        VertexCompositeNtuple->Branch("2DPointingAngle",&agl2D_abs,"2DPointingAngle[candSize]/F");
+        VertexCompositeNtuple->Branch("3DDecayLengthSignificance",&dlos,"3DDecayLengthSignificance[candSize]/F");
+        VertexCompositeNtuple->Branch("3DDecayLength",&dl,"3DDecayLength[candSize]/F");
+        VertexCompositeNtuple->Branch("3DDecayLengthError",&dlerror,"3DDecayLengthError[candSize]/F");
+        VertexCompositeNtuple->Branch("2DDecayLengthSignificance",&dlos2D,"2DDecayLengthSignificance[candSize]/F");
         if(doGenMatching_)
         {
-            HadronCompositeNtuple->Branch("isSwap",&isSwap,"isSwap[candSize]/O");
-            HadronCompositeNtuple->Branch("idmom_reco",&idmom_reco,"idmom_reco[candSize]/I");
-            HadronCompositeNtuple->Branch("matchGEN",&matchGEN,"matchGEN[candSize]/O");
+            VertexCompositeNtuple->Branch("isSwap",&isSwap,"isSwap[candSize]/O");
+            VertexCompositeNtuple->Branch("idmom_reco",&idmom_reco,"idmom_reco[candSize]/I");
+            VertexCompositeNtuple->Branch("matchGEN",&matchGEN,"matchGEN[candSize]/O");
         }
         
         //daugther & grand daugther info
         if(twoLayerDecay_)
         {
-            HadronCompositeNtuple->Branch("massDaugther1",&grand_mass,"massDaugther1[candSize]/F");
-            HadronCompositeNtuple->Branch("pTD1",&pt1,"pTD1[candSize]/F");
-            HadronCompositeNtuple->Branch("EtaD1",&eta1,"EtaD1[candSize]/F");
-            HadronCompositeNtuple->Branch("PhiD1",&phi1,"PhiD1[candSize]/F");
-            HadronCompositeNtuple->Branch("VtxProbDaugther1",&grand_VtxProb,"VtxProbDaugther1[candSize]/F");
-            HadronCompositeNtuple->Branch("VtxChi2Daugther1",&grand_vtxChi2,"VtxChi2Daugther1[candSize]/F");
-            HadronCompositeNtuple->Branch("VtxNDFDaugther1",&grand_ndf,"VtxNDFDaugther1[candSize]/I");
-            HadronCompositeNtuple->Branch("3DCosPointingAngleDaugther1",&grand_agl,"3DCosPointingAngleDaugther1[candSize]/F");
-            HadronCompositeNtuple->Branch("3DPointingAngleDaugther1",&grand_agl_abs,"3DPointingAngleDaugther1[candSize]/F");
-            HadronCompositeNtuple->Branch("2DCosPointingAngleDaugther1",&grand_agl2D,"2DCosPointingAngleDaugther1[candSize]/F");
-            HadronCompositeNtuple->Branch("2DPointingAngleDaugther1",&grand_agl2D_abs,"2DPointingAngleDaugther1[candSize]/F");
-            HadronCompositeNtuple->Branch("3DDecayLengthSignificanceDaugther1",&grand_dlos,"3DDecayLengthSignificanceDaugther1[candSize]/F");
-            HadronCompositeNtuple->Branch("3DDecayLengthDaugther1",&grand_dl,"3DDecayLengthDaugther1[candSize]/F");
-            HadronCompositeNtuple->Branch("3DDecayLengthErrorDaugther1",&grand_dlerror,"3DDecayLengthErrorDaugther1[candSize]/F");
-            HadronCompositeNtuple->Branch("2DDecayLengthSignificanceDaugther1",&grand_dlos2D,"2DDecayLengthSignificanceDaugther1[candSize]/F");
-            HadronCompositeNtuple->Branch("zDCASignificanceDaugther2",&dzos2,"zDCASignificanceDaugther2[candSize]/F");
-            HadronCompositeNtuple->Branch("xyDCASignificanceDaugther2",&dxyos2,"xyDCASignificanceDaugther2[candSize]/F");
-            HadronCompositeNtuple->Branch("NHitD2",&nhit2,"NHitD2[candSize]/I");
-            HadronCompositeNtuple->Branch("HighPurityDaugther2",&trkquality2,"HighPurityDaugther2[candSize]/O");
-            HadronCompositeNtuple->Branch("pTD2",&pt2,"pTD2[candSize]/F");
-            HadronCompositeNtuple->Branch("pTerrD2",&ptErr2,"pTerrD2[candSize]/F");
-            HadronCompositeNtuple->Branch("pD2",&p2,"pD2[candSize]/F");
-            HadronCompositeNtuple->Branch("EtaD2",&eta2,"EtaD2[candSize]/F");
-            HadronCompositeNtuple->Branch("PhiD2",&phi2,"PhiD2[candSize]/F");
-            HadronCompositeNtuple->Branch("chargeD2",&charge2,"chargeD2[candSize]/I");
-            HadronCompositeNtuple->Branch("dedxHarmonic2D2",&H2dedx2,"dedxHarmonic2D2[candSize]/F");
-            HadronCompositeNtuple->Branch("dedxTruncated40Daugther2",&T4dedx2,"dedxTruncated40Daugther2[candSize]/F");
-            HadronCompositeNtuple->Branch("normalizedChi2Daugther2",&trkChi2,"normalizedChi2Daugther2[candSize]/F");
-            HadronCompositeNtuple->Branch("zDCASignificanceGrandDaugther1",&grand_dzos1,"zDCASignificanceGrandDaugther1[candSize]/F");
-            HadronCompositeNtuple->Branch("zDCASignificanceGrandDaugther2",&grand_dzos2,"zDCASignificanceGrandDaugther2[candSize]/F");
-            HadronCompositeNtuple->Branch("xyDCASignificanceGrandDaugther1",&grand_dxyos1,"xyDCASignificanceGrandDaugther1[candSize]/F");
-            HadronCompositeNtuple->Branch("xyDCASignificanceGrandDaugther2",&grand_dxyos2,"xyDCASignificanceGrandDaugther2[candSize]/F");
-            HadronCompositeNtuple->Branch("NHitGrandD1",&grand_nhit1,"NHitGrandD1[candSize]/I");
-            HadronCompositeNtuple->Branch("NHitGrandD2",&grand_nhit2,"NHitGrandD2[candSize]/I");
-            HadronCompositeNtuple->Branch("HighPurityGrandDaugther1",&grand_trkquality1,"HighPurityGrandDaugther1[candSize]/O");
-            HadronCompositeNtuple->Branch("HighPurityGrandDaugther2",&grand_trkquality2,"HighPurityGrandDaugther2[candSize]/O");
-            HadronCompositeNtuple->Branch("pTGrandD1",&grand_pt1,"pTGrandD1[candSize]/F");
-            HadronCompositeNtuple->Branch("pTGrandD2",&grand_pt2,"pTGrandD2[candSize]/F");
-            HadronCompositeNtuple->Branch("pTerrGrandD1",&grand_ptErr1,"pTerrGrandD1[candSize]/F");
-            HadronCompositeNtuple->Branch("pTerrGrandD2",&grand_ptErr2,"pTerrGrandD2[candSize]/F");
-            HadronCompositeNtuple->Branch("pGrandD1",&grand_p1,"pGrandD1[candSize]/F");
-            HadronCompositeNtuple->Branch("pGrandD2",&grand_p2,"pGrandD2[candSize]/F");
-            HadronCompositeNtuple->Branch("EtaGrandD1",&grand_eta1,"EtaGrandD1[candSize]/F");
-            HadronCompositeNtuple->Branch("EtaGrandD2",&grand_eta2,"EtaGrandD2[candSize]/F");
-            HadronCompositeNtuple->Branch("chargeGrandD1",&grand_charge1,"chargeGrandD1[candSize]/I");
-            HadronCompositeNtuple->Branch("chargeGrandD2",&grand_charge2,"chargeGrandD2[candSize]/I");
-            HadronCompositeNtuple->Branch("dedxHarmonic2GrandD1",&grand_H2dedx1,"dedxHarmonic2GrandD1[candSize]/F");
-            HadronCompositeNtuple->Branch("dedxHarmonic2GrandD2",&grand_H2dedx2,"dedxHarmonic2GrandD2[candSize]/F");
-            HadronCompositeNtuple->Branch("dedxTruncated40GrandDaugther1",&grand_T4dedx1,"dedxTruncated40GrandDaugther1[candSize]/F");
-            HadronCompositeNtuple->Branch("dedxTruncated40GrandDaugther2",&grand_T4dedx2,"dedxTruncated40GrandDaugther2[candSize]/F");
-            HadronCompositeNtuple->Branch("normalizedChi2GrandDaugther1",&grand_trkChi1,"normalizedChi2GrandDaugther1[candSize]/F");
-            HadronCompositeNtuple->Branch("normalizedChi2GrandDaugther2",&grand_trkChi2,"normalizedChi2GrandDaugther2[candSize]/F");
+            VertexCompositeNtuple->Branch("massDaugther1",&grand_mass,"massDaugther1[candSize]/F");
+            VertexCompositeNtuple->Branch("pTD1",&pt1,"pTD1[candSize]/F");
+            VertexCompositeNtuple->Branch("EtaD1",&eta1,"EtaD1[candSize]/F");
+            VertexCompositeNtuple->Branch("PhiD1",&phi1,"PhiD1[candSize]/F");
+            VertexCompositeNtuple->Branch("VtxProbDaugther1",&grand_VtxProb,"VtxProbDaugther1[candSize]/F");
+            VertexCompositeNtuple->Branch("VtxChi2Daugther1",&grand_vtxChi2,"VtxChi2Daugther1[candSize]/F");
+            VertexCompositeNtuple->Branch("VtxNDFDaugther1",&grand_ndf,"VtxNDFDaugther1[candSize]/I");
+            VertexCompositeNtuple->Branch("3DCosPointingAngleDaugther1",&grand_agl,"3DCosPointingAngleDaugther1[candSize]/F");
+            VertexCompositeNtuple->Branch("3DPointingAngleDaugther1",&grand_agl_abs,"3DPointingAngleDaugther1[candSize]/F");
+            VertexCompositeNtuple->Branch("2DCosPointingAngleDaugther1",&grand_agl2D,"2DCosPointingAngleDaugther1[candSize]/F");
+            VertexCompositeNtuple->Branch("2DPointingAngleDaugther1",&grand_agl2D_abs,"2DPointingAngleDaugther1[candSize]/F");
+            VertexCompositeNtuple->Branch("3DDecayLengthSignificanceDaugther1",&grand_dlos,"3DDecayLengthSignificanceDaugther1[candSize]/F");
+            VertexCompositeNtuple->Branch("3DDecayLengthDaugther1",&grand_dl,"3DDecayLengthDaugther1[candSize]/F");
+            VertexCompositeNtuple->Branch("3DDecayLengthErrorDaugther1",&grand_dlerror,"3DDecayLengthErrorDaugther1[candSize]/F");
+            VertexCompositeNtuple->Branch("2DDecayLengthSignificanceDaugther1",&grand_dlos2D,"2DDecayLengthSignificanceDaugther1[candSize]/F");
+            VertexCompositeNtuple->Branch("zDCASignificanceDaugther2",&dzos2,"zDCASignificanceDaugther2[candSize]/F");
+            VertexCompositeNtuple->Branch("xyDCASignificanceDaugther2",&dxyos2,"xyDCASignificanceDaugther2[candSize]/F");
+            VertexCompositeNtuple->Branch("NHitD2",&nhit2,"NHitD2[candSize]/I");
+            VertexCompositeNtuple->Branch("HighPurityDaugther2",&trkquality2,"HighPurityDaugther2[candSize]/O");
+            VertexCompositeNtuple->Branch("pTD2",&pt2,"pTD2[candSize]/F");
+            VertexCompositeNtuple->Branch("pTerrD2",&ptErr2,"pTerrD2[candSize]/F");
+            VertexCompositeNtuple->Branch("pD2",&p2,"pD2[candSize]/F");
+            VertexCompositeNtuple->Branch("EtaD2",&eta2,"EtaD2[candSize]/F");
+            VertexCompositeNtuple->Branch("PhiD2",&phi2,"PhiD2[candSize]/F");
+            VertexCompositeNtuple->Branch("chargeD2",&charge2,"chargeD2[candSize]/I");
+            VertexCompositeNtuple->Branch("dedxHarmonic2D2",&H2dedx2,"dedxHarmonic2D2[candSize]/F");
+            VertexCompositeNtuple->Branch("dedxTruncated40Daugther2",&T4dedx2,"dedxTruncated40Daugther2[candSize]/F");
+            VertexCompositeNtuple->Branch("normalizedChi2Daugther2",&trkChi2,"normalizedChi2Daugther2[candSize]/F");
+            VertexCompositeNtuple->Branch("zDCASignificanceGrandDaugther1",&grand_dzos1,"zDCASignificanceGrandDaugther1[candSize]/F");
+            VertexCompositeNtuple->Branch("zDCASignificanceGrandDaugther2",&grand_dzos2,"zDCASignificanceGrandDaugther2[candSize]/F");
+            VertexCompositeNtuple->Branch("xyDCASignificanceGrandDaugther1",&grand_dxyos1,"xyDCASignificanceGrandDaugther1[candSize]/F");
+            VertexCompositeNtuple->Branch("xyDCASignificanceGrandDaugther2",&grand_dxyos2,"xyDCASignificanceGrandDaugther2[candSize]/F");
+            VertexCompositeNtuple->Branch("NHitGrandD1",&grand_nhit1,"NHitGrandD1[candSize]/I");
+            VertexCompositeNtuple->Branch("NHitGrandD2",&grand_nhit2,"NHitGrandD2[candSize]/I");
+            VertexCompositeNtuple->Branch("HighPurityGrandDaugther1",&grand_trkquality1,"HighPurityGrandDaugther1[candSize]/O");
+            VertexCompositeNtuple->Branch("HighPurityGrandDaugther2",&grand_trkquality2,"HighPurityGrandDaugther2[candSize]/O");
+            VertexCompositeNtuple->Branch("pTGrandD1",&grand_pt1,"pTGrandD1[candSize]/F");
+            VertexCompositeNtuple->Branch("pTGrandD2",&grand_pt2,"pTGrandD2[candSize]/F");
+            VertexCompositeNtuple->Branch("pTerrGrandD1",&grand_ptErr1,"pTerrGrandD1[candSize]/F");
+            VertexCompositeNtuple->Branch("pTerrGrandD2",&grand_ptErr2,"pTerrGrandD2[candSize]/F");
+            VertexCompositeNtuple->Branch("pGrandD1",&grand_p1,"pGrandD1[candSize]/F");
+            VertexCompositeNtuple->Branch("pGrandD2",&grand_p2,"pGrandD2[candSize]/F");
+            VertexCompositeNtuple->Branch("EtaGrandD1",&grand_eta1,"EtaGrandD1[candSize]/F");
+            VertexCompositeNtuple->Branch("EtaGrandD2",&grand_eta2,"EtaGrandD2[candSize]/F");
+            VertexCompositeNtuple->Branch("chargeGrandD1",&grand_charge1,"chargeGrandD1[candSize]/I");
+            VertexCompositeNtuple->Branch("chargeGrandD2",&grand_charge2,"chargeGrandD2[candSize]/I");
+            VertexCompositeNtuple->Branch("dedxHarmonic2GrandD1",&grand_H2dedx1,"dedxHarmonic2GrandD1[candSize]/F");
+            VertexCompositeNtuple->Branch("dedxHarmonic2GrandD2",&grand_H2dedx2,"dedxHarmonic2GrandD2[candSize]/F");
+            VertexCompositeNtuple->Branch("dedxTruncated40GrandDaugther1",&grand_T4dedx1,"dedxTruncated40GrandDaugther1[candSize]/F");
+            VertexCompositeNtuple->Branch("dedxTruncated40GrandDaugther2",&grand_T4dedx2,"dedxTruncated40GrandDaugther2[candSize]/F");
+            VertexCompositeNtuple->Branch("normalizedChi2GrandDaugther1",&grand_trkChi1,"normalizedChi2GrandDaugther1[candSize]/F");
+            VertexCompositeNtuple->Branch("normalizedChi2GrandDaugther2",&grand_trkChi2,"normalizedChi2GrandDaugther2[candSize]/F");
         }
         else
         {
-            HadronCompositeNtuple->Branch("zDCASignificanceDaugther1",&dzos1,"zDCASignificanceDaugther1[candSize]/F");
-            HadronCompositeNtuple->Branch("xyDCASignificanceDaugther1",&dxyos1,"xyDCASignificanceDaugther1[candSize]/F");
-            HadronCompositeNtuple->Branch("NHitD1",&nhit1,"NHitD1[candSize]/I");
-            HadronCompositeNtuple->Branch("HighPurityDaugther1",&trkquality1,"HighPurityDaugther1[candSize]/O");
-            HadronCompositeNtuple->Branch("pTD1",&pt1,"pTD1[candSize]/F");
-            HadronCompositeNtuple->Branch("pTerrD1",&ptErr1,"pTerrD1[candSize]/F");
-            HadronCompositeNtuple->Branch("pD1",&p1,"pD1[candSize]/F");
-            HadronCompositeNtuple->Branch("EtaD1",&eta1,"EtaD1[candSize]/F");
-            HadronCompositeNtuple->Branch("PhiD1",&eta1,"PhiD1[candSize]/F");
-            HadronCompositeNtuple->Branch("chargeD1",&charge1,"chargeD1[candSize]/I");
-            HadronCompositeNtuple->Branch("dedxHarmonic2D1",&H2dedx1,"dedxHarmonic2D1[candSize]/F");
-            HadronCompositeNtuple->Branch("dedxTruncated40Daugther1",&T4dedx1,"dedxTruncated40Daugther1[candSize]/F");
-            HadronCompositeNtuple->Branch("normalizedChi2Daugther1",&trkChi1,"normalizedChi2Daugther1[candSize]/F");
-            HadronCompositeNtuple->Branch("zDCASignificanceDaugther2",&dzos2,"zDCASignificanceDaugther2[candSize]/F");
-            HadronCompositeNtuple->Branch("xyDCASignificanceDaugther2",&dxyos2,"xyDCASignificanceDaugther2[candSize]/F");
-            HadronCompositeNtuple->Branch("NHitD2",&nhit2,"NHitD2[candSize]/I");
-            HadronCompositeNtuple->Branch("HighPurityDaugther2",&trkquality2,"HighPurityDaugther2[candSize]/O");
-            HadronCompositeNtuple->Branch("pTD2",&pt2,"pTD2[candSize]/F");
-            HadronCompositeNtuple->Branch("pTerrD2",&ptErr2,"pTerrD2[candSize]/F");
-            HadronCompositeNtuple->Branch("pD2",&p2,"pD2[candSize]/F");
-            HadronCompositeNtuple->Branch("EtaD2",&eta2,"EtaD2[candSize]/F");
-            HadronCompositeNtuple->Branch("PhiD2",&eta2,"PhiD2[candSize]/F");
-            HadronCompositeNtuple->Branch("chargeD2",&charge2,"chargeD2[candSize]/I");
-            HadronCompositeNtuple->Branch("dedxHarmonic2D2",&H2dedx2,"dedxHarmonic2D2[candSize]/F");
-            HadronCompositeNtuple->Branch("dedxTruncated40Daugther2",&T4dedx2,"dedxTruncated40Daugther2[candSize]/F");
-            HadronCompositeNtuple->Branch("normalizedChi2Daugther2",&trkChi2,"normalizedChi2Daugther2[candSize]/F");
+            VertexCompositeNtuple->Branch("zDCASignificanceDaugther1",&dzos1,"zDCASignificanceDaugther1[candSize]/F");
+            VertexCompositeNtuple->Branch("xyDCASignificanceDaugther1",&dxyos1,"xyDCASignificanceDaugther1[candSize]/F");
+            VertexCompositeNtuple->Branch("NHitD1",&nhit1,"NHitD1[candSize]/I");
+            VertexCompositeNtuple->Branch("HighPurityDaugther1",&trkquality1,"HighPurityDaugther1[candSize]/O");
+            VertexCompositeNtuple->Branch("pTD1",&pt1,"pTD1[candSize]/F");
+            VertexCompositeNtuple->Branch("pTerrD1",&ptErr1,"pTerrD1[candSize]/F");
+            VertexCompositeNtuple->Branch("pD1",&p1,"pD1[candSize]/F");
+            VertexCompositeNtuple->Branch("EtaD1",&eta1,"EtaD1[candSize]/F");
+            VertexCompositeNtuple->Branch("PhiD1",&eta1,"PhiD1[candSize]/F");
+            VertexCompositeNtuple->Branch("chargeD1",&charge1,"chargeD1[candSize]/I");
+            VertexCompositeNtuple->Branch("dedxHarmonic2D1",&H2dedx1,"dedxHarmonic2D1[candSize]/F");
+            VertexCompositeNtuple->Branch("dedxTruncated40Daugther1",&T4dedx1,"dedxTruncated40Daugther1[candSize]/F");
+            VertexCompositeNtuple->Branch("normalizedChi2Daugther1",&trkChi1,"normalizedChi2Daugther1[candSize]/F");
+            VertexCompositeNtuple->Branch("zDCASignificanceDaugther2",&dzos2,"zDCASignificanceDaugther2[candSize]/F");
+            VertexCompositeNtuple->Branch("xyDCASignificanceDaugther2",&dxyos2,"xyDCASignificanceDaugther2[candSize]/F");
+            VertexCompositeNtuple->Branch("NHitD2",&nhit2,"NHitD2[candSize]/I");
+            VertexCompositeNtuple->Branch("HighPurityDaugther2",&trkquality2,"HighPurityDaugther2[candSize]/O");
+            VertexCompositeNtuple->Branch("pTD2",&pt2,"pTD2[candSize]/F");
+            VertexCompositeNtuple->Branch("pTerrD2",&ptErr2,"pTerrD2[candSize]/F");
+            VertexCompositeNtuple->Branch("pD2",&p2,"pD2[candSize]/F");
+            VertexCompositeNtuple->Branch("EtaD2",&eta2,"EtaD2[candSize]/F");
+            VertexCompositeNtuple->Branch("PhiD2",&eta2,"PhiD2[candSize]/F");
+            VertexCompositeNtuple->Branch("chargeD2",&charge2,"chargeD2[candSize]/I");
+            VertexCompositeNtuple->Branch("dedxHarmonic2D2",&H2dedx2,"dedxHarmonic2D2[candSize]/F");
+            VertexCompositeNtuple->Branch("dedxTruncated40Daugther2",&T4dedx2,"dedxTruncated40Daugther2[candSize]/F");
+            VertexCompositeNtuple->Branch("normalizedChi2Daugther2",&trkChi2,"normalizedChi2Daugther2[candSize]/F");
         }
         
         if(doMuon_)
         {
-            HadronCompositeNtuple->Branch("nMatchedChamberD1",&nmatchedch1,"nMatchedChamberD1[candSize]/F");
-            HadronCompositeNtuple->Branch("nMatchedStationD1",&nmatchedst1,"nMatchedStationD1[candSize]/F");
-            HadronCompositeNtuple->Branch("EnergyDepositionD1",&nmatchedst1,"EnergyDepositionD1[candSize]/F");
-            HadronCompositeNtuple->Branch("nMatchedChamberD2",&nmatchedch2,"nMatchedChamberD2[candSize]/F");
-            HadronCompositeNtuple->Branch("nMatchedStationD2",&nmatchedst2,"nMatchedStationD2[candSize]/F");
-            HadronCompositeNtuple->Branch("EnergyDepositionD2",&nmatchedst2,"EnergyDepositionD2[candSize]/F");
+            VertexCompositeNtuple->Branch("nMatchedChamberD1",&nmatchedch1,"nMatchedChamberD1[candSize]/F");
+            VertexCompositeNtuple->Branch("nMatchedStationD1",&nmatchedst1,"nMatchedStationD1[candSize]/F");
+            VertexCompositeNtuple->Branch("EnergyDepositionD1",&nmatchedst1,"EnergyDepositionD1[candSize]/F");
+            VertexCompositeNtuple->Branch("nMatchedChamberD2",&nmatchedch2,"nMatchedChamberD2[candSize]/F");
+            VertexCompositeNtuple->Branch("nMatchedStationD2",&nmatchedst2,"nMatchedStationD2[candSize]/F");
+            VertexCompositeNtuple->Branch("EnergyDepositionD2",&nmatchedst2,"EnergyDepositionD2[candSize]/F");
 
         }
     }
@@ -1047,17 +1047,17 @@ HadronCompositeNtupleProducer::beginJob()
     if(doGenNtuple_)
     {
         //GEN info
-        HadronCompositeNtuple->Branch("candSize_gen",&candSize_gen,"candSize_gen/I");
-        HadronCompositeNtuple->Branch("pT_gen",&pt_gen,"pT_gen[candSize_gen]/F");
-        HadronCompositeNtuple->Branch("eta_gen",&eta_gen,"eta_gen[candSize_gen]/F");
-        HadronCompositeNtuple->Branch("y_gen",&y_gen,"y_gen[candSize_gen]/F");
-        HadronCompositeNtuple->Branch("status_gen",&status_gen,"status_gen[candSize_gen]/I");
-        HadronCompositeNtuple->Branch("MotherID_gen",&idmom,"MotherID_gen[candSize_gen]/I");
+        VertexCompositeNtuple->Branch("candSize_gen",&candSize_gen,"candSize_gen/I");
+        VertexCompositeNtuple->Branch("pT_gen",&pt_gen,"pT_gen[candSize_gen]/F");
+        VertexCompositeNtuple->Branch("eta_gen",&eta_gen,"eta_gen[candSize_gen]/F");
+        VertexCompositeNtuple->Branch("y_gen",&y_gen,"y_gen[candSize_gen]/F");
+        VertexCompositeNtuple->Branch("status_gen",&status_gen,"status_gen[candSize_gen]/I");
+        VertexCompositeNtuple->Branch("MotherID_gen",&idmom,"MotherID_gen[candSize_gen]/I");
         
         if(decayInGen_)
         {
-            HadronCompositeNtuple->Branch("DauID1_gen",&iddau1,"DauID1_gen[candSize_gen]/I");
-            HadronCompositeNtuple->Branch("DauID2_gen",&iddau2,"DauID2_gen[candSize_gen]/I");
+            VertexCompositeNtuple->Branch("DauID1_gen",&iddau1,"DauID1_gen[candSize_gen]/I");
+            VertexCompositeNtuple->Branch("DauID2_gen",&iddau2,"DauID2_gen[candSize_gen]/I");
         }
     }
 }
@@ -1065,12 +1065,12 @@ HadronCompositeNtupleProducer::beginJob()
 // ------------ method called once each job just after ending the event
 //loop  ------------
 void 
-HadronCompositeNtupleProducer::endJob() {
+VertexCompositeNtupleProducer::endJob() {
     
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(HadronCompositeNtupleProducer);
+DEFINE_FWK_MODULE(VertexCompositeNtupleProducer);
 
 
 
