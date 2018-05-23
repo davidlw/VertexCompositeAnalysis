@@ -33,11 +33,13 @@ V0Producer::V0Producer(const edm::ParameterSet& iConfig) :
 
   // Trying this with Candidates instead of the simple reco::Vertex
   produces< reco::VertexCompositeCandidateCollection >("Kshort");
+  produces< reco::VertexCompositeCandidateCollection >("Phi");
   produces< reco::VertexCompositeCandidateCollection >("Lambda");
   produces< reco::VertexCompositeCandidateCollection >("Xi");
   produces< reco::VertexCompositeCandidateCollection >("Omega");
   produces< reco::VertexCompositeCandidateCollection >("D0");
-  produces< reco::VertexCompositeCandidateCollection >("DS");
+  produces< reco::VertexCompositeCandidateCollection >("DSToKsK");
+  produces< reco::VertexCompositeCandidateCollection >("DSToPhiPi");
   produces< reco::VertexCompositeCandidateCollection >("DPM");
   produces< reco::VertexCompositeCandidateCollection >("LambdaCToLamPi");
   produces< reco::VertexCompositeCandidateCollection >("LambdaCToKsP");
@@ -70,6 +72,10 @@ void V0Producer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
    kShortCandidates->reserve( theVees.getKshorts().size() ); 
 
    std::unique_ptr< reco::VertexCompositeCandidateCollection >
+     phiCandidates( new reco::VertexCompositeCandidateCollection );
+   phiCandidates->reserve( theVees.getPhis().size() );
+
+   std::unique_ptr< reco::VertexCompositeCandidateCollection >
      lambdaCandidates( new reco::VertexCompositeCandidateCollection );
    lambdaCandidates->reserve( theVees.getLambdas().size() );
 
@@ -86,8 +92,12 @@ void V0Producer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
    d0Candidates->reserve( theVees.getD0().size() );
 
    std::unique_ptr< reco::VertexCompositeCandidateCollection >
-     dsCandidates( new reco::VertexCompositeCandidateCollection );
-   dsCandidates->reserve( theVees.getDS().size() );
+     dsCandidates1( new reco::VertexCompositeCandidateCollection );
+   dsCandidates1->reserve( theVees.getDSToKsK().size() );
+
+   std::unique_ptr< reco::VertexCompositeCandidateCollection >
+     dsCandidates2( new reco::VertexCompositeCandidateCollection );
+   dsCandidates2->reserve( theVees.getDSToPhiPi().size() );
 
    std::unique_ptr< reco::VertexCompositeCandidateCollection >
      dpmCandidates( new reco::VertexCompositeCandidateCollection );
@@ -104,6 +114,9 @@ void V0Producer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
    std::copy( theVees.getKshorts().begin(),
 	      theVees.getKshorts().end(),
 	      std::back_inserter(*kShortCandidates) );
+   std::copy( theVees.getPhis().begin(),
+              theVees.getPhis().end(),
+              std::back_inserter(*phiCandidates) );
    std::copy( theVees.getLambdas().begin(),
 	      theVees.getLambdas().end(),
 	      std::back_inserter(*lambdaCandidates) );
@@ -116,9 +129,12 @@ void V0Producer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
    std::copy( theVees.getD0().begin(),
               theVees.getD0().end(),
               std::back_inserter(*d0Candidates) );
-   std::copy( theVees.getDS().begin(),
-              theVees.getDS().end(),
-              std::back_inserter(*dsCandidates) );
+   std::copy( theVees.getDSToKsK().begin(),
+              theVees.getDSToKsK().end(),
+              std::back_inserter(*dsCandidates1) );
+   std::copy( theVees.getDSToPhiPi().begin(),
+              theVees.getDSToPhiPi().end(),
+              std::back_inserter(*dsCandidates2) );
    std::copy( theVees.getDPM().begin(),
               theVees.getDPM().end(),
               std::back_inserter(*dpmCandidates) );
@@ -131,11 +147,13 @@ void V0Producer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
    // Write the collections to the Event
    iEvent.put( std::move(kShortCandidates), std::string("Kshort") );
+   iEvent.put( std::move(phiCandidates), std::string("Phi") );
    iEvent.put( std::move(lambdaCandidates), std::string("Lambda") );
    iEvent.put( std::move(xiCandidates), std::string("Xi") );
    iEvent.put( std::move(omegaCandidates), std::string("Omega") );
    iEvent.put( std::move(d0Candidates), std::string("D0") );
-   iEvent.put( std::move(dsCandidates), std::string("DS") );
+   iEvent.put( std::move(dsCandidates1), std::string("DSToKsK") );
+   iEvent.put( std::move(dsCandidates2), std::string("DSToPhiPi") );
    iEvent.put( std::move(dpmCandidates), std::string("DPM") );
    iEvent.put( std::move(lambdaCCandidates1), std::string("LambdaCToLamPi") );
    iEvent.put( std::move(lambdaCCandidates2), std::string("LambdaCToKsP") );

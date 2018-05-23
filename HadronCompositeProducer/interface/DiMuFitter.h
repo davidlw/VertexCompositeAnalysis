@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    HadronCompositeProducer
-// Class:      V0Fitter
+// Package:    DiMuProducer
+// Class:      DiMuFitter
 // 
-/**\class V0Fitter V0Fitter.h VertexCompositeAnalysis/HadronCompositeProducer/interface/V0Fitter.h
+/**\class DiMuFitter DiMuFitter.h VertexCompositeAnalysis/HadronCompositeProducer/interface/DiMuFitter.h
 
  Description: <one line class summary>
 
@@ -11,11 +11,12 @@
      <Notes on implementation>
 */
 //
+// Original Author:  Wei Li
 //
 //
 
-#ifndef VertexCompositeAnalysis__V0_FITTER_H
-#define VertexCompositeAnalysis__V0_FITTER_H
+#ifndef VertexCompositeAnalysis__DiMu_FITTER_H
+#define VertexCompositeAnalysis__DiMu_FITTER_H
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/ESHandle.h"
@@ -27,6 +28,9 @@
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/TrackReco/interface/Track.h"
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include <DataFormats/MuonReco/interface/Muon.h>
+#include <DataFormats/MuonReco/interface/MuonFwd.h>
 #include "RecoVertex/VertexPrimitives/interface/TransientVertex.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 #include "RecoVertex/KalmanVertexFit/interface/KalmanVertexFitter.h"
@@ -46,6 +50,7 @@
 
 #include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"
 #include "DataFormats/RecoCandidate/interface/RecoChargedCandidate.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "DataFormats/Math/interface/angle.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -64,41 +69,19 @@
 #include <string>
 #include <fstream>
 
-class V0Fitter {
+class DiMuFitter {
  public:
-  V0Fitter(const edm::ParameterSet& theParams, edm::ConsumesCollector && iC);
-//	   const edm::Event& iEvent, const edm::EventSetup& iSetup, edm::ConsumesCollector && iC);
-  ~V0Fitter();
+  DiMuFitter(const edm::ParameterSet& theParams, edm::ConsumesCollector && iC);
+  ~DiMuFitter();
 
   void fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup);
 
-  // Switching to L. Lista's reco::Candidate infrastructure for V0 storage
-  const reco::VertexCompositeCandidateCollection& getKshorts() const;
-  const reco::VertexCompositeCandidateCollection& getPhis() const;
-  const reco::VertexCompositeCandidateCollection& getLambdas() const;
-  const reco::VertexCompositeCandidateCollection& getXis() const;
-  const reco::VertexCompositeCandidateCollection& getOmegas() const;
-  const reco::VertexCompositeCandidateCollection& getD0() const;
-  const reco::VertexCompositeCandidateCollection& getDSToKsK() const;
-  const reco::VertexCompositeCandidateCollection& getDSToPhiPi() const;
-  const reco::VertexCompositeCandidateCollection& getDPM() const;
-  const reco::VertexCompositeCandidateCollection& getLambdaCToLamPi() const;
-  const reco::VertexCompositeCandidateCollection& getLambdaCToKsP() const;
+  const reco::VertexCompositeCandidateCollection& getDiMu() const;
   void resetAll();
 
  private:
   // STL vector of VertexCompositeCandidate that will be filled with VertexCompositeCandidates by fitAll()
-  reco::VertexCompositeCandidateCollection theKshorts;
-  reco::VertexCompositeCandidateCollection thePhis;
-  reco::VertexCompositeCandidateCollection theLambdas;
-  reco::VertexCompositeCandidateCollection theXis;
-  reco::VertexCompositeCandidateCollection theOmegas;
-  reco::VertexCompositeCandidateCollection theD0s;
-  reco::VertexCompositeCandidateCollection theDSToKsKs;
-  reco::VertexCompositeCandidateCollection theDSToPhiPis;
-  reco::VertexCompositeCandidateCollection theDPMs;
-  reco::VertexCompositeCandidateCollection theLambdaCToLamPis;
-  reco::VertexCompositeCandidateCollection theLambdaCToKsPs;
+  reco::VertexCompositeCandidateCollection theDiMus;
 
   // Tracker geometry for discerning hit positions
   const TrackerGeometry* trackerGeom;
@@ -109,78 +92,38 @@ class V0Fitter {
   edm::InputTag vtxAlg;
   edm::EDGetTokenT<reco::TrackCollection> token_tracks;
   edm::EDGetTokenT<reco::VertexCollection> token_vertices;
+  edm::EDGetTokenT<reco::PFCandidateCollection> token_pfcands;
+  edm::EDGetTokenT<reco::MuonCollection> token_muons;
   edm::EDGetTokenT<reco::BeamSpot> token_beamSpot;
 
-  bool useRefTrax;
-  bool storeRefTrax;
-  bool doKshorts;
-  bool doPhis;
-  bool doLambdas;
-  bool doXis;
-  bool doOmegas;
-  bool doD0s;
-  bool doDSToKsKs;
-  bool doDSToPhiPis;
-  bool doDPMs;
-  bool doLambdaCToLamPis;
-  bool doLambdaCToKsPs;
-
-  /*bool doPostFitCuts;
-    bool doTkQualCuts;*/
-
   // Cuts
+  double mllCutMin;
+  double mllCutMax;
   double tkDCACut;
   double tkChi2Cut;
   int    tkNhitsCut;
   double tkPtCut;
+  double tkEtaCut;
   double chi2Cut;
   double rVtxCut;
   double rVtxSigCut;
   double lVtxCut;
   double lVtxSigCut;
   double collinCut;
-  double xiChi2Cut;
-  double xiRVtxCut;
-  double xiRVtxSigCut;
-  double xiLVtxCut;
-  double xiLVtxSigCut;
-  double xiCollinCut;
-  double kShortMassCut;
-  double phiMassCut;
-  double lambdaMassCut;
-  double d0MassCut;
-  double dsMassCut;
-  double dpmMassCut;
-  double lambdaCMassCut;
-  double xiMassCut;
-  double omegaMassCut;
+  double DiMuMassCut;
   double dauTransImpactSigCut;
   double dauLongImpactSigCut;
-  double batDauTransImpactSigCut;
-  double batDauLongImpactSigCut;
-  double mPiPiCutMin;
-  double mPiPiCutMax;
-  double innerHitPosCut;
+  double VtxChiProbCut;
+  double dPtCut;
+  double alphaCut;
+  bool   isEE;
+  bool   isMuMu;
+  std::string muonId;
+  bool   isMuonId;
+  bool   isPFMuon;
+  bool   isWrongSign;
 
   std::vector<reco::TrackBase::TrackQuality> qualities;
-
-  edm::InputTag vtxFitter;
-
-  // Helper method that does the actual fitting using the KalmanVertexFitter
-  double findV0MassError(const GlobalPoint &vtxPos, std::vector<reco::TransientTrack> dauTracks);
-
-  // Applies cuts to the VertexCompositeCandidates after they are fitted/created.
-  //void applyPostFitCuts();
-
-  // Stuff for debug file output.
-  std::ofstream mPiPiMassOut;
-
-  inline void initFileOutput() {
-    mPiPiMassOut.open("mPiPi.txt", std::ios::app);
-  }
-  inline void cleanupFileOutput() {
-    mPiPiMassOut.close();
-  }
 };
 
 #endif

@@ -49,6 +49,7 @@ const double protonMassSquared = protonMass*protonMass;
 const ParticleMass kaonMass = 0.493677;
 const double kaonMassSquared = kaonMass*kaonMass;
 const ParticleMass kShortMass = 0.497614;
+const ParticleMass phiMass = 1.019445;
 const ParticleMass lambdaMass = 1.115683;
 const ParticleMass d0Mass = 1.86484;
 const ParticleMass dsMass = 1.96847;
@@ -67,6 +68,7 @@ float dpmMass_sigma = dpmMass*1.e-6;
 float lambdaCMass_sigma = lambdaCMass*1.e-6;
 float xiMass_sigma = xiMass*1.e-6;
 float omegaMass_sigma = omegaMass*1.e-6;
+float phiMass_sigma = phiMass*1.e-6;
 
 // Constructor and (empty) destructor
 V0Fitter::V0Fitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollector && iC) {
@@ -88,6 +90,8 @@ V0Fitter::V0Fitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollect
 
   //  -whether to reconstruct K0s
   doKshorts = theParameters.getParameter<bool>(string("selectKshorts"));
+  //  -whether to reconstruct Phis
+  doPhis = theParameters.getParameter<bool>(string("selectPhis"));
   //  -whether to reconstruct Lambdas
   doLambdas = theParameters.getParameter<bool>(string("selectLambdas"));
   //  -whether to reconstruct Xi 
@@ -96,7 +100,8 @@ V0Fitter::V0Fitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollect
   doOmegas = theParameters.getParameter<bool>(string("selectOmegas"));
   //  -whether to reconstruct D0
   doD0s = theParameters.getParameter<bool>(string("selectD0s"));
-  doDSs = theParameters.getParameter<bool>(string("selectDSs"));
+  doDSToKsKs = theParameters.getParameter<bool>(string("selectDSToKsKs"));
+  doDSToPhiPis = theParameters.getParameter<bool>(string("selectDSToPhiPis"));
   doDPMs = theParameters.getParameter<bool>(string("selectDPMs"));
   //  -whether to reconstruct D0
   doLambdaCToLamPis = theParameters.getParameter<bool>(string("selectLambdaCToLamPis"));
@@ -122,6 +127,7 @@ V0Fitter::V0Fitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollect
   xiCollinCut = theParameters.getParameter<double>(string("xiCollinearityCut"));
   // other common cuts
   kShortMassCut = theParameters.getParameter<double>(string("kShortMassCut"));
+  phiMassCut = theParameters.getParameter<double>(string("phiMassCut"));
   lambdaMassCut = theParameters.getParameter<double>(string("lambdaMassCut"));
   d0MassCut = theParameters.getParameter<double>(string("d0MassCut"));
   dsMassCut = theParameters.getParameter<double>(string("dsMassCut"));
@@ -505,6 +511,7 @@ void V0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       double d0ETot = kaonMinusE + piPlusE;
       double d0BarETot = kaonPlusE + piMinusE;
       double kShortETot = piPlusE + piMinusE;
+      double phiETot = kaonPlusE + kaonMinusE;
       double lambdaEtot = protonE + piMinusE;
       double lambdaBarEtot = antiProtonE + piPlusE;
 
@@ -514,6 +521,9 @@ void V0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       const Particle::LorentzVector kShortP4(totalP.x(), 
 					     totalP.y(), totalP.z(), 
 					     kShortETot);
+      const Particle::LorentzVector phiP4(totalP.x(),
+                                             totalP.y(), totalP.z(),
+                                             phiETot);
       const Particle::LorentzVector lambdaP4(totalP.x(), 
 					     totalP.y(), totalP.z(), 
 					     lambdaEtot);
@@ -534,6 +544,7 @@ void V0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
       // Create the VertexCompositeCandidate object that will be stored in the Event
       VertexCompositeCandidate* theKshort = 0;
+      VertexCompositeCandidate* thePhi = 0;
       VertexCompositeCandidate* theLambda = 0;
       VertexCompositeCandidate* theLambdaBar = 0;
       VertexCompositeCandidate* theD0 = 0;
@@ -542,6 +553,11 @@ void V0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       if( doKshorts ) {
 	theKshort = new VertexCompositeCandidate(0, kShortP4, vtx, vtxCov, vtxChi2, vtxNdof);
       }
+
+      if( doPhis ) {
+        thePhi = new VertexCompositeCandidate(0, phiP4, vtx, vtxCov, vtxChi2, vtxNdof);
+      }
+
       if( doLambdas ) {
 	if( positiveP.mag() > negativeP.mag() ) {
 	  theLambda = 
@@ -610,6 +626,17 @@ void V0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	}
       }
       
+      if( doPhis ) {
+        thePhi->addDaughter(theKaonPlusCand);
+        thePhi->addDaughter(theKaonMinusCand);
+        thePhi->setPdgId(333);
+        addp4.set( *thePhi );
+        if( thePhi->mass() < phiMass + phiMassCut &&
+            thePhi->mass() > phiMass - phiMassCut ) {
+          thePhis.push_back( *thePhi );
+        }
+      }
+
       if( doLambdas && theLambda ) {
 	theLambda->addDaughter(theProtonCand);
 	theLambda->addDaughter(thePiMinusCand);
@@ -656,15 +683,16 @@ void V0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       }
 
       if(theKshort) delete theKshort;
+      if(thePhi) delete thePhi;
       if(theLambda) delete theLambda;
       if(theLambdaBar) delete theLambdaBar;
       if(theD0) delete theD0;
       if(theD0Bar) delete theD0Bar;
-      theKshort = theLambda = theLambdaBar = theD0 = theD0Bar = 0;
+      theKshort = thePhi = theLambda = theLambdaBar = theD0 = theD0Bar = 0;
     }
   }
 
-  if((doLambdaCToKsPs || doDSs || doDPMs) && theKshorts.size() > 0) 
+  if((doLambdaCToKsPs || doDSToKsKs || doDPMs) && theKshorts.size() > 0) 
   {
     for(unsigned it=0; it<theKshorts.size(); ++it){
 
@@ -764,7 +792,7 @@ void V0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
            batPionMass_sigma = protonMass_sigma;
          }
 
-         if(doDSs)
+         if(doDSToKsKs)
          {
            batPionMass = kaonMass;
            batPionMass_sigma = kaonMass_sigma;
@@ -791,7 +819,7 @@ void V0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
          RefCountedKinematicVertex xiDecayVertex = xiFitTree->currentDecayVertex();
          if (!xiDecayVertex->vertexIsValid()) continue;
 
-         if ( doDSs && (xiCand->currentState().mass() > dsMass + dsMassCut*1.5 ||  xiCand->currentState().mass() < dsMass - dsMassCut*1.5)) continue;
+         if ( doDSToKsKs && (xiCand->currentState().mass() > dsMass + dsMassCut*1.5 ||  xiCand->currentState().mass() < dsMass - dsMassCut*1.5)) continue;
          if ( doDPMs && (xiCand->currentState().mass() > dpmMass + dpmMassCut*1.5 ||  xiCand->currentState().mass() < dpmMass - dpmMassCut*1.5)) continue;
          if ( doLambdaCToKsPs && (xiCand->currentState().mass() > lambdaCMass + lambdaCMassCut*1.5 ||  xiCand->currentState().mass() < lambdaCMass - lambdaCMassCut*1.5)) continue;
 
@@ -885,19 +913,19 @@ void V0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
            theLambdaCToKsP = 0;
          }
 
-         if(doDSs)
+         if(doDSToKsKs)
          {
-           VertexCompositeCandidate* theDS = 0;
-           theDS = new VertexCompositeCandidate(0, xiP4, xiVtx, xiVtxCov, xiVtxChi2, xiVtxNdof);
-           theDS->addDaughter(theKshort);
-           theDS->addDaughter(PionCand);
-           if(theTrackRefs[trdx]->charge()>0) { theDS->setPdgId(431); theDS->setCharge(1); }
-           else { theDS->setPdgId(-431); theDS->setCharge(-1); }
-           addp4.set( *theDS );
-           if( theDS->mass() < dsMass + dsMassCut &&
-               theDS->mass() > dsMass - dsMassCut ) theDSs.push_back( *theDS );
-           if(theDS) delete theDS;
-           theDS = 0;
+           VertexCompositeCandidate* theDSToKsK = 0;
+           theDSToKsK = new VertexCompositeCandidate(0, xiP4, xiVtx, xiVtxCov, xiVtxChi2, xiVtxNdof);
+           theDSToKsK->addDaughter(theKshort);
+           theDSToKsK->addDaughter(PionCand);
+           if(theTrackRefs[trdx]->charge()>0) { theDSToKsK->setPdgId(431); theDSToKsK->setCharge(1); }
+           else { theDSToKsK->setPdgId(-431); theDSToKsK->setCharge(-1); }
+           addp4.set( *theDSToKsK );
+           if( theDSToKsK->mass() < dsMass + dsMassCut &&
+               theDSToKsK->mass() > dsMass - dsMassCut ) theDSToKsKs.push_back( *theDSToKsK );
+           if(theDSToKsK) delete theDSToKsK;
+           theDSToKsK = 0;
          }
 
          if(doDPMs)
@@ -918,6 +946,211 @@ void V0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       }
     }
 
+  };
+
+  // DsToPhiPi reconstruction                                                                                                                                                                                                        
+  if( doDSToPhiPis && thePhis.size() > 0) 
+    {
+      for(unsigned it=0; it<thePhis.size(); ++it){
+
+	const reco::VertexCompositeCandidate & thePhi = thePhis[it];
+
+	float massWindow = 0.010;
+	if(thePhi.mass() > phiMass + massWindow || thePhi.mass() < phiMass - massWindow) continue;
+
+	vector<RecoChargedCandidate> v0daughters;
+	vector<TrackRef> theDaughterTracks;
+
+	v0daughters.push_back( *(dynamic_cast<const reco::RecoChargedCandidate *>
+				 (thePhi.daughter(0))) );
+	v0daughters.push_back( *(dynamic_cast<const reco::RecoChargedCandidate *>
+				 (thePhi.daughter(1))) );
+
+	for(unsigned int j = 0; j < v0daughters.size(); ++j) theDaughterTracks.push_back(v0daughters[j].track());
+
+	vector<TransientTrack> tracksForKalmanFit;
+	for (unsigned int ndx = 0; ndx < theDaughterTracks.size(); ndx++) {
+          tracksForKalmanFit.push_back(TransientTrack(theDaughterTracks[ndx], &(*bFieldHandle)));
+	}
+
+	for(unsigned int trdx = 0; trdx < theTrackRefs.size(); trdx++) {
+
+	  if ( theTrackRefs[trdx].isNull() ) continue;
+
+	  math::XYZPoint bestvtx(xVtx,yVtx,zVtx);
+	  double dzvtx = theTrackRefs[trdx]->dz(bestvtx);
+	  double dxyvtx = theTrackRefs[trdx]->dxy(bestvtx);
+	  if(fabs(dzvtx)>50 || fabs(dxyvtx)>50) continue;
+
+	  double dzerror = sqrt(theTrackRefs[trdx]->dzError()*theTrackRefs[trdx]->dzError()+zVtxError*zVtxError);
+	  double dxyerror = sqrt(theTrackRefs[trdx]->d0Error()*theTrackRefs[trdx]->d0Error()+xVtxError*yVtxError);
+	  double dauLongImpactSig = dzvtx/dzerror;
+	  double dauTransImpactSig = dxyvtx/dxyerror;
+	  if( fabs(dauTransImpactSig) < batDauTransImpactSigCut || fabs(dauLongImpactSig) < batDauLongImpactSigCut ) continue;
+
+	  bool match = false;
+
+	  for(unsigned int j = 0; j < theDaughterTracks.size(); ++j) {
+	    if (theTrackRefs[trdx]->charge() == theDaughterTracks[j]->charge() &&
+		theTrackRefs[trdx]->momentum() == theDaughterTracks[j]->momentum() ) match = true;
+	    if (match) break;
+	  }
+	  if (match) continue; // Track is already used in making the V0
+
+	  TransientTrack pion1TT(theDaughterTracks[0], &(*bFieldHandle) );
+	  TransientTrack pion2TT(theDaughterTracks[1], &(*bFieldHandle) );
+	  TransientTrack batPionTT(theTrackRefs[trdx], &(*bFieldHandle) );
+
+	  if (!batPionTT.isValid()) continue;
+	  if (!pion1TT.isValid()) continue;
+	  if (!pion2TT.isValid()) continue;
+
+	  //Creating a KinematicParticleFactory
+	  KinematicParticleFactoryFromTransientTrack pFactory;
+
+	  float chi = 0.;
+	  float ndf = 0.;
+	  vector<RefCountedKinematicParticle> phiParticles;
+	  phiParticles.push_back(pFactory.particle(pion1TT,kaonMass,chi,ndf,kaonMass_sigma));
+	  phiParticles.push_back(pFactory.particle(pion2TT,kaonMass,chi,ndf,kaonMass_sigma));
+
+	  KinematicParticleVertexFitter fitter;
+	  RefCountedKinematicTree phiVertexFitTree;
+	  phiVertexFitTree = fitter.fit(phiParticles);
+	  if (!phiVertexFitTree->isValid()) continue;
+
+	  phiVertexFitTree->movePointerToTheTop();
+
+	  RefCountedKinematicParticle phi_vFit = phiVertexFitTree->currentParticle();
+	  RefCountedKinematicVertex phi_vFit_vertex = phiVertexFitTree->currentDecayVertex();
+
+	  phiVertexFitTree->movePointerToTheFirstChild();
+	  RefCountedKinematicParticle phiPi1 = phiVertexFitTree->currentParticle();
+	  phiVertexFitTree->movePointerToTheNextChild();
+	  RefCountedKinematicParticle phiPi2 = phiVertexFitTree->currentParticle();
+
+	  KinematicParticleFitter csFitterPhi;
+	  KinematicConstraint * phi_c = new MassKinematicConstraint(phiMass,phiMass_sigma);
+
+	  phiVertexFitTree->movePointerToTheTop();
+	  phiVertexFitTree = csFitterPhi.fit(phi_c,phiVertexFitTree);
+	  if (!phiVertexFitTree->isValid()) continue;
+	  phiVertexFitTree->movePointerToTheTop();
+	  RefCountedKinematicParticle phi_vFit_withMC = phiVertexFitTree->currentParticle();
+
+	  if (!phi_vFit_withMC->currentState().isValid()) continue;
+
+	  float batPionMass = piMass;
+	  float batPionMass_sigma = piMass_sigma;
+
+         vector<RefCountedKinematicParticle> xiFitParticles;
+
+         xiFitParticles.push_back(pFactory.particle(batPionTT,batPionMass,chi,ndf,batPionMass_sigma));
+         xiFitParticles.push_back(phi_vFit_withMC);
+
+         RefCountedKinematicTree xiFitTree = fitter.fit(xiFitParticles);
+         if (!xiFitTree->isValid()) continue;
+
+         xiFitTree->movePointerToTheTop();
+         RefCountedKinematicParticle xiCand = xiFitTree->currentParticle();
+         if (!xiCand->currentState().isValid()) continue;
+
+         RefCountedKinematicVertex xiDecayVertex = xiFitTree->currentDecayVertex();
+         if (!xiDecayVertex->vertexIsValid()) continue;
+
+         if ( doDSToPhiPis && (xiCand->currentState().mass() > dsMass + dsMassCut*1.5 ||  xiCand->currentState().mass() < dsMass - dsMassCut*1.5)) continue;
+
+         xiFitTree->movePointerToTheFirstChild();
+         RefCountedKinematicParticle batPionCand = xiFitTree->currentParticle();
+         xiFitTree->movePointerToTheNextChild();
+         RefCountedKinematicParticle phiCandMC = xiFitTree->currentParticle();
+
+	if(!batPionCand->currentState().isValid() || !phiCandMC->currentState().isValid()) continue;
+
+         KinematicParameters batPionKP = batPionCand->currentState().kinematicParameters();
+         KinematicParameters phiCandKP = phiCandMC->currentState().kinematicParameters();
+
+         GlobalVector xiTotalP = GlobalVector (xiCand->currentState().globalMomentum().x(),
+                                               xiCand->currentState().globalMomentum().y(),
+                                               xiCand->currentState().globalMomentum().z());
+
+         GlobalVector batPionTotalP = GlobalVector(batPionKP.momentum().x(),batPionKP.momentum().y(),batPionKP.momentum().z());
+         GlobalVector phiTotalP = GlobalVector(phiCandKP.momentum().x(),phiCandKP.momentum().y(),phiCandKP.momentum().z());
+
+         double batPionTotalE = sqrt( batPionTotalP.mag2() + batPionMass*batPionMass );
+         double phiTotalE = sqrt( phiTotalP.mag2() + phiMass*phiMass );
+         double xiTotalE = batPionTotalE + phiTotalE;
+
+         const Particle::LorentzVector xiP4(xiTotalP.x(), xiTotalP.y(), xiTotalP.z(), xiTotalE);
+
+         Particle::Point xiVtx((*xiDecayVertex).position().x(), (*xiDecayVertex).position().y(), (*xiDecayVertex).position().z());
+         std::vector<double> xiVtxEVec;
+         xiVtxEVec.push_back( phi_vFit_vertex->error().cxx() );
+         xiVtxEVec.push_back( phi_vFit_vertex->error().cyx() );
+         xiVtxEVec.push_back( phi_vFit_vertex->error().cyy() );
+         xiVtxEVec.push_back( phi_vFit_vertex->error().czx() );
+         xiVtxEVec.push_back( phi_vFit_vertex->error().czy() );
+         xiVtxEVec.push_back( phi_vFit_vertex->error().czz() );
+         SMatrixSym3D xiVtxCovMatrix(xiVtxEVec.begin(), xiVtxEVec.end());
+         const Vertex::CovarianceMatrix xiVtxCov(xiVtxCovMatrix);
+         double xiVtxChi2(xiDecayVertex->chiSquared());
+         double xiVtxNdof(xiDecayVertex->degreesOfFreedom());
+         double xiNormalizedChi2 = xiVtxChi2/xiVtxNdof;
+
+         double xiRVtxMag = 99999.0;
+         double xiLVtxMag = 99999.0;
+         double xiSigmaRvtxMag = 999.0;
+         double xiSigmaLvtxMag = 999.0;
+         double xiV0Angle = -100.0;
+
+         GlobalVector xiV0LineOfFlight = GlobalVector (xiVtx.x() - xVtx,
+                                                       xiVtx.y() - yVtx,
+                                                       xiVtx.z() - zVtx);
+
+         SMatrixSym3D xiTotalCov;
+         if(isVtxPV) xiTotalCov = xiVtxCovMatrix + vtxPrimary->covariance();
+         else xiTotalCov = xiVtxCovMatrix + theBeamSpotHandle->rotatedCovariance3D();
+
+         SVector3 distanceVector3D(xiV0LineOfFlight.x(), xiV0LineOfFlight.y(), xiV0LineOfFlight.z());
+         SVector3 distanceVector2D(xiV0LineOfFlight.x(), xiV0LineOfFlight.y(), 0.0);
+
+         xiV0Angle = angle(xiV0LineOfFlight.x(), xiV0LineOfFlight.y(), xiV0LineOfFlight.z(),
+                           xiTotalP.x(), xiTotalP.y(), xiTotalP.z());
+         xiLVtxMag = xiV0LineOfFlight.mag();
+         xiRVtxMag = xiV0LineOfFlight.perp();
+         xiSigmaLvtxMag = sqrt(ROOT::Math::Similarity(xiTotalCov, distanceVector3D)) / xiLVtxMag;
+         xiSigmaRvtxMag = sqrt(ROOT::Math::Similarity(xiTotalCov, distanceVector2D)) / xiRVtxMag;
+
+         if( xiNormalizedChi2 > xiChi2Cut ||
+             xiRVtxMag < xiRVtxCut ||
+             xiRVtxMag / xiSigmaRvtxMag < xiRVtxSigCut ||
+             xiLVtxMag < xiLVtxCut ||
+             xiLVtxMag / xiSigmaLvtxMag < xiLVtxSigCut ||
+             cos(xiV0Angle) < xiCollinCut
+         ) continue;
+
+         RecoChargedCandidate PionCand(theTrackRefs[trdx]->charge(), Particle::LorentzVector(batPionTotalP.x(),
+                                                 batPionTotalP.y(), batPionTotalP.z(),
+                                                 batPionTotalE), xiVtx);
+         PionCand.setTrack(theTrackRefs[trdx]);
+         AddFourMomenta addp4;
+
+         if(doDSToPhiPis)
+         {
+           VertexCompositeCandidate* theDSToPhiPi = 0;
+           theDSToPhiPi = new VertexCompositeCandidate(0, xiP4, xiVtx, xiVtxCov, xiVtxChi2, xiVtxNdof);
+           theDSToPhiPi->addDaughter(thePhi);
+           theDSToPhiPi->addDaughter(PionCand);
+           if(theTrackRefs[trdx]->charge()>0) { theDSToPhiPi->setPdgId(431); theDSToPhiPi->setCharge(1); }
+           else { theDSToPhiPi->setPdgId(-431); theDSToPhiPi->setCharge(-1); }
+           addp4.set( *theDSToPhiPi );
+           if( theDSToPhiPi->mass() < dsMass + dsMassCut &&
+               theDSToPhiPi->mass() > dsMass - dsMassCut ) theDSToPhiPis.push_back( *theDSToPhiPi );
+           if(theDSToPhiPi) delete theDSToPhiPi;
+           theDSToPhiPi = 0;
+         }
+      }
+    }
   };
 
   // Xi reconstruction
@@ -1338,6 +1571,10 @@ const reco::VertexCompositeCandidateCollection& V0Fitter::getKshorts() const {
   return theKshorts;
 }
 
+const reco::VertexCompositeCandidateCollection& V0Fitter::getPhis() const {
+  return thePhis;
+}
+
 const reco::VertexCompositeCandidateCollection& V0Fitter::getLambdas() const {
   return theLambdas;
 }
@@ -1354,8 +1591,12 @@ const reco::VertexCompositeCandidateCollection& V0Fitter::getD0() const {
   return theD0s;
 }
 
-const reco::VertexCompositeCandidateCollection& V0Fitter::getDS() const {
-  return theDSs;
+const reco::VertexCompositeCandidateCollection& V0Fitter::getDSToKsK() const {
+  return theDSToKsKs;
+}
+
+const reco::VertexCompositeCandidateCollection& V0Fitter::getDSToPhiPi() const {
+  return theDSToPhiPis;
 }
 
 const reco::VertexCompositeCandidateCollection& V0Fitter::getDPM() const {
@@ -1372,11 +1613,13 @@ const reco::VertexCompositeCandidateCollection& V0Fitter::getLambdaCToKsP() cons
 
 void V0Fitter::resetAll() {
   theKshorts.clear();
+  thePhis.clear();
   theLambdas.clear();
   theXis.clear();
   theOmegas.clear();
   theD0s.clear();
-  theDSs.clear();
+  theDSToKsKs.clear();
+  theDSToPhiPis.clear();
   theDPMs.clear();
   theLambdaCToLamPis.clear();
   theLambdaCToKsPs.clear();
