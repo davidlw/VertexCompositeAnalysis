@@ -57,6 +57,8 @@
 
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
+#include "DataFormats/MuonReco/interface/MuonChamberMatch.h"
+#include "DataFormats/MuonReco/interface/MuonSegmentMatch.h"
 
 #include <Math/Functions.h>
 #include <Math/SVector.h>
@@ -214,7 +216,23 @@ private:
     float ntrackerlayer2[MAXCAN];
     float npixellayer2[MAXCAN];
     float matchedenergy2[MAXCAN];
-
+    float dx1_seg_[MAXCAN];
+    float dy1_seg_[MAXCAN];
+    float dxSig1_seg_[MAXCAN];
+    float dySig1_seg_[MAXCAN];
+    float ddxdz1_seg_[MAXCAN];
+    float ddydz1_seg_[MAXCAN];
+    float ddxdzSig1_seg_[MAXCAN];
+    float ddydzSig1_seg_[MAXCAN];
+    float dx2_seg_[MAXCAN];
+    float dy2_seg_[MAXCAN];
+    float dxSig2_seg_[MAXCAN];
+    float dySig2_seg_[MAXCAN];
+    float ddxdz2_seg_[MAXCAN];
+    float ddydz2_seg_[MAXCAN];
+    float ddxdzSig2_seg_[MAXCAN];
+    float ddydzSig2_seg_[MAXCAN];
+    
     //gen info
     int candSize_gen;
     float pt_gen[MAXCAN];
@@ -681,6 +699,37 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             nmatchedst2[it] = -1;
             matchedenergy2[it] = -1;
             
+            double x_exp = -999.;
+            double y_exp = -999.;
+            double xerr_exp = -999.;
+            double yerr_exp = -999.;
+            double dxdz_exp = -999.;
+            double dydz_exp = -999.;
+            double dxdzerr_exp = -999.;
+            double dydzerr_exp = -999.;
+            
+            double x_seg = -999.;
+            double y_seg = -999.;
+            double xerr_seg = -999.;
+            double yerr_seg = -999.;
+            double dxdz_seg = -999.;
+            double dydz_seg = -999.;
+            double dxdzerr_seg = -999.;
+            double dydzerr_seg = -999.;
+            
+            double dx_seg = 999.;
+            double dy_seg = 999.;
+            double dxerr_seg = 999.;
+            double dyerr_seg = 999.;
+            double dxSig_seg = 999.;
+            double dySig_seg = 999.;
+            double ddxdz_seg = 999.;
+            double ddydz_seg = 999.;
+            double ddxdzerr_seg = 999.;
+            double ddydzerr_seg = 999.;
+            double ddxdzSig_seg = 999.;
+            double ddydzSig_seg = 999.;
+            
             for( unsigned id = 0; id < theMuonHandle->size(); id++ )
             {
                 const reco::Muon& cand = (*theMuonHandle)[id];
@@ -696,7 +745,64 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
                     
                     reco::MuonEnergy muenergy = cand.calEnergy();
                     matchedenergy1[it] = muenergy.hadMax;
+                    
+                    const std::vector<reco::MuonChamberMatch>& muchmatches = cand.matches();
+                    
+                    for(unsigned int ich=0;ich<muchmatches.size();ich++)
+                    {
+                        x_exp = muchmatches[ich].x;
+                        y_exp = muchmatches[ich].y;
+                        xerr_exp = muchmatches[ich].xErr;
+                        yerr_exp = muchmatches[ich].yErr;
+                        dxdz_exp = muchmatches[ich].dXdZ;
+                        dydz_exp = muchmatches[ich].dYdZ;
+                        dxdzerr_exp = muchmatches[ich].dXdZErr;
+                        dydzerr_exp = muchmatches[ich].dYdZErr;
+                        
+                        std::vector<reco::MuonSegmentMatch> musegmatches = muchmatches[ich].segmentMatches;
+                        //std::cout<<musegmatches.size()<<std::endl;
+                        
+                        if(!musegmatches.size()) continue;
+                        for(unsigned int jseg=0;jseg<musegmatches.size();jseg++)
+                        {
+                            x_seg = musegmatches[jseg].x;
+                            y_seg = musegmatches[jseg].y;
+                            xerr_seg = musegmatches[jseg].xErr;
+                            yerr_seg = musegmatches[jseg].yErr;
+                            dxdz_seg = musegmatches[jseg].dXdZ;
+                            dydz_seg = musegmatches[jseg].dYdZ;
+                            dxdzerr_seg = musegmatches[jseg].dXdZErr;
+                            dydzerr_seg = musegmatches[jseg].dYdZErr;
+                            
+                            if(sqrt((x_seg-x_exp)*(x_seg-x_exp)+(y_seg-y_exp)*(y_seg-y_exp))<sqrt(dx_seg*dx_seg+dy_seg*dy_seg))
+                            {
+                                dx_seg = x_seg - x_exp;
+                                dy_seg = y_seg - y_exp;
+                                dxerr_seg = sqrt(xerr_seg*xerr_seg+xerr_exp*xerr_exp);
+                                dyerr_seg = sqrt(yerr_seg*yerr_seg+yerr_exp*yerr_exp);
+                                dxSig_seg = dx_seg / dxerr_seg;
+                                dySig_seg = dy_seg / dyerr_seg;
+                                ddxdz_seg = dxdz_seg - dxdz_exp;
+                                ddydz_seg = dydz_seg - dydz_exp;
+                                ddxdzerr_seg = sqrt(dxdzerr_seg*dxdzerr_seg+dxdzerr_exp*dxdzerr_exp);
+                                ddydzerr_seg = sqrt(dydzerr_seg*dydzerr_seg+dydzerr_exp*dydzerr_exp);
+                                ddxdzSig_seg = ddxdz_seg / ddxdzerr_seg;
+                                ddydzSig_seg = ddydz_seg / ddydzerr_seg;
+                            }
+                        }
+                        
+                        dx1_seg_[it]=dx_seg;
+                        dy1_seg_[it]=dy_seg;
+                        dxSig1_seg_[it]=dxSig_seg;
+                        dySig1_seg_[it]=dySig_seg;
+                        ddxdz1_seg_[it]=ddxdz_seg;
+                        ddydz1_seg_[it]=ddydz_seg;
+                        ddxdzSig1_seg_[it]=ddxdzSig_seg;
+                        ddydzSig1_seg_[it]=ddydzSig_seg;
+                    }
                 }
+                
+                
                 
                 if(fabs(trackReftmp->pt()-pt2[it])<0.0001 && fabs(trackReftmp->eta()-eta2[it])<0.001 && fabs(trackReftmp->phi()-phi2[it])<0.001
                    && trackReftmp->numberOfValidHits() == nhit2[it] )
@@ -706,8 +812,63 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
                     
                     reco::MuonEnergy muenergy = cand.calEnergy();
                     matchedenergy2[it] = muenergy.hadMax;
+                    
+                    const std::vector<reco::MuonChamberMatch>& muchmatches = cand.matches();
+                    for(unsigned int ich=0;ich<muchmatches.size();ich++)
+                        //                        for(unsigned int ich=0;ich<1;ich++)
+                    {
+                        x_exp = muchmatches[ich].x;
+                        y_exp = muchmatches[ich].y;
+                        xerr_exp = muchmatches[ich].xErr;
+                        yerr_exp = muchmatches[ich].yErr;
+                        dxdz_exp = muchmatches[ich].dXdZ;
+                        dydz_exp = muchmatches[ich].dYdZ;
+                        dxdzerr_exp = muchmatches[ich].dXdZErr;
+                        dydzerr_exp = muchmatches[ich].dYdZErr;
+                        
+                        std::vector<reco::MuonSegmentMatch> musegmatches = muchmatches[ich].segmentMatches;
+                        //std::cout<<musegmatches.size()<<std::endl;
+                        
+                        if(!musegmatches.size()) continue;
+                        for(unsigned int jseg=0;jseg<musegmatches.size();jseg++)
+                        {
+                            x_seg = musegmatches[jseg].x;
+                            y_seg = musegmatches[jseg].y;
+                            xerr_seg = musegmatches[jseg].xErr;
+                            yerr_seg = musegmatches[jseg].yErr;
+                            dxdz_seg = musegmatches[jseg].dXdZ;
+                            dydz_seg = musegmatches[jseg].dYdZ;
+                            dxdzerr_seg = musegmatches[jseg].dXdZErr;
+                            dydzerr_seg = musegmatches[jseg].dYdZErr;
+                            
+                            if(sqrt((x_seg-x_exp)*(x_seg-x_exp)+(y_seg-y_exp)*(y_seg-y_exp))<sqrt(dx_seg*dx_seg+dy_seg*dy_seg))
+                            {
+                                dx_seg = x_seg - x_exp;
+                                dy_seg = y_seg - y_exp;
+                                dxerr_seg = sqrt(xerr_seg*xerr_seg+xerr_exp*xerr_exp);
+                                dyerr_seg = sqrt(yerr_seg*yerr_seg+yerr_exp*yerr_exp);
+                                dxSig_seg = dx_seg / dxerr_seg;
+                                dySig_seg = dy_seg / dyerr_seg;
+                                ddxdz_seg = dxdz_seg - dxdz_exp;
+                                ddydz_seg = dydz_seg - dydz_exp;
+                                ddxdzerr_seg = sqrt(dxdzerr_seg*dxdzerr_seg+dxdzerr_exp*dxdzerr_exp);
+                                ddydzerr_seg = sqrt(dydzerr_seg*dydzerr_seg+dydzerr_exp*dydzerr_exp);
+                                ddxdzSig_seg = ddxdz_seg / ddxdzerr_seg;
+                                ddydzSig_seg = ddydz_seg / ddydzerr_seg;
+                            }
+                        }
+                        
+                        dx2_seg_[it]=dx_seg;
+                        dy2_seg_[it]=dy_seg;
+                        dxSig2_seg_[it]=dxSig_seg;
+                        dySig2_seg_[it]=dySig_seg;
+                        ddxdz2_seg_[it]=ddxdz_seg;
+                        ddydz2_seg_[it]=ddydz_seg;
+                        ddxdzSig2_seg_[it]=ddxdzSig_seg;
+                        ddydzSig2_seg_[it]=ddydzSig_seg;
                 }
             }
+        }
         }
         
         if(twoLayerDecay_)
@@ -1040,6 +1201,22 @@ VertexCompositeNtupleProducer::beginJob()
             VertexCompositeNtuple->Branch("nMatchedChamberD2",&nmatchedch2,"nMatchedChamberD2[candSize]/F");
             VertexCompositeNtuple->Branch("nMatchedStationD2",&nmatchedst2,"nMatchedStationD2[candSize]/F");
             VertexCompositeNtuple->Branch("EnergyDepositionD2",&nmatchedst2,"EnergyDepositionD2[candSize]/F");
+            VertexCompositeNtuple->Branch("dx1_seg",        &dx1_seg_, "dx1_seg[candSize]/F");
+            VertexCompositeNtuple->Branch("dy1_seg",        &dy1_seg_, "dy1_seg[candSize]/F");
+            VertexCompositeNtuple->Branch("dxSig1_seg",     &dxSig1_seg_, "dxSig1_seg[candSize]/F");
+            VertexCompositeNtuple->Branch("dySig1_seg",     &dySig1_seg_, "dySig1_seg[candSize]/F");
+            VertexCompositeNtuple->Branch("ddxdz1_seg",     &ddxdz1_seg_, "ddxdz1_seg[candSize]/F");
+            VertexCompositeNtuple->Branch("ddydz1_seg",     &ddydz1_seg_, "ddydz1_seg[candSize]/F");
+            VertexCompositeNtuple->Branch("ddxdzSig1_seg",  &ddxdzSig1_seg_, "ddxdzSig1_seg[candSize]/F");
+            VertexCompositeNtuple->Branch("ddydzSig1_seg",  &ddydzSig1_seg_, "ddydzSig1_seg[candSize]/F");
+            VertexCompositeNtuple->Branch("dx2_seg",        &dx2_seg_, "dx2_seg[candSize]/F");
+            VertexCompositeNtuple->Branch("dy2_seg",        &dy2_seg_, "dy2_seg[candSize]/F");
+            VertexCompositeNtuple->Branch("dxSig2_seg",     &dxSig2_seg_, "dxSig2_seg[candSize]/F");
+            VertexCompositeNtuple->Branch("dySig2_seg",     &dySig2_seg_, "dySig2_seg[candSize]/F");
+            VertexCompositeNtuple->Branch("ddxdz2_seg",     &ddxdz2_seg_, "ddxdz2_seg[candSize]/F");
+            VertexCompositeNtuple->Branch("ddydz2_seg",     &ddydz2_seg_, "ddydz2_seg[candSize]/F");
+            VertexCompositeNtuple->Branch("ddxdzSig2_seg",  &ddxdzSig2_seg_, "ddxdzSig2_seg[candSize]/F");
+            VertexCompositeNtuple->Branch("ddydzSig2_seg",  &ddydzSig2_seg_, "ddydzSig2_seg[candSize]/F");
 
         }
     }
