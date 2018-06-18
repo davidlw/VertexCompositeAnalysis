@@ -455,6 +455,8 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         const reco::VertexCompositeCandidate & trk = (*v0candidates_)[it];
         
         double secvz=-999.9, secvx=-999.9, secvy=-999.9;
+        secvz = trk.vz(); secvx = trk.vx(); secvy = trk.vy();
+
         eta[it] = trk.eta();
         y[it] = trk.rapidity();
         pt[it] = trk.pt();
