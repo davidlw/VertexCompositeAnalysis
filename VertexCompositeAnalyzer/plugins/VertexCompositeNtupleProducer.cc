@@ -435,6 +435,7 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         eta = trk.eta();
         y = trk.rapidity();
         pt = trk.pt();
+
         double px = trk.px();
         double py = trk.py();
         double pz = trk.pz();
