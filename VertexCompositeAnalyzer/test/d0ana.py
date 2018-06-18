@@ -19,7 +19,7 @@ cms.untracked.bool(True) )
 #process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 #process.GlobalTag.globaltag = "80X_dataRun2_Prompt_v15"
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) 
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) 
 )
 
 process.source = cms.Source("PoolSource",
@@ -31,7 +31,7 @@ secondaryFileNames = cms.untracked.vstring(
 )
                             )
 
-process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0analyzer_cff")
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0analyzer_ntp_cff")
 
 process.TFileService = cms.Service("TFileService",
                                        fileName = 
@@ -39,4 +39,4 @@ cms.string('d0ana.root')
                                    )
 
 
-process.p = cms.Path(process.d0ana)
+process.p = cms.Path(process.d0ana*process.d0ana_wrongsign)

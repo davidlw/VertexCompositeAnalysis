@@ -44,7 +44,7 @@ secondaryFileNames = cms.untracked.vstring(
 )
                             )
 
-process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.dimuanalyzer_cff")
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.dimuanalyzer_ntp_cff")
 
 process.TFileService = cms.Service("TFileService",
                                        fileName = 

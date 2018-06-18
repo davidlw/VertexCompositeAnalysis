@@ -40,7 +40,7 @@ secondaryFileNames = cms.untracked.vstring(
 )
                             )
 
-process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.v0analyzer_cff")
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.v0analyzer_ntp_cff")
 
 process.TFileService = cms.Service("TFileService",
                                        fileName = 

@@ -4,11 +4,11 @@ process = cms.Process("Demo")
 
 # initialize MessageLogger and output report
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cerr.threshold = 'INFO'
+#process.MessageLogger.cerr.threshold = 'INFO'
 #process.MessageLogger.categories.append('Demo')
-process.MessageLogger.cerr.INFO = cms.untracked.PSet(
-        limit = cms.untracked.int32(-1)
-        )
+#process.MessageLogger.cerr.INFO = cms.untracked.PSet(
+#        limit = cms.untracked.int32(-1)
+#        )
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(5000)
 process.options   = cms.untracked.PSet( wantSummary = 
 cms.untracked.bool(True) )
@@ -19,7 +19,7 @@ cms.untracked.bool(True) )
 #process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 #process.GlobalTag.globaltag = "80X_dataRun2_Prompt_v15"
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) 
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(20000) 
 )
 
 process.source = cms.Source("PoolSource",
@@ -40,7 +40,7 @@ secondaryFileNames = cms.untracked.vstring(
 )
                             )
 
-process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0analyzer_cfi")
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0analyzer_ntp_cff")
 
 process.TFileService = cms.Service("TFileService",
                                        fileName = 
@@ -48,4 +48,4 @@ cms.string('d0ana_mc.root')
                                    )
 
 
-process.p = cms.Path(process.d0ana_mc)
+process.p = cms.Path(process.d0ana_mc*process.d0ana_wrongsign_mc)
