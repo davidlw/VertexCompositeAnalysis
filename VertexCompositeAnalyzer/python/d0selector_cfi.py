@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-d0ana = cms.EDAnalyzer('VertexCompositeNtupleProducer',
+d0selector = cms.EDProducer('VertexCompositeSelector',
   doGenMatching = cms.untracked.bool(False),
   hasSwap = cms.untracked.bool(True),
   decayInGen = cms.untracked.bool(False),
@@ -15,13 +15,14 @@ d0ana = cms.EDAnalyzer('VertexCompositeNtupleProducer',
   GenParticleCollection = cms.untracked.InputTag("genParticles"),
   MuonCollection = cms.untracked.InputTag("null"),
   doMuon = cms.untracked.bool(False),
-
+  
   useAnyMVA = cms.untracked.bool(False),
-  isSkimMVA = cms.untracked.bool(False),
-  MVACollection = cms.untracked.InputTag("generalD0CandidatesNew:MVAValues")
+  MVACollection = cms.untracked.InputTag("generalD0CandidatesNew:MVAValues"),
+  mvaMax = cms.untracked.double(999.9),
+  mvaMin = cms.untracked.double(-999.9),
                               )
 
-d0ana_mc = cms.EDAnalyzer('VertexCompositeNtupleProducer',
+d0selectorMC = cms.EDProducer('VertexCompositeSelector',
   doGenMatching = cms.untracked.bool(True),
   hasSwap = cms.untracked.bool(True),
   decayInGen = cms.untracked.bool(True),
@@ -39,6 +40,7 @@ d0ana_mc = cms.EDAnalyzer('VertexCompositeNtupleProducer',
   doMuon = cms.untracked.bool(False),
 
   useAnyMVA = cms.untracked.bool(False),
-  isSkimMVA = cms.untracked.bool(False),
-  MVACollection = cms.untracked.InputTag("generalD0CandidatesNew:MVAValues")
+  MVACollection = cms.untracked.InputTag("generalD0CandidatesNew:MVAValues"),
+  mvaMax = cms.untracked.double(999.9),
+  mvaMin = cms.untracked.double(-999.9),
                               )

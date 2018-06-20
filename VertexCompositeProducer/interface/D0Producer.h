@@ -39,6 +39,8 @@
 
 class D0Producer : public edm::EDProducer {
 public:
+  using MVACollection = std::vector<float>;
+
   explicit D0Producer(const edm::ParameterSet&);
   ~D0Producer();
 

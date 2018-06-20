@@ -39,10 +39,7 @@
 #include <TVector3.h>
 #include "TrackingTools/IPTools/interface/IPTools.h"
 #include "CommonTools/Statistics/interface/ChiSquaredProbability.h"
-
-#include <typeinfo>
-#include <memory>
-#include <vector>
+#include "CondFormats/DataRecord/interface/GBRWrapperRcd.h"
 
 const float piMassD0 = 0.13957018;
 const float piMassD0Squared = piMassD0*piMassD0;
@@ -62,6 +59,7 @@ D0Fitter::D0Fitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollect
   token_beamSpot = iC.consumes<reco::BeamSpot>(edm::InputTag("offlineBeamSpot"));
   token_tracks = iC.consumes<reco::TrackCollection>(theParameters.getParameter<edm::InputTag>("trackRecoAlgorithm"));
   token_vertices = iC.consumes<reco::VertexCollection>(theParameters.getParameter<edm::InputTag>("vertexRecoAlgorithm"));
+  token_dedx = iC.consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxHarmonic2"));
 
   // Second, initialize post-fit cuts
   mPiKCutMin = theParameters.getParameter<double>(string("mPiKCutMin"));
@@ -85,6 +83,35 @@ D0Fitter::D0Fitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollect
   alphaCut = theParameters.getParameter<double>(string("alphaCut"));
   isWrongSign = theParameters.getParameter<bool>(string("isWrongSign"));
 
+
+  useAnyMVA_ = false;
+  forestLabel_ = "D0InpPb";
+  std::string type = "BDT";
+  useForestFromDB_ = true;
+  dbFileName_ = "";
+
+  forest_ = nullptr;
+
+  if(theParameters.exists("useAnyMVA")) useAnyMVA_ = theParameters.getParameter<bool>("useAnyMVA");
+
+  if(useAnyMVA_){
+    if(theParameters.exists("mvaType"))type = theParameters.getParameter<std::string>("mvaType");
+    if(theParameters.exists("GBRForestLabel"))forestLabel_ = theParameters.getParameter<std::string>("GBRForestLabel");
+    if(theParameters.exists("GBRForestFileName")){
+      dbFileName_ = theParameters.getParameter<std::string>("GBRForestFileName");
+      useForestFromDB_ = false;
+    }
+
+    if(!useForestFromDB_){
+      edm::FileInPath fip(Form("VertexCompositeAnalysis/VertexCompositeProducer/data/%s",dbFileName_.c_str()));
+      TFile gbrfile(fip.fullPath().c_str(),"READ");
+      forest_ = (GBRForest*)gbrfile.Get(forestLabel_.c_str());
+      gbrfile.Close();
+    }
+
+    mvaType_ = type;
+  }
+
   std::vector<std::string> qual = theParameters.getParameter<std::vector<std::string> >("trackQualities");
   for (unsigned int ndx = 0; ndx < qual.size(); ndx++) {
     qualities.push_back(reco::TrackBase::qualityByName(qual[ndx]));
@@ -92,6 +119,7 @@ D0Fitter::D0Fitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollect
 }
 
 D0Fitter::~D0Fitter() {
+  delete forest_;
 }
 
 // Method containing the algorithm for vertex reconstruction
@@ -102,6 +130,7 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   using std::endl;
   using namespace reco;
   using namespace edm;
+  using namespace std; 
 
   typedef ROOT::Math::SMatrix<double, 3, 3, ROOT::Math::MatRepSym<double, 3> > SMatrixSym3D;
   typedef ROOT::Math::SVector<double, 3> SVector3;
@@ -116,17 +145,24 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   Handle<reco::VertexCollection> theVertexHandle;
   Handle<reco::BeamSpot> theBeamSpotHandle;
   ESHandle<MagneticField> bFieldHandle;
+  Handle<edm::ValueMap<reco::DeDxData> > dEdxHandle;
 
   // Get the tracks, vertices from the event, and get the B-field record
   //  from the EventSetup
   iEvent.getByToken(token_tracks, theTrackHandle); 
   iEvent.getByToken(token_vertices, theVertexHandle);
   iEvent.getByToken(token_beamSpot, theBeamSpotHandle);  
+  iEvent.getByToken(token_dedx, dEdxHandle);
+
 
   if( !theTrackHandle->size() ) return;
   iSetup.get<IdealMagneticFieldRecord>().get(bFieldHandle);
 
   magField = bFieldHandle.product();
+
+  // Setup TMVA
+//  mvaValValueMap = auto_ptr<edm::ValueMap<float> >(new edm::ValueMap<float>);
+//  edm::ValueMap<float>::Filler mvaFiller(*mvaValValueMap);
 
   bool isVtxPV = 0;
   double xVtx=-99999.0;
@@ -156,6 +192,7 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
     yVtxError = theBeamSpotHandle->BeamWidthY();
     zVtxError = 0.0;
   }
+  math::XYZPoint bestvtx(xVtx,yVtx,zVtx);
 
   // Fill vectors of TransientTracks and TrackRefs after applying preselection cuts.
   for(unsigned int indx = 0; indx < theTrackHandle->size(); indx++) {
@@ -178,7 +215,6 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 //      TransientTrack tmpTk( *tmpRef, &(*bFieldHandle), globTkGeomHandle );
       TransientTrack tmpTk( *tmpRef, magField );
 
-      math::XYZPoint bestvtx(xVtx,yVtx,zVtx);
       double dzvtx = tmpRef->dz(bestvtx);
       double dxyvtx = tmpRef->dxy(bestvtx);      
       double dzerror = sqrt(tmpRef->dzError()*tmpRef->dzError()+zVtxError*zVtxError);
@@ -239,6 +275,30 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       // If they're not 2 oppositely charged tracks, loop back to the
       //  beginning and try the next pair.
       else continue;
+
+      // Calculate DCA of two daughters
+      double dzvtx_pos = positiveTrackRef->dz(bestvtx);
+      double dxyvtx_pos = positiveTrackRef->dxy(bestvtx);
+      double dzerror_pos = sqrt(positiveTrackRef->dzError()*positiveTrackRef->dzError()+zVtxError*zVtxError);
+      double dxyerror_pos = sqrt(positiveTrackRef->d0Error()*positiveTrackRef->d0Error()+xVtxError*yVtxError);
+      double dauLongImpactSig_pos = dzvtx_pos/dzerror_pos;
+      double dauTransImpactSig_pos = dxyvtx_pos/dxyerror_pos;
+
+      double dzvtx_neg = negativeTrackRef->dz(bestvtx);
+      double dxyvtx_neg = negativeTrackRef->dxy(bestvtx);
+      double dzerror_neg = sqrt(negativeTrackRef->dzError()*negativeTrackRef->dzError()+zVtxError*zVtxError);
+      double dxyerror_neg = sqrt(negativeTrackRef->d0Error()*negativeTrackRef->d0Error()+xVtxError*yVtxError);
+      double dauLongImpactSig_neg = dzvtx_neg/dzerror_neg;
+      double dauTransImpactSig_neg = dxyvtx_neg/dxyerror_neg;
+
+      double dedx_pos=-999.;
+      double dedx_neg=-999.;
+      // Extract dEdx
+      if(dEdxHandle.isValid()){
+        const edm::ValueMap<reco::DeDxData> dEdxTrack = *dEdxHandle.product();
+        dedx_pos = dEdxTrack[positiveTrackRef].dEdx();
+        dedx_neg = dEdxTrack[negativeTrackRef].dEdx();
+      } 
 
       // Fill the vector of TransientTracks to send to KVF
       transTracks.push_back(*posTransTkPtr);
@@ -368,7 +428,8 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
         double lVtxMag = 99999.0;
         double sigmaRvtxMag = 999.0;
         double sigmaLvtxMag = 999.0;
-        double d0Angle = -100.0;
+        double d0Angle3D = -100.0;
+        double d0Angle2D = -100.0;
 
         GlobalVector d0LineOfFlight = GlobalVector (d0Vtx.x() - xVtx,
                                                     d0Vtx.y() - yVtx,
@@ -381,8 +442,11 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
         SVector3 distanceVector3D(d0LineOfFlight.x(), d0LineOfFlight.y(), d0LineOfFlight.z());
         SVector3 distanceVector2D(d0LineOfFlight.x(), d0LineOfFlight.y(), 0.0);
 
-        d0Angle = angle(d0LineOfFlight.x(), d0LineOfFlight.y(), d0LineOfFlight.z(),
+        d0Angle3D = angle(d0LineOfFlight.x(), d0LineOfFlight.y(), d0LineOfFlight.z(),
                         d0TotalP.x(), d0TotalP.y(), d0TotalP.z());
+        d0Angle2D = angle(d0LineOfFlight.x(), d0LineOfFlight.y(), (float)0.0,
+                        d0TotalP.x(), d0TotalP.y(), (float)0.0);
+
         lVtxMag = d0LineOfFlight.mag();
         rVtxMag = d0LineOfFlight.perp();
         sigmaLvtxMag = sqrt(ROOT::Math::Similarity(d0TotalCov, distanceVector3D)) / lVtxMag;
@@ -401,7 +465,7 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
             rVtxMag / sigmaRvtxMag < rVtxSigCut ||
             lVtxMag < lVtxCut ||
             lVtxMag / sigmaLvtxMag < lVtxSigCut ||
-            cos(d0Angle) < collinCut || alpha > alphaCut
+            cos(d0Angle3D) < collinCut || alpha > alphaCut
         ) continue;
 
         VertexCompositeCandidate* theD0 = 0;
@@ -433,13 +497,46 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
         if( theD0->mass() < d0MassD0 + d0MassCut &&
             theD0->mass() > d0MassD0 - d0MassCut &&
 	    theD0->pt() > dPtCut ) {
+
           theD0s.push_back( *theD0 );
+
+// perform MVA evaluation
+          float gbrVals_[14];
+          gbrVals_[0] = d0P4.Pt();
+          gbrVals_[1] = d0P4.Eta();
+          gbrVals_[2] = d0C2Prob;
+          gbrVals_[3] = lVtxMag / sigmaLvtxMag;
+          gbrVals_[4] = rVtxMag / sigmaRvtxMag;
+          gbrVals_[5] = lVtxMag;
+          gbrVals_[6] = cos(d0Angle3D);
+          gbrVals_[7] = cos(d0Angle2D);
+          gbrVals_[8] = dauLongImpactSig_pos;
+          gbrVals_[9] = dauLongImpactSig_neg;
+          gbrVals_[10] = dauTransImpactSig_pos;
+          gbrVals_[11] = dauTransImpactSig_neg;
+          gbrVals_[12] = dedx_pos;
+          gbrVals_[13] = dedx_neg;
+
+          GBRForest const * forest = forest_;
+          if(useForestFromDB_){
+            edm::ESHandle<GBRForest> forestHandle;
+            iSetup.get<GBRWrapperRcd>().get(forestLabel_,forestHandle);
+            forest = forestHandle.product();
+          }
+
+          auto gbrVal = forest->GetClassifier(gbrVals_);
+          mvaVals_.push_back(gbrVal);
         }
 
         if(theD0) delete theD0;
       }
     }
   }
+
+//  mvaFiller.insert(theD0s,mvaVals_.begin(),mvaVals_.end());
+//  mvaFiller.fill();
+//  mvas = std::make_unique<MVACollection>(mvaVals_.begin(),mvaVals_.end());
+
 }
 // Get methods
 
@@ -447,6 +544,17 @@ const reco::VertexCompositeCandidateCollection& D0Fitter::getD0() const {
   return theD0s;
 }
 
+const std::vector<float>& D0Fitter::getMVAVals() const {
+  return mvaVals_;
+}
+
+/*
+auto_ptr<edm::ValueMap<float> > D0Fitter::getMVAMap() const {
+  return mvaValValueMap;
+}
+*/
+
 void D0Fitter::resetAll() {
     theD0s.clear();
+    mvaVals_.clear();
 }

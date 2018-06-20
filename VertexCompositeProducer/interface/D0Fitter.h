@@ -48,6 +48,8 @@
 #include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"
 #include "DataFormats/RecoCandidate/interface/RecoChargedCandidate.h"
 #include "DataFormats/Math/interface/angle.h"
+#include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
+#include "DataFormats/TrackReco/interface/DeDxData.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
@@ -58,12 +60,18 @@
 #include "Geometry/CommonDetUnit/interface/GeomDet.h"
 #include "Geometry/TrackerGeometryBuilder/interface/GluedGeomDet.h"
 
-#include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
-
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
+
+#include "CondFormats/EgammaObjects/interface/GBRForest.h"
 
 #include <string>
 #include <fstream>
+#include <typeinfo>
+#include <memory>
+#include <vector>
+#include <utility>
+#include <algorithm>
+#include <map>
 
 class D0Fitter {
  public:
@@ -74,6 +82,9 @@ class D0Fitter {
 
   // Switching to L. Lista's reco::Candidate infrastructure for D0 storage
   const reco::VertexCompositeCandidateCollection& getD0() const;
+  const std::vector<float>& getMVAVals() const; 
+
+//  auto_ptr<edm::ValueMap<float> > getMVAMap() const;
   void resetAll();
 
  private:
@@ -89,6 +100,7 @@ class D0Fitter {
   edm::InputTag vtxAlg;
   edm::EDGetTokenT<reco::TrackCollection> token_tracks;
   edm::EDGetTokenT<reco::VertexCollection> token_vertices;
+  edm::EDGetTokenT<edm::ValueMap<reco::DeDxData> > token_dedx;
   edm::EDGetTokenT<reco::BeamSpot> token_beamSpot;
 
   // Cuts
@@ -114,6 +126,23 @@ class D0Fitter {
   bool   isWrongSign;
 
   std::vector<reco::TrackBase::TrackQuality> qualities;
+
+  //setup mva selector
+  bool useAnyMVA_;
+  std::vector<bool> useMVA_;
+  std::vector<double> min_MVA_;
+  std::string mvaType_;
+  std::string forestLabel_;
+  GBRForest * forest_;
+  bool useForestFromDB_;
+
+  std::vector<float> mvaVals_;
+
+//  auto_ptr<edm::ValueMap<float> >mvaValValueMap;
+//  MVACollection mvas; 
+
+  std::string dbFileName_;
+
 };
 
 #endif

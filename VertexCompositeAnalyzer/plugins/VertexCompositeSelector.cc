@@ -19,9 +19,16 @@
 #include <TRandom.h>
 #include <TMath.h>
 
+
 // user include files
+
+
+
+#include "DataFormats/Common/interface/Ref.h"
+#include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/EDProducer.h"
+#include "FWCore/Framework/interface/ESHandle.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -35,16 +42,10 @@
 
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
-
 #include "DataFormats/RecoCandidate/interface/RecoCandidate.h"
-
 #include "DataFormats/Candidate/interface/Candidate.h"
-
 #include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"
 #include "DataFormats/Candidate/interface/VertexCompositeCandidateFwd.h"
-
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "DataFormats/TrackReco/interface/DeDxData.h"
 
@@ -73,22 +74,20 @@
 
 using namespace std;
 
-class VertexCompositeNtupleProducer : public edm::EDAnalyzer {
+class VertexCompositeSelector : public edm::EDProducer {
 public:
-  explicit VertexCompositeNtupleProducer(const edm::ParameterSet&);
-  ~VertexCompositeNtupleProducer();
+  explicit VertexCompositeSelector(const edm::ParameterSet&);
+  ~VertexCompositeSelector();
 
   using MVACollection = std::vector<float>;
 
 private:
   virtual void beginJob() ;
-  virtual void analyze(const edm::Event&, const edm::EventSetup&);
-    virtual void fillRECO(const edm::Event&, const edm::EventSetup&) ;
+  virtual void produce(edm::Event&, const edm::EventSetup&);
+  virtual void fillRECO(edm::Event&, const edm::EventSetup&) ;
   virtual void endJob() ;
 
   // ----------member data ---------------------------
-    
-    TTree* VertexCompositeNtuple;
     
     //options
     bool doGenMatching_;
@@ -237,7 +236,8 @@ private:
     vector<int> *pVectIDmom;
     
     bool useAnyMVA_;
-    bool isSkimMVA_;
+    float mvaMin_;
+    float mvaMax_;
 
     //tokens
     edm::EDGetTokenT<reco::VertexCollection> tok_offlinePV_;
@@ -249,6 +249,11 @@ private:
     edm::EDGetTokenT<edm::ValueMap<reco::DeDxData> > Dedx_Token2_;
     edm::EDGetTokenT<reco::GenParticleCollection> tok_genParticle_;
     edm::EDGetTokenT<reco::MuonCollection> tok_muon_;
+
+    std::string v0IDName_;
+
+    reco::VertexCompositeCandidateCollection theVertexComps;
+    MVACollection theMVANew;
 };
 
 //
@@ -263,7 +268,7 @@ private:
 // constructors and destructor
 //
 
-VertexCompositeNtupleProducer::VertexCompositeNtupleProducer(const edm::ParameterSet& iConfig)
+VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfig)
 {
     //options
     twoLayerDecay_ = iConfig.getUntrackedParameter<bool>("twoLayerDecay");
@@ -276,12 +281,13 @@ VertexCompositeNtupleProducer::VertexCompositeNtupleProducer(const edm::Paramete
     PID_dau2_ = iConfig.getUntrackedParameter<int>("PID_dau2");
     
     useAnyMVA_ = iConfig.getUntrackedParameter<bool>("useAnyMVA");
-    isSkimMVA_ = iConfig.getUntrackedParameter<bool>("isSkimMVA"); 
 
     //cut variables
     multMax_ = iConfig.getUntrackedParameter<double>("multMax", 0.0);
     multMin_ = iConfig.getUntrackedParameter<double>("multMin", 999.9);
     deltaR_ = iConfig.getUntrackedParameter<double>("deltaR", 0.03);
+    mvaMax_ = iConfig.getUntrackedParameter<double>("mvaMax", 999.9);
+    mvaMin_ = iConfig.getUntrackedParameter<double>("mvaMin", -999.9);
 
     //input tokens
     tok_offlinePV_ = consumes<reco::VertexCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCollection"));
@@ -293,10 +299,15 @@ VertexCompositeNtupleProducer::VertexCompositeNtupleProducer(const edm::Paramete
     Dedx_Token2_ = consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxTruncated40"));
     
     tok_genParticle_ = consumes<reco::GenParticleCollection>(edm::InputTag(iConfig.getUntrackedParameter<edm::InputTag>("GenParticleCollection")));
+
+    v0IDName_ = (iConfig.getUntrackedParameter<edm::InputTag>("VertexCompositeCollection")).instance();
+
+    produces< reco::VertexCompositeCandidateCollection >(v0IDName_);
+    produces<MVACollection>("MVAValuesNew");
 }
 
 
-VertexCompositeNtupleProducer::~VertexCompositeNtupleProducer()
+VertexCompositeSelector::~VertexCompositeSelector()
 {
  
   // do anything here that needs to be done at desctruction time
@@ -311,17 +322,33 @@ VertexCompositeNtupleProducer::~VertexCompositeNtupleProducer()
 
 // ------------ method called to for each event  ------------
 void
-VertexCompositeNtupleProducer::analyze(const edm::Event& iEvent, const edm::EventSetup&
-iSetup)
+VertexCompositeSelector::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
     using std::vector;
     using namespace edm;
 
     fillRECO(iEvent,iSetup);
+
+    std::auto_ptr< reco::VertexCompositeCandidateCollection > theNewV0Cands( new reco::VertexCompositeCandidateCollection );
+    theNewV0Cands->reserve( theVertexComps.size() );
+
+    std::copy( theVertexComps.begin(),
+               theVertexComps.end(),
+               std::back_inserter(*theNewV0Cands) );
+
+    iEvent.put(theNewV0Cands, v0IDName_);
+    theVertexComps.clear();
+
+    if(useAnyMVA_)
+    {
+      auto mvas = std::make_unique<MVACollection>(theMVANew.begin(),theMVANew.end());
+      iEvent.put(std::move(mvas), std::string("MVAValuesNew"));
+      theMVANew.clear();
+    }
 }
 
 void
-VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
     //get collections
     edm::Handle<reco::VertexCollection> vertices;
@@ -453,7 +480,15 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         y = trk.rapidity();
         pt = trk.pt();
 
-        if(useAnyMVA_) mva = (*mvavalues)[it];
+        mva=0;
+        if(useAnyMVA_) 
+        {
+          mva = (*mvavalues)[it];
+          if(mva < mvaMin_ || mva > mvaMax_) continue;
+          theVertexComps.push_back( trk );
+          theMVANew.push_back( mva );
+          continue;
+        }
 
         double px = trk.px();
         double py = trk.py();
@@ -1008,191 +1043,23 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             
             grand_dlos2D = gdl2D/gdl2Derror;
         }
-        VertexCompositeNtuple->Fill();
+        theVertexComps.push_back( trk );
     }
 }
 
 // ------------ method called once each job just before starting event
 //loop  ------------
 void
-VertexCompositeNtupleProducer::beginJob()
+VertexCompositeSelector::beginJob()
 {
-    edm::Service<TFileService> fs;
-    
-    TH1D::SetDefaultSumw2();
-    
-    if(twoLayerDecay_ && doMuon_)
-    {
-        cout<<"Muons cannot be coming from two layer decay!! Fix config!!"<<endl; return;
-    }
-    
-    VertexCompositeNtuple = fs->make< TTree>("VertexCompositeNtuple","VertexCompositeNtuple");
-    
-    VertexCompositeNtuple->Branch("pT",&pt,"pT/F");
-    VertexCompositeNtuple->Branch("eta",&eta,"eta/F");
-    VertexCompositeNtuple->Branch("y",&y,"y/F");
-    VertexCompositeNtuple->Branch("mass",&mass,"mass/F");
-     
-    if(useAnyMVA_) VertexCompositeNtuple->Branch("mva",&mva,"mva/F");
-
-    if(!isSkimMVA_)  
-    {
-        //Event info
-        VertexCompositeNtuple->Branch("Ntrkoffline",&Ntrkoffline,"Ntrkoffline/I");
-        VertexCompositeNtuple->Branch("bestvtxX",&bestvx,"bestvtxX/F");
-        VertexCompositeNtuple->Branch("bestvtxY",&bestvy,"bestvtxY/F");
-        VertexCompositeNtuple->Branch("bestvtxZ",&bestvz,"bestvtxZ/F");
-        
-        //Composite candidate info RECO
-        VertexCompositeNtuple->Branch("pT",&pt,"pT/F");
-        VertexCompositeNtuple->Branch("eta",&eta,"eta/F");
-        VertexCompositeNtuple->Branch("y",&y,"y/F");
-        VertexCompositeNtuple->Branch("mass",&mass,"mass/F");
-        VertexCompositeNtuple->Branch("VtxProb",&VtxProb,"VtxProb/F");
-        VertexCompositeNtuple->Branch("VtxChi2",&vtxChi2,"VtxChi2/F");
-        VertexCompositeNtuple->Branch("VtxNDF",&ndf,"VtxNDF/F");
-        VertexCompositeNtuple->Branch("3DCosPointingAngle",&agl,"3DCosPointingAngleF");
-        VertexCompositeNtuple->Branch("3DPointingAngle",&agl_abs,"3DPointingAngle/F");
-        VertexCompositeNtuple->Branch("2DCosPointingAngle",&agl2D,"2DCosPointingAngle/F");
-        VertexCompositeNtuple->Branch("2DPointingAngle",&agl2D_abs,"2DPointingAngle/F");
-        VertexCompositeNtuple->Branch("3DDecayLengthSignificance",&dlos,"3DDecayLengthSignificance/F");
-        VertexCompositeNtuple->Branch("3DDecayLength",&dl,"3DDecayLength/F");
-        VertexCompositeNtuple->Branch("3DDecayLengthError",&dlerror,"3DDecayLengthError/F");
-        VertexCompositeNtuple->Branch("2DDecayLengthSignificance",&dlos2D,"2DDecayLengthSignificance/F");
-    
-        if(doGenMatching_)
-        {
-            VertexCompositeNtuple->Branch("isSwap",&isSwap,"isSwap/O");
-            VertexCompositeNtuple->Branch("idmom_reco",&idmom_reco,"idmom_reco/I");
-            VertexCompositeNtuple->Branch("matchGEN",&matchGEN,"matchGEN/O");
-        }
-        
-        //daugther & grand daugther info
-        if(twoLayerDecay_)
-        {
-            VertexCompositeNtuple->Branch("massDaugther1",&grand_mass,"massDaugther1/F");
-            VertexCompositeNtuple->Branch("pTD1",&pt1,"pTD1/F");
-            VertexCompositeNtuple->Branch("EtaD1",&eta1,"EtaD1/F");
-            VertexCompositeNtuple->Branch("PhiD1",&phi1,"PhiD1/F");
-            VertexCompositeNtuple->Branch("VtxProbDaugther1",&grand_VtxProb,"VtxProbDaugther1/F");
-            VertexCompositeNtuple->Branch("VtxChi2Daugther1",&grand_vtxChi2,"VtxChi2Daugther1/F");
-            VertexCompositeNtuple->Branch("VtxNDFDaugther1",&grand_ndf,"VtxNDFDaugther1/F");
-            VertexCompositeNtuple->Branch("3DCosPointingAngleDaugther1",&grand_agl,"3DCosPointingAngleDaugther1/F");
-            VertexCompositeNtuple->Branch("3DPointingAngleDaugther1",&grand_agl_abs,"3DPointingAngleDaugther1/F");
-            VertexCompositeNtuple->Branch("2DCosPointingAngleDaugther1",&grand_agl2D,"2DCosPointingAngleDaugther1/F");
-            VertexCompositeNtuple->Branch("2DPointingAngleDaugther1",&grand_agl2D_abs,"2DPointingAngleDaugther1/F");
-            VertexCompositeNtuple->Branch("3DDecayLengthSignificanceDaugther1",&grand_dlos,"3DDecayLengthSignificanceDaugther1/F");
-            VertexCompositeNtuple->Branch("3DDecayLengthDaugther1",&grand_dl,"3DDecayLengthDaugther1/F");
-            VertexCompositeNtuple->Branch("3DDecayLengthErrorDaugther1",&grand_dlerror,"3DDecayLengthErrorDaugther1/F");
-            VertexCompositeNtuple->Branch("2DDecayLengthSignificanceDaugther1",&grand_dlos2D,"2DDecayLengthSignificanceDaugther1/F");
-            VertexCompositeNtuple->Branch("zDCASignificanceDaugther2",&dzos2,"zDCASignificanceDaugther2/F");
-            VertexCompositeNtuple->Branch("xyDCASignificanceDaugther2",&dxyos2,"xyDCASignificanceDaugther2/F");
-            VertexCompositeNtuple->Branch("NHitD2",&nhit2,"NHitD2/F");
-            VertexCompositeNtuple->Branch("HighPurityDaugther2",&trkquality2,"HighPurityDaugther2/O");
-            VertexCompositeNtuple->Branch("pTD2",&pt2,"pTD2/F");
-            VertexCompositeNtuple->Branch("pTerrD2",&ptErr2,"pTerrD2/F");
-            VertexCompositeNtuple->Branch("pD2",&p2,"pD2/F");
-            VertexCompositeNtuple->Branch("EtaD2",&eta2,"EtaD2/F");
-            VertexCompositeNtuple->Branch("PhiD2",&phi2,"PhiD2/F");
-            VertexCompositeNtuple->Branch("chargeD2",&charge2,"chargeD2/I");
-            VertexCompositeNtuple->Branch("dedxHarmonic2D2",&H2dedx2,"dedxHarmonic2D2/F");
-            VertexCompositeNtuple->Branch("dedxTruncated40Daugther2",&T4dedx2,"dedxTruncated40Daugther2/F");
-            VertexCompositeNtuple->Branch("normalizedChi2Daugther2",&trkChi2,"normalizedChi2Daugther2/F");
-            VertexCompositeNtuple->Branch("zDCASignificanceGrandDaugther1",&grand_dzos1,"zDCASignificanceGrandDaugther1/F");
-            VertexCompositeNtuple->Branch("zDCASignificanceGrandDaugther2",&grand_dzos2,"zDCASignificanceGrandDaugther2/F");
-            VertexCompositeNtuple->Branch("xyDCASignificanceGrandDaugther1",&grand_dxyos1,"xyDCASignificanceGrandDaugther1/F");
-            VertexCompositeNtuple->Branch("xyDCASignificanceGrandDaugther2",&grand_dxyos2,"xyDCASignificanceGrandDaugther2/F");
-            VertexCompositeNtuple->Branch("NHitGrandD1",&grand_nhit1,"NHitGrandD1/F");
-            VertexCompositeNtuple->Branch("NHitGrandD2",&grand_nhit2,"NHitGrandD2/F");
-            VertexCompositeNtuple->Branch("HighPurityGrandDaugther1",&grand_trkquality1,"HighPurityGrandDaugther1/O");
-            VertexCompositeNtuple->Branch("HighPurityGrandDaugther2",&grand_trkquality2,"HighPurityGrandDaugther2/O");
-            VertexCompositeNtuple->Branch("pTGrandD1",&grand_pt1,"pTGrandD1/F");
-            VertexCompositeNtuple->Branch("pTGrandD2",&grand_pt2,"pTGrandD2/F");
-            VertexCompositeNtuple->Branch("pTerrGrandD1",&grand_ptErr1,"pTerrGrandD1/F");
-            VertexCompositeNtuple->Branch("pTerrGrandD2",&grand_ptErr2,"pTerrGrandD2/F");
-            VertexCompositeNtuple->Branch("pGrandD1",&grand_p1,"pGrandD1/F");
-            VertexCompositeNtuple->Branch("pGrandD2",&grand_p2,"pGrandD2/F");
-            VertexCompositeNtuple->Branch("EtaGrandD1",&grand_eta1,"EtaGrandD1/F");
-            VertexCompositeNtuple->Branch("EtaGrandD2",&grand_eta2,"EtaGrandD2/F");
-            VertexCompositeNtuple->Branch("chargeGrandD1",&grand_charge1,"chargeGrandD1/I");
-            VertexCompositeNtuple->Branch("chargeGrandD2",&grand_charge2,"chargeGrandD2/I");
-            VertexCompositeNtuple->Branch("dedxHarmonic2GrandD1",&grand_H2dedx1,"dedxHarmonic2GrandD1/F");
-            VertexCompositeNtuple->Branch("dedxHarmonic2GrandD2",&grand_H2dedx2,"dedxHarmonic2GrandD2/F");
-            VertexCompositeNtuple->Branch("dedxTruncated40GrandDaugther1",&grand_T4dedx1,"dedxTruncated40GrandDaugther1/F");
-            VertexCompositeNtuple->Branch("dedxTruncated40GrandDaugther2",&grand_T4dedx2,"dedxTruncated40GrandDaugther2/F");
-            VertexCompositeNtuple->Branch("normalizedChi2GrandDaugther1",&grand_trkChi1,"normalizedChi2GrandDaugther1/F");
-            VertexCompositeNtuple->Branch("normalizedChi2GrandDaugther2",&grand_trkChi2,"normalizedChi2GrandDaugther2/F");
-        }
-        else
-        {
-            VertexCompositeNtuple->Branch("zDCASignificanceDaugther1",&dzos1,"zDCASignificanceDaugther1/F");
-            VertexCompositeNtuple->Branch("xyDCASignificanceDaugther1",&dxyos1,"xyDCASignificanceDaugther1/F");
-            VertexCompositeNtuple->Branch("NHitD1",&nhit1,"NHitD1/F");
-            VertexCompositeNtuple->Branch("HighPurityDaugther1",&trkquality1,"HighPurityDaugther1/O");
-            VertexCompositeNtuple->Branch("pTD1",&pt1,"pTD1/F");
-            VertexCompositeNtuple->Branch("pTerrD1",&ptErr1,"pTerrD1/F");
-            VertexCompositeNtuple->Branch("pD1",&p1,"pD1/F");
-            VertexCompositeNtuple->Branch("EtaD1",&eta1,"EtaD1/F");
-            VertexCompositeNtuple->Branch("PhiD1",&eta1,"PhiD1/F");
-            VertexCompositeNtuple->Branch("chargeD1",&charge1,"chargeD1/I");
-            VertexCompositeNtuple->Branch("dedxHarmonic2D1",&H2dedx1,"dedxHarmonic2D1/F");
-            VertexCompositeNtuple->Branch("dedxTruncated40Daugther1",&T4dedx1,"dedxTruncated40Daugther1/F");
-            VertexCompositeNtuple->Branch("normalizedChi2Daugther1",&trkChi1,"normalizedChi2Daugther1/F");
-            VertexCompositeNtuple->Branch("zDCASignificanceDaugther2",&dzos2,"zDCASignificanceDaugther2/F");
-            VertexCompositeNtuple->Branch("xyDCASignificanceDaugther2",&dxyos2,"xyDCASignificanceDaugther2/F");
-            VertexCompositeNtuple->Branch("NHitD2",&nhit2,"NHitD2/F");
-            VertexCompositeNtuple->Branch("HighPurityDaugther2",&trkquality2,"HighPurityDaugther2/O");
-            VertexCompositeNtuple->Branch("pTD2",&pt2,"pTD2/F");
-            VertexCompositeNtuple->Branch("pTerrD2",&ptErr2,"pTerrD2/F");
-            VertexCompositeNtuple->Branch("pD2",&p2,"pD2/F");
-            VertexCompositeNtuple->Branch("EtaD2",&eta2,"EtaD2/F");
-            VertexCompositeNtuple->Branch("PhiD2",&eta2,"PhiD2/F");
-            VertexCompositeNtuple->Branch("chargeD2",&charge2,"chargeD2/I");
-            VertexCompositeNtuple->Branch("dedxHarmonic2D2",&H2dedx2,"dedxHarmonic2D2/F");
-            VertexCompositeNtuple->Branch("dedxTruncated40Daugther2",&T4dedx2,"dedxTruncated40Daugther2/F");
-            VertexCompositeNtuple->Branch("normalizedChi2Daugther2",&trkChi2,"normalizedChi2Daugther2/F");
-        }
-        
-        if(doMuon_)
-        {
-            VertexCompositeNtuple->Branch("nMatchedChamberD1",&nmatchedch1,"nMatchedChamberD1/F");
-            VertexCompositeNtuple->Branch("nMatchedStationD1",&nmatchedst1,"nMatchedStationD1/F");
-            VertexCompositeNtuple->Branch("EnergyDepositionD1",&nmatchedst1,"EnergyDepositionD1/F");
-            VertexCompositeNtuple->Branch("nMatchedChamberD2",&nmatchedch2,"nMatchedChamberD2/F");
-            VertexCompositeNtuple->Branch("nMatchedStationD2",&nmatchedst2,"nMatchedStationD2/F");
-            VertexCompositeNtuple->Branch("EnergyDepositionD2",&nmatchedst2,"EnergyDepositionD2/F");
-            VertexCompositeNtuple->Branch("dx1_seg",        &dx1_seg_, "dx1_seg/F");
-            VertexCompositeNtuple->Branch("dy1_seg",        &dy1_seg_, "dy1_seg/F");
-            VertexCompositeNtuple->Branch("dxSig1_seg",     &dxSig1_seg_, "dxSig1_seg/F");
-            VertexCompositeNtuple->Branch("dySig1_seg",     &dySig1_seg_, "dySig1_seg/F");
-            VertexCompositeNtuple->Branch("ddxdz1_seg",     &ddxdz1_seg_, "ddxdz1_seg/F");
-            VertexCompositeNtuple->Branch("ddydz1_seg",     &ddydz1_seg_, "ddydz1_seg/F");
-            VertexCompositeNtuple->Branch("ddxdzSig1_seg",  &ddxdzSig1_seg_, "ddxdzSig1_seg/F");
-            VertexCompositeNtuple->Branch("ddydzSig1_seg",  &ddydzSig1_seg_, "ddydzSig1_seg/F");
-            VertexCompositeNtuple->Branch("dx2_seg",        &dx2_seg_, "dx2_seg/F");
-            VertexCompositeNtuple->Branch("dy2_seg",        &dy2_seg_, "dy2_seg/F");
-            VertexCompositeNtuple->Branch("dxSig2_seg",     &dxSig2_seg_, "dxSig2_seg/F");
-            VertexCompositeNtuple->Branch("dySig2_seg",     &dySig2_seg_, "dySig2_seg/F");
-            VertexCompositeNtuple->Branch("ddxdz2_seg",     &ddxdz2_seg_, "ddxdz2_seg/F");
-            VertexCompositeNtuple->Branch("ddydz2_seg",     &ddydz2_seg_, "ddydz2_seg/F");
-            VertexCompositeNtuple->Branch("ddxdzSig2_seg",  &ddxdzSig2_seg_, "ddxdzSig2_seg/F");
-            VertexCompositeNtuple->Branch("ddydzSig2_seg",  &ddydzSig2_seg_, "ddydzSig2_seg/F");
-        }
-    }
 }
 
 // ------------ method called once each job just after ending the event
 //loop  ------------
 void 
-VertexCompositeNtupleProducer::endJob() {
-    
+VertexCompositeSelector::endJob() {
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(VertexCompositeNtupleProducer);
-
-
-
-
-
-
+#include "FWCore/PluginManager/interface/ModuleDef.h"
+DEFINE_FWK_MODULE(VertexCompositeSelector);

@@ -33,5 +33,12 @@ generalD0Candidates = cms.EDProducer("D0Producer",
     d0MassCut = cms.double(0.2),
     dPtCut = cms.double(0.0),
 
-    isWrongSign = cms.bool(False)
+    isWrongSign = cms.bool(False),
+
+# MVA 
+
+    useAnyMVA = cms.bool(False),
+    mvaType = cms.string('BDT'), 
+    GBRForestLabel = cms.string('D0InpPb'),
+    GBRForestFileName = cms.string('GBRForestfile.root'),
 )
