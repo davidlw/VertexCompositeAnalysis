@@ -40,17 +40,17 @@ process.TFileService = cms.Service("TFileService",
 cms.string('d0ana.root')
                                    )
 
-process.d0ana.useAnyMVA = cms.untracked.bool(True)
-process.d0ana_wrongsign.useAnyMVA = cms.untracked.bool(True)
+process.d0ana.useAnyMVA = cms.bool(True)
+process.d0ana_wrongsign.useAnyMVA = cms.bool(True)
 process.d0ana.VertexCompositeCollection = cms.untracked.InputTag("d0selector:D0")
 process.d0ana_wrongsign.VertexCompositeCollection = cms.untracked.InputTag("d0selectorWS:D0")
-process.d0ana.MVACollection = cms.untracked.InputTag("d0selector:MVAValuesNew")
-process.d0ana_wrongsign.MVACollection = cms.untracked.InputTag("d0selectorWS:MVAValuesNew")
+process.d0ana.MVACollection = cms.InputTag("d0selector:MVAValuesNewD0")
+process.d0ana_wrongsign.MVACollection = cms.InputTag("d0selectorWS:MVAValuesNewD0")
 process.d0ana.isSkimMVA = cms.untracked.bool(True)
 process.d0ana_wrongsign.isSkimMVA = cms.untracked.bool(True)
 
-process.d0selector.useAnyMVA = cms.untracked.bool(True)
-process.d0selectorWS.useAnyMVA = cms.untracked.bool(True)
+process.d0selector.useAnyMVA = cms.bool(True)
+process.d0selectorWS.useAnyMVA = cms.bool(True)
 process.d0selector.mvaMin = cms.untracked.double(0.2)
 process.d0selectorWS.mvaMin = cms.untracked.double(0.2)
 

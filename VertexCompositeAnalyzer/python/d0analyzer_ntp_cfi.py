@@ -16,9 +16,9 @@ d0ana = cms.EDAnalyzer('VertexCompositeNtupleProducer',
   MuonCollection = cms.untracked.InputTag("null"),
   doMuon = cms.untracked.bool(False),
 
-  useAnyMVA = cms.untracked.bool(False),
+  useAnyMVA = cms.bool(False),
   isSkimMVA = cms.untracked.bool(False),
-  MVACollection = cms.untracked.InputTag("generalD0CandidatesNew:MVAValues")
+  MVACollection = cms.InputTag("generalD0CandidatesNew:MVAValues")
                               )
 
 d0ana_mc = cms.EDAnalyzer('VertexCompositeNtupleProducer',
@@ -38,7 +38,7 @@ d0ana_mc = cms.EDAnalyzer('VertexCompositeNtupleProducer',
   MuonCollection = cms.untracked.InputTag("null"),
   doMuon = cms.untracked.bool(False),
 
-  useAnyMVA = cms.untracked.bool(False),
+  useAnyMVA = cms.bool(False),
   isSkimMVA = cms.untracked.bool(False),
-  MVACollection = cms.untracked.InputTag("generalD0CandidatesNew:MVAValues")
+  MVACollection = cms.InputTag("generalD0CandidatesNew:MVAValues")
                               )

@@ -61,6 +61,9 @@
 #include "DataFormats/MuonReco/interface/MuonChamberMatch.h"
 #include "DataFormats/MuonReco/interface/MuonSegmentMatch.h"
 
+#include "CondFormats/DataRecord/interface/GBRWrapperRcd.h"
+#include "CondFormats/EgammaObjects/interface/GBRForest.h"
+
 #include <Math/Functions.h>
 #include <Math/SVector.h>
 #include <Math/SMatrix.h>
@@ -236,6 +239,15 @@ private:
     vector<int> *pVectIDmom;
     
     bool useAnyMVA_;
+    bool useExistingMVA_;
+
+    std::string mvaType_;
+    std::string forestLabel_;
+    GBRForest * forest_;
+    bool useForestFromDB_;
+    std::vector<float> mvaVals_;
+    std::string dbFileName_;
+
     float mvaMin_;
     float mvaMax_;
 
@@ -280,8 +292,6 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
     PID_dau1_ = iConfig.getUntrackedParameter<int>("PID_dau1");
     PID_dau2_ = iConfig.getUntrackedParameter<int>("PID_dau2");
     
-    useAnyMVA_ = iConfig.getUntrackedParameter<bool>("useAnyMVA");
-
     //cut variables
     multMax_ = iConfig.getUntrackedParameter<double>("multMax", 0.0);
     multMin_ = iConfig.getUntrackedParameter<double>("multMin", 999.9);
@@ -293,17 +303,53 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
     tok_offlinePV_ = consumes<reco::VertexCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCollection"));
     tok_generalTrk_ = consumes<reco::TrackCollection>(iConfig.getUntrackedParameter<edm::InputTag>("TrackCollection"));
     recoVertexCompositeCandidateCollection_Token_ = consumes<reco::VertexCompositeCandidateCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCompositeCollection"));
-    MVAValues_Token_ = consumes<MVACollection>(iConfig.getUntrackedParameter<edm::InputTag>("MVACollection"));
     tok_muon_ = consumes<reco::MuonCollection>(iConfig.getUntrackedParameter<edm::InputTag>("MuonCollection"));
     Dedx_Token1_ = consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxHarmonic2"));
     Dedx_Token2_ = consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxTruncated40"));
-    
     tok_genParticle_ = consumes<reco::GenParticleCollection>(edm::InputTag(iConfig.getUntrackedParameter<edm::InputTag>("GenParticleCollection")));
+
+    // Loading TMVA
+    useAnyMVA_ = false;
+    useExistingMVA_ = false;
+
+    forestLabel_ = "D0InpPb";
+    std::string type = "BDT";
+    useForestFromDB_ = true;
+    dbFileName_ = "";
+
+    forest_ = nullptr;
+
+    if(iConfig.exists("useAnyMVA")) useAnyMVA_ = iConfig.getParameter<bool>("useAnyMVA");
+    if(iConfig.exists("useExistingMVA")) useExistingMVA_ = iConfig.getParameter<bool>("useExistingMVA");
+
+    if(useAnyMVA_){
+      if(iConfig.exists("MVACollection")){ 
+        MVAValues_Token_ = consumes<MVACollection>(iConfig.getParameter<edm::InputTag>("MVACollection"));
+        useExistingMVA_ = true;
+      }
+      else{
+        if(iConfig.exists("mvaType"))type = iConfig.getParameter<std::string>("mvaType");
+        if(iConfig.exists("GBRForestLabel"))forestLabel_ = iConfig.getParameter<std::string>("GBRForestLabel");
+        if(iConfig.exists("GBRForestFileName")){
+          dbFileName_ = iConfig.getParameter<std::string>("GBRForestFileName");
+          useForestFromDB_ = false;
+        }
+      }
+    }
+
+    if(!useForestFromDB_){
+      edm::FileInPath fip(Form("VertexCompositeAnalysis/VertexCompositeProducer/data/%s",dbFileName_.c_str()));
+      TFile gbrfile(fip.fullPath().c_str(),"READ");
+      forest_ = (GBRForest*)gbrfile.Get(forestLabel_.c_str());
+      gbrfile.Close();
+    }
+
+    mvaType_ = type;
 
     v0IDName_ = (iConfig.getUntrackedParameter<edm::InputTag>("VertexCompositeCollection")).instance();
 
     produces< reco::VertexCompositeCandidateCollection >(v0IDName_);
-    produces<MVACollection>("MVAValuesNew");
+    produces<MVACollection>(Form("MVAValuesNew%s",v0IDName_.c_str()));
 }
 
 
@@ -342,7 +388,7 @@ VertexCompositeSelector::produce(edm::Event& iEvent, const edm::EventSetup& iSet
     if(useAnyMVA_)
     {
       auto mvas = std::make_unique<MVACollection>(theMVANew.begin(),theMVANew.end());
-      iEvent.put(std::move(mvas), std::string("MVAValuesNew"));
+      iEvent.put(std::move(mvas), Form("MVAValuesNew%s",v0IDName_.c_str()));
       theMVANew.clear();
     }
 }
@@ -362,7 +408,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
     const reco::VertexCompositeCandidateCollection * v0candidates_ = v0candidates.product();
     
     edm::Handle<MVACollection> mvavalues;
-    if(useAnyMVA_)
+    if(useAnyMVA_ && useExistingMVA_)
     {
       iEvent.getByToken(MVAValues_Token_,mvavalues);
       assert( (*mvavalues).size() == v0candidates->size() );
@@ -481,7 +527,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         pt = trk.pt();
 
         mva=0;
-        if(useAnyMVA_) 
+        if(useAnyMVA_ && useExistingMVA_)
         {
           mva = (*mvavalues)[it];
           if(mva < mvaMin_ || mva > mvaMax_) continue;
@@ -1043,6 +1089,41 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
             
             grand_dlos2D = gdl2D/gdl2Derror;
         }
+
+        if(useAnyMVA_ && !useExistingMVA_)
+        {
+          float gbrVals_[18];
+          gbrVals_[0] = pt;
+          gbrVals_[1] = eta;
+          gbrVals_[2] = VtxProb;
+          gbrVals_[3] = dlos;
+          gbrVals_[4] = dlos2D;
+          gbrVals_[5] = dl;
+          gbrVals_[6] = agl;
+          gbrVals_[7] = agl2D;
+          gbrVals_[8] = dzos1;
+          gbrVals_[9] = dzos2;
+          gbrVals_[10] = dxyos1;
+          gbrVals_[11] = dxyos2;
+          gbrVals_[12] = nhit1;
+          gbrVals_[13] = nhit2;
+          gbrVals_[14] = ptErr1;
+          gbrVals_[15] = ptErr2;
+          gbrVals_[16] = H2dedx1;
+          gbrVals_[17] = H2dedx2;
+
+          GBRForest const * forest = forest_;
+          if(useForestFromDB_){
+            edm::ESHandle<GBRForest> forestHandle;
+            iSetup.get<GBRWrapperRcd>().get(forestLabel_,forestHandle);
+            forest = forestHandle.product();
+          }
+
+          auto gbrVal = forest->GetClassifier(gbrVals_);
+
+          if(gbrVal < mvaMin_ || gbrVal > mvaMax_) continue;
+          theMVANew.push_back( gbrVal );
+        } 
         theVertexComps.push_back( trk );
     }
 }

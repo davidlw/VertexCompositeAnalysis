@@ -275,7 +275,7 @@ VertexCompositeNtupleProducer::VertexCompositeNtupleProducer(const edm::Paramete
     PID_dau1_ = iConfig.getUntrackedParameter<int>("PID_dau1");
     PID_dau2_ = iConfig.getUntrackedParameter<int>("PID_dau2");
     
-    useAnyMVA_ = iConfig.getUntrackedParameter<bool>("useAnyMVA");
+    useAnyMVA_ = iConfig.getParameter<bool>("useAnyMVA");
     isSkimMVA_ = iConfig.getUntrackedParameter<bool>("isSkimMVA"); 
 
     //cut variables
@@ -287,12 +287,15 @@ VertexCompositeNtupleProducer::VertexCompositeNtupleProducer(const edm::Paramete
     tok_offlinePV_ = consumes<reco::VertexCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCollection"));
     tok_generalTrk_ = consumes<reco::TrackCollection>(iConfig.getUntrackedParameter<edm::InputTag>("TrackCollection"));
     recoVertexCompositeCandidateCollection_Token_ = consumes<reco::VertexCompositeCandidateCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCompositeCollection"));
-    MVAValues_Token_ = consumes<MVACollection>(iConfig.getUntrackedParameter<edm::InputTag>("MVACollection"));
+    MVAValues_Token_ = consumes<MVACollection>(iConfig.getParameter<edm::InputTag>("MVACollection"));
     tok_muon_ = consumes<reco::MuonCollection>(iConfig.getUntrackedParameter<edm::InputTag>("MuonCollection"));
     Dedx_Token1_ = consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxHarmonic2"));
     Dedx_Token2_ = consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxTruncated40"));
-    
     tok_genParticle_ = consumes<reco::GenParticleCollection>(edm::InputTag(iConfig.getUntrackedParameter<edm::InputTag>("GenParticleCollection")));
+
+    if(useAnyMVA_ && iConfig.exists("MVACollection"))
+      MVAValues_Token_ = consumes<MVACollection>(iConfig.getParameter<edm::InputTag>("MVACollection"));
+
 }
 
 
