@@ -16,6 +16,13 @@ d0ana = cms.EDAnalyzer('VertexCompositeNtupleProducer',
   MuonCollection = cms.untracked.InputTag("null"),
   doMuon = cms.untracked.bool(False),
 
+  saveTree = cms.untracked.bool(True),
+  saveHistogram = cms.untracked.bool(False),
+  saveAllHistogram = cms.untracked.bool(False),
+
+  pTBins = cms.untracked.vdouble(0,1.2,1.5,2.4,3.0,3.5,4.2,5.0,6.0,7.0,8.0),
+  yBins = cms.untracked.vdouble(-2.4,-1.0,0.0,1.0,2.4),
+
   useAnyMVA = cms.bool(False),
   isSkimMVA = cms.untracked.bool(False),
   MVACollection = cms.InputTag("generalD0CandidatesNew:MVAValues")
@@ -37,6 +44,13 @@ d0ana_mc = cms.EDAnalyzer('VertexCompositeNtupleProducer',
   GenParticleCollection = cms.untracked.InputTag("genParticles"),
   MuonCollection = cms.untracked.InputTag("null"),
   doMuon = cms.untracked.bool(False),
+
+  saveTree = cms.untracked.bool(True),
+  saveHistogram = cms.untracked.bool(False),
+  saveAllHistogram = cms.untracked.bool(True),
+
+  pTBins = cms.untracked.vdouble(0,1.2,1.5,2.4,3.0,3.5,4.2,5.0,6.0,7.0,8.0),
+  yBins = cms.untracked.vdouble(-2.4,-1.0,0.0,1.0,2.4),
 
   useAnyMVA = cms.bool(False),
   isSkimMVA = cms.untracked.bool(False),

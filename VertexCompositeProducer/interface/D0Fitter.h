@@ -111,12 +111,15 @@ class D0Fitter {
   int    tkNhitsCut;
   double tkPtCut;
   double tkEtaCut;
+  double tkPtSumCut;
+  double tkEtaDiffCut;
   double chi2Cut;
   double rVtxCut;
   double rVtxSigCut;
   double lVtxCut;
   double lVtxSigCut;
-  double collinCut;
+  double collinCut2D;
+  double collinCut3D;
   double d0MassCut;
   double dauTransImpactSigCut;
   double dauLongImpactSigCut;

@@ -15,15 +15,15 @@ if __name__ == '__main__':
     config.JobType.pluginName = 'Analysis'
 #    config.JobType.maxMemoryMB = 3000
 #    config.JobType.maxJobRuntimeMin = 2750
-    config.Data.unitsPerJob = 1
-    config.Data.totalUnits = 100
+    config.Data.unitsPerJob = 3
+    config.Data.totalUnits = 30
     config.Data.splitting = 'FileBased'
-    config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
+#    config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
+    config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
     config.Data.publication = False
     config.Data.useParent = True
     config.Data.inputDBS = 'phys03'
-    config.Site.storageSite = 'T2_US_MIT'
-#    config.Site.storageSite = 'T3_US_Rice'
+    config.Site.storageSite = 'T2_CH_CERN'
 
     def submit(config):
         try:
@@ -37,8 +37,8 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'pPb2016_pPb_Tree_D0Both_b1_v4_test'
+    config.General.requestName = 'pPb2016_pPb_Tree_PromptD0_2_2_pT15_2_b1_FullEvent_v1'
     config.JobType.psetName = '../test/d0ana.py'
-    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0Both_v3_test-fc6e7002cc4077b6170121cd6a7f86ef/USER'
-    config.Data.outputDatasetTag = 'pPb_Tree_D0Both_v4_test'
+    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0_v1-379c7b575f203f91ccc8e7f4e4199456/USER'
+    config.Data.outputDatasetTag = 'pPb_Tree_PromptD0_2_2_pT15_2_FullEvent_v1'
     submit(config)

@@ -16,8 +16,8 @@ if __name__ == '__main__':
     config.JobType.maxMemoryMB = 3000
     config.JobType.maxJobRuntimeMin = 2750
 #    config.JobType.psetName = '../test/pPbFlowCorrSkim_2016_D0_cfg.py'
-    config.Data.unitsPerJob = 1
-    config.Data.totalUnits = 3000
+    config.Data.unitsPerJob = 3
+#    config.Data.totalUnits = 3000
     config.Data.splitting = 'LumiBased'
     config.Data.inputDataset = '/PAHighMultiplicity1/PARun2016C-PromptReco-v1/AOD'
     config.Data.lumiMask = 'Cert_285479-285832_HI8TeV_PromptReco_pPb_Collisions16_JSON_NoL1T.txt'

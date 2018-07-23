@@ -28,8 +28,11 @@ D0Producer::D0Producer(const edm::ParameterSet& iConfig) :
 //  theParams(iConfig) {
 {
   // Trying this with Candidates instead of the simple reco::Vertex
+  useAnyMVA_ = false;
+  if(iConfig.exists("useAnyMVA")) useAnyMVA_ = iConfig.getParameter<bool>("useAnyMVA");
+ 
   produces< reco::VertexCompositeCandidateCollection >("D0");
-  produces<MVACollection>("MVAValues");
+  if(useAnyMVA_) produces<MVACollection>("MVAValuesD0");
 }
 
 // (Empty) Destructor
@@ -62,8 +65,11 @@ void D0Producer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
    // Write the collections to the Event
    iEvent.put( d0Candidates, std::string("D0") );
     
-   auto mvas = std::make_unique<MVACollection>(theVees.getMVAVals().begin(),theVees.getMVAVals().end());
-   iEvent.put(std::move(mvas), std::string("MVAValues"));
+   if(useAnyMVA_) 
+   {
+     auto mvas = std::make_unique<MVACollection>(theVees.getMVAVals().begin(),theVees.getMVAVals().end());
+     iEvent.put(std::move(mvas), std::string("MVAValuesD0"));
+   }
 
    theVees.resetAll();
 }

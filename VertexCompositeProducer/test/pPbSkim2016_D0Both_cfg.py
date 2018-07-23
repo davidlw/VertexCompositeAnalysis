@@ -21,7 +21,7 @@ process.source = cms.Source("PoolSource",
 )
 
 # =============== Other Statements =====================
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(30))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.GlobalTag.globaltag = '80X_dataRun2_Prompt_v15'
 
@@ -70,8 +70,8 @@ process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalD0Candidate
 process.generalD0CandidatesNew = process.generalD0Candidates.clone()
 process.generalD0CandidatesNewWrongSign = process.generalD0Candidates.clone(isWrongSign = cms.bool(True))
 
-process.generalD0CandidatesNew.useAnyMVA = cms.bool(True)
-process.generalD0CandidatesNewWrongSign.useAnyMVA = cms.bool(True)
+#process.generalD0CandidatesNew.useAnyMVA = cms.bool(True)
+#process.generalD0CandidatesNewWrongSign.useAnyMVA = cms.bool(True)
 
 process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew * process.generalD0CandidatesNewWrongSign )
 

@@ -98,6 +98,11 @@ private:
     bool decayInGen_;
     bool twoLayerDecay_;
     bool doMuon_;
+    bool selectGenMatch_;
+    bool selectGenUnMatch_;
+    bool selectGenMatchSwap_;
+    bool selectGenMatchUnSwap_;
+
     int PID_;
     int PID_dau1_;
     int PID_dau2_;
@@ -106,6 +111,19 @@ private:
     double multMax_;
     double multMin_;
     double deltaR_; //deltaR for Gen matching
+    double trkPtMin_;
+    double trkEtaMax_;
+    double trkPtSumMin_;
+    double trkEtaDiffMax_;
+    double trkPtErrMax_;
+    int    trkNHitMin_;
+    double candpTMin_;
+    double candpTMax_;
+    double candYMin_;
+    double candYMax_;
+    double cand3DDecayLengthSigMin_;
+    double cand3DPointingAngleMax_;
+    double candVtxProbMin_;
 
     //tree branches
     //event info
@@ -118,6 +136,7 @@ private:
     float mva;
     float pt;
     float eta;
+    float flavor;
     float y;
     float mass;
     float VtxProb;
@@ -177,6 +196,10 @@ private:
     float T4dedx2;
     float trkChi1;
     float trkChi2;
+    bool  isPionD1;
+    bool  isPionD2;
+    bool  isKaonD1;
+    bool  isKaonD2;
     
     //grand-dau info
     float grand_dzos1;
@@ -238,6 +261,8 @@ private:
     vector<double> *Dvector2;
     vector<int> *pVectIDmom;
     
+    int  selectFlavor_;
+    bool usePID_;
     bool useAnyMVA_;
     bool useExistingMVA_;
 
@@ -288,6 +313,11 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
     hasSwap_ = iConfig.getUntrackedParameter<bool>("hasSwap");
     decayInGen_ = iConfig.getUntrackedParameter<bool>("decayInGen");
     doMuon_ = iConfig.getUntrackedParameter<bool>("doMuon");
+    selectGenMatch_ = iConfig.getUntrackedParameter<bool>("selectGenMatch");
+    selectGenUnMatch_ = iConfig.getUntrackedParameter<bool>("selectGenUnMatch");
+    selectGenMatchSwap_ = iConfig.getUntrackedParameter<bool>("selectGenMatchSwap");
+    selectGenMatchUnSwap_ = iConfig.getUntrackedParameter<bool>("selectGenMatchUnSwap");
+
     PID_ = iConfig.getUntrackedParameter<int>("PID");
     PID_dau1_ = iConfig.getUntrackedParameter<int>("PID_dau1");
     PID_dau2_ = iConfig.getUntrackedParameter<int>("PID_dau2");
@@ -299,6 +329,20 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
     mvaMax_ = iConfig.getUntrackedParameter<double>("mvaMax", 999.9);
     mvaMin_ = iConfig.getUntrackedParameter<double>("mvaMin", -999.9);
 
+    trkPtMin_ = iConfig.getUntrackedParameter<double>("trkPtMin");
+    trkEtaMax_ = iConfig.getUntrackedParameter<double>("trkEtaMax");
+    trkPtSumMin_ = iConfig.getUntrackedParameter<double>("trkPtSumMin");
+    trkEtaDiffMax_ = iConfig.getUntrackedParameter<double>("trkEtaDiffMax");
+    trkPtErrMax_ = iConfig.getUntrackedParameter<double>("trkPtErrMax");
+    trkNHitMin_ = iConfig.getUntrackedParameter<int>("trkNHitMin");
+    candpTMin_ = iConfig.getUntrackedParameter<double>("candpTMin");
+    candpTMax_ = iConfig.getUntrackedParameter<double>("candpTMax");
+    candYMin_ = iConfig.getUntrackedParameter<double>("candYMin");
+    candYMax_ = iConfig.getUntrackedParameter<double>("candYMax");
+    cand3DDecayLengthSigMin_ = iConfig.getUntrackedParameter<double>("cand3DDecayLengthSigMin");
+    cand3DPointingAngleMax_ = iConfig.getUntrackedParameter<double>("cand3DPointingAngleMax");
+    candVtxProbMin_ = iConfig.getUntrackedParameter<double>("candVtxProbMin");
+
     //input tokens
     tok_offlinePV_ = consumes<reco::VertexCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCollection"));
     tok_generalTrk_ = consumes<reco::TrackCollection>(iConfig.getUntrackedParameter<edm::InputTag>("TrackCollection"));
@@ -308,6 +352,11 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
     Dedx_Token2_ = consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxTruncated40"));
     tok_genParticle_ = consumes<reco::GenParticleCollection>(edm::InputTag(iConfig.getUntrackedParameter<edm::InputTag>("GenParticleCollection")));
 
+    usePID_ = false;
+    selectFlavor_ = 0;
+    if(iConfig.exists("usePID")) usePID_ = iConfig.getParameter<bool>("usePID");
+    if(iConfig.exists("useFlavor")) selectFlavor_ = iConfig.getUntrackedParameter<int>("selectFlavor");
+ 
     // Loading TMVA
     useAnyMVA_ = false;
     useExistingMVA_ = false;
@@ -323,9 +372,8 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
     if(iConfig.exists("useExistingMVA")) useExistingMVA_ = iConfig.getParameter<bool>("useExistingMVA");
 
     if(useAnyMVA_){
-      if(iConfig.exists("MVACollection")){ 
+      if(useExistingMVA_ && iConfig.exists("MVACollection")){ 
         MVAValues_Token_ = consumes<MVACollection>(iConfig.getParameter<edm::InputTag>("MVACollection"));
-        useExistingMVA_ = true;
       }
       else{
         if(iConfig.exists("mvaType"))type = iConfig.getParameter<std::string>("mvaType");
@@ -338,7 +386,7 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
     }
 
     if(!useForestFromDB_){
-      edm::FileInPath fip(Form("VertexCompositeAnalysis/VertexCompositeProducer/data/%s",dbFileName_.c_str()));
+      edm::FileInPath fip(Form("VertexCompositeAnalysis/VertexCompositeAnalyzer/data/%s",dbFileName_.c_str()));
       TFile gbrfile(fip.fullPath().c_str(),"READ");
       forest_ = (GBRForest*)gbrfile.Get(forestLabel_.c_str());
       gbrfile.Close();
@@ -350,6 +398,11 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
 
     produces< reco::VertexCompositeCandidateCollection >(v0IDName_);
     produces<MVACollection>(Form("MVAValuesNew%s",v0IDName_.c_str()));
+
+    isPionD1 = true;
+    isPionD2 = true;
+    isKaonD1 = false;
+    isKaonD2 = false;
 }
 
 
@@ -525,6 +578,9 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         eta = trk.eta();
         y = trk.rapidity();
         pt = trk.pt();
+        flavor = trk.pdgId()/421;
+
+        if(usePID_ && selectFlavor_ && (int)flavor!=selectFlavor_) continue; 
 
         mva=0;
         if(useAnyMVA_ && useExistingMVA_)
@@ -535,6 +591,9 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
           theMVANew.push_back( mva );
           continue;
         }
+
+        if(pt<candpTMin_ || pt>candpTMax_) continue;
+        if(y<candYMin_ || y>candYMax_) continue;
 
         double px = trk.px();
         double py = trk.py();
@@ -599,6 +658,19 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
             }
         }
         
+       if(selectGenMatch_ && !matchGEN) continue;
+       if(selectGenUnMatch_ && matchGEN) continue;
+       if(selectGenMatchSwap_)
+       {
+         if(!matchGEN) continue;
+         else if(!isSwap) continue;
+       }
+       if(selectGenMatchUnSwap_)
+       {
+         if(!matchGEN) continue;
+         else if(isSwap) continue;
+       }
+
         double pxd1 = d1->px();
         double pyd1 = d1->py();
         double pzd1 = d1->pz();
@@ -612,7 +684,10 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         //pt
         pt1 = d1->pt();
         pt2 = d2->pt();
-        
+
+        if(pt1 < trkPtMin_ || pt2 < trkPtMin_) continue;
+        if((pt1+pt2) < trkPtSumMin_) continue;
+                
         //momentum
         p1 = d1->p();
         p2 = d2->p();
@@ -621,6 +696,9 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         eta1 = d1->eta();
         eta2 = d2->eta();
         
+        if(fabs(eta1) > trkEtaMax_ || fabs(eta2) > trkEtaMax_) continue;
+        if(fabs(eta1-eta2) > trkEtaDiffMax_) continue;
+
         //phi
         phi1 = d1->phi();
         phi2 = d2->phi();
@@ -633,7 +711,9 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         vtxChi2 = trk.vertexChi2();
         ndf = trk.vertexNdof();
         VtxProb = TMath::Prob(vtxChi2,ndf);
-        
+
+        if(VtxProb < candVtxProbMin_) continue;       
+
         //PAngle
         TVector3 ptosvec(secvx-bestvx,secvy-bestvy,secvz-bestvz);
         TVector3 secvec(px,py,pz);
@@ -643,7 +723,8 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         
         agl = cos(secvec.Angle(ptosvec));
         agl_abs = secvec.Angle(ptosvec);
-        
+        if(agl_abs > cand3DPointingAngleMax_) continue;
+
         agl2D = cos(secvec2D.Angle(ptosvec2D));
         agl2D_abs = secvec2D.Angle(ptosvec2D);
         
@@ -659,7 +740,8 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         dlerror = sqrt(ROOT::Math::Similarity(totalCov, distanceVector))/dl;
         
         dlos = dl/dlerror;
-        
+        if(dlos < cand3DDecayLengthSigMin_) continue;
+ 
         //Decay length 2D
         SVector6 v1(vtx.covariance(0,0), vtx.covariance(0,1),vtx.covariance(1,1),0,0,0);
         SVector6 v2(trk.vertexCovariance(0,0), trk.vertexCovariance(0,1),trk.vertexCovariance(1,1),0,0,0);
@@ -691,6 +773,12 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
                 H2dedx1 = dEdxTrack[dau1].dEdx();
             }
             
+            if(usePID_)
+            {  
+              if(H2dedx1 > (2.8/pow(pt1*cosh(eta1),0.4)+0.2) && H2dedx1 < (2.8/pow(pt1*cosh(eta1),0.9)+1.8) && H2dedx1> (2.8/pow(0.75,0.4)+0.2)) { isKaonD1 = true; isPionD1 = false; }
+              if((H2dedx1 < (2.8/pow(pt1*cosh(eta1),0.4)+0.2) || H2dedx1< (2.8/pow(0.75,0.4)+0.2)) && H2dedx1>0) { isPionD1 = true; isKaonD1 = false;}
+            }
+
             T4dedx1 = -999.9;
             
             if(dEdxHandle2.isValid()){
@@ -703,12 +791,14 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
             
             //track pT error
             ptErr1 = dau1->ptError();
-            
+            if(ptErr1 > trkPtErrMax_) continue;
+    
             //vertexCovariance 00-xError 11-y 22-z
             secvz = trk.vz(); secvx = trk.vx(); secvy = trk.vy();
-            
+           
             //trkNHits
             nhit1 = dau1->numberOfValidHits();
+            if(nhit1 < trkNHitMin_) continue;
             
             //DCA
             math::XYZPoint bestvtx(bestvx,bestvy,bestvz);
@@ -735,6 +825,12 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
             H2dedx2 = dEdxTrack[dau2].dEdx();
         }
         
+        if(usePID_)
+        {
+          if(H2dedx2 > (2.8/pow(pt2*cosh(eta2),0.4)+0.2) && H2dedx2 < (2.8/pow(pt2*cosh(eta2),0.9)+1.8) && H2dedx2> (2.8/pow(0.75,0.4)+0.2)) { isKaonD2 = true; isPionD2 = false; }
+          if((H2dedx2 < (2.8/pow(pt2*cosh(eta2),0.4)+0.2) || H2dedx2< (2.8/pow(0.75,0.4)+0.2)) && H2dedx2>0) { isPionD2 = true; isKaonD2 = false; }
+        }
+
         T4dedx2 = -999.9;
         
         if(dEdxHandle2.isValid()){
@@ -742,17 +838,25 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
             T4dedx2 = dEdxTrack[dau2].dEdx();
         }
         
+        if(usePID_)
+        {
+          if(flavor>0 && (!isPionD1 || !isKaonD2)) continue;
+          if(flavor<0 && (!isPionD2 || !isKaonD1)) continue;
+        }
+
         //track Chi2
         trkChi2 = dau2->normalizedChi2();
         
         //track pT error
         ptErr2 = dau2->ptError();
-        
+        if(ptErr2 > trkPtErrMax_) continue;
+
         //vertexCovariance 00-xError 11-y 22-z
         secvz = trk.vz(); secvx = trk.vx(); secvy = trk.vy();
         
         //trkNHits
         nhit2 = dau2->numberOfValidHits();
+        if(nhit2 < trkNHitMin_) continue;
         
         //DCA
         math::XYZPoint bestvtx(bestvx,bestvy,bestvz);
@@ -1092,25 +1196,27 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
 
         if(useAnyMVA_ && !useExistingMVA_)
         {
-          float gbrVals_[18];
-          gbrVals_[0] = pt;
-          gbrVals_[1] = eta;
-          gbrVals_[2] = VtxProb;
-          gbrVals_[3] = dlos;
-          gbrVals_[4] = dlos2D;
-          gbrVals_[5] = dl;
-          gbrVals_[6] = agl;
-          gbrVals_[7] = agl2D;
-          gbrVals_[8] = dzos1;
-          gbrVals_[9] = dzos2;
-          gbrVals_[10] = dxyos1;
-          gbrVals_[11] = dxyos2;
-          gbrVals_[12] = nhit1;
-          gbrVals_[13] = nhit2;
-          gbrVals_[14] = ptErr1;
-          gbrVals_[15] = ptErr2;
-          gbrVals_[16] = H2dedx1;
-          gbrVals_[17] = H2dedx2;
+          float gbrVals_[15];
+          gbrVals_[0] = VtxProb;
+          gbrVals_[1] = dlos;
+          gbrVals_[2] = dlos2D;
+//          gbrVals_[5] = dl;
+          gbrVals_[3] = agl_abs;
+          gbrVals_[4] = agl2D_abs;
+          gbrVals_[5] = fabs(dzos1);
+          gbrVals_[6] = fabs(dzos2);
+          gbrVals_[7] = fabs(dxyos1);
+          gbrVals_[8] = fabs(dxyos2);
+//          gbrVals_[9] = nhit1;
+//          gbrVals_[10] = nhit2;
+//          gbrVals_[14] = ptErr1;
+//          gbrVals_[15] = ptErr2;
+          gbrVals_[9] = H2dedx1;
+          gbrVals_[10] = H2dedx2;
+          gbrVals_[11] = pt1;
+          gbrVals_[12] = pt2;
+          gbrVals_[13] = pt1*cosh(eta1);
+          gbrVals_[14] = pt2*cosh(eta2);
 
           GBRForest const * forest = forest_;
           if(useForestFromDB_){

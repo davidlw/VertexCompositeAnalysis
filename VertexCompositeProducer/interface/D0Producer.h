@@ -50,6 +50,8 @@ private:
   virtual void produce(edm::Event&, const edm::EventSetup&);
   virtual void endJob() ;
 
+  bool useAnyMVA_;
+
   D0Fitter theVees; 
 //  edm::ParameterSet theParams;
 };

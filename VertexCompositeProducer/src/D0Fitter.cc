@@ -69,12 +69,15 @@ D0Fitter::D0Fitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollect
   tkNhitsCut = theParameters.getParameter<int>(string("tkNhitsCut"));
   tkPtCut = theParameters.getParameter<double>(string("tkPtCut"));
   tkEtaCut = theParameters.getParameter<double>(string("tkEtaCut"));
+  tkPtSumCut = theParameters.getParameter<double>(string("tkPtSumCut"));
+  tkEtaDiffCut = theParameters.getParameter<double>(string("tkEtaDiffCut"));
   chi2Cut = theParameters.getParameter<double>(string("vtxChi2Cut"));
   rVtxCut = theParameters.getParameter<double>(string("rVtxCut"));
   rVtxSigCut = theParameters.getParameter<double>(string("vtxSignificance2DCut"));
   lVtxCut = theParameters.getParameter<double>(string("lVtxCut"));
   lVtxSigCut = theParameters.getParameter<double>(string("vtxSignificance3DCut"));
-  collinCut = theParameters.getParameter<double>(string("collinearityCut"));
+  collinCut2D = theParameters.getParameter<double>(string("collinearityCut2D"));
+  collinCut3D = theParameters.getParameter<double>(string("collinearityCut3D"));
   d0MassCut = theParameters.getParameter<double>(string("d0MassCut"));
   dauTransImpactSigCut = theParameters.getParameter<double>(string("dauTransImpactSigCut"));
   dauLongImpactSigCut = theParameters.getParameter<double>(string("dauLongImpactSigCut"));
@@ -241,6 +244,9 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     for(unsigned int trdx2 = trdx1 + 1; trdx2 < theTrackRefs.size(); trdx2++) {
 
+      if( (theTrackRefs[trdx1]->pt() + theTrackRefs[trdx2]->pt()) < tkPtSumCut) continue;
+      if( abs(theTrackRefs[trdx1]->eta() - theTrackRefs[trdx2]->eta()) > tkEtaDiffCut) continue;
+
       //This vector holds the pair of oppositely-charged tracks to be vertexed
       std::vector<TransientTrack> transTracks;
 
@@ -266,12 +272,21 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	negTransTkPtr = &theTransTracks[trdx2];
 	posTransTkPtr = &theTransTracks[trdx1];
       }
-      else if(isWrongSign && theTrackRefs[trdx1]->charge()*theTrackRefs[trdx2]->charge() > 0.0) { 
+      else if(isWrongSign && theTrackRefs[trdx1]->charge() > 0. &&
+              theTrackRefs[trdx2]->charge() > 0.) { 
         negativeTrackRef = theTrackRefs[trdx2];
         positiveTrackRef = theTrackRefs[trdx1];
         negTransTkPtr = &theTransTracks[trdx2];
         posTransTkPtr = &theTransTracks[trdx1];
       }
+      else if(isWrongSign && theTrackRefs[trdx1]->charge() < 0. &&
+              theTrackRefs[trdx2]->charge() < 0.) { 
+        negativeTrackRef = theTrackRefs[trdx1];
+        positiveTrackRef = theTrackRefs[trdx2];
+        negTransTkPtr = &theTransTracks[trdx1];
+        posTransTkPtr = &theTransTracks[trdx2];
+      }
+
       // If they're not 2 oppositely charged tracks, loop back to the
       //  beginning and try the next pair.
       else continue;
@@ -340,10 +355,14 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       double totalPSq =
         ( posTSCP.momentum() + negTSCP.momentum() ).mag2();
 
+      double totalPt =
+        ( posTSCP.momentum() + negTSCP.momentum() ).perp();
+
       double mass1 = sqrt( totalE1Sq - totalPSq);
       double mass2 = sqrt( totalE2Sq - totalPSq);
 
       if( (mass1 > mPiKCutMax || mass1 < mPiKCutMin) && (mass2 > mPiKCutMax || mass2 < mPiKCutMin)) continue;
+      if( totalPt < dPtCut ) continue;
 
       // Create the vertex fitter object and vertex the tracks
     
@@ -465,7 +484,7 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
             rVtxMag / sigmaRvtxMag < rVtxSigCut ||
             lVtxMag < lVtxCut ||
             lVtxMag / sigmaLvtxMag < lVtxSigCut ||
-            cos(d0Angle3D) < collinCut || alpha > alphaCut
+            cos(d0Angle3D) < collinCut3D || cos(d0Angle2D) < collinCut2D || alpha > alphaCut
         ) continue;
 
         VertexCompositeCandidate* theD0 = 0;
@@ -495,37 +514,40 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
         theD0->setPdgId(pdg_id[i]);
         addp4.set( *theD0 );
         if( theD0->mass() < d0MassD0 + d0MassCut &&
-            theD0->mass() > d0MassD0 - d0MassCut &&
-	    theD0->pt() > dPtCut ) {
-
+            theD0->mass() > d0MassD0 - d0MassCut ) //&&
+	   // theD0->pt() > dPtCut ) {
+        {
           theD0s.push_back( *theD0 );
 
 // perform MVA evaluation
-          float gbrVals_[14];
-          gbrVals_[0] = d0P4.Pt();
-          gbrVals_[1] = d0P4.Eta();
-          gbrVals_[2] = d0C2Prob;
-          gbrVals_[3] = lVtxMag / sigmaLvtxMag;
-          gbrVals_[4] = rVtxMag / sigmaRvtxMag;
-          gbrVals_[5] = lVtxMag;
-          gbrVals_[6] = cos(d0Angle3D);
-          gbrVals_[7] = cos(d0Angle2D);
-          gbrVals_[8] = dauLongImpactSig_pos;
-          gbrVals_[9] = dauLongImpactSig_neg;
-          gbrVals_[10] = dauTransImpactSig_pos;
-          gbrVals_[11] = dauTransImpactSig_neg;
-          gbrVals_[12] = dedx_pos;
-          gbrVals_[13] = dedx_neg;
+          if(useAnyMVA_)
+          {
+            float gbrVals_[14];
+            gbrVals_[0] = d0P4.Pt();
+            gbrVals_[1] = d0P4.Eta();
+            gbrVals_[2] = d0C2Prob;
+            gbrVals_[3] = lVtxMag / sigmaLvtxMag;
+            gbrVals_[4] = rVtxMag / sigmaRvtxMag;
+            gbrVals_[5] = lVtxMag;
+            gbrVals_[6] = cos(d0Angle3D);
+            gbrVals_[7] = cos(d0Angle2D);
+            gbrVals_[8] = dauLongImpactSig_pos;
+            gbrVals_[9] = dauLongImpactSig_neg;
+            gbrVals_[10] = dauTransImpactSig_pos;
+            gbrVals_[11] = dauTransImpactSig_neg;
+            gbrVals_[12] = dedx_pos;
+            gbrVals_[13] = dedx_neg;
 
-          GBRForest const * forest = forest_;
-          if(useForestFromDB_){
-            edm::ESHandle<GBRForest> forestHandle;
-            iSetup.get<GBRWrapperRcd>().get(forestLabel_,forestHandle);
-            forest = forestHandle.product();
+            GBRForest const * forest = forest_;
+            if(useForestFromDB_){
+              edm::ESHandle<GBRForest> forestHandle;
+              iSetup.get<GBRWrapperRcd>().get(forestLabel_,forestHandle);
+              forest = forestHandle.product();
+            }
+
+            auto gbrVal = forest->GetClassifier(gbrVals_);
+            mvaVals_.push_back(gbrVal);
           }
-
-          auto gbrVal = forest->GetClassifier(gbrVals_);
-          mvaVals_.push_back(gbrVal);
         }
 
         if(theD0) delete theD0;

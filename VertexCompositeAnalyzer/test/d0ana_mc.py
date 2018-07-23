@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("Demo")
+process = cms.Process("d0ana")
 
 # initialize MessageLogger and output report
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
@@ -9,7 +9,7 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 #process.MessageLogger.cerr.INFO = cms.untracked.PSet(
 #        limit = cms.untracked.int32(-1)
 #        )
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(5000)
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1000)
 process.options   = cms.untracked.PSet( wantSummary = 
 cms.untracked.bool(True) )
 
@@ -19,7 +19,7 @@ cms.untracked.bool(True) )
 #process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 #process.GlobalTag.globaltag = "80X_dataRun2_Prompt_v15"
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(20000) 
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(3000) 
 )
 
 process.source = cms.Source("PoolSource",
@@ -40,6 +40,7 @@ secondaryFileNames = cms.untracked.vstring(
 )
                             )
 
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0selector_cff")
 process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0analyzer_ntp_cff")
 
 process.TFileService = cms.Service("TFileService",
@@ -47,5 +48,36 @@ process.TFileService = cms.Service("TFileService",
 cms.string('d0ana_mc.root')
                                    )
 
+process.d0ana_mc.useAnyMVA = cms.bool(True)
+process.d0ana_wrongsign_mc.useAnyMVA = cms.bool(True)
+process.d0ana_mc.VertexCompositeCollection = cms.untracked.InputTag("d0selectorMC:D0")
+process.d0ana_wrongsign_mc.VertexCompositeCollection = cms.untracked.InputTag("d0selectorWSMC:D0")
+process.d0ana_mc.MVACollection = cms.InputTag("d0selectorMC:MVAValuesNewD0")
+process.d0ana_wrongsign_mc.MVACollection = cms.InputTag("d0selectorWSMC:MVAValuesNewD0")
+process.d0ana_mc.isSkimMVA = cms.untracked.bool(True)
+#process.d0ana_wrongsign_mc.isSkimMVA = cms.untracked.bool(True)
+process.d0ana_mc.saveHistogram = cms.untracked.bool(True)
+process.d0ana_mc.saveTree = cms.untracked.bool(False)
 
-process.p = cms.Path(process.d0ana_mc*process.d0ana_wrongsign_mc)
+process.d0preselectorMC = process.d0selectorMC.clone(
+  trkPtSumMin = cms.untracked.double(1.6),
+  trkEtaDiffMax = cms.untracked.double(1.5)
+)
+
+process.d0preselectorWSMC = process.d0selectorWSMC.clone(
+  trkPtSumMin = cms.untracked.double(1.6),
+  trkEtaDiffMax = cms.untracked.double(1.5)
+)
+
+process.d0selectorMC.VertexCompositeCollection = cms.untracked.InputTag("d0preselectorMC:D0")
+process.d0selectorWSMC.VertexCompositeCollection = cms.untracked.InputTag("d0preselectorWSMC:D0")
+process.d0selectorMC.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_2_4.root')
+process.d0selectorWSMC.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_2_4.root')
+process.d0selectorMC.useAnyMVA = cms.bool(True)
+process.d0selectorWSMC.useAnyMVA = cms.bool(True)
+
+process.d0ana_seq = cms.Sequence(process.d0preselectorMC * process.d0selectorMC * process.d0ana_mc)
+#process.d0ana_wrongsign_seq = cms.Sequence(process.d0selectorWS * process.d0ana_wrongsign)
+
+process.p = cms.Path(process.d0ana_seq)
+#process.p1 = cms.Path(process.d0ana_wrongsign_seq)
