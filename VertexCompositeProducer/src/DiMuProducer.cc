@@ -48,8 +48,10 @@ void DiMuProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
    theVees.fitAll(iEvent, iSetup);
 
    // Create auto_ptr for each collection to be stored in the Event
-   std::auto_ptr< reco::VertexCompositeCandidateCollection >
-     dimuCandidates( new reco::VertexCompositeCandidateCollection );
+//   std::auto_ptr< reco::VertexCompositeCandidateCollection >
+//     dimuCandidates( new reco::VertexCompositeCandidateCollection );
+   auto dimuCandidates = std::make_unique<reco::VertexCompositeCandidateCollection>();
+
    dimuCandidates->reserve( theVees.getDiMu().size() );
 
    std::copy( theVees.getDiMu().begin(),
@@ -57,7 +59,7 @@ void DiMuProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
               std::back_inserter(*dimuCandidates) );
 
    // Write the collections to the Event
-   iEvent.put( dimuCandidates, std::string("DiMu") ); 
+   iEvent.put( std::move(dimuCandidates), std::string("DiMu") ); 
 
    theVees.resetAll();
 }

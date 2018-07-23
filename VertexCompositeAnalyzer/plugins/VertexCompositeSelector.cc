@@ -428,14 +428,16 @@ VertexCompositeSelector::produce(edm::Event& iEvent, const edm::EventSetup& iSet
 
     fillRECO(iEvent,iSetup);
 
-    std::auto_ptr< reco::VertexCompositeCandidateCollection > theNewV0Cands( new reco::VertexCompositeCandidateCollection );
+//    std::make_unique< reco::VertexCompositeCandidateCollection > theNewV0Cands( new reco::VertexCompositeCandidateCollection );
+    auto theNewV0Cands = std::make_unique<reco::VertexCompositeCandidateCollection>();
+
     theNewV0Cands->reserve( theVertexComps.size() );
 
     std::copy( theVertexComps.begin(),
                theVertexComps.end(),
                std::back_inserter(*theNewV0Cands) );
 
-    iEvent.put(theNewV0Cands, v0IDName_);
+    iEvent.put(std::move(theNewV0Cands), v0IDName_);
     theVertexComps.clear();
 
     if(useAnyMVA_)
