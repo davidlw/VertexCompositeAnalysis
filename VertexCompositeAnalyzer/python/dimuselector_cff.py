@@ -30,6 +30,13 @@ jpsiselectorCut = jpsiselector.clone(
   candVtxProbMin = cms.untracked.double(0.01)
 )
 
+jpsiselectorBDTPrompt = jpsiselector.clone(
+  useAnyMVA = cms.bool(True),
+  trkPMin = cms.untracked.double(3.),
+  trkNHitMin = cms.untracked.int32(6),
+  mvaCuts = cms.vdouble(-0.2,0.012,-0.0047,0.078,-0.1,0.03,-0.0021)
+)
+
 ########## PF Candidates only
 jpsiselector1 = jpsiselector.clone(
   VertexCompositeCollection = cms.untracked.InputTag("generalJPsiMuMuPFCandidates:DiMu"),
