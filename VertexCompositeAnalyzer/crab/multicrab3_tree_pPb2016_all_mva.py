@@ -45,7 +45,7 @@ if __name__ == '__main__':
 #    submit(config)
 
     config.General.requestName = 'pPb2016_pPb_PromptD0_BDT_default_hm185_ws_histogram_b1_v7'
-    config.JobType.psetName = '../test/scenarios/d0ana_default_hm185_ws.py'
+    config.JobType.psetName = '../test/D0/d0ana_default_hm185_ws.py'
 #    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0_v2-89e025b59ba99ac07dd655f3dba5c8df/USER'
     config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
     config.Data.outputDatasetTag = 'pPb_PromptD0_BDT_default_hm185_ws_histogram_v7'
