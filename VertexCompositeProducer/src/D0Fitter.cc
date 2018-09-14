@@ -68,6 +68,7 @@ D0Fitter::D0Fitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollect
   tkChi2Cut = theParameters.getParameter<double>(string("tkChi2Cut"));
   tkNhitsCut = theParameters.getParameter<int>(string("tkNhitsCut"));
   tkPtCut = theParameters.getParameter<double>(string("tkPtCut"));
+  tkPtErrCut = theParameters.getParameter<double>(string("tkPtErrCut"));
   tkEtaCut = theParameters.getParameter<double>(string("tkEtaCut"));
   tkPtSumCut = theParameters.getParameter<double>(string("tkPtSumCut"));
   tkEtaDiffCut = theParameters.getParameter<double>(string("tkEtaDiffCut"));
@@ -84,6 +85,7 @@ D0Fitter::D0Fitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollect
   VtxChiProbCut = theParameters.getParameter<double>(string("VtxChiProbCut"));
   dPtCut = theParameters.getParameter<double>(string("dPtCut"));
   alphaCut = theParameters.getParameter<double>(string("alphaCut"));
+  alpha2DCut = theParameters.getParameter<double>(string("alpha2DCut"));
   isWrongSign = theParameters.getParameter<bool>(string("isWrongSign"));
 
 
@@ -214,6 +216,7 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     if( tmpRef->normalizedChi2() < tkChi2Cut &&
         tmpRef->numberOfValidHits() >= tkNhitsCut &&
+        tmpRef->ptError() / tmpRef->pt() < tkPtErrCut &&
         tmpRef->pt() > tkPtCut && fabs(tmpRef->eta()) < tkEtaCut ) {
 //      TransientTrack tmpTk( *tmpRef, &(*bFieldHandle), globTkGeomHandle );
       TransientTrack tmpTk( *tmpRef, magField );
@@ -306,6 +309,12 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       double dauLongImpactSig_neg = dzvtx_neg/dzerror_neg;
       double dauTransImpactSig_neg = dxyvtx_neg/dxyerror_neg;
 
+      double nhits_pos = positiveTrackRef->numberOfValidHits();
+      double nhits_neg = negativeTrackRef->numberOfValidHits(); 
+    
+      double ptErr_pos = positiveTrackRef->ptError();
+      double ptErr_neg = negativeTrackRef->ptError();
+
       double dedx_pos=-999.;
       double dedx_neg=-999.;
       // Extract dEdx
@@ -314,6 +323,8 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
         dedx_pos = dEdxTrack[positiveTrackRef].dEdx();
         dedx_neg = dEdxTrack[negativeTrackRef].dEdx();
       } 
+      dedx_pos = dedx_pos;
+      dedx_neg = dedx_neg;
 
       // Fill the vector of TransientTracks to send to KVF
       transTracks.push_back(*posTransTkPtr);
@@ -471,20 +482,12 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
         sigmaLvtxMag = sqrt(ROOT::Math::Similarity(d0TotalCov, distanceVector3D)) / lVtxMag;
         sigmaRvtxMag = sqrt(ROOT::Math::Similarity(d0TotalCov, distanceVector2D)) / rVtxMag;
 
-          TVector3 svpvVec;
-          svpvVec.SetXYZ(d0Vtx.x() - xVtx,
-                         d0Vtx.y() - yVtx,
-                         d0Vtx.z() - zVtx);
-          TVector3 dVec;
-          dVec.SetXYZ(d0TotalP.x(), d0TotalP.y(), d0TotalP.z());
-          double alpha = svpvVec.Angle(dVec);
-          
         if( d0NormalizedChi2 > chi2Cut ||
             rVtxMag < rVtxCut ||
             rVtxMag / sigmaRvtxMag < rVtxSigCut ||
             lVtxMag < lVtxCut ||
             lVtxMag / sigmaLvtxMag < lVtxSigCut ||
-            cos(d0Angle3D) < collinCut3D || cos(d0Angle2D) < collinCut2D || alpha > alphaCut
+            cos(d0Angle3D) < collinCut3D || cos(d0Angle2D) < collinCut2D || d0Angle3D > alphaCut || d0Angle2D > alpha2DCut
         ) continue;
 
         VertexCompositeCandidate* theD0 = 0;
@@ -522,21 +525,27 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 // perform MVA evaluation
           if(useAnyMVA_)
           {
-            float gbrVals_[14];
+            float gbrVals_[20];
             gbrVals_[0] = d0P4.Pt();
             gbrVals_[1] = d0P4.Eta();
             gbrVals_[2] = d0C2Prob;
             gbrVals_[3] = lVtxMag / sigmaLvtxMag;
             gbrVals_[4] = rVtxMag / sigmaRvtxMag;
             gbrVals_[5] = lVtxMag;
-            gbrVals_[6] = cos(d0Angle3D);
-            gbrVals_[7] = cos(d0Angle2D);
+            gbrVals_[6] = d0Angle3D;
+            gbrVals_[7] = d0Angle2D;
             gbrVals_[8] = dauLongImpactSig_pos;
             gbrVals_[9] = dauLongImpactSig_neg;
             gbrVals_[10] = dauTransImpactSig_pos;
             gbrVals_[11] = dauTransImpactSig_neg;
-            gbrVals_[12] = dedx_pos;
-            gbrVals_[13] = dedx_neg;
+            gbrVals_[12] = nhits_pos;
+            gbrVals_[13] = nhits_neg;
+            gbrVals_[14] = ptErr_pos;
+            gbrVals_[15] = ptErr_neg;
+            gbrVals_[16] = posCandTotalP.perp();
+            gbrVals_[17] = negCandTotalP.perp();
+            gbrVals_[18] = posCandTotalP.eta();
+            gbrVals_[19] = negCandTotalP.eta();
 
             GBRForest const * forest = forest_;
             if(useForestFromDB_){

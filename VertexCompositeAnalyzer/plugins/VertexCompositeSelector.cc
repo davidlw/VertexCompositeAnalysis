@@ -5,6 +5,7 @@
 #include <iostream>
 #include <math.h>
 
+#include <TF2.h>
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TTree.h>
@@ -90,6 +91,8 @@ private:
   virtual void fillRECO(edm::Event&, const edm::EventSetup&) ;
   virtual void endJob() ;
 
+  double GetMVACut(double y, double pt);
+
   // ----------member data ---------------------------
     
     //options
@@ -111,9 +114,12 @@ private:
     double multMax_;
     double multMin_;
     double deltaR_; //deltaR for Gen matching
+    double trkPMin_;
     double trkPtMin_;
     double trkEtaMax_;
+    double trkPSumMin_;
     double trkPtSumMin_;
+    double trkPtAsymMin_;
     double trkEtaDiffMax_;
     double trkPtErrMax_;
     int    trkNHitMin_;
@@ -273,6 +279,9 @@ private:
     std::vector<float> mvaVals_;
     std::string dbFileName_;
 
+    TF2* func_mva;
+    std::vector<double> mvaCuts_;
+
     float mvaMin_;
     float mvaMax_;
 
@@ -323,15 +332,18 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
     PID_dau2_ = iConfig.getUntrackedParameter<int>("PID_dau2");
     
     //cut variables
-    multMax_ = iConfig.getUntrackedParameter<double>("multMax", 0.0);
-    multMin_ = iConfig.getUntrackedParameter<double>("multMin", 999.9);
+    multMin_ = iConfig.getUntrackedParameter<double>("multMin", 0.0);
+    multMax_ = iConfig.getUntrackedParameter<double>("multMax", 99999.9);
     deltaR_ = iConfig.getUntrackedParameter<double>("deltaR", 0.03);
     mvaMax_ = iConfig.getUntrackedParameter<double>("mvaMax", 999.9);
     mvaMin_ = iConfig.getUntrackedParameter<double>("mvaMin", -999.9);
 
+    trkPMin_ = iConfig.getUntrackedParameter<double>("trkPMin");
     trkPtMin_ = iConfig.getUntrackedParameter<double>("trkPtMin");
     trkEtaMax_ = iConfig.getUntrackedParameter<double>("trkEtaMax");
+    trkPSumMin_ = iConfig.getUntrackedParameter<double>("trkPSumMin");
     trkPtSumMin_ = iConfig.getUntrackedParameter<double>("trkPtSumMin");
+    trkPtAsymMin_ = iConfig.getUntrackedParameter<double>("trkPtAsymMin");
     trkEtaDiffMax_ = iConfig.getUntrackedParameter<double>("trkEtaDiffMax");
     trkPtErrMax_ = iConfig.getUntrackedParameter<double>("trkPtErrMax");
     trkNHitMin_ = iConfig.getUntrackedParameter<int>("trkNHitMin");
@@ -383,6 +395,11 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
           useForestFromDB_ = false;
         }
       }
+   
+      mvaCuts_ = iConfig.getParameter< std::vector<double> >("mvaCuts");
+
+      func_mva = new TF2("func_mva","[0]*(1+[1]*x+[2]*x*x)*(1+[3]*y+[4]*y*y+[5]*y*y*y+[6]*y*y*y*y)",0,5.0,0,100);
+      func_mva->SetParameters(mvaCuts_[0],mvaCuts_[1],mvaCuts_[2],mvaCuts_[3],mvaCuts_[4],mvaCuts_[5],mvaCuts_[6]);
     }
 
     if(!useForestFromDB_){
@@ -507,6 +524,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         if(pt<=0.4) continue;
         Ntrkoffline++;
     }
+    if(Ntrkoffline >= multMax_ || Ntrkoffline < multMin_) return;
 
     //Gen info for matching
     if(doGenMatching_)
@@ -589,6 +607,9 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         {
           mva = (*mvavalues)[it];
           if(mva < mvaMin_ || mva > mvaMax_) continue;
+
+          if(mva<GetMVACut(fabs(y),pt)) continue;          
+
           theVertexComps.push_back( trk );
           theMVANew.push_back( mva );
           continue;
@@ -690,10 +711,15 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         if(pt1 < trkPtMin_ || pt2 < trkPtMin_) continue;
         if((pt1+pt2) < trkPtSumMin_) continue;
                 
+        if(pt2/pt1 < trkPtAsymMin_ || pt1/pt2 < trkPtAsymMin_) continue;
+
         //momentum
         p1 = d1->p();
         p2 = d2->p();
         
+        if(p1 < trkPMin_ || p2 < trkPMin_) continue;
+        if((p1+p2) < trkPSumMin_) continue;
+
         //eta
         eta1 = d1->eta();
         eta2 = d2->eta();
@@ -742,7 +768,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         dlerror = sqrt(ROOT::Math::Similarity(totalCov, distanceVector))/dl;
         
         dlos = dl/dlerror;
-        if(dlos < cand3DDecayLengthSigMin_) continue;
+        if(dlos < cand3DDecayLengthSigMin_ || dlos > 1000.) continue;
  
         //Decay length 2D
         SVector6 v1(vtx.covariance(0,0), vtx.covariance(0,1),vtx.covariance(1,1),0,0,0);
@@ -758,6 +784,8 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         double dl2Derror = sqrt(ROOT::Math::Similarity(totalCov2D, distanceVector2D))/dl2D;
         
         dlos2D = dl2D/dl2Derror;
+
+        if(dlos2D > 1000.) continue;
 
         //trk info
         if(!twoLayerDecay_)
@@ -793,6 +821,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
             
             //track pT error
             ptErr1 = dau1->ptError();
+//            if(ptErr1/dau1->pt() > trkPtErrMax_) continue;
             if(ptErr1 > trkPtErrMax_) continue;
     
             //vertexCovariance 00-xError 11-y 22-z
@@ -851,6 +880,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         
         //track pT error
         ptErr2 = dau2->ptError();
+//        if(ptErr2/dau2->pt() > trkPtErrMax_) continue;
         if(ptErr2 > trkPtErrMax_) continue;
 
         //vertexCovariance 00-xError 11-y 22-z
@@ -1198,27 +1228,66 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
 
         if(useAnyMVA_ && !useExistingMVA_)
         {
-          float gbrVals_[15];
-          gbrVals_[0] = VtxProb;
-          gbrVals_[1] = dlos;
-          gbrVals_[2] = dlos2D;
-//          gbrVals_[5] = dl;
-          gbrVals_[3] = agl_abs;
-          gbrVals_[4] = agl2D_abs;
-          gbrVals_[5] = fabs(dzos1);
-          gbrVals_[6] = fabs(dzos2);
-          gbrVals_[7] = fabs(dxyos1);
-          gbrVals_[8] = fabs(dxyos2);
-//          gbrVals_[9] = nhit1;
-//          gbrVals_[10] = nhit2;
-//          gbrVals_[14] = ptErr1;
-//          gbrVals_[15] = ptErr2;
-          gbrVals_[9] = H2dedx1;
-          gbrVals_[10] = H2dedx2;
-          gbrVals_[11] = pt1;
-          gbrVals_[12] = pt2;
-          gbrVals_[13] = pt1*cosh(eta1);
-          gbrVals_[14] = pt2*cosh(eta2);
+          float gbrVals_[50];
+          if(forestLabel_ == "D0InpPb")
+          { 
+            gbrVals_[0] = pt;
+            gbrVals_[1] = y;
+            gbrVals_[2] = VtxProb;
+            gbrVals_[3] = dlos;
+            gbrVals_[4] = dlos2D;
+            gbrVals_[5] = dl;
+            gbrVals_[6] = agl_abs;
+            gbrVals_[7] = agl2D_abs;
+            gbrVals_[8] = dzos1;
+            gbrVals_[9] = dzos2;
+            gbrVals_[10] = dxyos1;
+            gbrVals_[11] = dxyos2;
+            gbrVals_[12] = pt1;
+            gbrVals_[13] = pt2;
+            gbrVals_[14] = eta1;
+            gbrVals_[15] = eta2;
+            gbrVals_[16] = nhit1;
+            gbrVals_[17] = nhit2;
+            gbrVals_[18] = ptErr1;
+            gbrVals_[19] = ptErr2;
+//            gbrVals_[20] = H2dedx1;
+//            gbrVals_[21] = H2dedx2;
+          }
+
+          if(forestLabel_ == "JPsiInpPb")
+          {
+            gbrVals_[0] = pt;
+            gbrVals_[1] = y;
+            gbrVals_[2] = VtxProb;
+            gbrVals_[3] = dlos;
+            gbrVals_[4] = dlos2D;
+            gbrVals_[5] = dl;
+            gbrVals_[6] = dzos1;
+            gbrVals_[7] = dzos2;
+            gbrVals_[8] = dxyos1;
+            gbrVals_[9] = dxyos2;
+            gbrVals_[10] = nhit1;
+            gbrVals_[11] = nhit2;
+            gbrVals_[12] = nmatchedch1;
+            gbrVals_[13] = nmatchedst1;
+            gbrVals_[14] = matchedenergy1;
+            gbrVals_[15] = nmatchedch2;
+            gbrVals_[16] = nmatchedst2;
+            gbrVals_[17] = matchedenergy2;
+            gbrVals_[18] = dxSig1_seg_;
+            gbrVals_[19] = dySig1_seg_;
+            gbrVals_[20] = ddxdzSig1_seg_;
+            gbrVals_[21] = ddydzSig1_seg_;
+            gbrVals_[22] = dxSig2_seg_;
+            gbrVals_[23] = dySig2_seg_;
+            gbrVals_[24] = ddxdzSig2_seg_;
+            gbrVals_[25] = ddydzSig2_seg_;
+            gbrVals_[26] = pt1;
+            gbrVals_[27] = pt2;
+            gbrVals_[28] = eta1;
+            gbrVals_[29] = eta2;
+          }
 
           GBRForest const * forest = forest_;
           if(useForestFromDB_){
@@ -1230,10 +1299,22 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
           auto gbrVal = forest->GetClassifier(gbrVals_);
 
           if(gbrVal < mvaMin_ || gbrVal > mvaMax_) continue;
+          if(gbrVal < GetMVACut(fabs(y),pt)) continue;
+
           theMVANew.push_back( gbrVal );
         } 
         theVertexComps.push_back( trk );
     }
+}
+
+double
+VertexCompositeSelector::GetMVACut(double y, double pt)
+{
+  double mvacut = -1.0;
+  mvacut = func_mva->Eval(y,pt);
+  if(pt>8.0) mvacut = func_mva->Eval(y,8.0);
+
+  return mvacut;
 }
 
 // ------------ method called once each job just before starting event

@@ -37,23 +37,22 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'pPb2016_pPbMC_Skim_LambdaCToKsP_v1'
-    config.Data.outputDatasetTag = 'pPb_Skim_LambdaCToKsP_v1'
+    config.General.requestName = 'pPb2016_pPbMC_Skim_LambdaCToKsP_v2'
+    config.Data.outputDatasetTag = 'pPb_Skim_LambdaCToKsP_v2'
     config.Data.inputDataset = '/LambdaC-KsPr_LCpT-0p9_pPb-EmbEPOS_8p16_Pythia8/pPb816Summer16DR-pPbEmb_80X_mcRun2_pA_v4-v1/AODSIM'
     submit(config)
 
-    config.General.requestName = 'pPb2016_pPbMC_Skim_LambdaCToKsP_Pt6_v1'
-    config.Data.outputDatasetTag = 'pPb_Skim_LambdaCToKsP_v1'
+    config.General.requestName = 'pPb2016_pPbMC_Skim_LambdaCToKsP_Pt6_v2'
+    config.Data.outputDatasetTag = 'pPb_Skim_LambdaCToKsP_v2'
     config.Data.inputDataset = '/LambdaC-KsPr_LCpT-5p9_pPb-EmbEPOS_8p16_Pythia8/pPb816Summer16DR-pPbEmb_80X_mcRun2_pA_v4-v1/AODSIM'
     submit(config)
 
-    config.General.requestName = 'pPb2016_pPbMC_Skim_LambdaCToLamPi_v1'
-    config.Data.outputDatasetTag = 'pPb_Skim_LambdaCToLamPi_v1'
+    config.General.requestName = 'pPb2016_pPbMC_Skim_LambdaCToLamPi_v2'
+    config.Data.outputDatasetTag = 'pPb_Skim_LambdaCToLamPi_v2'
     config.Data.inputDataset = '/LambdaC-LamPi_LCpT-0p9_pPb-EmbEPOS_8p16_Pythia8/pPb816Summer16DR-pPbEmb_80X_mcRun2_pA_v4-v1/AODSIM'
     submit(config)
 
-    config.General.requestName = 'pPb2016_pPbMC_Skim_LambdaCToLamPi_Pt6_v1'
-    config.Data.outputDatasetTag = 'pPb_Skim_LambdaCToLamPi_v1'
+    config.General.requestName = 'pPb2016_pPbMC_Skim_LambdaCToLamPi_Pt6_v2'
+    config.Data.outputDatasetTag = 'pPb_Skim_LambdaCToLamPi_v2'
     config.Data.inputDataset = '/LambdaC-LamPi_LCpT-5p9_pPb-EmbEPOS_8p16_Pythia8/pPb816Summer16DR-pPbEmb_80X_mcRun2_pA_v4-v1/AODSIM'
     submit(config)
-

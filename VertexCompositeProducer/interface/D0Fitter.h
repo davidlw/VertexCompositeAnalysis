@@ -109,6 +109,7 @@ class D0Fitter {
   double tkDCACut;
   double tkChi2Cut;
   int    tkNhitsCut;
+  double tkPtErrCut;
   double tkPtCut;
   double tkEtaCut;
   double tkPtSumCut;
@@ -126,6 +127,7 @@ class D0Fitter {
   double VtxChiProbCut;
   double dPtCut;
   double alphaCut;
+  double alpha2DCut;
   bool   isWrongSign;
 
   std::vector<reco::TrackBase::TrackQuality> qualities;

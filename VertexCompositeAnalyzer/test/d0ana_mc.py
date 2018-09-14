@@ -59,25 +59,26 @@ process.d0ana_mc.isSkimMVA = cms.untracked.bool(True)
 process.d0ana_mc.saveHistogram = cms.untracked.bool(True)
 process.d0ana_mc.saveTree = cms.untracked.bool(False)
 
-process.d0preselectorMC = process.d0selectorMC.clone(
-  trkPtSumMin = cms.untracked.double(1.6),
-  trkEtaDiffMax = cms.untracked.double(1.5)
-)
+#process.d0preselectorMC = process.d0selectorMC.clone(
+#  trkPtSumMin = cms.untracked.double(1.6),
+#  trkEtaDiffMax = cms.untracked.double(1.5)
+#)
 
-process.d0preselectorWSMC = process.d0selectorWSMC.clone(
-  trkPtSumMin = cms.untracked.double(1.6),
-  trkEtaDiffMax = cms.untracked.double(1.5)
-)
+#process.d0preselectorWSMC = process.d0selectorWSMC.clone(
+#  trkPtSumMin = cms.untracked.double(1.6),
+#  trkEtaDiffMax = cms.untracked.double(1.5)
+#)
 
-process.d0selectorMC.VertexCompositeCollection = cms.untracked.InputTag("d0preselectorMC:D0")
-process.d0selectorWSMC.VertexCompositeCollection = cms.untracked.InputTag("d0preselectorWSMC:D0")
-process.d0selectorMC.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_2_4.root')
-process.d0selectorWSMC.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_2_4.root')
+#process.d0selectorMC.VertexCompositeCollection = cms.untracked.InputTag("d0preselectorMC:D0")
+#process.d0selectorWSMC.VertexCompositeCollection = cms.untracked.InputTag("d0preselectorWSMC:D0")
+process.d0selectorMC = process.d0selectorMCGenMatchUnSwap.clone()
+process.d0selectorMC.GBRForestFileName = cms.string('GBRForestfile_BDTG_PromptD0InpPb_scenario1.root')
+process.d0selectorWSMC.GBRForestFileName = cms.string('GBRForestfile_BDTG_PromptD0InpPb_scenario1.root')
 process.d0selectorMC.useAnyMVA = cms.bool(True)
 process.d0selectorWSMC.useAnyMVA = cms.bool(True)
 
-process.d0ana_seq = cms.Sequence(process.d0preselectorMC * process.d0selectorMC * process.d0ana_mc)
-#process.d0ana_wrongsign_seq = cms.Sequence(process.d0selectorWS * process.d0ana_wrongsign)
+process.d0ana_seq = cms.Sequence(process.d0selectorMC * process.d0ana_mc)
+process.d0ana_wrongsign_seq = cms.Sequence(process.d0selectorWSMC * process.d0ana_wrongsign_mc)
 
 process.p = cms.Path(process.d0ana_seq)
-#process.p1 = cms.Path(process.d0ana_wrongsign_seq)
+process.p1 = cms.Path(process.d0ana_wrongsign_seq)

@@ -16,14 +16,15 @@ if __name__ == '__main__':
 #    config.JobType.maxMemoryMB = 3000
 #    config.JobType.maxJobRuntimeMin = 2750
     config.Data.unitsPerJob = 1
-    config.Data.totalUnits = 500
+    config.Data.totalUnits = -1
     config.Data.splitting = 'FileBased'
-#    config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
-    config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
+    config.Data.runRange = '285505-285505'
+    config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
+#    config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
     config.Data.publication = False
     config.Data.useParent = True
     config.Data.inputDBS = 'phys03'
-    config.Site.storageSite = 'T2_CH_CERN'
+    config.Site.storageSite = 'T2_US_MIT'
 
     def submit(config):
         try:
@@ -37,8 +38,8 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'pPb2016_pPb_Tree_D0_training_v5'
+    config.General.requestName = 'pPb2016_pPb_Tree_D0_training_v7'
     config.JobType.psetName = '../test/d0ana_trainingtree.py'
     config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0Both_v7_test-8d9ad5613e720aaf645b53de5658bfe9/USER'
-    config.Data.outputDatasetTag = 'pPb_Tree_D0_training_v5'
+    config.Data.outputDatasetTag = 'pPb_Tree_D0_training_run285505_HLT185_v7'
     submit(config)

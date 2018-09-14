@@ -55,16 +55,16 @@ generalDsToKsKCandidatesNew = generalV0Candidates.clone (
 
     tkNhitsCut = cms.int32(3),
     tkChi2Cut = cms.double(7.0),
-    dauTransImpactSigCut = cms.double(1.0),
-    dauLongImpactSigCut = cms.double(1.0),
+    dauTransImpactSigCut = cms.double(0.0),
+    dauLongImpactSigCut = cms.double(0.0),
     batDauTransImpactSigCut = cms.double(0.0),
     batDauLongImpactSigCut = cms.double(0.0),
     xiVtxSignificance3DCut = cms.double(0.0),
     xiVtxSignificance2DCut = cms.double(0.0),
     vtxSignificance2DCut = cms.double(0.0),
-    vtxSignificance3DCut = cms.double(5.0),
+    vtxSignificance3DCut = cms.double(0.0),
 
-    collinearityCut = cms.double(0.999),
+    collinearityCut = cms.double(-2.0),
     xiCollinearityCut = cms.double(-2.0),
 
     innerHitPosCut = cms.double(-1)
@@ -131,16 +131,16 @@ generalLambdaCCandidatesNew = generalV0Candidates.clone (
 
     tkNhitsCut = cms.int32(3),
     tkChi2Cut = cms.double(7.0),
-    dauTransImpactSigCut = cms.double(1.0),
-    dauLongImpactSigCut = cms.double(1.0),
+    dauTransImpactSigCut = cms.double(0.0),
+    dauLongImpactSigCut = cms.double(0.0),
     batDauTransImpactSigCut = cms.double(0.0),
     batDauLongImpactSigCut = cms.double(0.0),
     xiVtxSignificance3DCut = cms.double(0.0),
     xiVtxSignificance2DCut = cms.double(0.0),
     vtxSignificance2DCut = cms.double(0.0),
-    vtxSignificance3DCut = cms.double(5.0),
+    vtxSignificance3DCut = cms.double(0.0),
 
-    collinearityCut = cms.double(0.999),
+    collinearityCut = cms.double(-2.0),
     xiCollinearityCut = cms.double(-2.0),
 
     innerHitPosCut = cms.double(-1)

@@ -10,6 +10,7 @@ generalD0Candidates = cms.EDProducer("D0Producer",
                                      
     tkChi2Cut = cms.double(7), #trk Chi2 <
     tkNhitsCut = cms.int32(5), #trk Nhits >=
+    tkPtErrCut = cms.double(9999.0), #trk pT err <
     tkPtCut = cms.double(0.3), #trk pT >
     tkEtaCut = cms.double(999.0), #trk abs(eta) <
     tkPtSumCut = cms.double(0.0), 
@@ -29,6 +30,7 @@ generalD0Candidates = cms.EDProducer("D0Producer",
     collinearityCut2D = cms.double(-2.0), #cos(pointAngle) >
     collinearityCut3D = cms.double(-2.0), #cos(pointAngle) >
     alphaCut = cms.double(999.0), #pointAngle <
+    alpha2DCut = cms.double(999.0), #pointAngle2D <
     rVtxCut = cms.double(0.0),
     lVtxCut = cms.double(0.0),
     vtxSignificance2DCut = cms.double(0.0),

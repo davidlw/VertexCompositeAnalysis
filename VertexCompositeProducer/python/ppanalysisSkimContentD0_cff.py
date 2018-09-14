@@ -27,7 +27,7 @@ analysisSkimContent = cms.PSet(
 #      'keep recoMuons_muons_*_*',      
       # V0
       'keep *_generalD0Candidates*_D0_*',
-      'keep *_generalD0Candidates*_MVAValues_*',
+      'keep *_generalD0Candidates*_MVAValues*_*',
       # tracks
 #      'keep recoTracks_generalTracks*_*_*',  
 #      'keep recoTracks_pixelTracks_*_*',

@@ -68,18 +68,23 @@ process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 ########## D0 candidate rereco ###############################################################
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalD0Candidates_cff")
 process.generalD0CandidatesNew = process.generalD0Candidates.clone()
-#process.generalD0CandidatesNew.dPtCut = cms.double(1.0)
-#process.generalD0CandidatesNew.collinearityCut3D = cms.double(0.3)
-#process.generalD0CandidatesNew.trkPtSumCut = cms.double(1.6)
-#process.generalD0CandidatesNew.trkEtaDiffCut = cms.double(1.5)
+process.generalD0CandidatesNew.trkPtSumCut = cms.double(1.6)
+process.generalD0CandidatesNew.trkEtaDiffCut = cms.double(1.0)
+process.generalD0CandidatesNew.tkNhitsCut = cms.int32(11)
+process.generalD0CandidatesNew.tkPtErrCut = cms.double(0.1)
+process.generalD0CandidatesNew.tkPtCut = cms.double(0.7)
+#process.generalD0CandidatesNew.dPtCut = cms.double(1.2)
+process.generalD0CandidatesNew.alphaCut = cms.double(1.0)
+process.generalD0CandidatesNew.alpha2DCut = cms.double(1.0)
+
+#process.generalD0CandidatesNew.useAnyMVA = cms.bool(True)
+#process.generalD0CandidatesNew.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_scenario2.root')
 
 process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew )
 
 ###############################################################################################
 
-#process.load("RiceHIG.Skim2013.ppanalysisSkimContentFull_cff")
-#process.load("RiceHIG.Skim2013.ppanalysisSkimContentSlim_cff")
-process.load("RiceHIG.Skim2013.ppanalysisSkimContentD0_cff")
+process.load("VertexCompositeAnalysis.VertexCompositeProducer.ppanalysisSkimContentD0_cff")
 process.output_HM = cms.OutputModule("PoolOutputModule",
     outputCommands = process.analysisSkimContent.outputCommands,
     fileName = cms.untracked.string('pPb_HM.root'),

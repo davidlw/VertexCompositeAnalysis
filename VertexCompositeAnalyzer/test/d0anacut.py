@@ -32,6 +32,15 @@ secondaryFileNames = cms.untracked.vstring(
 'root://cms-xrd-global.cern.ch//store/hidata/PARun2016C/PAHighMultiplicity1/AOD/PromptReco-v1/000/285/517/00000/0C97B6B7-50B0-E611-B38F-FA163E41A46B.root'
 )
                             )
+
+#Trigger Selection
+### Comment out for the timing being assuming running on secondary dataset with trigger bit selected already
+import HLTrigger.HLTfilters.hltHighLevel_cfi
+process.hltHM = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
+process.hltHM.HLTPaths = ['HLT_PAFullTracks_Multiplicity185_*']
+process.hltHM.andOr = cms.bool(True)
+process.hltHM.throw = cms.bool(False)
+
 process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0selector_cff")
 process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0analyzer_ntp_cff")
 
@@ -54,12 +63,15 @@ process.d0anapid.VertexCompositeCollection = cms.untracked.InputTag("d0selectorP
 process.d0anapid2 = process.d0ana.clone()
 process.d0anapid2.VertexCompositeCollection = cms.untracked.InputTag("d0selectorPID2:D0")
 
-process.d0ana_seq = cms.Sequence(process.d0selectorCut * process.d0ana)
-process.d0ananew3_seq = cms.Sequence(process.d0selectorCutNew3 * process.d0ananew3)
-process.d0anapid_seq = cms.Sequence(process.d0selectorPID * process.d0anapid)
-process.d0anapid2_seq = cms.Sequence(process.d0selectorPID2 * process.d0anapid2)
+process.d0selectorCutNew.multMin = cms.untracked.double(185)
+process.d0selectorCutNew.multMax = cms.untracked.double(250)
 
-process.p = cms.Path(process.d0ana_seq)
-process.p3 = cms.Path(process.d0ananew3_seq)
-process.p1 = cms.Path(process.d0anapid_seq)
-process.p2 = cms.Path(process.d0anapid2_seq)
+process.d0ana_seq = cms.Sequence(process.hltHM * process.d0selectorCut * process.d0ana)
+process.d0ananew_seq = cms.Sequence(process.hltHM * process.d0selectorCutNew * process.d0ananew)
+process.d0anapid_seq = cms.Sequence(process.hltHM * process.d0selectorPID * process.d0anapid)
+process.d0anapid2_seq = cms.Sequence(process.hltHM * process.d0selectorPID2 * process.d0anapid2)
+
+#process.p = cms.Path(process.d0ana_seq)
+process.p3 = cms.Path(process.d0ananew_seq)
+#process.p1 = cms.Path(process.d0anapid_seq)
+#process.p2 = cms.Path(process.d0anapid2_seq)

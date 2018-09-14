@@ -19,7 +19,7 @@ cms.untracked.bool(True) )
 #process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 #process.GlobalTag.globaltag = "80X_dataRun2_Prompt_v15"
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(2000) 
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) 
 )
 
 process.source = cms.Source("PoolSource",
@@ -51,14 +51,13 @@ process.d0ana.saveTree = cms.untracked.bool(False)
 process.d0ana_wrongsign.saveHistogram = cms.untracked.bool(True)
 process.d0ana_wrongsign.saveTree = cms.untracked.bool(False)
 
-process.d0selectorCutNew3.cand3DDecayLengthSigMin = cms.untracked.double(-10000.)
-process.d0selectorCutNew3.cand3DPointingAngleMax = cms.untracked.double(10000.)
-process.d0selectorCutNew3.candVtxProbMin = cms.untracked.double(-10000.) 
+process.d0selectorCutNew.cand3DDecayLengthSigMin = cms.untracked.double(-10000.)
+process.d0selectorCutNew.cand3DPointingAngleMax = cms.untracked.double(10000.)
+process.d0selectorCutNew.candVtxProbMin = cms.untracked.double(-10000.) 
+process.d0preselector = process.d0selectorCutNew.clone()
+process.d0preselectorWS = process.d0selectorCutNew.clone()
 
-process.d0preselector = process.d0selectorCutNew3.clone()
-process.d0preselectorWS = process.d0selectorCutNew3.clone()
-
-#process.d0preselector = process.d0selector.clone(
+#process.d0preselector = process.d0selectorCutNew.clone(
 #  trkPtErrMax = cms.untracked.double(0.1),
 #  trkNHitMin = cms.untracked.int32(11)
 #)
@@ -69,13 +68,15 @@ process.d0preselectorWS = process.d0selectorCutNew3.clone()
 
 process.d0selector.useAnyMVA = cms.bool(True)
 process.d0selectorWS.useAnyMVA = cms.bool(True)
-process.d0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_pT15_24_scenario2.root')
-process.d0selectorWS.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_pT15_24_scenario2.root')
+process.d0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_scenario9.root')
+process.d0selectorWS.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_scenario9.root')
 process.d0selector.VertexCompositeCollection = cms.untracked.InputTag("d0preselector:D0")
 process.d0selectorWS.VertexCompositeCollection = cms.untracked.InputTag("d0preselectorWS:D0")
 
 process.d0ana_seq = cms.Sequence(process.d0preselector * process.d0selector * process.d0ana)
 process.d0ana_wrongsign_seq = cms.Sequence(process.d0preselectorWS * process.d0selectorWS * process.d0ana_wrongsign)
+#process.d0ana_seq = cms.Sequence(process.d0selector * process.d0ana)
+#process.d0ana_wrongsign_seq = cms.Sequence(process.d0selectorWS * process.d0ana_wrongsign)
 
 process.p = cms.Path(process.d0ana_seq)
 #process.p1 = cms.Path(process.d0ana_wrongsign_seq)

@@ -93,38 +93,44 @@ private:
     edm::Service<TFileService> fs;
 
     TTree* VertexCompositeNtuple;
-    TH2F*  hMassVsMVA[4][10];
-    TH2F*  hpTVsMVA[4][10];
-    TH2F*  hetaVsMVA[4][10];
-    TH2F*  hyVsMVA[4][10];
-    TH2F*  hVtxProbVsMVA[4][10];
-    TH2F*  h3DCosPointingAngleVsMVA[4][10];
-    TH2F*  h3DPointingAngleVsMVA[4][10];
-    TH2F*  h2DCosPointingAngleVsMVA[4][10];
-    TH2F*  h2DPointingAngleVsMVA[4][10];
-    TH2F*  h3DDecayLengthSignificanceVsMVA[4][10];
-    TH2F*  h3DDecayLengthVsMVA[4][10];
-    TH2F*  h2DDecayLengthSignificanceVsMVA[4][10];
-    TH2F*  hzDCASignificanceDaugther1VsMVA[4][10];
-    TH2F*  hxyDCASignificanceDaugther1VsMVA[4][10];
-    TH2F*  hNHitD1VsMVA[4][10];
-    TH2F*  hpTD1VsMVA[4][10];
-    TH2F*  hpTerrD1VsMVA[4][10];
-    TH2F*  hEtaD1VsMVA[4][10];
-    TH2F*  hdedxHarmonic2D1VsMVA[4][10];
-    TH2F*  hdedxHarmonic2D1VsP[4][10];
-    TH2F*  hzDCASignificanceDaugther2VsMVA[4][10];
-    TH2F*  hxyDCASignificanceDaugther2VsMVA[4][10];
-    TH2F*  hNHitD2VsMVA[4][10];
-    TH2F*  hpTD2VsMVA[4][10];
-    TH2F*  hpTerrD2VsMVA[4][10];
-    TH2F*  hEtaD2VsMVA[4][10];
-    TH2F*  hdedxHarmonic2D2VsMVA[4][10];
-    TH2F*  hdedxHarmonic2D2VsP[4][10];
+    TH2F*  hMassVsMVA[6][10];
+    TH2F*  hpTVsMVA[6][10];
+    TH2F*  hetaVsMVA[6][10];
+    TH2F*  hyVsMVA[6][10];
+    TH2F*  hVtxProbVsMVA[6][10];
+    TH2F*  h3DCosPointingAngleVsMVA[6][10];
+    TH2F*  h3DPointingAngleVsMVA[6][10];
+    TH2F*  h2DCosPointingAngleVsMVA[6][10];
+    TH2F*  h2DPointingAngleVsMVA[6][10];
+    TH2F*  h3DDecayLengthSignificanceVsMVA[6][10];
+    TH2F*  h3DDecayLengthVsMVA[6][10];
+    TH2F*  h2DDecayLengthSignificanceVsMVA[6][10];
+    TH2F*  h2DDecayLengthVsMVA[6][10];
+    TH2F*  h3DDCAVsMVA[6][10];
+    TH2F*  h2DDCAVsMVA[6][10];
+    TH2F*  hzDCASignificanceDaugther1VsMVA[6][10];
+    TH2F*  hxyDCASignificanceDaugther1VsMVA[6][10];
+    TH2F*  hNHitD1VsMVA[6][10];
+    TH2F*  hpTD1VsMVA[6][10];
+    TH2F*  hpTerrD1VsMVA[6][10];
+    TH2F*  hEtaD1VsMVA[6][10];
+    TH2F*  hdedxHarmonic2D1VsMVA[6][10];
+    TH2F*  hdedxHarmonic2D1VsP[6][10];
+    TH2F*  hzDCASignificanceDaugther2VsMVA[6][10];
+    TH2F*  hxyDCASignificanceDaugther2VsMVA[6][10];
+    TH2F*  hNHitD2VsMVA[6][10];
+    TH2F*  hpTD2VsMVA[6][10];
+    TH2F*  hpTerrD2VsMVA[6][10];
+    TH2F*  hEtaD2VsMVA[6][10];
+    TH2F*  hdedxHarmonic2D2VsMVA[6][10];
+    TH2F*  hdedxHarmonic2D2VsP[6][10];
     
     bool   saveTree_;
     bool   saveHistogram_;
     bool   saveAllHistogram_;
+    double massHistPeak_;
+    double massHistWidth_;
+    int    massHistBins_;
 
     //options
     bool doGenMatching_;
@@ -318,6 +324,9 @@ VertexCompositeNtupleProducer::VertexCompositeNtupleProducer(const edm::Paramete
     saveTree_ = iConfig.getUntrackedParameter<bool>("saveTree");
     saveHistogram_ = iConfig.getUntrackedParameter<bool>("saveHistogram");
     saveAllHistogram_ = iConfig.getUntrackedParameter<bool>("saveAllHistogram");
+    massHistPeak_ = iConfig.getUntrackedParameter<double>("massHistPeak");
+    massHistWidth_ = iConfig.getUntrackedParameter<double>("massHistWidth");
+    massHistBins_ = iConfig.getUntrackedParameter<int>("massHistBins");
 
     useAnyMVA_ = iConfig.getParameter<bool>("useAnyMVA");
     isSkimMVA_ = iConfig.getUntrackedParameter<bool>("isSkimMVA"); 
@@ -1077,6 +1086,9 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
               if(pt<pTBins_[ipt+1] && pt>pTBins_[ipt] && y<yBins_[iy+1] && y>yBins_[iy])
               {
                 hMassVsMVA[iy][ipt]->Fill(mva,mass);
+                h3DDCAVsMVA[iy][ipt]->Fill(mva,dl*sin(agl_abs));
+                h2DDCAVsMVA[iy][ipt]->Fill(mva,dl2D*sin(agl2D_abs));
+
                 if(saveAllHistogram_)
                 {
                 hpTVsMVA[iy][ipt]->Fill(mva,pt);
@@ -1090,11 +1102,12 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
                 h3DDecayLengthSignificanceVsMVA[iy][ipt]->Fill(mva,dlos);
                 h3DDecayLengthVsMVA[iy][ipt]->Fill(mva,dl);
                 h2DDecayLengthSignificanceVsMVA[iy][ipt]->Fill(mva,dlos2D);
+                h2DDecayLengthVsMVA[iy][ipt]->Fill(mva,dl2D);
                 hzDCASignificanceDaugther1VsMVA[iy][ipt]->Fill(mva,dzos1);
                 hxyDCASignificanceDaugther1VsMVA[iy][ipt]->Fill(mva,dxyos1);
                 hNHitD1VsMVA[iy][ipt]->Fill(mva,nhit1);
                 hpTD1VsMVA[iy][ipt]->Fill(mva,pt1);
-                hpTerrD1VsMVA[iy][ipt]->Fill(mva,ptErr1);
+                hpTerrD1VsMVA[iy][ipt]->Fill(mva,ptErr1/pt1);
                 hEtaD1VsMVA[iy][ipt]->Fill(mva,eta1);
                 hdedxHarmonic2D1VsMVA[iy][ipt]->Fill(mva,H2dedx1);
                 hdedxHarmonic2D1VsP[iy][ipt]->Fill(p1,H2dedx1);
@@ -1102,7 +1115,7 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
                 hxyDCASignificanceDaugther2VsMVA[iy][ipt]->Fill(mva,dxyos2);
                 hNHitD2VsMVA[iy][ipt]->Fill(mva,nhit2);
                 hpTD2VsMVA[iy][ipt]->Fill(mva,pt2);
-                hpTerrD2VsMVA[iy][ipt]->Fill(mva,ptErr2);
+                hpTerrD2VsMVA[iy][ipt]->Fill(mva,ptErr2/pt2);
                 hEtaD2VsMVA[iy][ipt]->Fill(mva,eta2);
                 hdedxHarmonic2D2VsMVA[iy][ipt]->Fill(mva,H2dedx2);
                 hdedxHarmonic2D1VsP[iy][ipt]->Fill(p2,H2dedx2);
@@ -1137,7 +1150,10 @@ VertexCompositeNtupleProducer::initHistogram()
   {
     for(unsigned int iy=0;iy<yBins_.size()-1;iy++)
   {
-   hMassVsMVA[iy][ipt] = fs->make<TH2F>(Form("hMassVsMVA_y%d_pt%d",iy,ipt),";mva;mass(GeV)",100,-1.,1.,100,1.6,2.1);
+   hMassVsMVA[iy][ipt] = fs->make<TH2F>(Form("hMassVsMVA_y%d_pt%d",iy,ipt),";mva;mass(GeV)",100,-1.,1.,massHistWidth_,massHistPeak_-massHistWidth_,massHistPeak_+massHistWidth_);
+   h3DDCAVsMVA[iy][ipt] = fs->make<TH2F>(Form("h3DDCAVsMVA_y%d_pt%d",iy,ipt),";mva;3D DCA;",100,-1.,1.,1000,0,10);
+   h2DDCAVsMVA[iy][ipt] = fs->make<TH2F>(Form("h2DDCAVsMVA_y%d_pt%d",iy,ipt),";mva;2D DCA;",100,-1.,1.,1000,0,10);
+
    if(saveAllHistogram_)
    {
    hpTVsMVA[iy][ipt] = fs->make<TH2F>(Form("hpTVsMVA_y%d_pt%d",iy,ipt),";mva;pT;",100,-1,1,100,0,10);
@@ -1149,8 +1165,9 @@ VertexCompositeNtupleProducer::initHistogram()
    h2DCosPointingAngleVsMVA[iy][ipt] = fs->make<TH2F>(Form("h2DCosPointingAngleVsMVA_y%d_pt%d",iy,ipt),";mva;2DCosPointingAngle;",100,-1.,1.,100,-1,1);
    h2DPointingAngleVsMVA[iy][ipt] = fs->make<TH2F>(Form("h2DPointingAngleVsMVA_y%d_pt%d",iy,ipt),";mva;2DPointingAngle;",100,-1.,1.,50,-3.14,3.14);
    h3DDecayLengthSignificanceVsMVA[iy][ipt] = fs->make<TH2F>(Form("h3DDecayLengthSignificanceVsMVA_y%d_pt%d",iy,ipt),";mva;3DDecayLengthSignificance;",100,-1.,1.,300,0,30);
-   h3DDecayLengthVsMVA[iy][ipt] = fs->make<TH2F>(Form("h3DDecayLengthVsMVA_y%d_pt%d",iy,ipt),";mva;3DDecayLength;",100,-1.,1.,300,0,30);
    h2DDecayLengthSignificanceVsMVA[iy][ipt] = fs->make<TH2F>(Form("h2DDecayLengthSignificanceVsMVA_y%d_pt%d",iy,ipt),";mva;2DDecayLengthSignificance;",100,-1.,1.,300,0,30);
+   h3DDecayLengthVsMVA[iy][ipt] = fs->make<TH2F>(Form("h3DDecayLengthVsMVA_y%d_pt%d",iy,ipt),";mva;3DDecayLength;",100,-1.,1.,300,0,30);
+   h2DDecayLengthVsMVA[iy][ipt] = fs->make<TH2F>(Form("h2DDecayLengthVsMVA_y%d_pt%d",iy,ipt),";mva;2DDecayLength;",100,-1.,1.,300,0,30);
    hzDCASignificanceDaugther1VsMVA[iy][ipt] = fs->make<TH2F>(Form("hzDCASignificanceDaugther1VsMVA_y%d_pt%d",iy,ipt),";mva;zDCASignificanceDaugther1;",100,-1.,1.,100,-10,10);
    hxyDCASignificanceDaugther1VsMVA[iy][ipt] = fs->make<TH2F>(Form("hxyDCASignificanceDaugther1VsMVA_y%d_pt%d",iy,ipt),";mva;xyDCASignificanceDaugther1;",100,-1.,1.,100,-10,10);
    hNHitD1VsMVA[iy][ipt] = fs->make<TH2F>(Form("hNHitD1VsMVA_y%d_pt%d",iy,ipt),";mva;NHitD1;",100,-1.,1.,100,0,100);
@@ -1303,10 +1320,10 @@ VertexCompositeNtupleProducer::initTree()
         {
             VertexCompositeNtuple->Branch("nMatchedChamberD1",&nmatchedch1,"nMatchedChamberD1/F");
             VertexCompositeNtuple->Branch("nMatchedStationD1",&nmatchedst1,"nMatchedStationD1/F");
-            VertexCompositeNtuple->Branch("EnergyDepositionD1",&nmatchedst1,"EnergyDepositionD1/F");
+            VertexCompositeNtuple->Branch("EnergyDepositionD1",&matchedenergy1,"EnergyDepositionD1/F");
             VertexCompositeNtuple->Branch("nMatchedChamberD2",&nmatchedch2,"nMatchedChamberD2/F");
             VertexCompositeNtuple->Branch("nMatchedStationD2",&nmatchedst2,"nMatchedStationD2/F");
-            VertexCompositeNtuple->Branch("EnergyDepositionD2",&nmatchedst2,"EnergyDepositionD2/F");
+            VertexCompositeNtuple->Branch("EnergyDepositionD2",&matchedenergy2,"EnergyDepositionD2/F");
             VertexCompositeNtuple->Branch("dx1_seg",        &dx1_seg_, "dx1_seg/F");
             VertexCompositeNtuple->Branch("dy1_seg",        &dy1_seg_, "dy1_seg/F");
             VertexCompositeNtuple->Branch("dxSig1_seg",     &dxSig1_seg_, "dxSig1_seg/F");

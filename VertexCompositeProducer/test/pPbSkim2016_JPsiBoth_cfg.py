@@ -79,9 +79,7 @@ process.jpsirerecowrongsign_step = cms.Path( process.eventFilter_HM * process.ge
 
 ###############################################################################################
 
-#process.load("RiceHIG.Skim2013.ppanalysisSkimContentFull_cff")
-#process.load("RiceHIG.Skim2013.ppanalysisSkimContentSlim_cff")
-process.load("RiceHIG.Skim2013.ppanalysisSkimContentJPsi_cff")
+process.load("VertexCompositeAnalysis.VertexCompositeProducer.ppanalysisSkimContentJPsi_cff")
 process.output_HM = cms.OutputModule("PoolOutputModule",
     outputCommands = process.analysisSkimContent.outputCommands,
     fileName = cms.untracked.string('pPb_HM_JPsi.root'),

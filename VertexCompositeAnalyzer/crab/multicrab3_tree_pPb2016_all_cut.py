@@ -15,15 +15,15 @@ if __name__ == '__main__':
     config.JobType.pluginName = 'Analysis'
 #    config.JobType.maxMemoryMB = 3000
 #    config.JobType.maxJobRuntimeMin = 2750
-    config.Data.unitsPerJob = 5
+    config.Data.unitsPerJob = 3
 #    config.Data.totalUnits = 20
     config.Data.splitting = 'FileBased'
-#    config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
-    config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
+    config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
+#    config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
     config.Data.publication = False
     config.Data.useParent = True
     config.Data.inputDBS = 'phys03'
-    config.Site.storageSite = 'T2_CH_CERN'
+    config.Site.storageSite = 'T2_US_MIT'
 
     def submit(config):
         try:
@@ -37,9 +37,53 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'pPb2016_pPb_Tree_PromptD0_cutpid_histogram_b1_v7'
+    config.General.requestName = 'pPb2016_pPb_PromptD0_cut_histogram_b1_v7'
     config.JobType.psetName = '../test/d0anacut.py'
-#    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0_v1-379c7b575f203f91ccc8e7f4e4199456/USER'
-    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0_v2-89e025b59ba99ac07dd655f3dba5c8df/USER'
-    config.Data.outputDatasetTag = 'pPb_PromptD0_cutpid_histogram_v7'
+    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    config.Data.outputDatasetTag = 'pPb_PromptD0_cut_histogram_v7'
     submit(config)
+
+#    config.General.requestName = 'pPb2016_pPb_PromptD0_cut_histogram_b2_v2'
+#    config.Data.inputDataset = '/PAHighMultiplicity2/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+#    submit(config)
+
+#    config.General.requestName = 'pPb2016_pPb_PromptD0_cut_histogram_b3_v2'
+#    config.Data.inputDataset = '/PAHighMultiplicity3/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+#    submit(config)
+
+#    config.General.requestName = 'pPb2016_pPb_PromptD0_cut_histogram_b4_v2'
+#    config.Data.inputDataset = '/PAHighMultiplicity4/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+#    submit(config)
+
+#    config.General.requestName = 'pPb2016_pPb_PromptD0_cut_histogram_b5_v2'
+#    config.Data.inputDataset = '/PAHighMultiplicity5/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+#    submit(config)
+
+#    config.General.requestName = 'pPb2016_pPb_PromptD0_cut_histogram_b6_v2'
+#    config.Data.inputDataset = '/PAHighMultiplicity6/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+#    submit(config)
+
+#    config.General.requestName = 'pPb2016_Pbp_PromptD0_cut_histogram_b1_v2'
+#    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+#    config.Data.outputDatasetTag = 'Pbp_PromptD0_cut_histogram_v2'
+#    submit(config)
+
+#    config.General.requestName = 'pPb2016_Pbp_PromptD0_cut_histogram_b2_v2'
+#    config.Data.inputDataset = '/PAHighMultiplicity2/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+#    submit(config)
+
+#    config.General.requestName = 'pPb2016_Pbp_PromptD0_cut_histogram_b3_v2'
+#    config.Data.inputDataset = '/PAHighMultiplicity3/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+#    submit(config)
+
+#    config.General.requestName = 'pPb2016_Pbp_PromptD0_cut_histogram_b4_v2'
+#    config.Data.inputDataset = '/PAHighMultiplicity4/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+#    submit(config)
+
+#    config.General.requestName = 'pPb2016_Pbp_PromptD0_cut_histogram_b5_v2'
+#    config.Data.inputDataset = '/PAHighMultiplicity5/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+#    submit(config)
+
+#    config.General.requestName = 'pPb2016_Pbp_PromptD0_cut_histogram_b6_v2'
+#    config.Data.inputDataset = '/PAHighMultiplicity6/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+#    submit(config)

@@ -22,7 +22,7 @@ process.source = cms.Source("PoolSource",
 )
 
 # =============== Other Statements =====================
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(3000))
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.GlobalTag.globaltag = '80X_dataRun2_Prompt_v15'
 
@@ -31,8 +31,7 @@ process.GlobalTag.globaltag = '80X_dataRun2_Prompt_v15'
 ### Comment out for the timing being assuming running on secondary dataset with trigger bit selected already
 import HLTrigger.HLTfilters.hltHighLevel_cfi
 process.hltHM = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
-#process.hltHM.HLTPaths = ['HLT_PAFullTracks_Multiplicity280_v*']
-process.hltHM.HLTPaths = ['HLT_PAFullTracks_Multiplicity280_v*']
+process.hltHM.HLTPaths = ['HLT_PAFullTracks_Multiplicity185_*']
 process.hltHM.andOr = cms.bool(True)
 process.hltHM.throw = cms.bool(False)
 
@@ -51,7 +50,7 @@ process.NoScraping = cms.EDFilter("FilterOutScraping",
     thresh = cms.untracked.double(0.25)
 )
 
-process.PAcollisionEventSelection = cms.Sequence(
+process.PAcollisionEventSelection = cms.Sequence(              
                                          process.hfCoincFilter * 
                                          process.PAprimaryVertexFilter *
                                          process.NoScraping

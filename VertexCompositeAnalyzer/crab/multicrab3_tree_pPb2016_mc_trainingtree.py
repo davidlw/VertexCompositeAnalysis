@@ -16,16 +16,16 @@ if __name__ == '__main__':
 #    config.JobType.maxMemoryMB = 3000
 #    config.JobType.maxJobRuntimeMin = 2750
 #    config.JobType.psetName = '../test/d0ana_mc_trainingtree_signal.py'
-    config.Data.unitsPerJob = 5
+    config.Data.unitsPerJob = 2
 #    config.Data.totalUnits = 10
     config.Data.splitting = 'FileBased'
-#    config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
-    config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
+    config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
+#    config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
     config.Data.publication = False
     config.Data.useParent = True
     config.Data.inputDBS = 'phys03'
-    config.Site.storageSite = 'T2_CH_CERN'
-#    config.Site.storageSite = 'T2_US_MIT'
+#    config.Site.storageSite = 'T2_CH_CERN'
+    config.Site.storageSite = 'T2_US_MIT'
 #    config.Site.storageSite = 'T3_US_Rice'
 
     def submit(config):
@@ -46,10 +46,10 @@ if __name__ == '__main__':
     config.JobType.psetName = '../test/d0ana_mc_trainingtree_signal.py'
     submit(config)
 
-#    config.General.requestName = 'pPb2016_pPbMC_NonPromptD0_TrainingTree_signal_combined_v1'
-#    config.Data.outputDatasetTag = 'pPb_TrainingTree_signal_v1'
-#    config.Data.inputDataset = '/NonPromptD0_D0pT-1p2_pPb-EmbEPOS_8p16_Pythia8/davidlw-pPb_Skim_D0Both_v1-b4e336f1831173b15564965986eff7fd/USER'
-#    submit(config)
+    config.General.requestName = 'pPb2016_pPbMC_NonPromptD0_TrainingTree_signal_combined_v2'
+    config.Data.outputDatasetTag = 'pPb_TrainingTree_signal_combined_v2'
+    config.Data.inputDataset = '/NonPromptD0_D0pT-1p2_pPb-EmbEPOS_8p16_Pythia8/davidlw-pPb_Skim_D0Both_v1-b4e336f1831173b15564965986eff7fd/USER'
+    submit(config)
 
 #    config.General.requestName = 'pPb2016_pPbMC_PromptD0_TrainingTree_background_v1'
 #    config.Data.outputDatasetTag = 'pPb_TrainingTree_background_v1'
