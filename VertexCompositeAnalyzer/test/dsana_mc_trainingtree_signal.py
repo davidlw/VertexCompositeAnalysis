@@ -39,7 +39,11 @@ cms.string('dsana_mc.root')
 
 process.dsana_mc_genmatch = process.dsana_mc.clone()
 process.dsana_mc_genmatch.VertexCompositeCollection = cms.untracked.InputTag("dsselectorMCGenMatch:DSToKsK")
+process.dsana_mc_genunmatch = process.dsana_mc.clone()
+process.dsana_mc_genunmatch.VertexCompositeCollection = cms.untracked.InputTag("dsselectorMCGenUnMatch:DSToKsK")
 
 process.dsana_genmatch_seq = cms.Sequence(process.dsselectorMCGenMatch * process.dsana_mc_genmatch)
+process.dsana_genunmatch_seq = cms.Sequence(process.dsselectorMCGenUnMatch * process.dsana_mc_genunmatch)
 
 process.p1 = cms.Path(process.dsana_genmatch_seq)
+process.p2 = cms.Path(process.dsana_genunmatch_seq)
