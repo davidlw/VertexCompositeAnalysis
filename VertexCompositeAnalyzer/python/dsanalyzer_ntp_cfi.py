@@ -23,7 +23,7 @@ dsana = cms.EDAnalyzer('VertexCompositeNtupleProducer',
   massHistWidth = cms.untracked.double(0.5),
   massHistBins = cms.untracked.int32(100),
 
-  pTBins = cms.untracked.vdouble(0,1.2,1.5,2.4,3.0,3.5,4.2,5.0,6.0,7.0,8.0),
+  pTBins = cms.untracked.vdouble(0,1,2,3,4,5,6,8,10),
   yBins = cms.untracked.vdouble(-2.4,-1.0,0.0,1.0,2.4),
 
   useAnyMVA = cms.bool(False),
@@ -56,7 +56,7 @@ dsana_mc = cms.EDAnalyzer('VertexCompositeNtupleProducer',
   massHistWidth = cms.untracked.double(0.5),
   massHistBins = cms.untracked.int32(100),
 
-  pTBins = cms.untracked.vdouble(0,1.2,1.5,2.4,3.0,3.5,4.2,5.0,6.0,7.0,8.0),
+  pTBins = cms.untracked.vdouble(0,1,2,3,4,5,6,8,10),
   yBins = cms.untracked.vdouble(-2.4,-1.0,0.0,1.0,2.4),
 
   useAnyMVA = cms.bool(False),

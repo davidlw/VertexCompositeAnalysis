@@ -15,16 +15,13 @@ if __name__ == '__main__':
     config.JobType.pluginName = 'Analysis'
 #    config.JobType.maxMemoryMB = 3000
 #    config.JobType.maxJobRuntimeMin = 2750
-#    config.JobType.psetName = '../test/d0ana_mc_trainingtree_signal.py'
-    config.Data.unitsPerJob = 1
-#    config.Data.totalUnits = 10
+    config.JobType.psetName = '../test/pPbSkim2016_DPM_mc_cfg.py'
+    config.Data.unitsPerJob = 7
+#    config.Data.totalUnits = 1000
     config.Data.splitting = 'FileBased'
     config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
-#    config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
-    config.Data.publication = False
-    config.Data.useParent = True
     config.Data.inputDBS = 'phys03'
-#    config.Site.storageSite = 'T2_CH_CERN'
+    config.Data.publication = True
     config.Site.storageSite = 'T2_US_MIT'
 #    config.Site.storageSite = 'T3_US_Rice'
 
@@ -40,8 +37,7 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'pPb2016_pPbMC_Ds_TrainingTree_signal_v1'
-    config.Data.outputDatasetTag = 'pPb_TrainingTree_signal_v1'
-    config.Data.inputDataset = '/Pythia8_8160GeV_Ds_KsKaon/davidlw-pPb_Skim_DsToKsK_v1-8a8d504a0384eca3944b6f808d52a759/USER'
-    config.JobType.psetName = '../test/dsana_mc_trainingtree_signal.py'
+    config.General.requestName = 'pPb2016_pPbMC_Skim_DPM_v1'
+    config.Data.outputDatasetTag = 'pPb_Skim_DPM_v1'
+    config.Data.inputDataset = '/Pythia8_8160GeV_Dmeson_KsPion/zhchen-Pythia8_8160GeV_Dmeson_KsPion_AODSIM_v1-batch1-517fbb26312f777f94848083dc6dc607/USER'
     submit(config)

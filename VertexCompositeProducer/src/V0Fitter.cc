@@ -730,6 +730,36 @@ void V0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
          if ( theTrackRefs[trdx].isNull() ) continue;
 
+         float batPionMass = protonMass;
+         float batPionMass_sigma = protonMass_sigma;
+
+         if(doLambdaCToKsPs)
+         {
+           batPionMass = protonMass;
+           batPionMass_sigma = protonMass_sigma;
+         }
+
+         if(doDSToKsKs)
+         {
+           batPionMass = kaonMass;
+           batPionMass_sigma = kaonMass_sigma;
+         }
+
+        if(doDPMs)
+         {
+           batPionMass = piMass;
+           batPionMass_sigma = piMass_sigma;
+         }
+
+         double totalE1 = theKshort.energy()+sqrt(theTrackRefs[trdx]->p()*theTrackRefs[trdx]->p()+batPionMass*batPionMass);
+         double totalE1Sq = totalE1*totalE1;
+         double totalPSq = ( theTrackRefs[trdx]->momentum() + theKshort.momentum() ).mag2();
+         double mass = sqrt( totalE1Sq - totalPSq);
+
+         if ( doDSToKsKs && (mass > dsMass + dsMassCut*1.3 ||  mass < dsMass - dsMassCut*1.3)) continue;
+         if ( doDPMs && (mass > dpmMass + dpmMassCut*1.3 || mass < dpmMass - dpmMassCut*1.3)) continue;
+         if ( doLambdaCToKsPs && (mass > lambdaCMass + lambdaCMassCut*1.3 ||  mass < lambdaCMass - lambdaCMassCut*1.3)) continue;
+
          math::XYZPoint bestvtx(xVtx,yVtx,zVtx);
          double dzvtx = theTrackRefs[trdx]->dz(bestvtx);
          double dxyvtx = theTrackRefs[trdx]->dxy(bestvtx);
@@ -792,7 +822,7 @@ void V0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
          RefCountedKinematicParticle ks_vFit_withMC = ksVertexFitTree->currentParticle();
 
          if (!ks_vFit_withMC->currentState().isValid()) continue;
-
+/*
          float batPionMass = protonMass;
          float batPionMass_sigma = protonMass_sigma;
 
@@ -813,7 +843,7 @@ void V0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
            batPionMass = piMass;
            batPionMass_sigma = piMass_sigma;
          }
-
+*/
          vector<RefCountedKinematicParticle> xiFitParticles;
 
          xiFitParticles.push_back(pFactory.particle(batPionTT,batPionMass,chi,ndf,batPionMass_sigma));
@@ -829,9 +859,9 @@ void V0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
          RefCountedKinematicVertex xiDecayVertex = xiFitTree->currentDecayVertex();
          if (!xiDecayVertex->vertexIsValid()) continue;
 
-         if ( doDSToKsKs && (xiCand->currentState().mass() > dsMass + dsMassCut*1.5 ||  xiCand->currentState().mass() < dsMass - dsMassCut*1.5)) continue;
-         if ( doDPMs && (xiCand->currentState().mass() > dpmMass + dpmMassCut*1.5 ||  xiCand->currentState().mass() < dpmMass - dpmMassCut*1.5)) continue;
-         if ( doLambdaCToKsPs && (xiCand->currentState().mass() > lambdaCMass + lambdaCMassCut*1.5 ||  xiCand->currentState().mass() < lambdaCMass - lambdaCMassCut*1.5)) continue;
+//         if ( doDSToKsKs && (xiCand->currentState().mass() > dsMass + dsMassCut*1.5 ||  xiCand->currentState().mass() < dsMass - dsMassCut*1.5)) continue;
+//         if ( doDPMs && (xiCand->currentState().mass() > dpmMass + dpmMassCut*1.5 ||  xiCand->currentState().mass() < dpmMass - dpmMassCut*1.5)) continue;
+//         if ( doLambdaCToKsPs && (xiCand->currentState().mass() > lambdaCMass + lambdaCMassCut*1.5 ||  xiCand->currentState().mass() < lambdaCMass - lambdaCMassCut*1.5)) continue;
 
          xiFitTree->movePointerToTheFirstChild();
          RefCountedKinematicParticle batPionCand = xiFitTree->currentParticle();

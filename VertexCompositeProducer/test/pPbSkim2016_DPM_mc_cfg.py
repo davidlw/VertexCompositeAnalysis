@@ -14,17 +14,14 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 200
 
 process.source = cms.Source("PoolSource",
    fileNames = cms.untracked.vstring(
-#'/store/hidata/PARun2016C/PAHighMultiplicity1/AOD/PromptReco-v1/000/285/505/00000/006F1E14-85AF-E611-9F9E-02163E014508.root'
-'/store/hidata/PARun2016C/PAHighMultiplicity1/AOD/PromptReco-v1/000/285/505/00000/1C67BAD8-83AF-E611-AA1C-02163E014280.root'
-#'/store/hidata/PARun2016B/PAMinimumBias1/AOD/PromptReco-v1/000/285/216/00000/04214B66-30AC-E611-BFBC-FA163EBFF447.root'
-# '/store/hidata/PARun2016B/PAMinimumBias1/AOD/PromptReco-v1/000/285/090/00000/DC56AAB2-5EAB-E611-A27A-FA163E251515.root'
+'/store/user/zhchen/Pythia8_8160GeV_Dmeson_KsPion/Pythia8_8160GeV_Dmeson_KsPion_AODSIM_v1-batch1/170709_180956/0000/Pythia8_8160GeV_Dmeson_KsPion_step2_906.root'
 )
 )
 
 # =============== Other Statements =====================
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
-process.GlobalTag.globaltag = '80X_dataRun2_Prompt_v15'
+process.GlobalTag.globaltag = '80X_mcRun2_pA_v4'
 
 # =============== Import Sequences =====================
 #Trigger Selection
@@ -52,7 +49,7 @@ process.NoScraping = cms.EDFilter("FilterOutScraping",
 )
 
 process.PAcollisionEventSelection = cms.Sequence(
-                                         process.hfCoincFilter * 
+#                                         process.hfCoincFilter * 
                                          process.PAprimaryVertexFilter *
                                          process.NoScraping
                                          )

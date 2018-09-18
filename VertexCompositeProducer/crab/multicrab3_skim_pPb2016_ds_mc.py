@@ -37,7 +37,7 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'pPb2016_pPbMC_Skim_DsToKsK_v2'
-    config.Data.outputDatasetTag = 'pPb_Skim_DsToKsK_v2'
+    config.General.requestName = 'pPb2016_pPbMC_Skim_DsToKsK_v3'
+    config.Data.outputDatasetTag = 'pPb_Skim_DsToKsK_v3'
     config.Data.inputDataset = '/Pythia8_8160GeV_Ds_KsKaon/zhchen-Pythia8_8160GeV_Ds_KsKaon_AODSIM_v1-batch1-517fbb26312f777f94848083dc6dc607/USER'
     submit(config)

@@ -9,3 +9,13 @@ dsselectorMCGenMatch = dsselectorMC.clone(
 dsselectorMCGenUnMatch = dsselectorMC.clone(
   selectGenUnMatch = cms.untracked.bool(True)
 )
+
+dsselectorBDTPreCut = dsselector.clone(
+  useAnyMVA = cms.bool(False),
+
+#  trkPtMin = cms.untracked.double(0.7),
+  trkPtSumMin = cms.untracked.double(1.2),
+  trkEtaDiffMax = cms.untracked.double(1.),
+#  trkNHitMin = cms.untracked.int32(11),
+)
+

@@ -34,7 +34,8 @@ jpsiselectorBDTPrompt = jpsiselector.clone(
   useAnyMVA = cms.bool(True),
   trkPMin = cms.untracked.double(3.),
   trkNHitMin = cms.untracked.int32(6),
-  mvaCuts = cms.vdouble(-0.2,0.012,-0.0047,0.078,-0.1,0.03,-0.0021)
+  trkPSumMin = cms.untracked.double(8.0),
+  mvaCuts = cms.vdouble(-1.993e-01,1.222e-02,-4.700e-03,7.764e-02,-1.003e-01,3.025e-02,-2.079e-03)
 )
 
 ########## PF Candidates only

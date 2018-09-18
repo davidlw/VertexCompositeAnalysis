@@ -1255,6 +1255,27 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
 //            gbrVals_[21] = H2dedx2;
           }
 
+          if(forestLabel_ == "DsInpPb")
+          {
+            gbrVals_[0] = pt;
+            gbrVals_[1] = y;
+            gbrVals_[2] = VtxProb;
+            gbrVals_[3] = dlos;
+            gbrVals_[4] = dlos2D;
+            gbrVals_[5] = dl;
+            gbrVals_[6] = agl_abs;
+            gbrVals_[7] = agl2D_abs;
+            gbrVals_[8] = dzos2;
+            gbrVals_[9] = dxyos2;
+            gbrVals_[10] = pt1;
+            gbrVals_[11] = pt2;
+            gbrVals_[12] = eta1;
+            gbrVals_[13] = eta2;
+            gbrVals_[14] = nhit2;
+            gbrVals_[15] = ptErr2;
+            gbrVals_[16] = H2dedx2;
+          }
+
           if(forestLabel_ == "JPsiInpPb")
           {
             gbrVals_[0] = pt;

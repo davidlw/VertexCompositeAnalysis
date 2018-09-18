@@ -15,18 +15,16 @@ if __name__ == '__main__':
     config.JobType.pluginName = 'Analysis'
 #    config.JobType.maxMemoryMB = 3000
 #    config.JobType.maxJobRuntimeMin = 2750
-#    config.JobType.psetName = '../test/d0ana_mc_trainingtree_signal.py'
-    config.Data.unitsPerJob = 1
-#    config.Data.totalUnits = 10
+    config.Data.unitsPerJob = 3
+#    config.Data.totalUnits = 20
     config.Data.splitting = 'FileBased'
+#    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0_v2-89e025b59ba99ac07dd655f3dba5c8df/USER'
     config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 #    config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
     config.Data.publication = False
     config.Data.useParent = True
     config.Data.inputDBS = 'phys03'
-#    config.Site.storageSite = 'T2_CH_CERN'
     config.Site.storageSite = 'T2_US_MIT'
-#    config.Site.storageSite = 'T3_US_Rice'
 
     def submit(config):
         try:
@@ -40,8 +38,8 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'pPb2016_pPbMC_Ds_TrainingTree_signal_v1'
-    config.Data.outputDatasetTag = 'pPb_TrainingTree_signal_v1'
-    config.Data.inputDataset = '/Pythia8_8160GeV_Ds_KsKaon/davidlw-pPb_Skim_DsToKsK_v1-8a8d504a0384eca3944b6f808d52a759/USER'
-    config.JobType.psetName = '../test/dsana_mc_trainingtree_signal.py'
+    config.General.requestName = 'pPb2016_pPb_PromptDs_BDT_test_hm185_ws_histogram_b1_v1'
+    config.JobType.psetName = '../test/Ds/dsana_default_hm185_ws.py'
+    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_DSToKsK_v3_test-266318ee0e59e4029f628247142096ba/USER'
+    config.Data.outputDatasetTag = 'pPb_PromptDs_BDT_test_hm185_ws_histogram_v1'
     submit(config)
