@@ -38,10 +38,10 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'pPb2016_pPb_D0_BDTCut_default_hm185_ws_histogram_b1_v11'
+    config.General.requestName = 'pPb2016_pPb_D0_BDTCut_default_hm185_ws_histogram_b1_v12'
     config.JobType.psetName = '../test/D0/d0ana_default_hm185_ws_bdtcut.py'
     config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
-    config.Data.outputDatasetTag = 'pPb_D0_BDTCut_default_hm185_ws_histogram_v11'
+    config.Data.outputDatasetTag = 'pPb_D0_BDTCut_default_hm185_ws_histogram_v12'
     submit(config)
 
 #    config.General.requestName = 'pPb2016_Pbp_D0_BDTCut_default_hm185_ws_histogram_b1_v7'

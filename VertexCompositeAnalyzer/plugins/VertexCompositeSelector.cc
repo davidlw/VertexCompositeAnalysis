@@ -398,8 +398,8 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
    
       mvaCuts_ = iConfig.getParameter< std::vector<double> >("mvaCuts");
 
-      func_mva = new TF2("func_mva","[0]*(1+[1]*x+[2]*x*x)*(1+[3]*y+[4]*y*y+[5]*y*y*y+[6]*y*y*y*y)",0,5.0,0,100);
-      func_mva->SetParameters(mvaCuts_[0],mvaCuts_[1],mvaCuts_[2],mvaCuts_[3],mvaCuts_[4],mvaCuts_[5],mvaCuts_[6]);
+      func_mva = new TF2("func_mva","[0]*(1+[1]*x+[2]*x*x+[3]*x*x*x)*(1+[4]*y+[5]*y*y+[6]*y*y*y+[7]*y*y*y*y)",0,5.0,0,100);
+      func_mva->SetParameters(mvaCuts_[0],mvaCuts_[1],mvaCuts_[2],mvaCuts_[3],mvaCuts_[4],mvaCuts_[5],mvaCuts_[6],mvaCuts_[7]);
     }
 
     if(!useForestFromDB_){

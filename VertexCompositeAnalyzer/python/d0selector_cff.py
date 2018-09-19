@@ -13,7 +13,7 @@ d0selectorBDTPreCut = d0selector.clone(
 
 d0selectorBDTNonPrompt = d0selectorBDTPreCut.clone(
   useAnyMVA = cms.bool(True),
-  mvaCuts = cms.vdouble(4.428e-01,-2.639e-04,-2.610e-02,2.997e-01,-8.948e-02,1.145e-02,-5.321e-04)
+  mvaCuts = cms.vdouble(4.428e-01,-2.639e-04,-2.610e-02,0.0,2.997e-01,-8.948e-02,1.145e-02,-5.321e-04)
 #  mvaCuts = cms.vdouble(0.45,-0.0047,-0.023,0.23,-0.087,0.011,-0.0005)
 #  mvaCuts = cms.vdouble(0.44,0.0,-0.026,0.3,-0.09,0.011,0.0)
 )
@@ -21,7 +21,8 @@ d0selectorBDTNonPrompt = d0selectorBDTPreCut.clone(
 d0selectorBDTPrompt = d0selectorBDTPreCut.clone(
   useAnyMVA = cms.bool(True),
 #  mvaCuts = cms.vdouble(0.4,0.19,-0.088,0.14,-0.0054,-0.0016,0.0001)
-  mvaCuts = cms.vdouble(3.999e-01,1.872e-01,-8.781e-02,1.397e-01,-5.427e-03,-1.607e-03,1.252e-04)
+#  mvaCuts = cms.vdouble(3.999e-01,1.872e-01,-8.781e-02,1.397e-01,-5.427e-03,-1.607e-03,1.252e-04) v11
+  mvaCuts = cms.vdouble(4.185e-01,-4.441e-02,1.322e-01,-5.939e-02,1.577e-01,-1.177e-02,-6.253e-04,7.098e-05) #v12
 )
 
 d0selectorMCBDTPreCut = d0selectorMC.clone(
