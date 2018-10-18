@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 from VertexCompositeAnalysis.VertexCompositeAnalyzer.d0selector_cfi import *
 
 d0selectorBDTPreCut = d0selector.clone(
-  useAnyMVA = cms.bool(False),
+  useAnyMVA = cms.bool(True),
 
   trkPtMin = cms.untracked.double(0.7),
   trkPtSumMin = cms.untracked.double(1.6),
@@ -13,16 +13,18 @@ d0selectorBDTPreCut = d0selector.clone(
 
 d0selectorBDTNonPrompt = d0selectorBDTPreCut.clone(
   useAnyMVA = cms.bool(True),
-  mvaCuts = cms.vdouble(4.428e-01,-2.639e-04,-2.610e-02,0.0,2.997e-01,-8.948e-02,1.145e-02,-5.321e-04)
+  BDTCutFileName = cms.string('BDTCuts_NonPrompD0_HM185.root')
+#  mvaCuts = cms.vdouble(4.428e-01,-2.639e-04,-2.610e-02,0.0,2.997e-01,-8.948e-02,1.145e-02,-5.321e-04)
 #  mvaCuts = cms.vdouble(0.45,-0.0047,-0.023,0.23,-0.087,0.011,-0.0005)
 #  mvaCuts = cms.vdouble(0.44,0.0,-0.026,0.3,-0.09,0.011,0.0)
 )
 
 d0selectorBDTPrompt = d0selectorBDTPreCut.clone(
   useAnyMVA = cms.bool(True),
+  BDTCutFileName = cms.string('BDTCuts_PrompD0_HM185.root')
 #  mvaCuts = cms.vdouble(0.4,0.19,-0.088,0.14,-0.0054,-0.0016,0.0001)
 #  mvaCuts = cms.vdouble(3.999e-01,1.872e-01,-8.781e-02,1.397e-01,-5.427e-03,-1.607e-03,1.252e-04) v11
-  mvaCuts = cms.vdouble(4.185e-01,-4.441e-02,1.322e-01,-5.939e-02,1.577e-01,-1.177e-02,-6.253e-04,7.098e-05) #v12
+#  mvaCuts = cms.vdouble(4.185e-01,-4.441e-02,1.322e-01,-5.939e-02,1.577e-01,-1.177e-02,-6.253e-04,7.098e-05) #v12
 )
 
 d0selectorMCBDTPreCut = d0selectorMC.clone(
@@ -36,12 +38,14 @@ d0selectorMCBDTPreCut = d0selectorMC.clone(
 
 d0selectorMCBDTNonPrompt = d0selectorMCBDTPreCut.clone(
   useAnyMVA = cms.bool(True),
-  mvaCuts = cms.untracked.vdouble(0.45,-0.0046,-0.023,0.28,-0.083,0.01,-0.0005)
+  BDTCutFileName = cms.string('BDTCuts_NonPrompD0_HM185.root')
+#  mvaCuts = cms.vdouble(4.428e-01,-2.639e-04,-2.610e-02,0.0,2.997e-01,-8.948e-02,1.145e-02,-5.321e-04)
 )
 
 d0selectorMCBDTPrompt = d0selectorMCBDTPreCut.clone(
   useAnyMVA = cms.bool(True),
-  mvaCuts = cms.untracked.vdouble(0.42,0.21,-0.09,0.1,-0.006,0,0)
+  BDTCutFileName = cms.string('BDTCuts_PrompD0_HM185.root')
+#  mvaCuts = cms.vdouble(4.185e-01,-4.441e-02,1.322e-01,-5.939e-02,1.577e-01,-1.177e-02,-6.253e-04,7.098e-05) #v12
 )     
 
 d0selectorPID = d0selector.clone(

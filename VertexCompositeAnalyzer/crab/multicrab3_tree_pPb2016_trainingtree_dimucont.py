@@ -15,9 +15,9 @@ if __name__ == '__main__':
     config.JobType.pluginName = 'Analysis'
 #    config.JobType.maxMemoryMB = 3000
 #    config.JobType.maxJobRuntimeMin = 2750
-    config.Data.unitsPerJob = 1
-    config.Data.totalUnits = -1
-    config.Data.splitting = 'FileBased'
+#    config.Data.unitsPerJob = 1
+#    config.Data.totalUnits = -1
+    config.Data.splitting = 'Automatic'
 #    config.Data.runRange = '285505-285505'
     config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 #    config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
@@ -38,21 +38,53 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'pPb2016_pPb_Tree_DiMuCont_training_b1_v3'
+    config.General.requestName = 'pPb2016_pPb_Tree_DiMuContBoth_training_b1_v4'
     config.JobType.psetName = '../test/dimucontana_trainingtree.py'
-    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_DiMuContBoth_default_v1-a29da638b1486ef04d4ecc4f3c980acf/USER'
-    config.Data.outputDatasetTag = 'pPb_Tree_DiMuCont_training_HLT185_v3'
+    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_DiMuContBoth_default_v2-753e5416dcc725930129c4cde0e65308/USER'
+    config.Data.outputDatasetTag = 'pPb_Tree_DiMuContBoth_training_v4'
     submit(config)
 
-    config.General.requestName = 'pPb2016_pPb_Tree_DiMuCont_training_b2_v3'
-    config.Data.inputDataset = '/PAHighMultiplicity2/davidlw-pPb_Skim_DiMuContBoth_default_v1-a29da638b1486ef04d4ecc4f3c980acf/USER'
+    config.General.requestName = 'pPb2016_pPb_Tree_DiMuContBoth_training_b2_v4'
+    config.Data.inputDataset = '/PAHighMultiplicity2/davidlw-pPb_Skim_DiMuContBoth_default_v2-753e5416dcc725930129c4cde0e65308/USER'
     submit(config)
 
-    config.General.requestName = 'pPb2016_Pbp_Tree_DiMuCont_training_b1_v3'
-    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-Pbp_Skim_DiMuContBoth_default_v1-a29da638b1486ef04d4ecc4f3c980acf/USER'
-    config.Data.outputDatasetTag = 'Pbp_Tree_JPsi_training_HLT185_v3'
+    config.General.requestName = 'pPb2016_pPb_Tree_DiMuContBoth_training_b3_v4'
+    config.Data.inputDataset = '/PAHighMultiplicity3/davidlw-pPb_Skim_DiMuContBoth_default_v2-753e5416dcc725930129c4cde0e65308/USER'
     submit(config)
 
-    config.General.requestName = 'pPb2016_Pbp_Tree_DiMuCont_training_b2_v3'
-    config.Data.inputDataset = '/PAHighMultiplicity2/davidlw-Pbp_Skim_DiMuContBoth_default_v1-a29da638b1486ef04d4ecc4f3c980acf/USER'
+    config.General.requestName = 'pPb2016_pPb_Tree_DiMuContBoth_training_b4_v4'
+    config.Data.inputDataset = '/PAHighMultiplicity4/davidlw-pPb_Skim_DiMuContBoth_default_v2-753e5416dcc725930129c4cde0e65308/USER'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_pPb_Tree_DiMuContBoth_training_b5_v4'
+    config.Data.inputDataset = '/PAHighMultiplicity5/davidlw-pPb_Skim_DiMuContBoth_default_v2-753e5416dcc725930129c4cde0e65308/USER'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_pPb_Tree_DiMuContBoth_training_b6_v4'
+    config.Data.inputDataset = '/PAHighMultiplicity6/davidlw-pPb_Skim_DiMuContBoth_default_v2-753e5416dcc725930129c4cde0e65308/USER'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Tree_DiMuContBoth_training_b1_v4'
+    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-Pbp_Skim_DiMuContBoth_default_v2-753e5416dcc725930129c4cde0e65308/USER'
+    config.Data.outputDatasetTag = 'Pbp_Tree_DiMuContBoth_training_v4'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Tree_DiMuContBoth_training_b2_v4'
+    config.Data.inputDataset = '/PAHighMultiplicity2/davidlw-Pbp_Skim_DiMuContBoth_default_v2-753e5416dcc725930129c4cde0e65308/USER'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Tree_DiMuContBoth_training_b3_v4'
+    config.Data.inputDataset = '/PAHighMultiplicity3/davidlw-Pbp_Skim_DiMuContBoth_default_v2-753e5416dcc725930129c4cde0e65308/USER'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Tree_DiMuContBoth_training_b4_v4'
+    config.Data.inputDataset = '/PAHighMultiplicity4/davidlw-Pbp_Skim_DiMuContBoth_default_v2-753e5416dcc725930129c4cde0e65308/USER'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Tree_DiMuContBoth_training_b5_v4'
+    config.Data.inputDataset = '/PAHighMultiplicity5/davidlw-Pbp_Skim_DiMuContBoth_default_v2-753e5416dcc725930129c4cde0e65308/USER'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Tree_DiMuContBoth_training_b6_v4'
+    config.Data.inputDataset = '/PAHighMultiplicity6/davidlw-Pbp_Skim_DiMuContBoth_default_v2-753e5416dcc725930129c4cde0e65308/USER'
     submit(config)

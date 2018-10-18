@@ -129,6 +129,10 @@ private:
     double candYMax_;
     double cand3DDecayLengthSigMin_;
     double cand3DPointingAngleMax_;
+    double cand3DDCAMin_;
+    double cand3DDCAMax_;
+    double cand2DDCAMin_;
+    double cand2DDCAMax_;
     double candVtxProbMin_;
 
     //tree branches
@@ -282,6 +286,8 @@ private:
     TF2* func_mva;
     std::vector<double> mvaCuts_;
 
+    TH2D* hist_bdtcut;
+
     float mvaMin_;
     float mvaMax_;
 
@@ -353,6 +359,10 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
     candYMax_ = iConfig.getUntrackedParameter<double>("candYMax");
     cand3DDecayLengthSigMin_ = iConfig.getUntrackedParameter<double>("cand3DDecayLengthSigMin");
     cand3DPointingAngleMax_ = iConfig.getUntrackedParameter<double>("cand3DPointingAngleMax");
+    cand3DDCAMin_ = iConfig.getUntrackedParameter<double>("cand3DDCAMin");
+    cand3DDCAMax_ = iConfig.getUntrackedParameter<double>("cand3DDCAMax");
+    cand2DDCAMin_ = iConfig.getUntrackedParameter<double>("cand2DDCAMin");
+    cand2DDCAMax_ = iConfig.getUntrackedParameter<double>("cand2DDCAMax");
     candVtxProbMin_ = iConfig.getUntrackedParameter<double>("candVtxProbMin");
 
     //input tokens
@@ -397,6 +407,17 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
       }
    
       mvaCuts_ = iConfig.getParameter< std::vector<double> >("mvaCuts");
+
+      TString bdtcut_filename;
+      if(iConfig.exists("BDTCutFileName")) bdtcut_filename = iConfig.getParameter<string>("BDTCutFileName"); 
+      hist_bdtcut = 0;
+      if(!bdtcut_filename.IsNull()) 
+      {
+        edm::FileInPath fip(Form("VertexCompositeAnalysis/VertexCompositeAnalyzer/data/%s",bdtcut_filename.Data()));
+        TFile ff(fip.fullPath().c_str(),"READ");
+        hist_bdtcut = (TH2D*)ff.Get("hist_bdtcut");
+        ff.Close();
+      }
 
       func_mva = new TF2("func_mva","[0]*(1+[1]*x+[2]*x*x+[3]*x*x*x)*(1+[4]*y+[5]*y*y+[6]*y*y*y+[7]*y*y*y*y)",0,5.0,0,100);
       func_mva->SetParameters(mvaCuts_[0],mvaCuts_[1],mvaCuts_[2],mvaCuts_[3],mvaCuts_[4],mvaCuts_[5],mvaCuts_[6],mvaCuts_[7]);
@@ -608,7 +629,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
           mva = (*mvavalues)[it];
           if(mva < mvaMin_ || mva > mvaMax_) continue;
 
-          if(mva<GetMVACut(fabs(y),pt)) continue;          
+          if(mva<GetMVACut(y,pt)) continue;          
 
           theVertexComps.push_back( trk );
           theMVANew.push_back( mva );
@@ -786,6 +807,12 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         dlos2D = dl2D/dl2Derror;
 
         if(dlos2D > 1000.) continue;
+
+        double dca3D = dl*sin(agl_abs);
+        if(dca3D < cand3DDCAMin_ || dca3D > cand3DDCAMax_) continue;
+
+        double dca2D = dl2D*sin(agl2D_abs);
+        if(dca2D < cand2DDCAMin_ || dca2D > cand2DDCAMax_) continue;
 
         //trk info
         if(!twoLayerDecay_)
@@ -1320,7 +1347,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
           auto gbrVal = forest->GetClassifier(gbrVals_);
 
           if(gbrVal < mvaMin_ || gbrVal > mvaMax_) continue;
-          if(gbrVal < GetMVACut(fabs(y),pt)) continue;
+          if(gbrVal < GetMVACut(y,pt)) continue;
 
           theMVANew.push_back( gbrVal );
         } 
@@ -1332,8 +1359,12 @@ double
 VertexCompositeSelector::GetMVACut(double y, double pt)
 {
   double mvacut = -1.0;
-  mvacut = func_mva->Eval(y,pt);
-  if(pt>8.0) mvacut = func_mva->Eval(y,8.0);
+  if(fabs(y)>2.4) return mvacut;
+  if(!hist_bdtcut) return mvacut;
+
+  mvacut = hist_bdtcut->GetBinContent(hist_bdtcut->GetXaxis()->FindBin(y),hist_bdtcut->GetYaxis()->FindBin(pt));
+  if(pt>7.4) mvacut = hist_bdtcut->GetBinContent(hist_bdtcut->GetXaxis()->FindBin(y),hist_bdtcut->GetYaxis()->FindBin(7.4));
+  if(pt<1.37) mvacut = hist_bdtcut->GetBinContent(hist_bdtcut->GetXaxis()->FindBin(y),hist_bdtcut->GetYaxis()->FindBin(1.37));
 
   return mvacut;
 }

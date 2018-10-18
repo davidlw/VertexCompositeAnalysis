@@ -2,6 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 dimuana = cms.EDAnalyzer('VertexCompositeNtupleProducer',
   doGenMatching = cms.untracked.bool(False),
+  doGenMatchingTOF = cms.untracked.bool(False),
   hasSwap = cms.untracked.bool(False),
   decayInGen = cms.untracked.bool(False),
   twoLayerDecay = cms.untracked.bool(False),
@@ -34,6 +35,7 @@ dimuana = cms.EDAnalyzer('VertexCompositeNtupleProducer',
 
 dimuana_mc = cms.EDAnalyzer('VertexCompositeNtupleProducer',
   doGenMatching = cms.untracked.bool(True),
+  doGenMatchingTOF = cms.untracked.bool(False),
   hasSwap = cms.untracked.bool(False),
   decayInGen = cms.untracked.bool(True),
   twoLayerDecay = cms.untracked.bool(False),

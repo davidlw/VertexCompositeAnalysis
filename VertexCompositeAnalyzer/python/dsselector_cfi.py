@@ -98,5 +98,9 @@ dsselectorMC = cms.EDProducer('VertexCompositeSelector',
   candYMax = cms.untracked.double(999.),
   cand3DDecayLengthSigMin = cms.untracked.double(0.),
   cand3DPointingAngleMax = cms.untracked.double(999.),
+  cand3DDCAMin = cms.untracked.double(-999.),
+  cand3DDCAMax = cms.untracked.double(999.),
+  cand2DDCAMin = cms.untracked.double(-999.),
+  cand2DDCAMax = cms.untracked.double(999.),
   candVtxProbMin = cms.untracked.double(0.)
                               )

@@ -20,9 +20,9 @@ generalJPsiMuMuOneStTightPFCandidates = generalJPsiMuMuOneStTightCandidates.clon
 generalMuMuContinuimCandidates = generalDiMuCandidates.clone(
 
     mllCutMin = cms.double(0.0),
-    mllCutMax = cms.double(100.0),
+    mllCutMax = cms.double(10000.0),
 
-    DiMuMassCut = cms.double(9999.),
+    DiMuMassCut = cms.double(999999.),
 )
 
 generalMuMuContinuimOneStTightCandidates = generalMuMuContinuimCandidates.clone(

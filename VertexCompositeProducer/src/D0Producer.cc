@@ -25,9 +25,7 @@
 // Constructor
 D0Producer::D0Producer(const edm::ParameterSet& iConfig) :
  theVees(iConfig, consumesCollector())
-//  theParams(iConfig) {
 {
-  // Trying this with Candidates instead of the simple reco::Vertex
   useAnyMVA_ = false;
   if(iConfig.exists("useAnyMVA")) useAnyMVA_ = iConfig.getParameter<bool>("useAnyMVA");
  

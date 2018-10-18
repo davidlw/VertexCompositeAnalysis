@@ -134,6 +134,7 @@ private:
 
     //options
     bool doGenMatching_;
+    bool doGenMatchingTOF_;
     bool hasSwap_;
     bool decayInGen_;
     bool twoLayerDecay_;
@@ -175,6 +176,7 @@ private:
     float agl2D;
     float agl2D_abs;
     float dlos2D;
+    float dl2D;
     bool isSwap;
     bool matchGEN;
     int idmom_reco;
@@ -215,6 +217,10 @@ private:
     float phi2;
     int charge1;
     int charge2;
+    int pid1;
+    int pid2;
+    float tof1;
+    float tof2;
     float H2dedx1;
     float H2dedx2;
     float T4dedx1;
@@ -314,6 +320,7 @@ VertexCompositeNtupleProducer::VertexCompositeNtupleProducer(const edm::Paramete
     //options
     twoLayerDecay_ = iConfig.getUntrackedParameter<bool>("twoLayerDecay");
     doGenMatching_ = iConfig.getUntrackedParameter<bool>("doGenMatching");
+    doGenMatchingTOF_ = iConfig.getUntrackedParameter<bool>("doGenMatchingTOF");
     hasSwap_ = iConfig.getUntrackedParameter<bool>("hasSwap");
     decayInGen_ = iConfig.getUntrackedParameter<bool>("decayInGen");
     doMuon_ = iConfig.getUntrackedParameter<bool>("doMuon");
@@ -399,6 +406,9 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
       assert( (*mvavalues).size() == v0candidates->size() );
     }
 
+    edm::Handle<reco::GenParticleCollection> genpars;
+    if(doGenMatching_ || doGenMatchingTOF_) iEvent.getByToken(tok_genParticle_,genpars);
+
     edm::Handle<edm::ValueMap<reco::DeDxData> > dEdxHandle1;
     iEvent.getByToken(Dedx_Token1_, dEdxHandle1);
     
@@ -444,8 +454,8 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         pVect = new vector< vector<double>>;
         pVectIDmom = new vector<int>;
         
-        edm::Handle<reco::GenParticleCollection> genpars;
-        iEvent.getByToken(tok_genParticle_,genpars);
+//        edm::Handle<reco::GenParticleCollection> genpars;
+//        iEvent.getByToken(tok_genParticle_,genpars);
         
         if(!genpars.isValid())
         {
@@ -616,6 +626,81 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         charge1 = d1->charge();
         charge2 = d2->charge();
         
+
+        pid1 = -99999;
+        pid2 = -99999;
+        if(doGenMatchingTOF_)
+        {
+          for(unsigned it=0; it<genpars->size(); ++it){
+
+              const reco::GenParticle & trk = (*genpars)[it];
+
+              if(trk.pt()<0.001) continue;
+
+              int id = trk.pdgId();
+              TVector3 trkvect(trk.px(),trk.py(),trk.pz());
+
+//cout<<trk.pdgId()<<" "<<trk.numberOfDaughters()<<" "<<trk.charge()<<endl;
+              if(fabs(id)!=PID_ && trk.charge())
+              {
+                // matching daughter 1
+                double deltaR = trkvect.DeltaR(dauvec1);
+                if(deltaR < deltaR_ && fabs((trk.pt()-pt1)/pt1) < 0.5 && trk.charge()==charge1 && pid1==-99999)
+                {
+                  pid1 = id;
+            //      tof1 = ;
+                } 
+
+                // matching daughter 2
+                deltaR = trkvect.DeltaR(dauvec2);
+                if(deltaR < deltaR_ && fabs((trk.pt()-pt2)/pt2) < 0.5 && trk.charge()==charge2 && pid2==-99999)
+                {
+                  pid2 = id;
+            //      tof2 = ;
+                }
+              }
+
+              if(fabs(id)==PID_ && trk.numberOfDaughters()==2)
+              {
+//cout<<trk.pdgId()<<" "<<trk.numberOfDaughters()<<" "<<trk.charge()<<endl;
+                const reco::Candidate * Dd1 = trk.daughter(0);
+                const reco::Candidate * Dd2 = trk.daughter(1);
+                TVector3 d1vect(Dd1->px(),Dd1->py(),Dd1->pz());
+                TVector3 d2vect(Dd2->px(),Dd2->py(),Dd2->pz());
+                int id1 = Dd1->pdgId();
+                int id2 = Dd2->pdgId();
+               
+                double deltaR = d1vect.DeltaR(dauvec1);
+                if(deltaR < deltaR_ && fabs((Dd1->pt()-pt1)/pt1) < 0.5 && Dd1->charge()==charge1 && pid1==-99999)
+                {
+                  pid1 = id1;
+//cout<<"matched 1!"<<endl;
+                }
+                deltaR = d2vect.DeltaR(dauvec1);
+                if(deltaR < deltaR_ && fabs((Dd2->pt()-pt1)/pt1) < 0.5 && Dd2->charge()==charge1 && pid1==-99999)
+                {
+                  pid1 = id1;
+//cout<<"matched 2!"<<endl;
+                }
+
+                deltaR = d1vect.DeltaR(dauvec2);
+                if(deltaR < deltaR_ && fabs((Dd1->pt()-pt2)/pt2) < 0.5 && Dd1->charge()==charge2 && pid2==-99999)
+                {
+                  pid2 = id2;
+//cout<<"matched 3!"<<endl;
+                }
+                deltaR = d2vect.DeltaR(dauvec2);
+                if(deltaR < deltaR_ && fabs((Dd2->pt()-pt2)/pt2) < 0.5 && Dd2->charge()==charge2 && pid2==-99999)
+                {
+                  pid2 = id2;
+//cout<<"matched 4!"<<endl;
+                }
+              }
+
+              if(pid1!=-99999 && pid2!=-99999) break;
+          }
+        }
+
         //vtxChi2
         vtxChi2 = trk.vertexChi2();
         ndf = trk.vertexNdof();
@@ -657,7 +742,7 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         SMatrixSym3D totalCov2D = sv1 + sv2;
         SVector3 distanceVector2D(secvx-bestvx,secvy-bestvy,0);
         
-        double dl2D = ROOT::Math::Mag(distanceVector2D);
+        dl2D = ROOT::Math::Mag(distanceVector2D);
         double dl2Derror = sqrt(ROOT::Math::Similarity(totalCov2D, distanceVector2D))/dl2D;
         
         dlos2D = dl2D/dl2Derror;
@@ -1222,6 +1307,7 @@ VertexCompositeNtupleProducer::initTree()
         VertexCompositeNtuple->Branch("3DDecayLength",&dl,"3DDecayLength/F");
 //        VertexCompositeNtuple->Branch("3DDecayLengthError",&dlerror,"3DDecayLengthError/F");
         VertexCompositeNtuple->Branch("2DDecayLengthSignificance",&dlos2D,"2DDecayLengthSignificance/F");
+        VertexCompositeNtuple->Branch("2DDecayLength",&dl2D,"2DDecayLength/F");
     
         if(doGenMatching_)
         {
@@ -1230,6 +1316,14 @@ VertexCompositeNtupleProducer::initTree()
             VertexCompositeNtuple->Branch("matchGEN",&matchGEN,"matchGEN/O");
         }
         
+        if(doGenMatchingTOF_)
+        {
+          VertexCompositeNtuple->Branch("PIDD1",&pid1,"PIDD1/I");
+          VertexCompositeNtuple->Branch("PIDD2",&pid1,"PIDD2/I");
+          VertexCompositeNtuple->Branch("TOFD1",&tof1,"TOFD1/F");
+          VertexCompositeNtuple->Branch("TOFD2",&tof1,"TOFD2/F");
+        }
+
         //daugther & grand daugther info
         if(twoLayerDecay_)
         {

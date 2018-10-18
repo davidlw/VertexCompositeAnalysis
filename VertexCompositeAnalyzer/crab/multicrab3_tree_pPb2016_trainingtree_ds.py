@@ -15,10 +15,10 @@ if __name__ == '__main__':
     config.JobType.pluginName = 'Analysis'
 #    config.JobType.maxMemoryMB = 3000
 #    config.JobType.maxJobRuntimeMin = 2750
-    config.Data.unitsPerJob = 1
-    config.Data.totalUnits = -1
-    config.Data.splitting = 'FileBased'
-    config.Data.runRange = '285505-285505'
+#    config.Data.unitsPerJob = 1
+#    config.Data.totalUnits = -1
+    config.Data.splitting = 'Automatic'
+#    config.Data.runRange = '285505-285505'
     config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 #    config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
     config.Data.publication = False
@@ -38,8 +38,21 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'pPb2016_pPb_Tree_D0_training_v7'
-    config.JobType.psetName = '../test/d0ana_trainingtree.py'
-    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0Both_v7_test-8d9ad5613e720aaf645b53de5658bfe9/USER'
-    config.Data.outputDatasetTag = 'pPb_Tree_D0_training_run285505_HLT185_v7'
+#    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_NoBDTCut_run285505_b1_v1'
+#    config.JobType.psetName = '../test/D0/d0ana_trainingtree.py'
+#    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+#    config.Data.outputDatasetTag = 'pPb_Tree_D0_default_NoBDTCut_run285505_v1'
+#    submit(config)
+
+    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCut_b1_v3'
+    config.JobType.psetName = '../test/D0/d0ana_trainingtree_bdtcut.py'
+    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    config.Data.outputDatasetTag = 'pPb_Tree_D0_default_BDTCut_v3'
     submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCut_b1_v3'
+    config.JobType.psetName = '../test/D0/d0ana_trainingtree_bdtcut.py'
+    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    config.Data.outputDatasetTag = 'Pbp_Tree_D0_default_BDTCut_v3'
+    submit(config)
+

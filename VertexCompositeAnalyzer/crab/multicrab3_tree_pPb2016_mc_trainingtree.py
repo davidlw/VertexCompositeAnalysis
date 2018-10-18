@@ -16,9 +16,10 @@ if __name__ == '__main__':
 #    config.JobType.maxMemoryMB = 3000
 #    config.JobType.maxJobRuntimeMin = 2750
 #    config.JobType.psetName = '../test/d0ana_mc_trainingtree_signal.py'
-    config.Data.unitsPerJob = 2
-#    config.Data.totalUnits = 10
-    config.Data.splitting = 'FileBased'
+#    config.Data.unitsPerJob = 1
+#    config.Data.totalUnits = 5
+#    config.Data.splitting = 'FileBased'
+    config.Data.splitting = 'Automatic'
     config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 #    config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
     config.Data.publication = False
@@ -40,24 +41,25 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'pPb2016_pPbMC_PromptD0_TrainingTree_signal_combined_v2'
-    config.Data.outputDatasetTag = 'pPb_TrainingTree_signal_combined_v2'
+    config.General.requestName = 'pPb2016_pPbMC_PromptD0_TrainingTree_signal_combined_BDTCut_v8'
+    config.Data.outputDatasetTag = 'pPb_TrainingTree_signal_combined_v8'
     config.Data.inputDataset = '/PromptD0_D0pT-1p2_pPb-EmbEPOS_8p16_Pythia8/davidlw-pPb_Skim_D0Both_v1-b4e336f1831173b15564965986eff7fd/USER'
-    config.JobType.psetName = '../test/d0ana_mc_trainingtree_signal.py'
+    config.JobType.psetName = '../test/D0/d0ana_mc_trainingtree_signal_bdtp.py'
     submit(config)
 
-    config.General.requestName = 'pPb2016_pPbMC_NonPromptD0_TrainingTree_signal_combined_v2'
-    config.Data.outputDatasetTag = 'pPb_TrainingTree_signal_combined_v2'
+    config.General.requestName = 'pPb2016_pPbMC_NonPromptD0_TrainingTree_signal_combined_BDTCut_v8'
+    config.Data.outputDatasetTag = 'pPb_TrainingTree_signal_combined_v8'
+    config.JobType.psetName = '../test/D0/d0ana_mc_trainingtree_signal_bdtnp.py'
     config.Data.inputDataset = '/NonPromptD0_D0pT-1p2_pPb-EmbEPOS_8p16_Pythia8/davidlw-pPb_Skim_D0Both_v1-b4e336f1831173b15564965986eff7fd/USER'
     submit(config)
 
-#    config.General.requestName = 'pPb2016_pPbMC_PromptD0_TrainingTree_background_v1'
-#    config.Data.outputDatasetTag = 'pPb_TrainingTree_background_v1'
+#    config.General.requestName = 'pPb2016_pPbMC_PromptD0_TrainingTree_signal_combined_NoBDTCut_v4'
+#    config.Data.outputDatasetTag = 'pPb_TrainingTree_signal_combined_NoBDTCut_v4'
 #    config.Data.inputDataset = '/PromptD0_D0pT-1p2_pPb-EmbEPOS_8p16_Pythia8/davidlw-pPb_Skim_D0Both_v1-b4e336f1831173b15564965986eff7fd/USER'
-#    config.JobType.psetName = '../test/d0ana_mc_trainingtree_background.py'
+#    config.JobType.psetName = '../test/D0/d0ana_mc_trainingtree_signal.py'
 #    submit(config)
 
-#    config.General.requestName = 'pPb2016_pPbMC_NonPromptD0_TrainingTree_background_v1'
-#    config.Data.outputDatasetTag = 'pPb_TrainingTree_background_v1'
+#    config.General.requestName = 'pPb2016_pPbMC_NonPromptD0_TrainingTree_signal_combined_NoBDTCut_v4'
+#    config.Data.outputDatasetTag = 'pPb_TrainingTree_signal_combined_NoBDTCut_v4'
 #    config.Data.inputDataset = '/NonPromptD0_D0pT-1p2_pPb-EmbEPOS_8p16_Pythia8/davidlw-pPb_Skim_D0Both_v1-b4e336f1831173b15564965986eff7fd/USER'
 #    submit(config)

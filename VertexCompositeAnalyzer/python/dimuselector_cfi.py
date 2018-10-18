@@ -30,6 +30,7 @@ dimuselector = cms.EDProducer('VertexCompositeSelector',
   MVACollection = cms.InputTag("generalJPsiMuMuOneStTightPFCandidates:MVAValues"),
   mvaMax = cms.untracked.double(999.9),
   mvaMin = cms.untracked.double(-999.9),
+  mvaCuts = cms.vdouble(-1.,0,0,0,0),
 
   trkPMin = cms.untracked.double(0.),
   trkPtMin = cms.untracked.double(0.),
@@ -46,6 +47,10 @@ dimuselector = cms.EDProducer('VertexCompositeSelector',
   candYMax = cms.untracked.double(999.),
   cand3DDecayLengthSigMin = cms.untracked.double(0.),
   cand3DPointingAngleMax = cms.untracked.double(999.),
+  cand3DDCAMin = cms.untracked.double(-999.),
+  cand3DDCAMax = cms.untracked.double(999.),
+  cand2DDCAMin = cms.untracked.double(-999.),
+  cand2DDCAMax = cms.untracked.double(999.),
   candVtxProbMin = cms.untracked.double(0.)
                               )
 
@@ -80,6 +85,7 @@ dimuselectorMC = cms.EDProducer('VertexCompositeSelector',
   MVACollection = cms.InputTag("generalJPsiMuMuOneStTightPFCandidates:MVAValues"),
   mvaMax = cms.untracked.double(999.9),
   mvaMin = cms.untracked.double(-999.9),
+  mvaCuts = cms.vdouble(-1.,0,0,0,0),
 
   trkPMin = cms.untracked.double(0.),
   trkPtMin = cms.untracked.double(0.),
@@ -96,5 +102,9 @@ dimuselectorMC = cms.EDProducer('VertexCompositeSelector',
   candYMax = cms.untracked.double(999.),
   cand3DDecayLengthSigMin = cms.untracked.double(0.),
   cand3DPointingAngleMax = cms.untracked.double(999.),
+  cand3DDCAMin = cms.untracked.double(-999.),
+  cand3DDCAMax = cms.untracked.double(999.),
+  cand2DDCAMin = cms.untracked.double(-999.),
+  cand2DDCAMax = cms.untracked.double(999.),
   candVtxProbMin = cms.untracked.double(0.)
                               )

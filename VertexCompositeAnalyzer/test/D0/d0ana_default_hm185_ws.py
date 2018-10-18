@@ -19,7 +19,7 @@ cms.untracked.bool(True) )
 #process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 #process.GlobalTag.globaltag = "80X_dataRun2_Prompt_v15"
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(2000) 
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) 
 )
 
 process.source = cms.Source("PoolSource",

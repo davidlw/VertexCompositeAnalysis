@@ -38,45 +38,61 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-#    config.General.requestName = 'pPb2016_pPb_PromptD0_BDT_default_histogram_b1_v7'
-#    config.JobType.psetName = '../test/scenarios/d0ana_default.py'
+#    config.General.requestName = 'pPb2016_pPb_PromptD0_BDT_default_hm185_ws_histogram_b1_v7'
+#    config.JobType.psetName = '../test/D0/d0ana_default_hm185_ws.py'
 #    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0_v2-89e025b59ba99ac07dd655f3dba5c8df/USER'
-#    config.Data.outputDatasetTag = 'pPb_PromptD0_BDT_default_histogram_v7'
+#    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+#    config.Data.outputDatasetTag = 'pPb_PromptD0_BDT_default_hm185_ws_histogram_v7'
 #    submit(config)
-
-    config.General.requestName = 'pPb2016_pPb_PromptD0_BDT_default_hm185_ws_histogram_b1_v7'
-    config.JobType.psetName = '../test/D0/d0ana_default_hm185_ws.py'
-#    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0_v2-89e025b59ba99ac07dd655f3dba5c8df/USER'
-    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
-    config.Data.outputDatasetTag = 'pPb_PromptD0_BDT_default_hm185_ws_histogram_v7'
-    submit(config)
 
 #    config.General.requestName = 'pPb2016_pPb_PromptD0_BDT_default_hm185_sb_histogram_b1_v7'
 #    config.JobType.psetName = '../test/scenarios/d0ana_default_hm185_sb.py'
 #    config.Data.outputDatasetTag = 'pPb_PromptD0_BDT_default_hm185_sb_histogram_v7'
 #    submit(config)
 
-    config.General.requestName = 'pPb2016_pPb_PromptD0_BDT_default_hm185_ws_histogram_b2_v7'
-    config.Data.inputDataset = '/PAHighMultiplicity2/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
-    submit(config)
+#    config.General.requestName = 'pPb2016_pPb_PromptD0_BDT_default_hm185_ws_histogram_b2_v7'
+#    config.Data.inputDataset = '/PAHighMultiplicity2/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+#    submit(config)
 
-    config.General.requestName = 'pPb2016_pPb_PromptD0_BDT_default_hm185_ws_histogram_b3_v7'
-    config.Data.inputDataset = '/PAHighMultiplicity3/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
-    submit(config)
+#    config.General.requestName = 'pPb2016_pPb_PromptD0_BDT_default_hm185_ws_histogram_b3_v7'
+#    config.Data.inputDataset = '/PAHighMultiplicity3/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+#    submit(config)
 
-    config.General.requestName = 'pPb2016_pPb_PromptD0_BDT_default_hm185_ws_histogram_b4_v7'
-    config.Data.inputDataset = '/PAHighMultiplicity4/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
-    submit(config)
+#    config.General.requestName = 'pPb2016_pPb_PromptD0_BDT_default_hm185_ws_histogram_b4_v7'
+#    config.Data.inputDataset = '/PAHighMultiplicity4/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+#    submit(config)
 
-    config.General.requestName = 'pPb2016_pPb_PromptD0_BDT_default_hm185_ws_histogram_b5_v7'
-    config.Data.inputDataset = '/PAHighMultiplicity5/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
-    submit(config)
+#    config.General.requestName = 'pPb2016_pPb_PromptD0_BDT_default_hm185_ws_histogram_b5_v7'
+#    config.Data.inputDataset = '/PAHighMultiplicity5/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+#    submit(config)
 
-    config.General.requestName = 'pPb2016_pPb_PromptD0_BDT_default_hm185_ws_histogram_b6_v7'
-    config.Data.inputDataset = '/PAHighMultiplicity6/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
-    submit(config)
+#    config.General.requestName = 'pPb2016_pPb_PromptD0_BDT_default_hm185_ws_histogram_b6_v7'
+#    config.Data.inputDataset = '/PAHighMultiplicity6/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+#    submit(config)
 
-    config.General.requestName = 'pPb2016_Pbp_PromptD0_BDT_default_hm185_ws_histogram_b1_v7'
-    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+#    config.General.requestName = 'pPb2016_Pbp_PromptD0_BDT_default_hm185_ws_histogram_b1_v7'
+#    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+#    config.Data.outputDatasetTag = 'Pbp_PromptD0_BDT_default_hm185_ws_histogram_v7'
+#    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_PromptD0_BDT_default_hm185_ws_histogram_b2_v7'
+    config.JobType.psetName = '../test/D0/d0ana_default_hm185_ws.py'
+    config.Data.inputDataset = '/PAHighMultiplicity2/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
     config.Data.outputDatasetTag = 'Pbp_PromptD0_BDT_default_hm185_ws_histogram_v7'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_PromptD0_BDT_default_hm185_ws_histogram_b3_v7'
+    config.Data.inputDataset = '/PAHighMultiplicity3/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_PromptD0_BDT_default_hm185_ws_histogram_b4_v7'
+    config.Data.inputDataset = '/PAHighMultiplicity4/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_PromptD0_BDT_default_hm185_ws_histogram_b5_v7'
+    config.Data.inputDataset = '/PAHighMultiplicity5/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_PromptD0_BDT_default_hm185_ws_histogram_b6_v7'
+    config.Data.inputDataset = '/PAHighMultiplicity6/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
     submit(config)

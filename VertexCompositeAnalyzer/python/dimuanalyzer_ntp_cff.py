@@ -5,6 +5,7 @@ from VertexCompositeAnalysis.VertexCompositeAnalyzer.dimuanalyzer_ntp_cfi import
 dimucontana = dimuana.clone(
   VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimOneStTightPFCandidates:DiMu")
 )
+
 dimucontana_mc = dimuana_mc.clone(
   VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimOneStTightPFCandidates:DiMu")
 )

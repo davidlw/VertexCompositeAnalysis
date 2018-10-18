@@ -73,7 +73,6 @@ process.generalD0CandidatesNew.trkEtaDiffCut = cms.double(1.0)
 process.generalD0CandidatesNew.tkNhitsCut = cms.int32(11)
 process.generalD0CandidatesNew.tkPtErrCut = cms.double(0.1)
 process.generalD0CandidatesNew.tkPtCut = cms.double(0.7)
-#process.generalD0CandidatesNew.dPtCut = cms.double(1.2)
 process.generalD0CandidatesNew.alphaCut = cms.double(1.0)
 process.generalD0CandidatesNew.alpha2DCut = cms.double(1.0)
 
