@@ -59,6 +59,8 @@
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/MuonReco/interface/MuonChamberMatch.h"
 #include "DataFormats/MuonReco/interface/MuonSegmentMatch.h"
+#include "DataFormats/HeavyIonEvent/interface/CentralityBins.h"
+#include "DataFormats/HeavyIonEvent/interface/Centrality.h"
 
 #include <Math/Functions.h>
 #include <Math/SVector.h>
@@ -153,6 +155,7 @@ private:
 
     //tree branches
     //event info
+    int centrality;
     int Ntrkoffline;
     float bestvx;
     float bestvy;
@@ -290,6 +293,9 @@ private:
     
     bool useAnyMVA_;
     bool isSkimMVA_;
+    bool isCentrality_;
+
+    edm::Handle<int> cbin_;
 
     //tokens
     edm::EDGetTokenT<reco::VertexCollection> tok_offlinePV_;
@@ -301,6 +307,8 @@ private:
     edm::EDGetTokenT<edm::ValueMap<reco::DeDxData> > Dedx_Token2_;
     edm::EDGetTokenT<reco::GenParticleCollection> tok_genParticle_;
     edm::EDGetTokenT<reco::MuonCollection> tok_muon_;
+
+    edm::EDGetTokenT<int> tok_centBinLabel_;
 };
 
 //
@@ -355,6 +363,14 @@ VertexCompositeNtupleProducer::VertexCompositeNtupleProducer(const edm::Paramete
     Dedx_Token1_ = consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxHarmonic2"));
     Dedx_Token2_ = consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxTruncated40"));
     tok_genParticle_ = consumes<reco::GenParticleCollection>(edm::InputTag(iConfig.getUntrackedParameter<edm::InputTag>("GenParticleCollection")));
+
+    isCentrality_ = false;
+    if(iConfig.exists("isCentrality")) isCentrality_ = iConfig.getParameter<bool>("isCentrality");
+    if(isCentrality_)
+    {
+      tok_centBinLabel_ = consumes<int>(iConfig.getParameter<edm::InputTag>("centralityBinLabel"));
+//      tok_centSrc_ = consumes<reco::Centrality>(iConfig.getParameter<edm::InputTag>("centralitySrc"));
+    }
 
     if(useAnyMVA_ && iConfig.exists("MVACollection"))
       MVAValues_Token_ = consumes<MVACollection>(iConfig.getParameter<edm::InputTag>("MVACollection"));
@@ -415,6 +431,15 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
     edm::Handle<edm::ValueMap<reco::DeDxData> > dEdxHandle2;
     iEvent.getByToken(Dedx_Token2_, dEdxHandle2);
     
+    centrality=-1;
+    if(isCentrality_)
+    {
+//      edm::Handle<reco::Centrality> cent;
+//      iEvent.getByToken(centtag_, cent);
+
+      iEvent.getByToken(tok_centBinLabel_,cbin_);
+      centrality = *cbin_;  
+    }
     //best vertex
     bestvz=-999.9; bestvx=-999.9; bestvy=-999.9;
     double bestvzError=-999.9, bestvxError=-999.9, bestvyError=-999.9;
@@ -424,6 +449,7 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
     
     //Ntrkoffline
     Ntrkoffline = 0;
+
     for(unsigned it=0; it<tracks->size(); ++it){
         
         const reco::Track & trk = (*tracks)[it];
@@ -1284,6 +1310,8 @@ VertexCompositeNtupleProducer::initTree()
     VertexCompositeNtuple->Branch("mass",&mass,"mass/F");
      
     if(useAnyMVA_) VertexCompositeNtuple->Branch("mva",&mva,"mva/F");
+
+    if(isCentrality_) VertexCompositeNtuple->Branch("centrality",&centrality,"centrality/I");
 
     if(!isSkimMVA_)  
     {

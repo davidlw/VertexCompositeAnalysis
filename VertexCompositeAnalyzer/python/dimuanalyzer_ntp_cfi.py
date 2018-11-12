@@ -17,6 +17,9 @@ dimuana = cms.EDAnalyzer('VertexCompositeNtupleProducer',
   MuonCollection = cms.untracked.InputTag("muons"),
   doMuon = cms.untracked.bool(True),
 
+  isCentrality = cms.bool(False),
+  centralityBinLabel = cms.InputTag("newCentralityBin","HFtowers"),
+
   saveTree = cms.untracked.bool(True),
   saveHistogram = cms.untracked.bool(False),
   saveAllHistogram = cms.untracked.bool(False),
@@ -49,6 +52,9 @@ dimuana_mc = cms.EDAnalyzer('VertexCompositeNtupleProducer',
   GenParticleCollection = cms.untracked.InputTag("genParticles"),
   MuonCollection = cms.untracked.InputTag("muons"),
   doMuon = cms.untracked.bool(True),
+
+  isCentrality = cms.bool(False),
+  centralityBinLabel = cms.InputTag("newCentralityBin","HFtowers"),
 
   saveTree = cms.untracked.bool(True),
   saveHistogram = cms.untracked.bool(False),
