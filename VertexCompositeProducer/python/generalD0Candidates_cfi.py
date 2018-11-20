@@ -16,7 +16,7 @@ generalD0Candidates = cms.EDProducer("D0Producer",
     tkPtSumCut = cms.double(0.0), 
     tkEtaDiffCut = cms.double(999.0), 
 
-    mPiKCutMin = cms.double(1.68),
+    mPiKCutMin = cms.double(1.72),
     mPiKCutMax = cms.double(2.02),
 
     #   Track impact parameter significance >
@@ -35,7 +35,7 @@ generalD0Candidates = cms.EDProducer("D0Producer",
     lVtxCut = cms.double(0.0),
     vtxSignificance2DCut = cms.double(0.0),
     vtxSignificance3DCut = cms.double(0.0),
-    d0MassCut = cms.double(0.2),
+    d0MassCut = cms.double(0.15),
     dPtCut = cms.double(0.0),
 
     isWrongSign = cms.bool(False),

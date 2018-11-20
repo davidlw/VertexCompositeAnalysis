@@ -30,7 +30,11 @@ d0ana = cms.EDAnalyzer('VertexCompositeNtupleProducer',
 
   useAnyMVA = cms.bool(False),
   isSkimMVA = cms.untracked.bool(False),
-  MVACollection = cms.InputTag("generalD0CandidatesNew:MVAValues")
+  MVACollection = cms.InputTag("generalD0CandidatesNew:MVAValues"),
+
+  isCentrality = cms.bool(False),
+  centralityBinLabel = cms.InputTag("centralityBin","HFtowers"),
+  centralitySrc = cms.InputTag("hiCentrality")
                               )
 
 d0ana_mc = cms.EDAnalyzer('VertexCompositeNtupleProducer',

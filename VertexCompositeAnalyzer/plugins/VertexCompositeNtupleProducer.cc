@@ -157,6 +157,8 @@ private:
     //event info
     int centrality;
     int Ntrkoffline;
+    int Npixel;
+    float HFsumET;
     float bestvx;
     float bestvy;
     float bestvz;
@@ -309,6 +311,7 @@ private:
     edm::EDGetTokenT<reco::MuonCollection> tok_muon_;
 
     edm::EDGetTokenT<int> tok_centBinLabel_;
+    edm::EDGetTokenT<reco::Centrality> tok_centSrc_;
 };
 
 //
@@ -369,7 +372,7 @@ VertexCompositeNtupleProducer::VertexCompositeNtupleProducer(const edm::Paramete
     if(isCentrality_)
     {
       tok_centBinLabel_ = consumes<int>(iConfig.getParameter<edm::InputTag>("centralityBinLabel"));
-//      tok_centSrc_ = consumes<reco::Centrality>(iConfig.getParameter<edm::InputTag>("centralitySrc"));
+      tok_centSrc_ = consumes<reco::Centrality>(iConfig.getParameter<edm::InputTag>("centralitySrc"));
     }
 
     if(useAnyMVA_ && iConfig.exists("MVACollection"))
@@ -434,11 +437,15 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
     centrality=-1;
     if(isCentrality_)
     {
-//      edm::Handle<reco::Centrality> cent;
-//      iEvent.getByToken(centtag_, cent);
+      edm::Handle<reco::Centrality> cent;
+      iEvent.getByToken(tok_centSrc_, cent);
 
       iEvent.getByToken(tok_centBinLabel_,cbin_);
       centrality = *cbin_;  
+
+      HFsumET = cent->EtHFtowerSum();
+      Npixel = cent->multiplicityPixel();
+//      int ntrk = cent->Ntracks();
     }
     //best vertex
     bestvz=-999.9; bestvx=-999.9; bestvy=-999.9;
@@ -1317,6 +1324,8 @@ VertexCompositeNtupleProducer::initTree()
     {
         //Event info
         VertexCompositeNtuple->Branch("Ntrkoffline",&Ntrkoffline,"Ntrkoffline/I");
+        VertexCompositeNtuple->Branch("Npixel",&Npixel,"Npixel/I");
+        VertexCompositeNtuple->Branch("HFsumET",&HFsumET,"HFsumET/F");
         VertexCompositeNtuple->Branch("bestvtxX",&bestvx,"bestvtxX/F");
         VertexCompositeNtuple->Branch("bestvtxY",&bestvy,"bestvtxY/F");
         VertexCompositeNtuple->Branch("bestvtxZ",&bestvz,"bestvtxZ/F");
