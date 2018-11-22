@@ -61,6 +61,8 @@
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/MuonReco/interface/MuonChamberMatch.h"
 #include "DataFormats/MuonReco/interface/MuonSegmentMatch.h"
+#include "DataFormats/HeavyIonEvent/interface/CentralityBins.h"
+#include "DataFormats/HeavyIonEvent/interface/Centrality.h"
 
 #include "CondFormats/DataRecord/interface/GBRWrapperRcd.h"
 #include "CondFormats/EgammaObjects/interface/GBRForest.h"
@@ -128,7 +130,9 @@ private:
     double candYMin_;
     double candYMax_;
     double cand3DDecayLengthSigMin_;
+    double cand2DDecayLengthSigMin_;
     double cand3DPointingAngleMax_;
+    double cand2DPointingAngleMax_;
     double cand3DDCAMin_;
     double cand3DDCAMax_;
     double cand2DDCAMin_;
@@ -137,6 +141,7 @@ private:
 
     //tree branches
     //event info
+    int centrality;
     int Ntrkoffline;
     float bestvx;
     float bestvy;
@@ -291,16 +296,23 @@ private:
     float mvaMin_;
     float mvaMax_;
 
+    int   centMin_;
+    int   centMax_;
+    bool isCentrality_;
+
+    edm::Handle<int> cbin_;
+
     //tokens
     edm::EDGetTokenT<reco::VertexCollection> tok_offlinePV_;
     edm::EDGetTokenT<reco::TrackCollection> tok_generalTrk_;
     edm::EDGetTokenT<reco::VertexCompositeCandidateCollection> recoVertexCompositeCandidateCollection_Token_;
     edm::EDGetTokenT<MVACollection> MVAValues_Token_;
-
     edm::EDGetTokenT<edm::ValueMap<reco::DeDxData> > Dedx_Token1_;
     edm::EDGetTokenT<edm::ValueMap<reco::DeDxData> > Dedx_Token2_;
     edm::EDGetTokenT<reco::GenParticleCollection> tok_genParticle_;
     edm::EDGetTokenT<reco::MuonCollection> tok_muon_;
+    edm::EDGetTokenT<int> tok_centBinLabel_;
+    edm::EDGetTokenT<reco::Centrality> tok_centSrc_;
 
     std::string v0IDName_;
 
@@ -338,6 +350,8 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
     PID_dau2_ = iConfig.getUntrackedParameter<int>("PID_dau2");
     
     //cut variables
+    centMin_ = iConfig.getUntrackedParameter<int>("centMin", 0);
+    centMax_ = iConfig.getUntrackedParameter<int>("centMax", 10000);
     multMin_ = iConfig.getUntrackedParameter<double>("multMin", 0.0);
     multMax_ = iConfig.getUntrackedParameter<double>("multMax", 99999.9);
     deltaR_ = iConfig.getUntrackedParameter<double>("deltaR", 0.03);
@@ -358,7 +372,9 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
     candYMin_ = iConfig.getUntrackedParameter<double>("candYMin");
     candYMax_ = iConfig.getUntrackedParameter<double>("candYMax");
     cand3DDecayLengthSigMin_ = iConfig.getUntrackedParameter<double>("cand3DDecayLengthSigMin");
+    cand2DDecayLengthSigMin_ = iConfig.getUntrackedParameter<double>("cand2DDecayLengthSigMin");
     cand3DPointingAngleMax_ = iConfig.getUntrackedParameter<double>("cand3DPointingAngleMax");
+    cand2DPointingAngleMax_ = iConfig.getUntrackedParameter<double>("cand2DPointingAngleMax");
     cand3DDCAMin_ = iConfig.getUntrackedParameter<double>("cand3DDCAMin");
     cand3DDCAMax_ = iConfig.getUntrackedParameter<double>("cand3DDCAMax");
     cand2DDCAMin_ = iConfig.getUntrackedParameter<double>("cand2DDCAMin");
@@ -389,6 +405,14 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
     dbFileName_ = "";
 
     forest_ = nullptr;
+
+    isCentrality_ = false;
+    if(iConfig.exists("isCentrality")) isCentrality_ = iConfig.getParameter<bool>("isCentrality");
+    if(isCentrality_)
+    {
+      tok_centBinLabel_ = consumes<int>(iConfig.getParameter<edm::InputTag>("centralityBinLabel"));
+      tok_centSrc_ = consumes<reco::Centrality>(iConfig.getParameter<edm::InputTag>("centralitySrc"));
+    }
 
     if(iConfig.exists("useAnyMVA")) useAnyMVA_ = iConfig.getParameter<bool>("useAnyMVA");
     if(iConfig.exists("useExistingMVA")) useExistingMVA_ = iConfig.getParameter<bool>("useExistingMVA");
@@ -513,6 +537,22 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
     edm::Handle<edm::ValueMap<reco::DeDxData> > dEdxHandle2;
     iEvent.getByToken(Dedx_Token2_, dEdxHandle2);
     
+    centrality=-1;
+    if(isCentrality_)
+    {
+      edm::Handle<reco::Centrality> cent;
+      iEvent.getByToken(tok_centSrc_, cent);
+
+      iEvent.getByToken(tok_centBinLabel_,cbin_);
+      centrality = *cbin_;
+
+//      HFsumET = cent->EtHFtowerSum();
+//      Npixel = cent->multiplicityPixel();
+//      int ntrk = cent->Ntracks();
+    }
+    if(centrality >= centMax_ || centrality < centMin_) return;
+
+
     //best vertex
     bestvz=-999.9; bestvx=-999.9; bestvy=-999.9;
     double bestvzError=-999.9, bestvxError=-999.9, bestvyError=-999.9;
@@ -776,6 +816,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
 
         agl2D = cos(secvec2D.Angle(ptosvec2D));
         agl2D_abs = secvec2D.Angle(ptosvec2D);
+        if(agl2D_abs > cand2DPointingAngleMax_) continue;
         
         //Decay length 3D
         typedef ROOT::Math::SMatrix<double, 3, 3, ROOT::Math::MatRepSym<double, 3> > SMatrixSym3D;
@@ -805,8 +846,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         double dl2Derror = sqrt(ROOT::Math::Similarity(totalCov2D, distanceVector2D))/dl2D;
         
         dlos2D = dl2D/dl2Derror;
-
-        if(dlos2D > 1000.) continue;
+        if(dlos2D < cand2DDecayLengthSigMin_ || dlos2D > 1000.) continue;
 
         double dca3D = dl*sin(agl_abs);
         if(dca3D < cand3DDCAMin_ || dca3D > cand3DDCAMax_) continue;
@@ -1256,7 +1296,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         if(useAnyMVA_ && !useExistingMVA_)
         {
           float gbrVals_[50];
-          if(forestLabel_ == "D0InpPb")
+          if(forestLabel_ == "D0InpPb" || forestLabel_ == "D0Inpp" || forestLabel_ == "D0InPbPb")
           { 
             gbrVals_[0] = pt;
             gbrVals_[1] = y;
@@ -1282,7 +1322,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
 //            gbrVals_[21] = H2dedx2;
           }
 
-          if(forestLabel_ == "DsInpPb")
+          if(forestLabel_ == "DsInpPb" || forestLabel_ == "DsInpp" || forestLabel_ == "DsInPbPb")
           {
             gbrVals_[0] = pt;
             gbrVals_[1] = y;
@@ -1303,7 +1343,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
             gbrVals_[16] = H2dedx2;
           }
 
-          if(forestLabel_ == "JPsiInpPb")
+          if(forestLabel_ == "JPsiInpPb" || forestLabel_ == "JPsiInpp" || forestLabel_ == "JPsiInPbPb")
           {
             gbrVals_[0] = pt;
             gbrVals_[1] = y;

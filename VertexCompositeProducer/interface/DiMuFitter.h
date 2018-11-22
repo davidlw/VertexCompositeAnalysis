@@ -121,6 +121,7 @@ class DiMuFitter {
   std::string muonId;
   bool   isMuonId;
   bool   isPFMuon;
+  bool   isGlobalMuon;
   bool   isWrongSign;
 
   std::vector<reco::TrackBase::TrackQuality> qualities;

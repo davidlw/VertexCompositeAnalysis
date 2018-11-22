@@ -9,6 +9,9 @@ d0selectorBDTPreCut = d0selector.clone(
   trkPtSumMin = cms.untracked.double(1.6),
   trkEtaDiffMax = cms.untracked.double(1.),
   trkNHitMin = cms.untracked.int32(11),
+
+  cand3DPointingAngleMax = cms.untracked.double(1.0),
+  cand2DPointingAngleMax = cms.untracked.double(1.0),
 )
 
 d0selectorBDTNonPrompt = d0selectorBDTPreCut.clone(

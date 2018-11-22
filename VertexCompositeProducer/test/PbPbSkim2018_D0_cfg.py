@@ -19,7 +19,7 @@ process.source = cms.Source("PoolSource",
 )
 
 # =============== Other Statements =====================
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(600))
 # enable TrigReport, TimeReport and MultiThreading
 process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool( True ),
@@ -71,13 +71,14 @@ process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 ########## D0 candidate rereco ###############################################################
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalD0Candidates_cff")
 process.generalD0CandidatesNew = process.generalD0Candidates.clone()
-process.generalD0CandidatesNew.tkPtSumCut = cms.double(2.1)
+process.generalD0CandidatesNew.tkPtSumCut = cms.double(2.2)
 process.generalD0CandidatesNew.tkEtaDiffCut = cms.double(1.0)
 process.generalD0CandidatesNew.tkNhitsCut = cms.int32(11)
 process.generalD0CandidatesNew.tkPtErrCut = cms.double(0.1)
 process.generalD0CandidatesNew.tkPtCut = cms.double(0.7)
 process.generalD0CandidatesNew.alphaCut = cms.double(1.0)
 process.generalD0CandidatesNew.alpha2DCut = cms.double(1.0)
+process.generalD0CandidatesNew.dPtCut = cms.double(1.5)
 
 process.generalD0CandidatesNewWrongSign = process.generalD0CandidatesNew.clone(isWrongSign = cms.bool(True))
 

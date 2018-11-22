@@ -79,6 +79,7 @@ DiMuFitter::DiMuFitter(const edm::ParameterSet& theParameters,  edm::ConsumesCol
   muonId = theParameters.getParameter<std::string>(string("muonId"));
   isMuonId = theParameters.getParameter<bool>(string("isMuonId")); 
   isPFMuon = theParameters.getParameter<bool>(string("isPFMuon")); 
+  isGlobalMuon = theParameters.getParameter<bool>(string("isGlobalMuon"));
   isWrongSign = theParameters.getParameter<bool>(string("isWrongSign"));
 
   std::vector<std::string> qual = theParameters.getParameter<std::vector<std::string> >("trackQualities");
@@ -165,6 +166,8 @@ void DiMuFitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      const reco::Muon& cand1 = (*theMuonHandle)[ic];
      if(isMuonId && !muon::isGoodMuon(cand1, muon::selectionTypeFromString(muonId))) continue;  //DataFormats/MuonReco/interface/MuonSelectors.h, TMOneStationTight = 12
      if(isPFMuon && !cand1.isPFMuon()) continue; 
+     if(isGlobalMuon && !cand1.isGlobalMuon()) continue;
+
 //   recoMu.numberOfMatchedStations() > 1
 /*
      const reco::PFCandidate& cand1 = (*thePfCandHandle)[ic];
@@ -213,6 +216,7 @@ void DiMuFitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        const reco::Muon& cand2 = (*theMuonHandle)[fc];
        if(isMuonId && !muon::isGoodMuon(cand2, muon::selectionTypeFromString(muonId))) continue;  
        if(isPFMuon && !cand2.isPFMuon()) continue;
+       if(isGlobalMuon && !cand2.isGlobalMuon()) continue;
 
 /*
        const reco::PFCandidate& cand2 = (*thePfCandHandle)[fc];

@@ -9,6 +9,26 @@ generalJPsiMuMuOneStTightCandidates = generalJPsiMuMuCandidates.clone(
     muonId = cms.string('TMOneStationTight')
 )
 
+generalJPsiMuMuOneStTightGlobalCandidates = generalJPsiMuMuCandidates.clone(
+    isMuonId = cms.bool(True),
+    isGlobalMuon = cms.bool(True),
+    trackQualities = cms.vstring(''),
+    muonId = cms.string('TMOneStationTight')
+)
+
+generalUpsilonMuMuOneStTightGlobalCandidates = generalJPsiMuMuCandidates.clone(
+    isMuonId = cms.bool(True),
+    isGlobalMuon = cms.bool(True),
+    trackQualities = cms.vstring('loose'),
+    muonId = cms.string('TMOneStationTight'),
+
+    mllCutMin = cms.double(7.0),
+    mllCutMax = cms.double(15.0),
+
+    DiMuMassCut = cms.double(999999.),
+
+)
+
 generalJPsiMuMuPFCandidates = generalJPsiMuMuCandidates.clone(
     isPFMuon = cms.bool(True)
 )
@@ -36,4 +56,16 @@ generalMuMuContinuimPFCandidates = generalMuMuContinuimCandidates.clone(
 
 generalMuMuContinuimOneStTightPFCandidates = generalMuMuContinuimOneStTightCandidates.clone(
     isPFMuon = cms.bool(True)
+)
+
+generalMuMuContinuimOneStTightGlobalCandidates = generalMuMuContinuimOneStTightCandidates.clone(
+    isGlobalMuon = cms.bool(True)
+)
+
+generalMuMuContinuimPFGlobalCandidates = generalMuMuContinuimPFCandidates.clone(
+    isGlobalMuon = cms.bool(True)
+)
+
+generalMuMuContinuimOneStTightPFGlobalCandidates = generalMuMuContinuimOneStTightPFCandidates.clone(
+    isGlobalMuon = cms.bool(True)
 )
