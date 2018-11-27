@@ -87,6 +87,8 @@ private:
     virtual void fillGEN(const edm::Event&, const edm::EventSetup&) ;
   virtual void endJob() ;
 
+  int muAssocToTrack( const reco::TrackRef& trackref, const edm::Handle<reco::MuonCollection>& muonh) const;
+
   // ----------member data ---------------------------
     
     TTree* VertexCompositeNtuple;
@@ -600,10 +602,9 @@ VertexCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::Event
         dlos2D[it] = dl2D/dl2Derror;
 
         //trk info
+        auto dau1 = d1->get<reco::TrackRef>();
         if(!twoLayerDecay_)
         {
-            auto dau1 = d1->get<reco::TrackRef>();
-            
             //trk quality
             trkquality1[it] = dau1->quality(reco::TrackBase::highPurity);
             
@@ -732,6 +733,12 @@ VertexCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::Event
             double ddxdzSig_seg = 999.;
             double ddydzSig_seg = 999.;
             
+                const int muId1 = muAssocToTrack( dau1, theMuonHandle );
+                if( muId1 != -1 )
+                {
+                    const reco::Muon& cand = (*theMuonHandle)[muId1];
+
+/*
             for( unsigned id = 0; id < theMuonHandle->size(); id++ )
             {
                 const reco::Muon& cand = (*theMuonHandle)[id];
@@ -742,6 +749,7 @@ VertexCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::Event
                 if(fabs(trackReftmp->pt()-pt1[it])<0.0001 && fabs(trackReftmp->eta()-eta1[it])<0.001 && fabs(trackReftmp->phi()-phi1[it])<0.001
                    && trackReftmp->numberOfValidHits() == nhit1[it] )
                 {
+*/
                     nmatchedch1[it] = cand.numberOfMatches();
                     nmatchedst1[it] = cand.numberOfMatchedStations();
                     
@@ -804,11 +812,16 @@ VertexCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::Event
                     }
                 }
                 
+                const int muId2 = muAssocToTrack( dau2, theMuonHandle );
+                if( muId2 != -1 )
+                {
+                    const reco::Muon& cand = (*theMuonHandle)[muId2];
                 
-                
+/*                
                 if(fabs(trackReftmp->pt()-pt2[it])<0.0001 && fabs(trackReftmp->eta()-eta2[it])<0.001 && fabs(trackReftmp->phi()-phi2[it])<0.001
                    && trackReftmp->numberOfValidHits() == nhit2[it] )
                 {
+*/
                     nmatchedch2[it] = cand.numberOfMatches();
                     nmatchedst2[it] = cand.numberOfMatchedStations();
                     
@@ -869,10 +882,9 @@ VertexCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::Event
                         ddxdzSig2_seg_[it]=ddxdzSig_seg;
                         ddydzSig2_seg_[it]=ddydzSig_seg;
                 }
-            }
+        } // if(doMuon)        
         }
-        }
-        
+
         if(twoLayerDecay_)
         {
             grand_mass[it] = d1->mass();
@@ -1239,6 +1251,17 @@ VertexCompositeTreeProducer::beginJob()
             VertexCompositeNtuple->Branch("DauID2_gen",&iddau2,"DauID2_gen[candSize_gen]/I");
         }
     }
+}
+
+int VertexCompositeTreeProducer::
+muAssocToTrack( const reco::TrackRef& trackref,
+		const edm::Handle<reco::MuonCollection>& muonh) const {
+  auto muon = std::find_if(muonh->cbegin(),muonh->cend(),
+			   [&](const reco::Muon& m) {
+			     return ( m.track().isNonnull() && 
+				      m.track() == trackref    );
+			   });  
+  return ( muon != muonh->cend() ? std::distance(muonh->cbegin(),muon) : -1 );
 }
 
 // ------------ method called once each job just after ending the event

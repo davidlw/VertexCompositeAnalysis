@@ -3,7 +3,8 @@ import FWCore.ParameterSet.Config as cms
 from VertexCompositeAnalysis.VertexCompositeAnalyzer.dimuanalyzer_ntp_cfi import *
 
 dimucontana = dimuana.clone(
-  VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimOneStTightPFCandidates:DiMu")
+#  VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimOneStTightPFCandidates:DiMu")
+  VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimCandidates:DiMu")
 )
 
 dimucontana_mc = dimuana_mc.clone(
@@ -24,8 +25,23 @@ dimucontana2_mc = dimucontana_mc.clone(
   VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimOneStTightCandidates:DiMu")
 )
 
+dimucontana3 = dimucontana.clone(
+  VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimGlobalCandidates:DiMu")
+)
+dimucontana3_mc = dimucontana_mc.clone(
+  VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimGlobalCandidates:DiMu")
+)
+
+dimucontana4 = dimucontana.clone(
+  VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimPFGlobalCandidates:DiMu")
+) 
+dimucontana4_mc = dimucontana_mc.clone(
+  VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimPFGlobalCandidates:DiMu")
+) 
+
 dimucontana_wrongsign = dimuana.clone(
-  VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimOneStTightPFCandidatesWrongSign:DiMu")
+#  VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimOneStTightPFCandidatesWrongSign:DiMu")
+  VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimCandidatesWrongSign:DiMu")
 )
 dimucontana_wrongsign_mc = dimuana_mc.clone(
   VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimOneStTightPFCandidatesWrongSign:DiMu")
@@ -43,6 +59,20 @@ dimucontana2_wrongsign = dimucontana.clone(
 )
 dimucontana2_wrongsign_mc = dimucontana_mc.clone(
   VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimOneStTightCandidatesWrongSign:DiMu")
+)
+
+dimucontana3_wrongsign = dimucontana.clone(
+  VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimGlobalCandidatesWrongSign:DiMu")
+)
+dimucontana3_wrongsign_mc = dimucontana_mc.clone(
+  VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimGlobalCandidatesWrongSign:DiMu")
+)
+
+dimucontana4_wrongsign = dimucontana.clone(
+  VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimPFGlobalCandidatesWrongSign:DiMu")
+)
+dimucontana4_wrongsign_mc = dimucontana_mc.clone(
+  VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimPFGlobalCandidatesWrongSign:DiMu")
 )
 
 jpsiana = dimuana.clone(

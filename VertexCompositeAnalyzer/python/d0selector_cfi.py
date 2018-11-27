@@ -54,7 +54,11 @@ d0selector = cms.EDProducer('VertexCompositeSelector',
   cand3DDCAMax = cms.untracked.double(999.),
   cand2DDCAMin = cms.untracked.double(-999.),
   cand2DDCAMax = cms.untracked.double(999.),
-  candVtxProbMin = cms.untracked.double(0.)
+  candVtxProbMin = cms.untracked.double(0.),
+
+  isCentrality = cms.bool(False),
+  centralityBinLabel = cms.InputTag("centralityBin","HFtowers"),
+  centralitySrc = cms.InputTag("hiCentrality")
                               )
 
 d0selectorMC = cms.EDProducer('VertexCompositeSelector',
@@ -111,5 +115,9 @@ d0selectorMC = cms.EDProducer('VertexCompositeSelector',
   cand3DDCAMax = cms.untracked.double(999.),
   cand2DDCAMin = cms.untracked.double(-999.),
   cand2DDCAMax = cms.untracked.double(999.),
-  candVtxProbMin = cms.untracked.double(0.)
+  candVtxProbMin = cms.untracked.double(0.),
+
+  isCentrality = cms.bool(False),
+  centralityBinLabel = cms.InputTag("centralityBin","HFtowers"),
+  centralitySrc = cms.InputTag("hiCentrality")
                               )

@@ -19,21 +19,53 @@ cms.untracked.bool(True) )
 #process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 #process.GlobalTag.globaltag = "80X_dataRun2_Prompt_v15"
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) 
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) 
 )
 
 ### conditions
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-#process.GlobalTag.globaltag = '75X_mcRun2_HeavyIon_v7'
-from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '75X_dataRun2_v12', '')
+process.GlobalTag.globaltag = "103X_dataRun2_Prompt_v3"
+process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
+process.GlobalTag.toGet.extend([
+    cms.PSet(record = cms.string("HeavyIonRcd"),
+        tag = cms.string("CentralityTable_HFtowers200_DataPbPb_periHYDJETshape_run2v1031x02_offline"),
+        connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
+        label = cms.untracked.string("HFtowers")
+        ),
+    ])
+process.load('RecoHI.HiCentralityAlgos.HiCentrality_cfi')
+process.hiCentrality.produceHFhits = False
+process.hiCentrality.produceHFtowers = False
+process.hiCentrality.produceEcalhits = False
+process.hiCentrality.produceZDChits = False
+process.hiCentrality.produceETmidRapidity = False
+process.hiCentrality.producePixelhits = False
+process.hiCentrality.produceTracks = False
+process.hiCentrality.producePixelTracks = False
+process.hiCentrality.reUseCentrality = True
+process.hiCentrality.srcReUse = cms.InputTag("hiCentrality","","RECO")
+process.hiCentrality.srcTracks = cms.InputTag("generalTracks")
+process.hiCentrality.srcVertex = cms.InputTag("offlinePrimaryVertices")
+process.load("RecoHI.HiCentralityAlgos.CentralityBin_cfi")
+process.centralityBin.Centrality = cms.InputTag("hiCentrality")
+process.centralityBin.centralityVariable = cms.string("HFtowers")
+process.centralityBin.nonDefaultGlauberModel = cms.string("")
 
 process.source = cms.Source("PoolSource",
                                 fileNames = cms.untracked.vstring(
-'file:/afs/cern.ch/user/d/davidlw/CMSSW/CMSSW_7_5_5_patch3/src/VertexCompositeAnalysis/VertexCompositeProducer/test/PbPb_DiMuCont.root',
+'/store/user/davidlw/HIDoubleMuon/Skim_DiMuContBoth_DCSOnly327327_v1/181127_104136/0000/PbPb_DiMuCont_13.root '
                 ),
 secondaryFileNames = cms.untracked.vstring(
-'/store/hidata/HIRun2015/HIOniaL1DoubleMu0/AOD/PromptReco-v1/000/263/757/00000/F2BD4D30-ACBB-E511-9FC2-02163E012647.root'
+'/store/hidata/HIRun2018A/HIDoubleMuon/AOD/PromptReco-v2/000/326/941/00000/816A5339-7E58-9F4E-85B2-64981FF42FB6.root',
+'/store/hidata/HIRun2018A/HIDoubleMuon/AOD/PromptReco-v2/000/326/941/00000/9DFA327B-02F6-9849-9169-BDAF1057E9D2.root',
+'/store/hidata/HIRun2018A/HIDoubleMuon/AOD/PromptReco-v2/000/326/941/00000/551C06DD-8A73-D944-8CA1-6B812CC3CCD9.root',
+'/store/hidata/HIRun2018A/HIDoubleMuon/AOD/PromptReco-v2/000/326/941/00000/5E760C32-A180-FB4B-976F-5D42972F20CF.root',
+'/store/hidata/HIRun2018A/HIDoubleMuon/AOD/PromptReco-v2/000/326/941/00000/163B4299-C86C-E74A-99FF-36365029CCDF.root',
+'/store/hidata/HIRun2018A/HIDoubleMuon/AOD/PromptReco-v2/000/326/941/00000/1CE70355-A1BC-E649-82E8-2CDB8B2154D0.root',
+'/store/hidata/HIRun2018A/HIDoubleMuon/AOD/PromptReco-v2/000/326/941/00000/06D10739-8DE8-504C-B872-12449FEAE4E5.root',
+'/store/hidata/HIRun2018A/HIDoubleMuon/AOD/PromptReco-v2/000/326/941/00000/10E3662B-BB42-E94B-A012-D8446CE44885.root',
+'/store/hidata/HIRun2018A/HIDoubleMuon/AOD/PromptReco-v2/000/326/941/00000/02468590-6F76-F24E-9022-E8F6BDF4076F.root',
+'/store/hidata/HIRun2018A/HIDoubleMuon/AOD/PromptReco-v2/000/326/941/00000/064283D3-7F97-D248-B002-DC100F9456C0.root'
 )
                             )
 
@@ -55,9 +87,6 @@ cms.string('dimucontana_training.root')
 
 process.load("RecoHI.HiCentralityAlgos.CentralityBin_cfi")
 process.load("RecoHI.HiCentralityAlgos.CentralityFilter_cfi")
-
-process.newCentralityBin = process.centralityBin.clone()
-
 process.load("RecoHI.HiCentralityAlgos.HiCentrality_cfi")
 process.hiCentrality.produceHFhits = cms.bool(False)
 process.hiCentrality.produceEcalhits = cms.bool(False)
@@ -67,36 +96,16 @@ process.hiCentrality.producePixelhits = cms.bool(False)
 process.hiCentrality.produceTracks = cms.bool(False)
 process.hiCentrality.producePixelTracks = cms.bool(False)
 
-process.cent_seq = cms.Sequence(process.hiCentrality * process.newCentralityBin)
+process.cent_seq = cms.Sequence(process.hiCentrality * process.centralityBin)
 
 process.dimucontana.isCentrality = cms.bool(True)
-process.dimucontana.VertexCollection = cms.untracked.InputTag("hiSelectedVertex")
-process.dimucontana.TrackCollection = cms.untracked.InputTag("hiGeneralTracks")
-process.dimucontana.VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimOneStTightGlobalCandidates:DiMu")
-#process.dimucontana1.VertexCollection = cms.untracked.InputTag("hiSelectedVertex")
-#process.dimucontana1.TrackCollection = cms.untracked.InputTag("hiGeneralTracks")
-#process.dimucontana2.VertexCollection = cms.untracked.InputTag("hiSelectedVertex")
-#process.dimucontana2.TrackCollection = cms.untracked.InputTag("hiGeneralTracks")
 process.dimucontana_wrongsign.isCentrality = cms.bool(True)
-process.dimucontana_wrongsign.VertexCollection = cms.untracked.InputTag("hiSelectedVertex")
-process.dimucontana_wrongsign.TrackCollection = cms.untracked.InputTag("hiGeneralTracks")
-process.dimucontana_wrongsign.VertexCompositeCollection = cms.untracked.InputTag("generalMuMuContinuimOneStTightGlobalCandidatesWrongSign:DiMu")
-#process.dimucontana1_wrongsign.VertexCollection = cms.untracked.InputTag("hiSelectedVertex")
-#process.dimucontana1_wrongsign.TrackCollection = cms.untracked.InputTag("hiGeneralTracks")
-#process.dimucontana2_wrongsign.VertexCollection = cms.untracked.InputTag("hiSelectedVertex")
-#process.dimucontana2_wrongsign.TrackCollection = cms.untracked.InputTag("hiGeneralTracks")
 
 process.dimucontana_seq = cms.Sequence(process.dimucontana)
-#process.dimucontana1_seq = cms.Sequence(process.dimucontana1)
-#process.dimucontana2_seq = cms.Sequence(process.dimucontana2)
 process.dimucontana_wrongsign_seq = cms.Sequence(process.dimucontana_wrongsign)
-#process.dimucontana1_wrongsign_seq = cms.Sequence(process.dimucontana1_wrongsign)
-#process.dimucontana2_wrongsign_seq = cms.Sequence(process.dimucontana2_wrongsign)
 
 process.p = cms.Path(process.cent_seq * process.dimucontana_seq)
-#process.p1 = cms.Path(process.dimucontana1_seq)
-#process.p2 = cms.Path(process.dimucontana2_seq)
-process.p3 = cms.Path(process.cent_seq * process.dimucontana_wrongsign_seq)
-#process.p4 = cms.Path(process.dimucontana1_wrongsign_seq)
-#process.p5 = cms.Path(process.dimucontana2_wrongsign_seq)
+process.p1 = cms.Path(process.cent_seq * process.dimucontana_wrongsign_seq)
 
+from HLTrigger.Configuration.CustomConfigs import MassReplaceInputTag
+process = MassReplaceInputTag(process,"offlinePrimaryVertices","offlinePrimaryVerticesRecovery")

@@ -18,7 +18,8 @@ dimuana = cms.EDAnalyzer('VertexCompositeNtupleProducer',
   doMuon = cms.untracked.bool(True),
 
   isCentrality = cms.bool(False),
-  centralityBinLabel = cms.InputTag("newCentralityBin","HFtowers"),
+  centralityBinLabel = cms.InputTag("centralityBin","HFtowers"),
+  centralitySrc = cms.InputTag("hiCentrality"),
 
   saveTree = cms.untracked.bool(True),
   saveHistogram = cms.untracked.bool(False),
@@ -54,7 +55,8 @@ dimuana_mc = cms.EDAnalyzer('VertexCompositeNtupleProducer',
   doMuon = cms.untracked.bool(True),
 
   isCentrality = cms.bool(False),
-  centralityBinLabel = cms.InputTag("newCentralityBin","HFtowers"),
+  centralityBinLabel = cms.InputTag("centralityBin","HFtowers"),
+  centralitySrc = cms.InputTag("hiCentrality"),
 
   saveTree = cms.untracked.bool(True),
   saveHistogram = cms.untracked.bool(False),

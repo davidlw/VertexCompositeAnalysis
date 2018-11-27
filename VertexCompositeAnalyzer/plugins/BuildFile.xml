@@ -20,4 +20,5 @@
 <use name="RecoVertex/KalmanVertexFit"/>
 <use name="RecoHI/HiCentralityAlgos"/>
 <use name="DataFormats/MuonReco"/>
+<use name="DataFormats/PatCandidates"/>
 <flags EDM_PLUGIN="1"/>

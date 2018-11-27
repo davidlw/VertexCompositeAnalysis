@@ -13,7 +13,7 @@ process.load('Configuration.StandardSequences.L1Reco_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.MessageLogger.cerr.FwkReport.reportEvery = 200
 
 process.source = cms.Source("PoolSource",
    fileNames = cms.untracked.vstring(
@@ -22,14 +22,8 @@ process.source = cms.Source("PoolSource",
 )
 
 # =============== Other Statements =====================
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(600))
-# enable TrigReport, TimeReport and MultiThreading
-process.options = cms.untracked.PSet(
-    wantSummary = cms.untracked.bool( True ),
-#    numberOfThreads = cms.untracked.uint32( 4 ),
-#    numberOfStreams = cms.untracked.uint32( 4 ),
-#    sizeOfStackForThreadsInKB = cms.untracked.uint32( 10*1024 )
-)
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2000))
+process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.GlobalTag.globaltag = '103X_dataRun2_Prompt_v3'
 
 # =============== Import Sequences =====================
@@ -70,12 +64,12 @@ process.clusterCompatibilityFilter  = cms.EDFilter('HIClusterCompatibilityFilter
 )
 
 process.collisionEventSelection = cms.Sequence(
-                                         process.phfCoincFilter2Th4 *
+                                         process.phfCoincFilter2Th4 * 
                                          process.pprimaryVertexFilter *
                                          process.clusterCompatibilityFilter
                                          )
 
-process.eventFilter_HM = cms.Sequence(
+process.eventFilter_HM = cms.Sequence( 
 #    process.hltHM *
     process.offlinePrimaryVerticesRecovery *
     process.collisionEventSelection
@@ -83,31 +77,26 @@ process.eventFilter_HM = cms.Sequence(
 
 process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 
-#process.dEdx_step = cms.Path( process.eventFilter_HM * process.produceEnergyLoss )
+process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalDiMuCandidates_cff")
+process.generalMuMuContinuimCandidatesWrongSign = process.generalMuMuContinuimCandidates.clone(isWrongSign = cms.bool(True))
+#process.generalMuMuContinuimOneStTightCandidatesWrongSign = process.generalMuMuContinuimOneStTightCandidates.clone(isWrongSign = cms.bool(True))
+#process.generalMuMuContinuimOneStTightPFCandidatesWrongSign = process.generalMuMuContinuimOneStTightPFCandidates.clone(isWrongSign = cms.bool(True))
+#process.generalMuMuContinuimPFCandidatesWrongSign = process.generalMuMuContinuimPFCandidates.clone(isWrongSign = cms.bool(True))
+#process.generalMuMuContinuimGlobalCandidatesWrongSign = process.generalMuMuContinuimGlobalCandidates.clone(isWrongSign = cms.bool(True))
+#process.generalMuMuContinuimPFGlobalCandidatesWrongSign = process.generalMuMuContinuimPFGlobalCandidates.clone(isWrongSign = cms.bool(True))
 
-########## D0 candidate rereco ###############################################################
-process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalD0Candidates_cff")
-process.generalD0CandidatesNew = process.generalD0Candidates.clone()
-process.generalD0CandidatesNew.tkPtSumCut = cms.double(2.2)
-process.generalD0CandidatesNew.tkEtaDiffCut = cms.double(1.0)
-process.generalD0CandidatesNew.tkNhitsCut = cms.int32(11)
-process.generalD0CandidatesNew.tkPtErrCut = cms.double(0.1)
-process.generalD0CandidatesNew.tkPtCut = cms.double(0.7)
-process.generalD0CandidatesNew.alphaCut = cms.double(1.0)
-process.generalD0CandidatesNew.alpha2DCut = cms.double(1.0)
-process.generalD0CandidatesNew.dPtCut = cms.double(1.5)
+process.dimurereco_step = cms.Path( process.eventFilter_HM * process.generalMuMuContinuimCandidates )
+process.dimurerecowrongsign_step = cms.Path( process.eventFilter_HM * process.generalMuMuContinuimCandidatesWrongSign )
 
-process.generalD0CandidatesNewWrongSign = process.generalD0CandidatesNew.clone(isWrongSign = cms.bool(True))
-
-#process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew * process.generalD0CandidatesNewWrongSign )
-process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew )
+#process.dimurereco_step = cms.Path( process.eventFilter_HM * process.generalMuMuContinuimOneStTightCandidates * process.generalMuMuContinuimOneStTightPFCandidates * process.generalMuMuContinuimPFCandidates * process.generalMuMuContinuimGlobalCandidates * process.generalMuMuContinuimPFGlobalCandidates)
+#process.dimurerecowrongsign_step = cms.Path( process.eventFilter_HM * process.generalMuMuContinuimOneStTightCandidatesWrongSign * process.generalMuMuContinuimOneStTightPFCandidatesWrongSign * process.generalMuMuContinuimPFCandidatesWrongSign * process.generalMuMuContinuimGlobalCandidatesWrongSign * process.generalMuMuContinuimPFGlobalCandidatesWrongSign)
 
 ###############################################################################################
 
-process.load("VertexCompositeAnalysis.VertexCompositeProducer.ppanalysisSkimContentD0_cff")
+process.load("VertexCompositeAnalysis.VertexCompositeProducer.ppanalysisSkimContentJPsi_cff")
 process.output_HM = cms.OutputModule("PoolOutputModule",
     outputCommands = process.analysisSkimContent.outputCommands,
-    fileName = cms.untracked.string('PbPb.root'),
+    fileName = cms.untracked.string('PbPb_DiMuCont.root'),
     SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eventFilter_HM_step')),
     dataset = cms.untracked.PSet(
       dataTier = cms.untracked.string('AOD')
@@ -118,7 +107,8 @@ process.output_HM_step = cms.EndPath(process.output_HM)
 
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
-    process.d0rereco_step,
+    process.dimurereco_step,
+    process.dimurerecowrongsign_step,
     process.output_HM_step
 )
 

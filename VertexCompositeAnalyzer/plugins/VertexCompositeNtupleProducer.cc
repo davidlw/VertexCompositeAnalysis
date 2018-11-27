@@ -55,6 +55,7 @@
 
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 
+#include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/MuonReco/interface/MuonChamberMatch.h"
@@ -89,6 +90,9 @@ private:
   virtual void endJob() ;
   virtual void initHistogram();
   virtual void initTree();
+
+  int muAssocToTrack( const reco::TrackRef& trackref, const edm::Handle<reco::MuonCollection>& muonh) const;
+
 
   // ----------member data ---------------------------
     
@@ -260,6 +264,16 @@ private:
     float grand_trkChi2;
     
     //dau muon info
+    bool  onestmuon1;
+    bool  onestmuon2;
+    bool  pfmuon1;
+    bool  pfmuon2;
+    bool  glbmuon1;
+    bool  glbmuon2;
+    bool  trkmuon1;
+    bool  trkmuon2;
+    bool  calomuon1;
+    bool  calomuon2;
     float nmatchedst1;
     float nmatchedch1;
     float ntrackerlayer1;
@@ -400,6 +414,7 @@ iSetup)
 {
     using std::vector;
     using namespace edm;
+    using namespace reco;
 
     fillRECO(iEvent,iSetup);
 }
@@ -707,26 +722,22 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
                 if(deltaR < deltaR_ && fabs((Dd1->pt()-pt1)/pt1) < 0.5 && Dd1->charge()==charge1 && pid1==-99999)
                 {
                   pid1 = id1;
-//cout<<"matched 1!"<<endl;
                 }
                 deltaR = d2vect.DeltaR(dauvec1);
                 if(deltaR < deltaR_ && fabs((Dd2->pt()-pt1)/pt1) < 0.5 && Dd2->charge()==charge1 && pid1==-99999)
                 {
                   pid1 = id1;
-//cout<<"matched 2!"<<endl;
                 }
 
                 deltaR = d1vect.DeltaR(dauvec2);
                 if(deltaR < deltaR_ && fabs((Dd1->pt()-pt2)/pt2) < 0.5 && Dd1->charge()==charge2 && pid2==-99999)
                 {
                   pid2 = id2;
-//cout<<"matched 3!"<<endl;
                 }
                 deltaR = d2vect.DeltaR(dauvec2);
                 if(deltaR < deltaR_ && fabs((Dd2->pt()-pt2)/pt2) < 0.5 && Dd2->charge()==charge2 && pid2==-99999)
                 {
                   pid2 = id2;
-//cout<<"matched 4!"<<endl;
                 }
               }
 
@@ -781,6 +792,7 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         dlos2D = dl2D/dl2Derror;
 
         //trk info
+        auto dau1 = d1->get<reco::TrackRef>();
         if(!twoLayerDecay_)
         {
             auto dau1 = d1->get<reco::TrackRef>();
@@ -913,6 +925,22 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             double ddxdzSig_seg = 999.;
             double ddydzSig_seg = 999.;
             
+            onestmuon1 = false;
+            pfmuon1 = false;
+            glbmuon1 = false;
+            trkmuon1 = false;
+            calomuon1 = false; 
+            onestmuon2 = false;
+            pfmuon2 = false;
+            glbmuon2 = false;
+            trkmuon2 = false;
+            calomuon2 = false;
+
+                const int muId1 = muAssocToTrack( dau1, theMuonHandle );
+                if( muId1 != -1 )
+                {
+                    const reco::Muon& cand = (*theMuonHandle)[muId1];
+/*
             for( unsigned id = 0; id < theMuonHandle->size(); id++ )
             {
                 const reco::Muon& cand = (*theMuonHandle)[id];
@@ -923,6 +951,13 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
                 if(fabs(trackReftmp->pt()-pt1)<0.0001 && fabs(trackReftmp->eta()-eta1)<0.001 && fabs(trackReftmp->phi()-phi1)<0.001
                    && trackReftmp->numberOfValidHits() == nhit1 )
                 {
+*/
+                    onestmuon1 = muon::isGoodMuon(cand, muon::selectionTypeFromString("TMOneStationTight"));
+                    pfmuon1 =  cand.isPFMuon();
+                    glbmuon1 =  cand.isGlobalMuon();
+                    trkmuon1 =  cand.isTrackerMuon();
+                    calomuon1 =  cand.isCaloMuon();
+
                     nmatchedch1 = cand.numberOfMatches();
                     nmatchedst1 = cand.numberOfMatchedStations();
                     
@@ -983,13 +1018,23 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
                         ddxdzSig1_seg_=ddxdzSig_seg;
                         ddydzSig1_seg_=ddydzSig_seg;
                     }
-                }
-                
-                
-                
+                } 
+
+                const int muId2 = muAssocToTrack( dau2, theMuonHandle );
+                if( muId2 != -1 )
+                {
+                    const reco::Muon& cand = (*theMuonHandle)[muId2];
+/*
                 if(fabs(trackReftmp->pt()-pt2)<0.0001 && fabs(trackReftmp->eta()-eta2)<0.001 && fabs(trackReftmp->phi()-phi2)<0.001
                    && trackReftmp->numberOfValidHits() == nhit2 )
                 {
+*/
+                    onestmuon2 = muon::isGoodMuon(cand, muon::selectionTypeFromString("TMOneStationTight"));
+                    pfmuon2 =  cand.isPFMuon();
+                    glbmuon2 =  cand.isGlobalMuon();
+                    trkmuon2 =  cand.isTrackerMuon();
+                    calomuon2 =  cand.isCaloMuon();
+
                     nmatchedch2 = cand.numberOfMatches();
                     nmatchedst2 = cand.numberOfMatchedStations();
                     
@@ -1050,7 +1095,6 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
                         ddxdzSig2_seg_=ddxdzSig_seg;
                         ddydzSig2_seg_=ddydzSig_seg;
                 }
-            }
         }
         }
         
@@ -1204,8 +1248,8 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
               if(pt<pTBins_[ipt+1] && pt>pTBins_[ipt] && y<yBins_[iy+1] && y>yBins_[iy])
               {
                 hMassVsMVA[iy][ipt]->Fill(mva,mass);
-                h3DDCAVsMVA[iy][ipt]->Fill(mva,dl*sin(agl_abs));
-                h2DDCAVsMVA[iy][ipt]->Fill(mva,dl2D*sin(agl2D_abs));
+//                h3DDCAVsMVA[iy][ipt]->Fill(mva,dl*sin(agl_abs));
+//                h2DDCAVsMVA[iy][ipt]->Fill(mva,dl2D*sin(agl2D_abs));
 
                 if(saveAllHistogram_)
                 {
@@ -1269,8 +1313,8 @@ VertexCompositeNtupleProducer::initHistogram()
     for(unsigned int iy=0;iy<yBins_.size()-1;iy++)
   {
    hMassVsMVA[iy][ipt] = fs->make<TH2F>(Form("hMassVsMVA_y%d_pt%d",iy,ipt),";mva;mass(GeV)",100,-1.,1.,massHistBins_,massHistPeak_-massHistWidth_,massHistPeak_+massHistWidth_);
-   h3DDCAVsMVA[iy][ipt] = fs->make<TH2F>(Form("h3DDCAVsMVA_y%d_pt%d",iy,ipt),";mva;3D DCA;",100,-1.,1.,1000,0,10);
-   h2DDCAVsMVA[iy][ipt] = fs->make<TH2F>(Form("h2DDCAVsMVA_y%d_pt%d",iy,ipt),";mva;2D DCA;",100,-1.,1.,1000,0,10);
+//   h3DDCAVsMVA[iy][ipt] = fs->make<TH2F>(Form("h3DDCAVsMVA_y%d_pt%d",iy,ipt),";mva;3D DCA;",100,-1.,1.,1000,0,10);
+//   h2DDCAVsMVA[iy][ipt] = fs->make<TH2F>(Form("h2DDCAVsMVA_y%d_pt%d",iy,ipt),";mva;2D DCA;",100,-1.,1.,1000,0,10);
 
    if(saveAllHistogram_)
    {
@@ -1449,6 +1493,16 @@ VertexCompositeNtupleProducer::initTree()
         
         if(doMuon_)
         {
+            VertexCompositeNtuple->Branch("OneStMuon1",&onestmuon1,"OneStMuon1/O");
+            VertexCompositeNtuple->Branch("OneStMuon2",&onestmuon2,"OneStMuon2/O");
+            VertexCompositeNtuple->Branch("PFMuon1",&pfmuon1,"PFMuon1/O");
+            VertexCompositeNtuple->Branch("PFMuon2",&pfmuon2,"PFMuon2/O");
+            VertexCompositeNtuple->Branch("GlbMuon1",&glbmuon1,"GlbMuon1/O");
+            VertexCompositeNtuple->Branch("GlbMuon2",&glbmuon2,"GlbMuon2/O");
+            VertexCompositeNtuple->Branch("trkMuon1",&trkmuon1,"trkMuon1/O");
+            VertexCompositeNtuple->Branch("trkMuon2",&trkmuon2,"trkMuon2/O");
+            VertexCompositeNtuple->Branch("caloMuon1",&calomuon1,"caloMuon1/O");
+            VertexCompositeNtuple->Branch("caloMuon2",&calomuon2,"caloMuon2/O");
             VertexCompositeNtuple->Branch("nMatchedChamberD1",&nmatchedch1,"nMatchedChamberD1/F");
             VertexCompositeNtuple->Branch("nMatchedStationD1",&nmatchedst1,"nMatchedStationD1/F");
             VertexCompositeNtuple->Branch("EnergyDepositionD1",&matchedenergy1,"EnergyDepositionD1/F");
@@ -1475,6 +1529,17 @@ VertexCompositeNtupleProducer::initTree()
     }
 }
 
+int VertexCompositeNtupleProducer::
+muAssocToTrack( const reco::TrackRef& trackref,
+                const edm::Handle<reco::MuonCollection>& muonh) const {
+  auto muon = std::find_if(muonh->cbegin(),muonh->cend(),
+                           [&](const reco::Muon& m) {
+                             return ( m.track().isNonnull() &&
+                                      m.track() == trackref    );
+                           });
+  return ( muon != muonh->cend() ? std::distance(muonh->cbegin(),muon) : -1 );
+}
+
 // ------------ method called once each job just after ending the event
 //loop  ------------
 void 
@@ -1484,9 +1549,3 @@ VertexCompositeNtupleProducer::endJob() {
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(VertexCompositeNtupleProducer);
-
-
-
-
-
-
