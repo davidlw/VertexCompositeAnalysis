@@ -16,8 +16,8 @@ if __name__ == '__main__':
 #    config.JobType.maxMemoryMB = 6000
 #    config.JobType.maxJobRuntimeMin = 2750
     config.JobType.psetName = '../test/PbPbSkim2018_DiMuContBoth_cfg.py'
-    config.Data.unitsPerJob = 50
-#    config.Data.totalUnits = 5000
+    config.Data.unitsPerJob = 5
+    config.Data.totalUnits = 100
     config.Data.splitting = 'LumiBased'
 #    config.Data.splitting = 'Automatic'
 #    config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/HI/DCSOnly/json_DCSONLY_HI.txt'
@@ -25,7 +25,8 @@ if __name__ == '__main__':
     config.Data.lumiMask = 'json_DCSONLY_HI_327327.txt'
     config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
     config.Data.publication = True
-    config.Site.storageSite = 'T2_US_MIT'
+    config.Site.storageSite = 'T2_US_Vanderbilt'
+#    config.Site.storageSite = 'T2_US_MIT'
 #    config.Site.storageSite = 'T3_US_Rice'
 
     def submit(config):
@@ -40,30 +41,35 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'PbPb2018SkimDiMuDM_DCSOnly327327_v1'
+    config.General.requestName = 'PbPb2018SkimDiMuDM_DCSOnly327327_test_v1'
     config.Data.inputDataset = '/HIDoubleMuon/HIRun2018A-PromptReco-v2/AOD'
-    config.Data.outputDatasetTag = 'Skim_DiMuContBoth_DCSOnly327327_v1'
+    config.Data.outputDatasetTag = 'Skim_DiMuContBoth_DCSOnly327327_test_v1'
     submit(config)
 
-    config.General.requestName = 'PbPb2018SkimDiMuMB_b0_DCSOnly327327_v1'
-    config.Data.inputDataset = '/HIMinimumBias0/HIRun2018A-PromptReco-v1/AOD'
-    submit(config)
+#    config.General.requestName = 'PbPb2018SkimDiMuDM_DCSOnly327327_v1'
+#    config.Data.inputDataset = '/HIDoubleMuon/HIRun2018A-PromptReco-v2/AOD'
+#    config.Data.outputDatasetTag = 'Skim_DiMuContBoth_DCSOnly327327_v1'
+#    submit(config)
 
-    config.General.requestName = 'PbPb2018SkimDiMuMB_b1_DCSOnly327327_v1'
-    config.Data.inputDataset = '/HIMinimumBias1/HIRun2018A-PromptReco-v1/AOD'
-    submit(config)
+#    config.General.requestName = 'PbPb2018SkimDiMuMB_b0_DCSOnly327327_v1'
+#    config.Data.inputDataset = '/HIMinimumBias0/HIRun2018A-PromptReco-v1/AOD'
+#    submit(config)
 
-    config.General.requestName = 'PbPb2018SkimDiMuMB_b2_DCSOnly327327_v1'
-    config.Data.inputDataset = '/HIMinimumBias2/HIRun2018A-PromptReco-v1/AOD'
-    submit(config)
+#    config.General.requestName = 'PbPb2018SkimDiMuMB_b1_DCSOnly327327_v1'
+#    config.Data.inputDataset = '/HIMinimumBias1/HIRun2018A-PromptReco-v1/AOD'
+#    submit(config)
 
-    config.General.requestName = 'PbPb2018SkimDiMuMB_b3_DCSOnly327327_v1'
-    config.Data.inputDataset = '/HIMinimumBias3/HIRun2018A-PromptReco-v1/AOD'
-    submit(config)
+#    config.General.requestName = 'PbPb2018SkimDiMuMB_b2_DCSOnly327327_v1'
+#    config.Data.inputDataset = '/HIMinimumBias2/HIRun2018A-PromptReco-v1/AOD'
+#    submit(config)
 
-    config.General.requestName = 'PbPb2018SkimDiMuMB_b4_DCSOnly327327_v1'
-    config.Data.inputDataset = '/HIMinimumBias4/HIRun2018A-PromptReco-v1/AOD'
-    submit(config)
+#    config.General.requestName = 'PbPb2018SkimDiMuMB_b3_DCSOnly327327_v1'
+#    config.Data.inputDataset = '/HIMinimumBias3/HIRun2018A-PromptReco-v1/AOD'
+#    submit(config)
+
+#    config.General.requestName = 'PbPb2018SkimDiMuMB_b4_DCSOnly327327_v1'
+#    config.Data.inputDataset = '/HIMinimumBias4/HIRun2018A-PromptReco-v1/AOD'
+#    submit(config)
 
 #    config.General.requestName = 'PbPb2018SkimDiMuMB_b0_MuonPhys_326381-326618_v1'
 #    config.Data.inputDataset = '/HIMinimumBias0/HIRun2018A-PromptReco-v1/AOD'

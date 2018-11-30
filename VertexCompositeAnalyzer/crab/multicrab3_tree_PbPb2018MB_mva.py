@@ -15,16 +15,16 @@ if __name__ == '__main__':
     config.JobType.pluginName = 'Analysis'
     config.JobType.maxMemoryMB = 8000
 #    config.JobType.maxJobRuntimeMin = 2750
-    config.Data.unitsPerJob = 5
+    config.Data.unitsPerJob = 3
 #    config.Data.totalUnits = 20
     config.Data.splitting = 'FileBased'
 #    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0_v2-89e025b59ba99ac07dd655f3dba5c8df/USER'
-    config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
-#    config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
+#    config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
+    config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
     config.Data.publication = False
     config.Data.useParent = True
     config.Data.inputDBS = 'phys03'
-    config.Site.storageSite = 'T2_US_MIT'
+    config.Site.storageSite = 'T2_CH_CERN'
 
     def submit(config):
         try:
@@ -38,8 +38,8 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'PbPb2018_D0_BDT_default_ws_histogram_b1_v2'
+    config.General.requestName = 'PbPb2018_D0_BDT_ptsum2p2_pt1_ws_histogram_b0_v2'
     config.JobType.psetName = '../test/D0/d0ana_default_ws_PbPb.py'
     config.Data.inputDataset = '/HIMinimumBias0/davidlw-Skim_D0_Nov20DCS_v1-a1191996f743a6b381131d1462d45506/USER'
-    config.Data.outputDatasetTag = 'D0_BDT_default_ws_histogram_Nov20DCS_v2'
+    config.Data.outputDatasetTag = 'D0_BDT_ptsum2p2_pt1_ws_histogram_Nov20DCS_v2'
     submit(config)

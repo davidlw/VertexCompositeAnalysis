@@ -9,7 +9,7 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 #process.MessageLogger.cerr.INFO = cms.untracked.PSet(
 #        limit = cms.untracked.int32(-1)
 #        )
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(10)
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1)
 process.options   = cms.untracked.PSet( wantSummary = 
 cms.untracked.bool(True) )
 
@@ -43,8 +43,6 @@ process.hiCentrality.produceTracks = False
 process.hiCentrality.producePixelTracks = False 
 process.hiCentrality.reUseCentrality = True 
 process.hiCentrality.srcReUse = cms.InputTag("hiCentrality","","RECO") 
-process.hiCentrality.srcTracks = cms.InputTag("generalTracks") 
-process.hiCentrality.srcVertex = cms.InputTag("offlinePrimaryVertices") 
 process.load("RecoHI.HiCentralityAlgos.CentralityBin_cfi") 
 process.centralityBin.Centrality = cms.InputTag("hiCentrality") 
 process.centralityBin.centralityVariable = cms.string("HFtowers") 
@@ -52,12 +50,19 @@ process.centralityBin.nonDefaultGlauberModel = cms.string("")
 
 process.source = cms.Source("PoolSource",
                                 fileNames = cms.untracked.vstring(
-'root://cmsxrootd.fnal.gov//store/user/davidlw/HIMinimumBias0/Skim_D0_Nov20DCS_v1/181121_103527/0000/PbPb_100.root'
+#'root://cmsxrootd.fnal.gov//store/user/davidlw/HIMinimumBias0/Skim_D0_Nov20DCS_v1/181121_103527/0000/PbPb_100.root'
+'file:/afs/cern.ch/user/d/davidlw/CMSSW/CMSSW_10_3_1_patch2/src/VertexCompositeAnalysis/VertexCompositeProducer/test/PbPb.root'
                 ),
 secondaryFileNames = cms.untracked.vstring(
-'root://cmsxrootd.fnal.gov//store/hidata/HIRun2018A/HIMinimumBias0/AOD/PromptReco-v1/000/326/389/00000/8EE40790-9E67-E441-8663-2CDBC2F8E53C.root'
+'root://cmsxrootd.fnal.gov//store/hidata/HIRun2018A/HIMinimumBias1/AOD/PromptReco-v1/000/326/577/00000/532A6440-350D-2446-89FB-3CA9E8335E4F.root'
+#'root://cmsxrootd.fnal.gov//store/hidata/HIRun2018A/HIMinimumBias0/AOD/PromptReco-v1/000/326/389/00000/8EE40790-9E67-E441-8663-2CDBC2F8E53C.root'
 )
                             )
+
+process.Timing = cms.Service("Timing",
+  summaryOnly = cms.untracked.bool(False),
+  useJobReport = cms.untracked.bool(True)
+)
 
 #Trigger Selection
 ### Comment out for the timing being assuming running on secondary dataset with trigger bit selected already
@@ -85,18 +90,20 @@ process.d0ana.saveTree = cms.untracked.bool(False)
 process.d0ana.yBins = cms.untracked.vdouble(-2.0,-1.2,-0.6,0.0,0.6,1.2,2.0)
 process.d0ana.pTBins = cms.untracked.vdouble(0,1.0,1.5,2.0,3.0,4.0,5.0,6.0,7.0,8.0)
 
-
 process.d0selectorBDTPreCut.trkPtSumMin = cms.untracked.double(2.2)
+process.d0selectorBDTPreCut.trkPtMin = cms.untracked.double(1.0)
 process.d0selector = process.d0selectorBDTPreCut.clone()
 process.d0selector.useAnyMVA = cms.bool(True)
-process.d0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InPbPb_ptsum2p2_pt0p7_PbPbMB_WS.root')
+#process.d0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InPbPb_ptsum2p2_pt0p7_PbPbMB_WS.root')
+process.d0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InPbPb_ptsum2p2_pt1_PbPbMB_WS.root')
 process.d0selector.GBRForestLabel = cms.string('D0InPbPb')
 process.d0selector.centMin = cms.untracked.int32(0)
 process.d0selector.centMax = cms.untracked.int32(200)
 process.d0selector.isCentrality = cms.bool(True)
 
 process.npd0selector = process.d0selector.clone()
-process.npd0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InPbPb_ptsum2p2_pt0p7_PbPbMB_WS.root')
+#process.npd0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InPbPb_ptsum2p2_pt0p7_PbPbMB_WS.root')
+process.npd0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InPbPb_ptsum2p2_pt1_PbPbMB_WS.root')
 process.npd0ana = process.d0ana.clone()
 process.npd0ana.VertexCompositeCollection = cms.untracked.InputTag("npd0selector:D0")
 process.npd0ana.MVACollection = cms.InputTag("npd0selector:MVAValuesNewD0")
@@ -183,16 +190,21 @@ process.d0ana_seq = cms.Sequence(process.d0selector * process.d0ana)
 
 process.cent_seq = cms.Sequence(process.hiCentrality * process.centralityBin)
 
+process.pp = cms.Path(process.cent_seq * process.d0ana_seq)
 #process.pp = cms.Path(process.d0ana_seq)
 
-process.p1 = cms.Path(process.cent_seq * process.d0ana05_seq)
-process.p2 = cms.Path(process.cent_seq * process.d0ana510_seq)
-process.p3 = cms.Path(process.cent_seq * process.d0ana1030_seq)
-process.p4 = cms.Path(process.cent_seq * process.d0ana3050_seq)
-process.p5 = cms.Path(process.cent_seq * process.d0ana5080_seq)
+#process.p1 = cms.Path(process.cent_seq * process.d0ana05_seq)
+#process.p2 = cms.Path(process.cent_seq * process.d0ana510_seq)
+#process.p3 = cms.Path(process.cent_seq * process.d0ana1030_seq)
+#process.p4 = cms.Path(process.cent_seq * process.d0ana3050_seq)
+#process.p5 = cms.Path(process.cent_seq * process.d0ana5080_seq)
 
-process.p6 = cms.Path(process.cent_seq * process.npd0ana05_seq)
-process.p7 = cms.Path(process.cent_seq * process.npd0ana510_seq)
-process.p8 = cms.Path(process.cent_seq * process.npd0ana1030_seq)
-process.p9 = cms.Path(process.cent_seq * process.npd0ana3050_seq)
-process.p10 = cms.Path(process.cent_seq * process.npd0ana5080_seq)
+#process.p6 = cms.Path(process.cent_seq * process.npd0ana05_seq)
+#process.p7 = cms.Path(process.cent_seq * process.npd0ana510_seq)
+#process.p8 = cms.Path(process.cent_seq * process.npd0ana1030_seq)
+#process.p9 = cms.Path(process.cent_seq * process.npd0ana3050_seq)
+#process.p10 = cms.Path(process.cent_seq * process.npd0ana5080_seq)
+
+
+from HLTrigger.Configuration.CustomConfigs import MassReplaceInputTag
+process = MassReplaceInputTag(process,"offlinePrimaryVertices","offlinePrimaryVerticesRecovery")

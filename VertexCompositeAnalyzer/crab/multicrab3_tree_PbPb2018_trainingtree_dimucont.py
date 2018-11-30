@@ -18,12 +18,12 @@ if __name__ == '__main__':
     config.Data.unitsPerJob = 1
 #    config.Data.totalUnits = 20
     config.Data.splitting = 'FileBased'
-    config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
-#    config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
+#    config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
+    config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
     config.Data.publication = False
     config.Data.useParent = True
     config.Data.inputDBS = 'phys03'
-    config.Site.storageSite = 'T2_US_MIT'
+    config.Site.storageSite = 'T2_CH_CERN'
 
     def submit(config):
         try:
@@ -43,8 +43,36 @@ if __name__ == '__main__':
 #    config.Data.outputDatasetTag = 'Tree_DiMuContBoth_training_Nov20DCS_v1'
 #    submit(config)
 
-    config.General.requestName = 'PbPb2018DiMuContBothDCSNov27_training_b1_v1'
+#    config.General.requestName = 'PbPb2018DiMuContBothDCSNov27_training_b1_v1'
+#    config.JobType.psetName = '../test/JPsi/dimucontana_trainingtree_PbPb.py'
+#    config.Data.inputDataset = '/HIDoubleMuon/davidlw-Skim_DiMuContBoth_DCSOnly327327_v1-5a6e4168a05c7a459d9e19c05b7139bf/USER'
+#    config.Data.outputDatasetTag = 'Tree_DiMuContBoth_training_Nov27DCS_v1'
+#    submit(config)
+
+    config.General.requestName = 'PbPb2018MBDiMuContBothDCSNov27_training_test_b1_v1'
     config.JobType.psetName = '../test/JPsi/dimucontana_trainingtree_PbPb.py'
-    config.Data.inputDataset = '/HIDoubleMuon/davidlw-Skim_DiMuContBoth_DCSOnly327327_v1-5a6e4168a05c7a459d9e19c05b7139bf/USER'
-    config.Data.outputDatasetTag = 'Tree_DiMuContBoth_training_Nov27DCS_v1'
+    config.Data.inputDataset = '/HIDoubleMuon/davidlw-Skim_DiMuContBoth_DCSOnly327327_test_v1-5a6e4168a05c7a459d9e19c05b7139bf/USER'
+    config.Data.outputDatasetTag = 'Tree_DiMuContBoth_training_Nov27DCS_VUtest_v1'
     submit(config)
+
+#    config.General.requestName = 'PbPb2018MBDiMuContBothDCSNov27_training_b1_v1'
+#    config.JobType.psetName = '../test/JPsi/dimucontana_trainingtree_PbPb.py'
+#    config.Data.inputDataset = '/HIMinimumBias1/davidlw-Skim_DiMuContBoth_DCSOnly327327_v1-5a6e4168a05c7a459d9e19c05b7139bf/USER'
+#    config.Data.outputDatasetTag = 'Tree_DiMuContBoth_training_Nov27DCS_v1'
+#    submit(config)
+
+#    config.General.requestName = 'PbPb2018MBDiMuContBothDCSNov27_training_b0_v1'
+#    config.Data.inputDataset = '/HIMinimumBias0/davidlw-Skim_DiMuContBoth_DCSOnly327327_v1-5a6e4168a05c7a459d9e19c05b7139bf/USER'
+#    submit(config)
+
+#    config.General.requestName = 'PbPb2018MBDiMuContBothDCSNov27_training_b2_v1'
+#    config.Data.inputDataset = '/HIMinimumBias2/davidlw-Skim_DiMuContBoth_DCSOnly327327_v1-5a6e4168a05c7a459d9e19c05b7139bf/USER'
+#    submit(config)
+
+#    config.General.requestName = 'PbPb2018MBDiMuContBothDCSNov27_training_b3_v1'
+#    config.Data.inputDataset = '/HIMinimumBias3/davidlw-Skim_DiMuContBoth_DCSOnly327327_v1-5a6e4168a05c7a459d9e19c05b7139bf/USER'
+#    submit(config)
+
+#    config.General.requestName = 'PbPb2018MBDiMuContBothDCSNov27_training_b4_v1'
+#    config.Data.inputDataset = '/HIMinimumBias4/davidlw-Skim_DiMuContBoth_DCSOnly327327_v1-5a6e4168a05c7a459d9e19c05b7139bf/USER'
+#    submit(config)

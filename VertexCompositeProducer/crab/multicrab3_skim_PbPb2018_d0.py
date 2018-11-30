@@ -43,3 +43,11 @@ if __name__ == '__main__':
     config.Data.inputDataset = '/HIMinimumBias1/HIRun2018A-PromptReco-v1/AOD'
     config.Data.outputDatasetTag = 'Skim_D0_DCSOnly327327_v1'
     submit(config)
+
+    config.General.requestName = 'PbPb2018SkimD0MB_b2_DCSOnly327327_v1'
+    config.Data.inputDataset = '/HIMinimumBias2/HIRun2018A-PromptReco-v1/AOD'
+    submit(config)
+
+    config.General.requestName = 'PbPb2018SkimD0MB_b3_DCSOnly327327_v1'
+    config.Data.inputDataset = '/HIMinimumBias3/HIRun2018A-PromptReco-v1/AOD'
+    submit(config)

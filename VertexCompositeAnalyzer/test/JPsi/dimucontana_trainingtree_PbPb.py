@@ -9,7 +9,7 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 #process.MessageLogger.cerr.INFO = cms.untracked.PSet(
 #        limit = cms.untracked.int32(-1)
 #        )
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(10)
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(2)
 process.options   = cms.untracked.PSet( wantSummary = 
 cms.untracked.bool(True) )
 
@@ -19,7 +19,7 @@ cms.untracked.bool(True) )
 #process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 #process.GlobalTag.globaltag = "80X_dataRun2_Prompt_v15"
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) 
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(50) 
 )
 
 ### conditions
@@ -68,6 +68,11 @@ secondaryFileNames = cms.untracked.vstring(
 '/store/hidata/HIRun2018A/HIDoubleMuon/AOD/PromptReco-v2/000/326/941/00000/064283D3-7F97-D248-B002-DC100F9456C0.root'
 )
                             )
+
+process.Timing = cms.Service("Timing",
+  summaryOnly = cms.untracked.bool(False),
+  useJobReport = cms.untracked.bool(True)
+)
 
 #Trigger Selection
 ### Comment out for the timing being assuming running on secondary dataset with trigger bit selected already

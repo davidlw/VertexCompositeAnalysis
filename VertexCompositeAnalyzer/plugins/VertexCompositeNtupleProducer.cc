@@ -93,7 +93,6 @@ private:
 
   int muAssocToTrack( const reco::TrackRef& trackref, const edm::Handle<reco::MuonCollection>& muonh) const;
 
-
   // ----------member data ---------------------------
     
     edm::Service<TFileService> fs;
@@ -364,8 +363,8 @@ VertexCompositeNtupleProducer::VertexCompositeNtupleProducer(const edm::Paramete
     isSkimMVA_ = iConfig.getUntrackedParameter<bool>("isSkimMVA"); 
 
     //cut variables
-    multMax_ = iConfig.getUntrackedParameter<double>("multMax", 0.0);
-    multMin_ = iConfig.getUntrackedParameter<double>("multMin", 999.9);
+    multMax_ = iConfig.getUntrackedParameter<double>("multMax", -1);
+    multMin_ = iConfig.getUntrackedParameter<double>("multMin", -1);
     deltaR_ = iConfig.getUntrackedParameter<double>("deltaR", 0.03);
 
     pTBins_ = iConfig.getUntrackedParameter< std::vector<double> >("pTBins");
@@ -428,7 +427,7 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
     
     edm::Handle<reco::TrackCollection> tracks;
     iEvent.getByToken(tok_generalTrk_, tracks);
-    
+
     edm::Handle<reco::VertexCompositeCandidateCollection> v0candidates;
     iEvent.getByToken(recoVertexCompositeCandidateCollection_Token_,v0candidates);
     const reco::VertexCompositeCandidateCollection * v0candidates_ = v0candidates.product();
@@ -471,8 +470,9 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
     
     //Ntrkoffline
     Ntrkoffline = 0;
-
-    for(unsigned it=0; it<tracks->size(); ++it){
+    if(multMax_!=-1 && multMin_!=-1)
+    {
+      for(unsigned it=0; it<tracks->size(); ++it){
         
         const reco::Track & trk = (*tracks)[it];
         
@@ -494,6 +494,7 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         if(fabs(eta)>2.4) continue;
         if(pt<=0.4) continue;
         Ntrkoffline++;
+      }
     }
 
     //Gen info for matching
@@ -578,14 +579,6 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         double pz = trk.pz();
         mass = trk.mass();
         
-/*
-        if(saveHistogram_)
-        {
-          for(unsigned int ipt=0;ipt<pTBins_.size()-1;ipt++)
-            for(unsigned int iy=0;iy<yBins_.size()-1;iy++)
-              if(pt<pTBins_[ipt+1] && pt>pTBins_[ipt] && y<yBins_[iy+1] && y>yBins_[iy]) hMassVsMVA[iy][ipt]->Fill(mva,mass);
-        }
-*/
         const reco::Candidate * d1 = trk.daughter(0);
         const reco::Candidate * d2 = trk.daughter(1);
         
@@ -795,8 +788,6 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         auto dau1 = d1->get<reco::TrackRef>();
         if(!twoLayerDecay_)
         {
-            auto dau1 = d1->get<reco::TrackRef>();
-            
             //trk quality
             trkquality1 = dau1->quality(reco::TrackBase::highPurity);
             
@@ -884,218 +875,201 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         
         if(doMuon_)
         {
-            edm::Handle<reco::MuonCollection> theMuonHandle;
-            iEvent.getByToken(tok_muon_, theMuonHandle);
+          edm::Handle<reco::MuonCollection> theMuonHandle;
+          iEvent.getByToken(tok_muon_, theMuonHandle);
             
-            nmatchedch1 = -1;
-            nmatchedst1 = -1;
-            matchedenergy1 = -1;
-            nmatchedch2 = -1;
-            nmatchedst2 = -1;
-            matchedenergy2 = -1;
+          nmatchedch1 = -1;
+          nmatchedst1 = -1;
+          matchedenergy1 = -1;
+          nmatchedch2 = -1;
+          nmatchedst2 = -1;
+          matchedenergy2 = -1;
             
-            double x_exp = -999.;
-            double y_exp = -999.;
-            double xerr_exp = -999.;
-            double yerr_exp = -999.;
-            double dxdz_exp = -999.;
-            double dydz_exp = -999.;
-            double dxdzerr_exp = -999.;
-            double dydzerr_exp = -999.;
+          double x_exp = -999.;
+          double y_exp = -999.;
+          double xerr_exp = -999.;
+          double yerr_exp = -999.;
+          double dxdz_exp = -999.;
+          double dydz_exp = -999.;
+          double dxdzerr_exp = -999.;
+          double dydzerr_exp = -999.;
             
-            double x_seg = -999.;
-            double y_seg = -999.;
-            double xerr_seg = -999.;
-            double yerr_seg = -999.;
-            double dxdz_seg = -999.;
-            double dydz_seg = -999.;
-            double dxdzerr_seg = -999.;
-            double dydzerr_seg = -999.;
+          double x_seg = -999.;
+          double y_seg = -999.;
+          double xerr_seg = -999.;
+          double yerr_seg = -999.;
+          double dxdz_seg = -999.;
+          double dydz_seg = -999.;
+          double dxdzerr_seg = -999.;
+          double dydzerr_seg = -999.;
             
-            double dx_seg = 999.;
-            double dy_seg = 999.;
-            double dxerr_seg = 999.;
-            double dyerr_seg = 999.;
-            double dxSig_seg = 999.;
-            double dySig_seg = 999.;
-            double ddxdz_seg = 999.;
-            double ddydz_seg = 999.;
-            double ddxdzerr_seg = 999.;
-            double ddydzerr_seg = 999.;
-            double ddxdzSig_seg = 999.;
-            double ddydzSig_seg = 999.;
+          double dx_seg = 999.;
+          double dy_seg = 999.;
+          double dxerr_seg = 999.;
+          double dyerr_seg = 999.;
+          double dxSig_seg = 999.;
+          double dySig_seg = 999.;
+          double ddxdz_seg = 999.;
+          double ddydz_seg = 999.;
+          double ddxdzerr_seg = 999.;
+          double ddydzerr_seg = 999.;
+          double ddxdzSig_seg = 999.;
+          double ddydzSig_seg = 999.;
             
-            onestmuon1 = false;
-            pfmuon1 = false;
-            glbmuon1 = false;
-            trkmuon1 = false;
-            calomuon1 = false; 
-            onestmuon2 = false;
-            pfmuon2 = false;
-            glbmuon2 = false;
-            trkmuon2 = false;
-            calomuon2 = false;
+          onestmuon1 = false;
+          pfmuon1 = false;
+          glbmuon1 = false;
+          trkmuon1 = false;
+          calomuon1 = false; 
+          onestmuon2 = false;
+          pfmuon2 = false;
+          glbmuon2 = false;
+          trkmuon2 = false;
+          calomuon2 = false;
 
-                const int muId1 = muAssocToTrack( dau1, theMuonHandle );
-                if( muId1 != -1 )
-                {
-                    const reco::Muon& cand = (*theMuonHandle)[muId1];
-/*
-            for( unsigned id = 0; id < theMuonHandle->size(); id++ )
+          const int muId1 = muAssocToTrack( dau1, theMuonHandle );
+          if( muId1 != -1 )
+          {
+            const reco::Muon& cand = (*theMuonHandle)[muId1];
+
+            onestmuon1 = muon::isGoodMuon(cand, muon::selectionTypeFromString("TMOneStationTight"));
+            pfmuon1 =  cand.isPFMuon();
+            glbmuon1 =  cand.isGlobalMuon();
+            trkmuon1 =  cand.isTrackerMuon();
+            calomuon1 =  cand.isCaloMuon();
+
+            nmatchedch1 = cand.numberOfMatches();
+            nmatchedst1 = cand.numberOfMatchedStations();
+                   
+            reco::MuonEnergy muenergy = cand.calEnergy();
+            matchedenergy1 = muenergy.hadMax;
+                    
+            const std::vector<reco::MuonChamberMatch>& muchmatches = cand.matches();
+                   
+            for(unsigned int ich=0;ich<muchmatches.size();ich++)
             {
-                const reco::Muon& cand = (*theMuonHandle)[id];
-                reco::TrackRef trackReftmp = cand.track();
-                
-                if(trackReftmp.isNull()) continue;
-                
-                if(fabs(trackReftmp->pt()-pt1)<0.0001 && fabs(trackReftmp->eta()-eta1)<0.001 && fabs(trackReftmp->phi()-phi1)<0.001
-                   && trackReftmp->numberOfValidHits() == nhit1 )
-                {
-*/
-                    onestmuon1 = muon::isGoodMuon(cand, muon::selectionTypeFromString("TMOneStationTight"));
-                    pfmuon1 =  cand.isPFMuon();
-                    glbmuon1 =  cand.isGlobalMuon();
-                    trkmuon1 =  cand.isTrackerMuon();
-                    calomuon1 =  cand.isCaloMuon();
-
-                    nmatchedch1 = cand.numberOfMatches();
-                    nmatchedst1 = cand.numberOfMatchedStations();
-                    
-                    reco::MuonEnergy muenergy = cand.calEnergy();
-                    matchedenergy1 = muenergy.hadMax;
-                    
-                    const std::vector<reco::MuonChamberMatch>& muchmatches = cand.matches();
-                    
-                    for(unsigned int ich=0;ich<muchmatches.size();ich++)
-                    {
-                        x_exp = muchmatches[ich].x;
-                        y_exp = muchmatches[ich].y;
-                        xerr_exp = muchmatches[ich].xErr;
-                        yerr_exp = muchmatches[ich].yErr;
-                        dxdz_exp = muchmatches[ich].dXdZ;
-                        dydz_exp = muchmatches[ich].dYdZ;
-                        dxdzerr_exp = muchmatches[ich].dXdZErr;
-                        dydzerr_exp = muchmatches[ich].dYdZErr;
+              x_exp = muchmatches[ich].x;
+              y_exp = muchmatches[ich].y;
+              xerr_exp = muchmatches[ich].xErr;
+              yerr_exp = muchmatches[ich].yErr;
+              dxdz_exp = muchmatches[ich].dXdZ;
+              dydz_exp = muchmatches[ich].dYdZ;
+              dxdzerr_exp = muchmatches[ich].dXdZErr;
+              dydzerr_exp = muchmatches[ich].dYdZErr;
                         
-                        std::vector<reco::MuonSegmentMatch> musegmatches = muchmatches[ich].segmentMatches;
-                        //std::cout<<musegmatches.size()<<std::endl;
+              std::vector<reco::MuonSegmentMatch> musegmatches = muchmatches[ich].segmentMatches;
                         
-                        if(!musegmatches.size()) continue;
-                        for(unsigned int jseg=0;jseg<musegmatches.size();jseg++)
-                        {
-                            x_seg = musegmatches[jseg].x;
-                            y_seg = musegmatches[jseg].y;
-                            xerr_seg = musegmatches[jseg].xErr;
-                            yerr_seg = musegmatches[jseg].yErr;
-                            dxdz_seg = musegmatches[jseg].dXdZ;
-                            dydz_seg = musegmatches[jseg].dYdZ;
-                            dxdzerr_seg = musegmatches[jseg].dXdZErr;
-                            dydzerr_seg = musegmatches[jseg].dYdZErr;
+              if(!musegmatches.size()) continue;
+              for(unsigned int jseg=0;jseg<musegmatches.size();jseg++)
+              {
+                x_seg = musegmatches[jseg].x;
+                y_seg = musegmatches[jseg].y;
+                xerr_seg = musegmatches[jseg].xErr;
+                yerr_seg = musegmatches[jseg].yErr;
+                dxdz_seg = musegmatches[jseg].dXdZ;
+                dydz_seg = musegmatches[jseg].dYdZ;
+                dxdzerr_seg = musegmatches[jseg].dXdZErr;
+                dydzerr_seg = musegmatches[jseg].dYdZErr;
                             
-                            if(sqrt((x_seg-x_exp)*(x_seg-x_exp)+(y_seg-y_exp)*(y_seg-y_exp))<sqrt(dx_seg*dx_seg+dy_seg*dy_seg))
-                            {
-                                dx_seg = x_seg - x_exp;
-                                dy_seg = y_seg - y_exp;
-                                dxerr_seg = sqrt(xerr_seg*xerr_seg+xerr_exp*xerr_exp);
-                                dyerr_seg = sqrt(yerr_seg*yerr_seg+yerr_exp*yerr_exp);
-                                dxSig_seg = dx_seg / dxerr_seg;
-                                dySig_seg = dy_seg / dyerr_seg;
-                                ddxdz_seg = dxdz_seg - dxdz_exp;
-                                ddydz_seg = dydz_seg - dydz_exp;
-                                ddxdzerr_seg = sqrt(dxdzerr_seg*dxdzerr_seg+dxdzerr_exp*dxdzerr_exp);
-                                ddydzerr_seg = sqrt(dydzerr_seg*dydzerr_seg+dydzerr_exp*dydzerr_exp);
-                                ddxdzSig_seg = ddxdz_seg / ddxdzerr_seg;
-                                ddydzSig_seg = ddydz_seg / ddydzerr_seg;
-                            }
-                        }
-                        
-                        dx1_seg_=dx_seg;
-                        dy1_seg_=dy_seg;
-                        dxSig1_seg_=dxSig_seg;
-                        dySig1_seg_=dySig_seg;
-                        ddxdz1_seg_=ddxdz_seg;
-                        ddydz1_seg_=ddydz_seg;
-                        ddxdzSig1_seg_=ddxdzSig_seg;
-                        ddydzSig1_seg_=ddydzSig_seg;
-                    }
-                } 
-
-                const int muId2 = muAssocToTrack( dau2, theMuonHandle );
-                if( muId2 != -1 )
+                if(sqrt((x_seg-x_exp)*(x_seg-x_exp)+(y_seg-y_exp)*(y_seg-y_exp))<sqrt(dx_seg*dx_seg+dy_seg*dy_seg))
                 {
-                    const reco::Muon& cand = (*theMuonHandle)[muId2];
-/*
-                if(fabs(trackReftmp->pt()-pt2)<0.0001 && fabs(trackReftmp->eta()-eta2)<0.001 && fabs(trackReftmp->phi()-phi2)<0.001
-                   && trackReftmp->numberOfValidHits() == nhit2 )
-                {
-*/
-                    onestmuon2 = muon::isGoodMuon(cand, muon::selectionTypeFromString("TMOneStationTight"));
-                    pfmuon2 =  cand.isPFMuon();
-                    glbmuon2 =  cand.isGlobalMuon();
-                    trkmuon2 =  cand.isTrackerMuon();
-                    calomuon2 =  cand.isCaloMuon();
-
-                    nmatchedch2 = cand.numberOfMatches();
-                    nmatchedst2 = cand.numberOfMatchedStations();
-                    
-                    reco::MuonEnergy muenergy = cand.calEnergy();
-                    matchedenergy2 = muenergy.hadMax;
-                    
-                    const std::vector<reco::MuonChamberMatch>& muchmatches = cand.matches();
-                    for(unsigned int ich=0;ich<muchmatches.size();ich++)
-                        //                        for(unsigned int ich=0;ich<1;ich++)
-                    {
-                        x_exp = muchmatches[ich].x;
-                        y_exp = muchmatches[ich].y;
-                        xerr_exp = muchmatches[ich].xErr;
-                        yerr_exp = muchmatches[ich].yErr;
-                        dxdz_exp = muchmatches[ich].dXdZ;
-                        dydz_exp = muchmatches[ich].dYdZ;
-                        dxdzerr_exp = muchmatches[ich].dXdZErr;
-                        dydzerr_exp = muchmatches[ich].dYdZErr;
-                        
-                        std::vector<reco::MuonSegmentMatch> musegmatches = muchmatches[ich].segmentMatches;
-                        //std::cout<<musegmatches.size()<<std::endl;
-                        
-                        if(!musegmatches.size()) continue;
-                        for(unsigned int jseg=0;jseg<musegmatches.size();jseg++)
-                        {
-                            x_seg = musegmatches[jseg].x;
-                            y_seg = musegmatches[jseg].y;
-                            xerr_seg = musegmatches[jseg].xErr;
-                            yerr_seg = musegmatches[jseg].yErr;
-                            dxdz_seg = musegmatches[jseg].dXdZ;
-                            dydz_seg = musegmatches[jseg].dYdZ;
-                            dxdzerr_seg = musegmatches[jseg].dXdZErr;
-                            dydzerr_seg = musegmatches[jseg].dYdZErr;
-                            
-                            if(sqrt((x_seg-x_exp)*(x_seg-x_exp)+(y_seg-y_exp)*(y_seg-y_exp))<sqrt(dx_seg*dx_seg+dy_seg*dy_seg))
-                            {
-                                dx_seg = x_seg - x_exp;
-                                dy_seg = y_seg - y_exp;
-                                dxerr_seg = sqrt(xerr_seg*xerr_seg+xerr_exp*xerr_exp);
-                                dyerr_seg = sqrt(yerr_seg*yerr_seg+yerr_exp*yerr_exp);
-                                dxSig_seg = dx_seg / dxerr_seg;
-                                dySig_seg = dy_seg / dyerr_seg;
-                                ddxdz_seg = dxdz_seg - dxdz_exp;
-                                ddydz_seg = dydz_seg - dydz_exp;
-                                ddxdzerr_seg = sqrt(dxdzerr_seg*dxdzerr_seg+dxdzerr_exp*dxdzerr_exp);
-                                ddydzerr_seg = sqrt(dydzerr_seg*dydzerr_seg+dydzerr_exp*dydzerr_exp);
-                                ddxdzSig_seg = ddxdz_seg / ddxdzerr_seg;
-                                ddydzSig_seg = ddydz_seg / ddydzerr_seg;
-                            }
-                        }
-                        
-                        dx2_seg_=dx_seg;
-                        dy2_seg_=dy_seg;
-                        dxSig2_seg_=dxSig_seg;
-                        dySig2_seg_=dySig_seg;
-                        ddxdz2_seg_=ddxdz_seg;
-                        ddydz2_seg_=ddydz_seg;
-                        ddxdzSig2_seg_=ddxdzSig_seg;
-                        ddydzSig2_seg_=ddydzSig_seg;
+                  dx_seg = x_seg - x_exp;
+                  dy_seg = y_seg - y_exp;
+                  dxerr_seg = sqrt(xerr_seg*xerr_seg+xerr_exp*xerr_exp);
+                  dyerr_seg = sqrt(yerr_seg*yerr_seg+yerr_exp*yerr_exp);
+                  dxSig_seg = dx_seg / dxerr_seg;
+                  dySig_seg = dy_seg / dyerr_seg;
+                  ddxdz_seg = dxdz_seg - dxdz_exp;
+                  ddydz_seg = dydz_seg - dydz_exp;
+                  ddxdzerr_seg = sqrt(dxdzerr_seg*dxdzerr_seg+dxdzerr_exp*dxdzerr_exp);
+                  ddydzerr_seg = sqrt(dydzerr_seg*dydzerr_seg+dydzerr_exp*dydzerr_exp);
+                  ddxdzSig_seg = ddxdz_seg / ddxdzerr_seg;
+                  ddydzSig_seg = ddydz_seg / ddydzerr_seg;
                 }
-        }
+              }
+                      
+              dx1_seg_=dx_seg;
+              dy1_seg_=dy_seg;
+              dxSig1_seg_=dxSig_seg;
+              dySig1_seg_=dySig_seg;
+              ddxdz1_seg_=ddxdz_seg;
+              ddydz1_seg_=ddydz_seg;
+              ddxdzSig1_seg_=ddxdzSig_seg;
+              ddydzSig1_seg_=ddydzSig_seg;
+            }
+          } 
+
+          const int muId2 = muAssocToTrack( dau2, theMuonHandle );
+          if( muId2 != -1 )
+          {
+            const reco::Muon& cand = (*theMuonHandle)[muId2];
+
+            onestmuon2 = muon::isGoodMuon(cand, muon::selectionTypeFromString("TMOneStationTight"));
+            pfmuon2 =  cand.isPFMuon();
+            glbmuon2 =  cand.isGlobalMuon();
+            trkmuon2 =  cand.isTrackerMuon();
+            calomuon2 =  cand.isCaloMuon();
+
+            nmatchedch2 = cand.numberOfMatches();
+            nmatchedst2 = cand.numberOfMatchedStations();
+                    
+            reco::MuonEnergy muenergy = cand.calEnergy();
+            matchedenergy2 = muenergy.hadMax;
+                    
+            const std::vector<reco::MuonChamberMatch>& muchmatches = cand.matches();
+            for(unsigned int ich=0;ich<muchmatches.size();ich++)
+                        //                        for(unsigned int ich=0;ich<1;ich++)
+            {
+              x_exp = muchmatches[ich].x;
+              y_exp = muchmatches[ich].y;
+              xerr_exp = muchmatches[ich].xErr;
+              yerr_exp = muchmatches[ich].yErr;
+              dxdz_exp = muchmatches[ich].dXdZ;
+              dydz_exp = muchmatches[ich].dYdZ;
+              dxdzerr_exp = muchmatches[ich].dXdZErr;
+              dydzerr_exp = muchmatches[ich].dYdZErr;
+                        
+              std::vector<reco::MuonSegmentMatch> musegmatches = muchmatches[ich].segmentMatches;
+                        
+              if(!musegmatches.size()) continue;
+              for(unsigned int jseg=0;jseg<musegmatches.size();jseg++)
+              {
+                x_seg = musegmatches[jseg].x;
+                y_seg = musegmatches[jseg].y;
+                xerr_seg = musegmatches[jseg].xErr;
+                yerr_seg = musegmatches[jseg].yErr;
+                dxdz_seg = musegmatches[jseg].dXdZ;
+                dydz_seg = musegmatches[jseg].dYdZ;
+                dxdzerr_seg = musegmatches[jseg].dXdZErr;
+                dydzerr_seg = musegmatches[jseg].dYdZErr;
+                            
+                if(sqrt((x_seg-x_exp)*(x_seg-x_exp)+(y_seg-y_exp)*(y_seg-y_exp))<sqrt(dx_seg*dx_seg+dy_seg*dy_seg))
+                {
+                  dx_seg = x_seg - x_exp;
+                  dy_seg = y_seg - y_exp;
+                  dxerr_seg = sqrt(xerr_seg*xerr_seg+xerr_exp*xerr_exp);
+                  dyerr_seg = sqrt(yerr_seg*yerr_seg+yerr_exp*yerr_exp);
+                  dxSig_seg = dx_seg / dxerr_seg;
+                  dySig_seg = dy_seg / dyerr_seg;
+                  ddxdz_seg = dxdz_seg - dxdz_exp;
+                  ddydz_seg = dydz_seg - dydz_exp;
+                  ddxdzerr_seg = sqrt(dxdzerr_seg*dxdzerr_seg+dxdzerr_exp*dxdzerr_exp);
+                  ddydzerr_seg = sqrt(dydzerr_seg*dydzerr_seg+dydzerr_exp*dydzerr_exp);
+                  ddxdzSig_seg = ddxdz_seg / ddxdzerr_seg;
+                  ddydzSig_seg = ddydz_seg / ddydzerr_seg;
+                }
+              }
+                        
+              dx2_seg_=dx_seg;
+              dy2_seg_=dy_seg;
+              dxSig2_seg_=dxSig_seg;
+              dySig2_seg_=dySig_seg;
+              ddxdz2_seg_=ddxdz_seg;
+              ddydz2_seg_=ddydz_seg;
+              ddxdzSig2_seg_=ddxdzSig_seg;
+              ddydzSig2_seg_=ddydzSig_seg;
+            }
+          }
         }
         
         if(twoLayerDecay_)
