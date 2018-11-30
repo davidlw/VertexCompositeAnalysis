@@ -145,9 +145,9 @@ process.output_HM_step = cms.EndPath(process.output_HM)
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
     process.dimurereco_step,
-#    process.dimurerecowrongsign_step,
+    process.dimurerecowrongsign_step,
     process.ptree,
-#    process.ptree1,
+    process.ptree1,
     process.output_HM_step
 )
 
