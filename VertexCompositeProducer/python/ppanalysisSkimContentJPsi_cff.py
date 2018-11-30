@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 analysisSkimContent = cms.PSet(
     outputCommands = cms.untracked.vstring('drop *',
       # event
-      'keep *_offlinePrimaryVerticesRecovery_*_*',
+#      'keep *_offlinePrimaryVerticesRecovery_*_*',
 #      'keep *_offlinePrimaryVerticesLowPt_*_*',
 #      'keep *_allVertices*_*_*',
 #      'keep *_pixelVertices_*_*',

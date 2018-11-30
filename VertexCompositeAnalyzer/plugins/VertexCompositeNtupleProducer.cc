@@ -144,6 +144,7 @@ private:
     bool decayInGen_;
     bool twoLayerDecay_;
     bool doMuon_;
+    bool doMuonFull_;
     int PID_;
     int PID_dau1_;
     int PID_dau2_;
@@ -348,6 +349,7 @@ VertexCompositeNtupleProducer::VertexCompositeNtupleProducer(const edm::Paramete
     hasSwap_ = iConfig.getUntrackedParameter<bool>("hasSwap");
     decayInGen_ = iConfig.getUntrackedParameter<bool>("decayInGen");
     doMuon_ = iConfig.getUntrackedParameter<bool>("doMuon");
+    doMuonFull_ = iConfig.getUntrackedParameter<bool>("doMuonFull");
     PID_ = iConfig.getUntrackedParameter<int>("PID");
     PID_dau1_ = iConfig.getUntrackedParameter<int>("PID_dau1");
     PID_dau2_ = iConfig.getUntrackedParameter<int>("PID_dau2");
@@ -928,6 +930,8 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
           calomuon2 = false;
 
           const int muId1 = muAssocToTrack( dau1, theMuonHandle );
+          const int muId2 = muAssocToTrack( dau2, theMuonHandle );
+
           if( muId1 != -1 )
           {
             const reco::Muon& cand = (*theMuonHandle)[muId1];
@@ -937,6 +941,25 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             glbmuon1 =  cand.isGlobalMuon();
             trkmuon1 =  cand.isTrackerMuon();
             calomuon1 =  cand.isCaloMuon();
+          }
+
+          if( muId2 != -1 )
+          {
+            const reco::Muon& cand = (*theMuonHandle)[muId2];
+
+            onestmuon2 = muon::isGoodMuon(cand, muon::selectionTypeFromString("TMOneStationTight"));
+            pfmuon2 =  cand.isPFMuon();
+            glbmuon2 =  cand.isGlobalMuon();
+            trkmuon2 =  cand.isTrackerMuon();
+            calomuon2 =  cand.isCaloMuon();
+          }
+
+          if(doMuonFull_)
+          {
+
+          if( muId1 != -1 )
+          {
+            const reco::Muon& cand = (*theMuonHandle)[muId1];
 
             nmatchedch1 = cand.numberOfMatches();
             nmatchedst1 = cand.numberOfMatchedStations();
@@ -999,16 +1022,9 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             }
           } 
 
-          const int muId2 = muAssocToTrack( dau2, theMuonHandle );
           if( muId2 != -1 )
           {
             const reco::Muon& cand = (*theMuonHandle)[muId2];
-
-            onestmuon2 = muon::isGoodMuon(cand, muon::selectionTypeFromString("TMOneStationTight"));
-            pfmuon2 =  cand.isPFMuon();
-            glbmuon2 =  cand.isGlobalMuon();
-            trkmuon2 =  cand.isTrackerMuon();
-            calomuon2 =  cand.isCaloMuon();
 
             nmatchedch2 = cand.numberOfMatches();
             nmatchedst2 = cand.numberOfMatchedStations();
@@ -1070,6 +1086,7 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
               ddydzSig2_seg_=ddydzSig_seg;
             }
           }
+          } // doMuonFull
         }
         
         if(twoLayerDecay_)
@@ -1477,28 +1494,31 @@ VertexCompositeNtupleProducer::initTree()
             VertexCompositeNtuple->Branch("trkMuon2",&trkmuon2,"trkMuon2/O");
             VertexCompositeNtuple->Branch("caloMuon1",&calomuon1,"caloMuon1/O");
             VertexCompositeNtuple->Branch("caloMuon2",&calomuon2,"caloMuon2/O");
-            VertexCompositeNtuple->Branch("nMatchedChamberD1",&nmatchedch1,"nMatchedChamberD1/F");
-            VertexCompositeNtuple->Branch("nMatchedStationD1",&nmatchedst1,"nMatchedStationD1/F");
-            VertexCompositeNtuple->Branch("EnergyDepositionD1",&matchedenergy1,"EnergyDepositionD1/F");
-            VertexCompositeNtuple->Branch("nMatchedChamberD2",&nmatchedch2,"nMatchedChamberD2/F");
-            VertexCompositeNtuple->Branch("nMatchedStationD2",&nmatchedst2,"nMatchedStationD2/F");
-            VertexCompositeNtuple->Branch("EnergyDepositionD2",&matchedenergy2,"EnergyDepositionD2/F");
-            VertexCompositeNtuple->Branch("dx1_seg",        &dx1_seg_, "dx1_seg/F");
-            VertexCompositeNtuple->Branch("dy1_seg",        &dy1_seg_, "dy1_seg/F");
-            VertexCompositeNtuple->Branch("dxSig1_seg",     &dxSig1_seg_, "dxSig1_seg/F");
-            VertexCompositeNtuple->Branch("dySig1_seg",     &dySig1_seg_, "dySig1_seg/F");
-            VertexCompositeNtuple->Branch("ddxdz1_seg",     &ddxdz1_seg_, "ddxdz1_seg/F");
-            VertexCompositeNtuple->Branch("ddydz1_seg",     &ddydz1_seg_, "ddydz1_seg/F");
-            VertexCompositeNtuple->Branch("ddxdzSig1_seg",  &ddxdzSig1_seg_, "ddxdzSig1_seg/F");
-            VertexCompositeNtuple->Branch("ddydzSig1_seg",  &ddydzSig1_seg_, "ddydzSig1_seg/F");
-            VertexCompositeNtuple->Branch("dx2_seg",        &dx2_seg_, "dx2_seg/F");
-            VertexCompositeNtuple->Branch("dy2_seg",        &dy2_seg_, "dy2_seg/F");
-            VertexCompositeNtuple->Branch("dxSig2_seg",     &dxSig2_seg_, "dxSig2_seg/F");
-            VertexCompositeNtuple->Branch("dySig2_seg",     &dySig2_seg_, "dySig2_seg/F");
-            VertexCompositeNtuple->Branch("ddxdz2_seg",     &ddxdz2_seg_, "ddxdz2_seg/F");
-            VertexCompositeNtuple->Branch("ddydz2_seg",     &ddydz2_seg_, "ddydz2_seg/F");
-            VertexCompositeNtuple->Branch("ddxdzSig2_seg",  &ddxdzSig2_seg_, "ddxdzSig2_seg/F");
-            VertexCompositeNtuple->Branch("ddydzSig2_seg",  &ddydzSig2_seg_, "ddydzSig2_seg/F");
+            if(doMuonFull_)
+            {
+              VertexCompositeNtuple->Branch("nMatchedChamberD1",&nmatchedch1,"nMatchedChamberD1/F");
+              VertexCompositeNtuple->Branch("nMatchedStationD1",&nmatchedst1,"nMatchedStationD1/F");
+              VertexCompositeNtuple->Branch("EnergyDepositionD1",&matchedenergy1,"EnergyDepositionD1/F");
+              VertexCompositeNtuple->Branch("nMatchedChamberD2",&nmatchedch2,"nMatchedChamberD2/F");
+              VertexCompositeNtuple->Branch("nMatchedStationD2",&nmatchedst2,"nMatchedStationD2/F");
+              VertexCompositeNtuple->Branch("EnergyDepositionD2",&matchedenergy2,"EnergyDepositionD2/F");
+              VertexCompositeNtuple->Branch("dx1_seg",        &dx1_seg_, "dx1_seg/F");
+              VertexCompositeNtuple->Branch("dy1_seg",        &dy1_seg_, "dy1_seg/F");
+              VertexCompositeNtuple->Branch("dxSig1_seg",     &dxSig1_seg_, "dxSig1_seg/F");
+              VertexCompositeNtuple->Branch("dySig1_seg",     &dySig1_seg_, "dySig1_seg/F");
+              VertexCompositeNtuple->Branch("ddxdz1_seg",     &ddxdz1_seg_, "ddxdz1_seg/F");
+              VertexCompositeNtuple->Branch("ddydz1_seg",     &ddydz1_seg_, "ddydz1_seg/F");
+              VertexCompositeNtuple->Branch("ddxdzSig1_seg",  &ddxdzSig1_seg_, "ddxdzSig1_seg/F");
+              VertexCompositeNtuple->Branch("ddydzSig1_seg",  &ddydzSig1_seg_, "ddydzSig1_seg/F");
+              VertexCompositeNtuple->Branch("dx2_seg",        &dx2_seg_, "dx2_seg/F");
+              VertexCompositeNtuple->Branch("dy2_seg",        &dy2_seg_, "dy2_seg/F");
+              VertexCompositeNtuple->Branch("dxSig2_seg",     &dxSig2_seg_, "dxSig2_seg/F");
+              VertexCompositeNtuple->Branch("dySig2_seg",     &dySig2_seg_, "dySig2_seg/F");
+              VertexCompositeNtuple->Branch("ddxdz2_seg",     &ddxdz2_seg_, "ddxdz2_seg/F");
+              VertexCompositeNtuple->Branch("ddydz2_seg",     &ddydz2_seg_, "ddydz2_seg/F");
+              VertexCompositeNtuple->Branch("ddxdzSig2_seg",  &ddxdzSig2_seg_, "ddxdzSig2_seg/F");
+              VertexCompositeNtuple->Branch("ddydzSig2_seg",  &ddydzSig2_seg_, "ddydzSig2_seg/F");
+           }
         }
     }
 }

@@ -4,7 +4,7 @@ analysisSkimContent = cms.PSet(
     outputCommands = cms.untracked.vstring('drop *',
       # event
 #      'keep *_offlinePrimaryVertices_*_*',
-      'keep *_offlinePrimaryVerticesRecovery_*_*',
+#      'keep *_offlinePrimaryVerticesRecovery_*_*',
 #      'keep *_allVertices*_*_*',
 #      'keep *_pixelVertices_*_*',
 #      'keep *_pixel3Vertices_*_*',                                     
