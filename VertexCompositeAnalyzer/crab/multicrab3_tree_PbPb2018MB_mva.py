@@ -15,7 +15,7 @@ if __name__ == '__main__':
     config.JobType.pluginName = 'Analysis'
     config.JobType.maxMemoryMB = 8000
 #    config.JobType.maxJobRuntimeMin = 2750
-    config.Data.unitsPerJob = 3
+    config.Data.unitsPerJob = 5
 #    config.Data.totalUnits = 20
     config.Data.splitting = 'FileBased'
 #    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0_v2-89e025b59ba99ac07dd655f3dba5c8df/USER'
@@ -41,5 +41,17 @@ if __name__ == '__main__':
     config.General.requestName = 'PbPb2018_D0_BDT_ptsum2p2_pt1_ws_histogram_b0_v2'
     config.JobType.psetName = '../test/D0/d0ana_default_ws_PbPb.py'
     config.Data.inputDataset = '/HIMinimumBias0/davidlw-Skim_D0_Nov20DCS_v1-a1191996f743a6b381131d1462d45506/USER'
-    config.Data.outputDatasetTag = 'D0_BDT_ptsum2p2_pt1_ws_histogram_Nov20DCS_v2'
+    config.Data.outputDatasetTag = 'D0_BDT_ptsum2p2_pt1_ws_histogram_DCSOnly327327_v2'
+    submit(config)
+
+    config.General.requestName = 'PbPb2018_D0_BDT_ptsum2p2_pt1_ws_histogram_b1_v2'
+    config.Data.inputDataset = '/HIMinimumBias1/davidlw-Skim_D0_DCSOnly327327_v1-5ef0d9856259c20139aa4aaf1006bf0f/USER'
+    submit(config)
+
+    config.General.requestName = 'PbPb2018_D0_BDT_ptsum2p2_pt1_ws_histogram_b2_v2'
+    config.Data.inputDataset = '/HIMinimumBias2/davidlw-Skim_D0_DCSOnly327327_v1-5ef0d9856259c20139aa4aaf1006bf0f/USER'
+    submit(config)
+
+    config.General.requestName = 'PbPb2018_D0_BDT_ptsum2p2_pt1_ws_histogram_b3_v2'
+    config.Data.inputDataset = '/HIMinimumBias3/davidlw-Skim_D0_DCSOnly327327_v1-5ef0d9856259c20139aa4aaf1006bf0f/USER'
     submit(config)

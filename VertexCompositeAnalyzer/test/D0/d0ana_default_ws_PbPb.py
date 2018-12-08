@@ -9,7 +9,7 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 #process.MessageLogger.cerr.INFO = cms.untracked.PSet(
 #        limit = cms.untracked.int32(-1)
 #        )
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1)
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(200)
 process.options   = cms.untracked.PSet( wantSummary = 
 cms.untracked.bool(True) )
 
@@ -59,10 +59,10 @@ secondaryFileNames = cms.untracked.vstring(
 )
                             )
 
-process.Timing = cms.Service("Timing",
-  summaryOnly = cms.untracked.bool(False),
-  useJobReport = cms.untracked.bool(True)
-)
+#process.Timing = cms.Service("Timing",
+#  summaryOnly = cms.untracked.bool(False),
+#  useJobReport = cms.untracked.bool(True)
+#)
 
 #Trigger Selection
 ### Comment out for the timing being assuming running on secondary dataset with trigger bit selected already
@@ -91,7 +91,7 @@ process.d0ana.yBins = cms.untracked.vdouble(-2.0,-1.2,-0.6,0.0,0.6,1.2,2.0)
 process.d0ana.pTBins = cms.untracked.vdouble(0,1.0,1.5,2.0,3.0,4.0,5.0,6.0,7.0,8.0)
 
 process.d0selectorBDTPreCut.trkPtSumMin = cms.untracked.double(2.2)
-process.d0selectorBDTPreCut.trkPtMin = cms.untracked.double(1.0)
+process.d0selectorBDTPreCut.trkPtMin = cms.untracked.double(1)
 process.d0selector = process.d0selectorBDTPreCut.clone()
 process.d0selector.useAnyMVA = cms.bool(True)
 #process.d0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InPbPb_ptsum2p2_pt0p7_PbPbMB_WS.root')
@@ -190,21 +190,21 @@ process.d0ana_seq = cms.Sequence(process.d0selector * process.d0ana)
 
 process.cent_seq = cms.Sequence(process.hiCentrality * process.centralityBin)
 
-process.pp = cms.Path(process.cent_seq * process.d0ana_seq)
+#process.pp = cms.Path(process.cent_seq * process.d0ana_seq)
 #process.pp = cms.Path(process.d0ana_seq)
 
-#process.p1 = cms.Path(process.cent_seq * process.d0ana05_seq)
-#process.p2 = cms.Path(process.cent_seq * process.d0ana510_seq)
-#process.p3 = cms.Path(process.cent_seq * process.d0ana1030_seq)
-#process.p4 = cms.Path(process.cent_seq * process.d0ana3050_seq)
-#process.p5 = cms.Path(process.cent_seq * process.d0ana5080_seq)
+process.p1 = cms.Path(process.cent_seq * process.d0ana05_seq)
+process.p2 = cms.Path(process.cent_seq * process.d0ana510_seq)
+process.p3 = cms.Path(process.cent_seq * process.d0ana1030_seq)
+process.p4 = cms.Path(process.cent_seq * process.d0ana3050_seq)
+process.p5 = cms.Path(process.cent_seq * process.d0ana5080_seq)
 
-#process.p6 = cms.Path(process.cent_seq * process.npd0ana05_seq)
-#process.p7 = cms.Path(process.cent_seq * process.npd0ana510_seq)
-#process.p8 = cms.Path(process.cent_seq * process.npd0ana1030_seq)
-#process.p9 = cms.Path(process.cent_seq * process.npd0ana3050_seq)
-#process.p10 = cms.Path(process.cent_seq * process.npd0ana5080_seq)
+process.p6 = cms.Path(process.cent_seq * process.npd0ana05_seq)
+process.p7 = cms.Path(process.cent_seq * process.npd0ana510_seq)
+process.p8 = cms.Path(process.cent_seq * process.npd0ana1030_seq)
+process.p9 = cms.Path(process.cent_seq * process.npd0ana3050_seq)
+process.p10 = cms.Path(process.cent_seq * process.npd0ana5080_seq)
 
 
-from HLTrigger.Configuration.CustomConfigs import MassReplaceInputTag
-process = MassReplaceInputTag(process,"offlinePrimaryVertices","offlinePrimaryVerticesRecovery")
+#from HLTrigger.Configuration.CustomConfigs import MassReplaceInputTag
+#process = MassReplaceInputTag(process,"offlinePrimaryVertices","offlinePrimaryVerticesRecovery")
