@@ -13,15 +13,16 @@ if __name__ == '__main__':
     config.General.transferOutputs = True
     config.General.transferLogs = False
     config.JobType.pluginName = 'Analysis'
-    config.JobType.maxMemoryMB = 6000
+    config.JobType.maxMemoryMB = 10000
+    config.JobType.numCores = 4
 #    config.JobType.maxJobRuntimeMin = 2750
     config.JobType.psetName = '../test/PbPbSkim2018_D0_cfg.py'
     config.Data.unitsPerJob = 6
 #    config.Data.totalUnits = 5000
     config.Data.splitting = 'LumiBased'
 #    config.Data.splitting = 'Automatic'
-#    config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/HI/DCSOnly/json_DCSONLY_HI.txt'
-    config.Data.lumiMask = 'json_DCSONLY_HI_327327.txt'
+    config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/HI/DCSOnly/json_DCSONLY_HI.txt'
+#    config.Data.lumiMask = 'json_DCSONLY_HI_327327.txt'
     config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
     config.Data.publication = True
     config.Site.storageSite = 'T2_US_MIT'
@@ -51,3 +52,23 @@ if __name__ == '__main__':
     config.General.requestName = 'PbPb2018SkimD0MB_b3_DCSOnly327327_v1'
     config.Data.inputDataset = '/HIMinimumBias3/HIRun2018A-PromptReco-v1/AOD'
     submit(config)
+
+    config.General.requestName = 'PbPb2018SkimD0MB_b4_DCSOnly327327_v1'
+    config.Data.inputDataset = '/HIMinimumBias4/HIRun2018A-PromptReco-v1/AOD'
+    submit(config)
+
+    config.General.requestName = 'PbPb2018SkimD0MB_b5_DCSOnly327327_v1'
+    config.Data.inputDataset = '/HIMinimumBias5/HIRun2018A-PromptReco-v1/AOD'
+    submit(config)
+
+    config.General.requestName = 'PbPb2018SkimD0MB_b6_DCSOnly327327_v1'
+    config.Data.inputDataset = '/HIMinimumBias6/HIRun2018A-PromptReco-v1/AOD'
+    submit(config)
+
+    config.General.requestName = 'PbPb2018SkimD0MB_b7_DCSOnly327327_v1'
+    config.Data.inputDataset = '/HIMinimumBias7/HIRun2018A-PromptReco-v1/AOD'
+    submit(config)
+
+#    config.General.requestName = 'PbPb2018SkimD0MB_b3_DCSOnly327327_v1'
+#    config.Data.inputDataset = '/HIMinimumBias3/HIRun2018A-PromptReco-v1/AOD'
+#    submit(config)

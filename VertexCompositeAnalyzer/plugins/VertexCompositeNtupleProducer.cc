@@ -129,6 +129,14 @@ private:
     TH2F*  hEtaD2VsMVA[6][10];
     TH2F*  hdedxHarmonic2D2VsMVA[6][10];
     TH2F*  hdedxHarmonic2D2VsP[6][10];
+    TH2F*  hzDCASignificanceDaugther3VsMVA[6][10];
+    TH2F*  hxyDCASignificanceDaugther3VsMVA[6][10];
+    TH2F*  hNHitD3VsMVA[6][10];
+    TH2F*  hpTD3VsMVA[6][10];
+    TH2F*  hpTerrD3VsMVA[6][10];
+    TH2F*  hEtaD3VsMVA[6][10];
+    TH2F*  hdedxHarmonic2D3VsMVA[6][10];
+    TH2F*  hdedxHarmonic2D3VsP[6][10];
     
     bool   saveTree_;
     bool   saveHistogram_;
@@ -143,11 +151,13 @@ private:
     bool hasSwap_;
     bool decayInGen_;
     bool twoLayerDecay_;
+    bool threeProngDecay_;
     bool doMuon_;
     bool doMuonFull_;
     int PID_;
     int PID_dau1_;
     int PID_dau2_;
+    int PID_dau3_;
     
     //cut variables
     double multMax_;
@@ -204,38 +214,52 @@ private:
     float grand_agl2D_abs;
     float grand_dlos2D;
 
-
     //dau info
     float dzos1;
     float dzos2;
+    float dzos3;
     float dxyos1;
     float dxyos2;
+    float dxyos3;
     float nhit1;
     float nhit2;
+    float nhit3;
     bool trkquality1;
     bool trkquality2;
+    bool trkquality3;
     float pt1;
     float pt2;
+    float pt3;
     float ptErr1;
     float ptErr2;
+    float ptErr3;
     float p1;
     float p2;
+    float p3;
     float eta1;
     float eta2;
+    float eta3;
     float phi1;
     float phi2;
+    float phi3;
     int charge1;
     int charge2;
+    int charge3;
     int pid1;
     int pid2;
+    int pid3;
     float tof1;
     float tof2;
+    float tof3;
     float H2dedx1;
     float H2dedx2;
+    float H2dedx3;
     float T4dedx1;
     float T4dedx2;
+    float T4dedx3;
     float trkChi1;
     float trkChi2;
+    float trkChi3;
    
     //grand-dau info
     float grand_dzos1;
@@ -344,6 +368,7 @@ VertexCompositeNtupleProducer::VertexCompositeNtupleProducer(const edm::Paramete
 {
     //options
     twoLayerDecay_ = iConfig.getUntrackedParameter<bool>("twoLayerDecay");
+    threeProngDecay_ = iConfig.getUntrackedParameter<bool>("threeProngDecay");
     doGenMatching_ = iConfig.getUntrackedParameter<bool>("doGenMatching");
     doGenMatchingTOF_ = iConfig.getUntrackedParameter<bool>("doGenMatchingTOF");
     hasSwap_ = iConfig.getUntrackedParameter<bool>("hasSwap");
@@ -353,6 +378,7 @@ VertexCompositeNtupleProducer::VertexCompositeNtupleProducer(const edm::Paramete
     PID_ = iConfig.getUntrackedParameter<int>("PID");
     PID_dau1_ = iConfig.getUntrackedParameter<int>("PID_dau1");
     PID_dau2_ = iConfig.getUntrackedParameter<int>("PID_dau2");
+    PID_dau3_ = iConfig.getUntrackedParameter<int>("PID_dau3");
     
     saveTree_ = iConfig.getUntrackedParameter<bool>("saveTree");
     saveHistogram_ = iConfig.getUntrackedParameter<bool>("saveHistogram");
@@ -520,7 +546,8 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             
             int id = trk.pdgId();
             if(fabs(id)!=PID_) continue; //check is target
-            if(decayInGen_ && trk.numberOfDaughters()!=2) continue; //check 2-pron decay if target decays in Gen
+            if(decayInGen_ && trk.numberOfDaughters()!=2 && !threeProngDecay_) continue; //check 2-pron decay if target decays in Gen
+            if(decayInGen_ && trk.numberOfDaughters()!=3 && threeProngDecay_) continue; //check 2-pron decay if target decays in Gen
             
             int idmom_tmp = -77;
             
@@ -571,7 +598,7 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         eta = trk.eta();
         y = trk.rapidity();
         pt = trk.pt();
-        flavor = trk.pdgId()/421;
+        flavor = trk.pdgId()/abs(trk.pdgId());
 
         mva = 0.0;
         if(useAnyMVA_) mva = (*mvavalues)[it];
@@ -669,6 +696,23 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         charge1 = d1->charge();
         charge2 = d2->charge();
         
+        const reco::Candidate * d3 = 0;
+        double pxd3 = -999.9;
+        double pyd3 = -999.9;
+        double pzd3 = -999.9;
+        if(threeProngDecay_)
+        {
+          d3 = trk.daughter(2);
+          pxd3 = d3->px();
+          pyd3 = d3->py();
+          pzd3 = d3->pz();
+          pt3 = d3->pt();
+          p3 = d3->p();
+          eta3 = d3->eta();
+          phi3 = d3->phi();
+          charge3 = d3->charge();
+        }
+        TVector3 dauvec3(pxd3,pyd3,pzd3);
 
         pid1 = -99999;
         pid2 = -99999;
@@ -1271,7 +1315,19 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
                 hpTerrD2VsMVA[iy][ipt]->Fill(mva,ptErr2/pt2);
                 hEtaD2VsMVA[iy][ipt]->Fill(mva,eta2);
                 hdedxHarmonic2D2VsMVA[iy][ipt]->Fill(mva,H2dedx2);
-                hdedxHarmonic2D1VsP[iy][ipt]->Fill(p2,H2dedx2);
+                hdedxHarmonic2D2VsP[iy][ipt]->Fill(p2,H2dedx2);
+                if(threeProngDecay_)
+                {
+                  hzDCASignificanceDaugther3VsMVA[iy][ipt]->Fill(mva,dzos3);
+                  hxyDCASignificanceDaugther3VsMVA[iy][ipt]->Fill(mva,dxyos3);
+                  hNHitD3VsMVA[iy][ipt]->Fill(mva,nhit3);
+                  hpTD3VsMVA[iy][ipt]->Fill(mva,pt3);
+                  hpTerrD3VsMVA[iy][ipt]->Fill(mva,ptErr3/pt3);
+                  hEtaD3VsMVA[iy][ipt]->Fill(mva,eta3);
+                  hdedxHarmonic2D3VsMVA[iy][ipt]->Fill(mva,H2dedx3);
+                  hdedxHarmonic2D3VsP[iy][ipt]->Fill(p1,H2dedx3);
+                }
+
                 }
               }
             }
@@ -1337,6 +1393,19 @@ VertexCompositeNtupleProducer::initHistogram()
    hEtaD2VsMVA[iy][ipt] = fs->make<TH2F>(Form("hEtaD2VsMVA_y%d_pt%d",iy,ipt),";mva;EtaD2;",100,-1.,1.,40,-4,4);
    hdedxHarmonic2D2VsMVA[iy][ipt] = fs->make<TH2F>(Form("hdedxHarmonic2D2VsMVA_y%d_pt%d",iy,ipt),";mva;dedxHarmonic2D2;",100,-1.,1.,100,0,10);
    hdedxHarmonic2D2VsP[iy][ipt] = fs->make<TH2F>(Form("hdedxHarmonic2D2VsP_y%d_pt%d",iy,ipt),";p (GeV);dedxHarmonic2D2",100,0,10,100,0,10);
+
+   if(threeProngDecay_)
+   {
+     hzDCASignificanceDaugther3VsMVA[iy][ipt] = fs->make<TH2F>(Form("hzDCASignificanceDaugther3VsMVA_y%d_pt%d",iy,ipt),";mva;zDCASignificanceDaugther3;",100,-1.,1.,100,-10,10);
+     hxyDCASignificanceDaugther3VsMVA[iy][ipt] = fs->make<TH2F>(Form("hxyDCASignificanceDaugther3VsMVA_y%d_pt%d",iy,ipt),";mva;xyDCASignificanceDaugther3;",100,-1.,1.,100,-10,10);
+     hNHitD3VsMVA[iy][ipt] = fs->make<TH2F>(Form("hNHitD3VsMVA_y%d_pt%d",iy,ipt),";mva;NHitD3;",100,-1.,1.,100,0,100);
+     hpTD3VsMVA[iy][ipt] = fs->make<TH2F>(Form("hpTD3VsMVA_y%d_pt%d",iy,ipt),";mva;pTD3;",100,-1.,1.,100,0,10);
+     hpTerrD3VsMVA[iy][ipt] = fs->make<TH2F>(Form("hpTerrD3VsMVA_y%d_pt%d",iy,ipt),";mva;pTerrD3;",100,-1.,1.,50,0,0.5);
+     hEtaD3VsMVA[iy][ipt] = fs->make<TH2F>(Form("hEtaD3VsMVA_y%d_pt%d",iy,ipt),";mva;EtaD3;",100,-1.,1.,40,-4,4);
+     hdedxHarmonic2D3VsMVA[iy][ipt] = fs->make<TH2F>(Form("hdedxHarmonic2D3VsMVA_y%d_pt%d",iy,ipt),";mva;dedxHarmonic2D3;",100,-1.,1.,100,0,10);
+     hdedxHarmonic2D3VsP[iy][ipt] = fs->make<TH2F>(Form("hdedxHarmonic2D3VsP_y%d_pt%d",iy,ipt),";p (GeV);dedxHarmonic2D3",100,0,10,100,0,10);
+   }
+
    }
   }
  }
@@ -1480,6 +1549,17 @@ VertexCompositeNtupleProducer::initTree()
             VertexCompositeNtuple->Branch("dedxHarmonic2D2",&H2dedx2,"dedxHarmonic2D2/F");
 //            VertexCompositeNtuple->Branch("dedxTruncated40Daugther2",&T4dedx2,"dedxTruncated40Daugther2/F");
 //            VertexCompositeNtuple->Branch("normalizedChi2Daugther2",&trkChi2,"normalizedChi2Daugther2/F");
+            if(threeProngDecay_)
+            {
+              VertexCompositeNtuple->Branch("zDCASignificanceDaugther3",&dzos3,"zDCASignificanceDaugther3/F");
+              VertexCompositeNtuple->Branch("xyDCASignificanceDaugther3",&dxyos3,"xyDCASignificanceDaugther3/F");
+              VertexCompositeNtuple->Branch("NHitD3",&nhit3,"NHitD3/F");
+              VertexCompositeNtuple->Branch("HighPurityDaugther3",&trkquality3,"HighPurityDaugther3/O");
+              VertexCompositeNtuple->Branch("pTD3",&pt1,"pTD3/F");
+              VertexCompositeNtuple->Branch("pTerrD3",&ptErr3,"pTerrD3/F");
+              VertexCompositeNtuple->Branch("EtaD3",&eta1,"EtaD3/F");
+              VertexCompositeNtuple->Branch("dedxHarmonic2D3",&H2dedx1,"dedxHarmonic2D3/F");
+            }
         }
         
         if(doMuon_)

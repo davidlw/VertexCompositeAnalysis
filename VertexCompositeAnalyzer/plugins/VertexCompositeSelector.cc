@@ -103,6 +103,7 @@ private:
     bool hasSwap_;
     bool decayInGen_;
     bool twoLayerDecay_;
+    bool threeProngDecay_;
     bool doMuon_;
     bool selectGenMatch_;
     bool selectGenUnMatch_;
@@ -112,6 +113,7 @@ private:
     int PID_;
     int PID_dau1_;
     int PID_dau2_;
+    int PID_dau3_;
     
     //cut variables
     double multMax_;
@@ -189,34 +191,49 @@ private:
     //dau info
     float dzos1;
     float dzos2;
+    float dzos3;
     float dxyos1;
     float dxyos2;
+    float dxyos3;
     float nhit1;
     float nhit2;
+    float nhit3;
     bool trkquality1;
     bool trkquality2;
+    bool trkquality3;
     float pt1;
     float pt2;
+    float pt3;
     float ptErr1;
     float ptErr2;
+    float ptErr3;
     float p1;
     float p2;
+    float p3;
     float eta1;
     float eta2;
+    float eta3;
     float phi1;
     float phi2;
+    float phi3;
 //    int charge1;
 //    int charge2;
+//    int charge3;
     float H2dedx1;
     float H2dedx2;
+    float H2dedx3;
     float T4dedx1;
     float T4dedx2;
+    float T4dedx3;
     float trkChi1;
     float trkChi2;
+    float trkChi3;
     bool  isPionD1;
     bool  isPionD2;
+    bool  isPionD3;
     bool  isKaonD1;
     bool  isKaonD2;
+    bool  isKaonD3;
     
     //grand-dau info
     float grand_dzos1;
@@ -338,6 +355,7 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
 {
     //options
     twoLayerDecay_ = iConfig.getUntrackedParameter<bool>("twoLayerDecay");
+    threeProngDecay_ = iConfig.getUntrackedParameter<bool>("threeProngDecay");
     doGenMatching_ = iConfig.getUntrackedParameter<bool>("doGenMatching");
     hasSwap_ = iConfig.getUntrackedParameter<bool>("hasSwap");
     decayInGen_ = iConfig.getUntrackedParameter<bool>("decayInGen");
@@ -350,6 +368,7 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
     PID_ = iConfig.getUntrackedParameter<int>("PID");
     PID_dau1_ = iConfig.getUntrackedParameter<int>("PID_dau1");
     PID_dau2_ = iConfig.getUntrackedParameter<int>("PID_dau2");
+    PID_dau3_ = iConfig.getUntrackedParameter<int>("PID_dau3");
     
     //cut variables
     centMin_ = iConfig.getUntrackedParameter<int>("centMin", 0);
@@ -793,6 +812,18 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
 //        charge1 = d1->charge();
 //        charge2 = d2->charge();
         
+        const reco::Candidate *d3 = 0;
+        if(threeProngDecay_)
+        {
+          d3 = trk.daughter(2);
+          pt3 = d3->pt();
+          if(pt3 < trkPtMin_) continue;
+          p3 = d3->p();
+          if(p3 < trkPMin_) continue;
+          eta3 = d3->eta();
+          if(fabs(eta3) > trkEtaMax_) continue;
+        }
+
         //vtxChi2
         vtxChi2 = trk.vertexChi2();
         ndf = trk.vertexNdof();
@@ -855,15 +886,10 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         auto dau1 = d1->get<reco::TrackRef>();
         if(!twoLayerDecay_)
         {
-            auto dau2 = d2->get<reco::TrackRef>();
-
             //trk quality
             trkquality1 = dau1->quality(reco::TrackBase::highPurity);
             if(trkHighPurity_ && !trkquality1) continue;
             
-            trkquality2 = dau2->quality(reco::TrackBase::highPurity);
-            if(trkHighPurity_ && !trkquality2) continue;
-
             //trk dEdx
             H2dedx1 = -999.9;
             T4dedx1 = -999.9;
@@ -912,6 +938,9 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         
         auto dau2 = d2->get<reco::TrackRef>();
         
+        trkquality2 = dau2->quality(reco::TrackBase::highPurity);
+        if(trkHighPurity_ && !trkquality2) continue;
+
         //trk dEdx
         H2dedx2 = -999.9;
         T4dedx2 = -999.9;
@@ -937,7 +966,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         }
 
         //track Chi2
-//        trkChi2 = dau2->normalizedChi2();
+        trkChi2 = dau2->normalizedChi2();
         
         //track pT error
         ptErr2 = dau2->ptError();
@@ -961,6 +990,26 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         dzos2 = dzbest2/dzerror2;
         dxyos2 = dxybest2/dxyerror2;
         
+        if(threeProngDecay_)
+        {
+          auto dau3 = d3->get<reco::TrackRef>();
+
+          trkquality3 = dau3->quality(reco::TrackBase::highPurity);
+          if(trkHighPurity_ && !trkquality3) continue;
+          trkChi3 = dau3->normalizedChi2();
+          ptErr3 = dau3->ptError();
+          if(ptErr3/dau3->pt() > trkPtErrMax_) continue;
+          nhit3 = dau3->numberOfValidHits();
+          if(nhit3 < trkNHitMin_) continue;
+
+          double dzbest3 = dau3->dz(bestvtx);
+          double dxybest3 = dau3->dxy(bestvtx);
+          double dzerror3 = sqrt(dau3->dzError()*dau3->dzError()+bestvzError*bestvzError);
+          double dxyerror3 = sqrt(dau3->d0Error()*dau3->d0Error()+bestvxError*bestvyError);
+          dzos3 = dzbest3/dzerror3;
+          dxyos3 = dxybest3/dxyerror3;
+        }
+
         if(doMuon_)
         {
             edm::Handle<reco::MuonCollection> theMuonHandle;
