@@ -293,6 +293,7 @@ private:
     vector< vector<double> > *pVect;
     vector<double> *Dvector1;
     vector<double> *Dvector2;
+    vector<double> *Dvector3;
     vector<int> *pVectIDmom;
     
     int  selectFlavor_;
@@ -629,48 +630,75 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         }
 
         for(unsigned it=0; it<genpars->size(); ++it){
-            
+
             const reco::GenParticle & trk = (*genpars)[it];
-            
+
             int id = trk.pdgId();
             if(fabs(id)!=PID_) continue; //check is target
-            if(decayInGen_ && trk.numberOfDaughters()!=2) continue; //check 2-pron decay if target decays in Gen
-            
+            if(decayInGen_ && trk.numberOfDaughters()!=2 && !threeProngDecay_) continue; //check 2-pron decay if target decays in Gen
+            if(decayInGen_ && trk.numberOfDaughters()!=3 && threeProngDecay_) continue; //check 2-pron decay if target decays in Gen
+
             int idmom_tmp = -77;
-            
+
             if(trk.numberOfMothers()!=0)
             {
                 const reco::Candidate * mom = trk.mother();
                 idmom_tmp = mom->pdgId();
             }
-            
+
             const reco::Candidate * Dd1 = trk.daughter(0);
             const reco::Candidate * Dd2 = trk.daughter(1);
-            
-            if(!(fabs(Dd1->pdgId())==PID_dau1_ && fabs(Dd2->pdgId())==PID_dau2_) && !(fabs(Dd2->pdgId())==PID_dau1_ && fabs(Dd1->pdgId())==PID_dau2_)) continue; //check daughter id
-                
+            const reco::Candidate * Dd3 = 0;
+
+            if(!threeProngDecay_ && !(fabs(Dd1->pdgId())==PID_dau1_ && fabs(Dd2->pdgId())==PID_dau2_) && !(fabs(Dd2->pdgId())==PID_dau1_ && fabs(Dd1->pdgId())==PID_dau2_)) continue; //check daughter id                
+
+            if(threeProngDecay_)
+            {
+              Dd3 = trk.daughter(2);
+              if(!(fabs(Dd1->pdgId())==PID_dau1_ && fabs(Dd2->pdgId())==PID_dau2_ && fabs(Dd3->pdgId())==PID_dau3_)
+              && !(fabs(Dd1->pdgId())==PID_dau1_ && fabs(Dd2->pdgId())==PID_dau3_ && fabs(Dd3->pdgId())==PID_dau2_)
+              && !(fabs(Dd1->pdgId())==PID_dau2_ && fabs(Dd2->pdgId())==PID_dau1_ && fabs(Dd3->pdgId())==PID_dau3_)
+              && !(fabs(Dd1->pdgId())==PID_dau2_ && fabs(Dd2->pdgId())==PID_dau3_ && fabs(Dd3->pdgId())==PID_dau1_)
+              && !(fabs(Dd1->pdgId())==PID_dau3_ && fabs(Dd2->pdgId())==PID_dau1_ && fabs(Dd3->pdgId())==PID_dau2_)
+              && !(fabs(Dd1->pdgId())==PID_dau3_ && fabs(Dd2->pdgId())==PID_dau2_ && fabs(Dd3->pdgId())==PID_dau1_) ) continue;
+            }
+
             Dvector1 = new vector<double>;
             Dvector2 = new vector<double>;
-            
+
             Dvector1->push_back(Dd1->pt());
             Dvector1->push_back(Dd1->eta());
             Dvector1->push_back(Dd1->phi());
             Dvector1->push_back(Dd1->charge());
             Dvector1->push_back(Dd1->mass());
-            
+
             Dvector2->push_back(Dd2->pt());
             Dvector2->push_back(Dd2->eta());
             Dvector2->push_back(Dd2->phi());
             Dvector2->push_back(Dd2->charge());
             Dvector2->push_back(Dd2->mass());
-            
+
             pVect->push_back(*Dvector1);
             pVect->push_back(*Dvector2);
-            
+
             pVectIDmom->push_back(idmom_tmp);
-            
+
             delete Dvector1;
             delete Dvector2;
+
+            if(threeProngDecay_)
+            {
+              Dvector3 = new vector<double>;
+
+              Dvector3->push_back(Dd3->pt());
+              Dvector3->push_back(Dd3->eta());
+              Dvector3->push_back(Dd3->phi());
+              Dvector3->push_back(Dd3->charge());
+              Dvector3->push_back(Dd3->mass());
+
+              pVect->push_back(*Dvector3);
+              delete Dvector3;
+            }
         }
     }
 
@@ -701,59 +729,162 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         
         const reco::Candidate * d1 = trk.daughter(0);
         const reco::Candidate * d2 = trk.daughter(1);
-        
+        const reco::Candidate * d3 = 0;
+        if(threeProngDecay_) d3 = trk.daughter(2);        
+
+        //Gen match
         if(doGenMatching_)
         {
-            //Gen match
             matchGEN = false;
             int nGenDau = (int)pVect->size();
             isSwap = false;
             idmom_reco = -77;
-            
+
             for(int i=0;i<nGenDau;i++)
             {
                 vector<double> Dvector1 = (*pVect)[i]; //get GEN daugther vector
                 if(d1->charge()!=Dvector1.at(3)) continue; //check match charge
                 double deltaR = sqrt(pow(d1->eta()-Dvector1.at(1),2)+pow(d1->phi()-Dvector1.at(2),2));
-                
+
                 if(deltaR > deltaR_) continue; //check deltaR matching
                 if(fabs((d1->pt()-Dvector1.at(0))/d1->pt()) > 0.5) continue; //check deltaPt matching
                 double d1massGEN = Dvector1.at(4);
                 double d1mass = d1->mass();
                 double d2massGEN=0, d2mass=0;
-                //check dau2
-                if(i%2==0)
+                double d3massGEN=0, d3mass=0;
+
+                if(nGenDau==2)
                 {
+                  if(i%2==0)
+                  {
                     vector<double> Dvector2 = (*pVect)[i+1]; //get GEN daugther vector for track2
                     if(d2->charge()!=Dvector2.at(3)) continue; //check match charge
                     double deltaR = sqrt(pow(d2->eta()-Dvector2.at(1),2)+pow(d2->phi()-Dvector2.at(2),2));
-                    
+
                     if(deltaR > deltaR_) continue; //check deltaR matching
                     if(fabs((d2->pt()-Dvector2.at(0))/d2->pt()) > 0.5) continue; //check deltaPt matching
                     d2massGEN = Dvector2.at(4);
                     d2mass = d2->mass();
-                    
+
                     matchGEN = true; //matched gen
-                }
-                if(i%2==1)
-                {
+                  }
+
+                  if(i%2==1)
+                  {
                     vector<double> Dvector2 = (*pVect)[i-1]; //get GEN daugther vector for track2
                     if(d2->charge()!=Dvector2.at(3)) continue; //check match charge
                     double deltaR = sqrt(pow(d2->eta()-Dvector2.at(1),2)+pow(d2->phi()-Dvector2.at(2),2));
-                    
+
                     if(deltaR > deltaR_) continue; //check deltaR matching
                     if(fabs((d2->pt()-Dvector2.at(0))/d2->pt()) > 0.5) continue; //check deltaPt matching
                     d2massGEN = Dvector2.at(4);
                     d2mass = d2->mass();
-                    
+
                     matchGEN = true; //matched gen
+                  }
+
+                  if(abs(d1massGEN - d1mass)>0.01 || abs(d2massGEN - d2mass)>0.01) isSwap = true;
+
+                  idmom_reco = pVectIDmom->at(i/2);
                 }
-                
-                //check swap
-                if(abs(d1massGEN - d1mass)>0.01 || abs(d2massGEN - d2mass)>0.01) isSwap = true;
-                
-                //check prompt & record mom id
-                idmom_reco = pVectIDmom->at(i/2);
+
+                if(nGenDau==3)
+                {
+                  if(i%3==0)
+                  {
+                    vector<double> Dvector2 = (*pVect)[i+1]; //get GEN daugther vector for track2
+                    vector<double> Dvector3 = (*pVect)[i+2]; //get GEN daugther vector for track3
+
+                    if(!(d2->charge()==Dvector2.at(3) && d3->charge()==Dvector3.at(3))
+                    && !(d3->charge()==Dvector2.at(3) && d2->charge()==Dvector3.at(3))) continue; //check match charge
+
+                    double deltaR22 = sqrt(pow(d2->eta()-Dvector2.at(1),2)+pow(d2->phi()-Dvector2.at(2),2));
+                    double deltaR33 = sqrt(pow(d3->eta()-Dvector3.at(1),2)+pow(d3->phi()-Dvector3.at(2),2));
+                    double deltaR23 = sqrt(pow(d2->eta()-Dvector3.at(1),2)+pow(d2->phi()-Dvector3.at(2),2));
+                    double deltaR32 = sqrt(pow(d3->eta()-Dvector2.at(1),2)+pow(d3->phi()-Dvector2.at(2),2));
+
+                    if(!(deltaR22 < deltaR_ && deltaR33 < deltaR_) && !(deltaR23 < deltaR_ && deltaR32 < deltaR_) ) continue;
+
+                    double deltaPt22 = fabs((d2->pt()-Dvector2.at(0))/d2->pt());
+                    double deltaPt33 = fabs((d3->pt()-Dvector3.at(0))/d3->pt());
+                    double deltaPt23 = fabs((d2->pt()-Dvector3.at(0))/d2->pt());
+                    double deltaPt32 = fabs((d3->pt()-Dvector2.at(0))/d3->pt());
+
+                    if( !(deltaPt22 < 0.5 && deltaPt33 < 0.5) && !(deltaPt23 < 0.5 && deltaPt32 < 0.5) ) continue; //check deltaPt matching
+
+                    d2massGEN = Dvector2.at(4);
+                    d2mass = d2->mass();
+                    d3massGEN = Dvector3.at(4);
+                    d3mass = d3->mass();
+
+                    matchGEN = true; //matched gen
+                  }
+
+                  if(i%3==1)
+                  {
+                    vector<double> Dvector2 = (*pVect)[i-1]; //get GEN daugther vector for track2
+                    vector<double> Dvector3 = (*pVect)[i+1]; //get GEN daugther vector for track3
+
+                    if(!(d2->charge()==Dvector2.at(3) && d3->charge()==Dvector3.at(3))
+                    && !(d3->charge()==Dvector2.at(3) && d2->charge()==Dvector3.at(3))) continue; //check match charge
+
+                    double deltaR22 = sqrt(pow(d2->eta()-Dvector2.at(1),2)+pow(d2->phi()-Dvector2.at(2),2));
+                    double deltaR33 = sqrt(pow(d3->eta()-Dvector3.at(1),2)+pow(d3->phi()-Dvector3.at(2),2));
+                    double deltaR23 = sqrt(pow(d2->eta()-Dvector3.at(1),2)+pow(d2->phi()-Dvector3.at(2),2));
+                    double deltaR32 = sqrt(pow(d3->eta()-Dvector2.at(1),2)+pow(d3->phi()-Dvector2.at(2),2));
+
+                    if(!(deltaR22 < deltaR_ && deltaR33 < deltaR_) && !(deltaR23 < deltaR_ && deltaR32 < deltaR_) ) continue;
+
+                    double deltaPt22 = fabs((d2->pt()-Dvector2.at(0))/d2->pt());
+                    double deltaPt33 = fabs((d3->pt()-Dvector3.at(0))/d3->pt());
+                    double deltaPt23 = fabs((d2->pt()-Dvector3.at(0))/d2->pt());
+                    double deltaPt32 = fabs((d3->pt()-Dvector2.at(0))/d3->pt());
+
+                    if( !(deltaPt22 < 0.5 && deltaPt33 < 0.5) && !(deltaPt23 < 0.5 && deltaPt32 < 0.5) ) continue; //check deltaPt matching
+
+                    d2massGEN = Dvector2.at(4);
+                    d2mass = d2->mass();
+                    d3massGEN = Dvector3.at(4);
+                    d3mass = d3->mass();
+
+                    matchGEN = true; //matched gen
+                  }
+
+                  if(i%3==2)
+                  {
+                    vector<double> Dvector2 = (*pVect)[i-2]; //get GEN daugther vector for track2
+                    vector<double> Dvector3 = (*pVect)[i-1]; //get GEN daugther vector for track3
+
+                    if(!(d2->charge()==Dvector2.at(3) && d3->charge()==Dvector3.at(3))
+                    && !(d3->charge()==Dvector2.at(3) && d2->charge()==Dvector3.at(3))) continue; //check match charge
+
+                    double deltaR22 = sqrt(pow(d2->eta()-Dvector2.at(1),2)+pow(d2->phi()-Dvector2.at(2),2));
+                    double deltaR33 = sqrt(pow(d3->eta()-Dvector3.at(1),2)+pow(d3->phi()-Dvector3.at(2),2));
+                    double deltaR23 = sqrt(pow(d2->eta()-Dvector3.at(1),2)+pow(d2->phi()-Dvector3.at(2),2));
+                    double deltaR32 = sqrt(pow(d3->eta()-Dvector2.at(1),2)+pow(d3->phi()-Dvector2.at(2),2));
+
+                    if(!(deltaR22 < deltaR_ && deltaR33 < deltaR_) && !(deltaR23 < deltaR_ && deltaR32 < deltaR_) ) continue;
+
+                    double deltaPt22 = fabs((d2->pt()-Dvector2.at(0))/d2->pt());
+                    double deltaPt33 = fabs((d3->pt()-Dvector3.at(0))/d3->pt());
+                    double deltaPt23 = fabs((d2->pt()-Dvector3.at(0))/d2->pt());
+                    double deltaPt32 = fabs((d3->pt()-Dvector2.at(0))/d3->pt());
+
+                    if( !(deltaPt22 < 0.5 && deltaPt33 < 0.5) && !(deltaPt23 < 0.5 && deltaPt32 < 0.5) ) continue; //check deltaPt matching
+
+                    d2massGEN = Dvector2.at(4);
+                    d2mass = d2->mass();
+                    d3massGEN = Dvector3.at(4);
+                    d3mass = d3->mass();
+
+                    matchGEN = true; //matched gen
+                  }
+
+                  if(abs(d1massGEN - d1mass)>0.01 || abs(d2massGEN - d2mass)>0.01 || abs(d3massGEN - d3mass)>0.01) isSwap = true;
+
+                  idmom_reco = pVectIDmom->at(i/3);
+                }
+
             }
 
             if(selectGenMatch_ && !matchGEN) continue;
@@ -812,10 +943,8 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
 //        charge1 = d1->charge();
 //        charge2 = d2->charge();
         
-        const reco::Candidate *d3 = 0;
         if(threeProngDecay_)
         {
-          d3 = trk.daughter(2);
           pt3 = d3->pt();
           if(pt3 < trkPtMin_) continue;
           p3 = d3->p();
