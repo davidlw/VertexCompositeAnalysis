@@ -53,10 +53,10 @@ float kaonMassLamC3P_sigma = 1.6E-5f;
 float protonMassLamC3P_sigma = 1.6E-5f;
 float lamCMassLamC3P_sigma = lamCMassLamC3P*1.e-6;
 
-float cand1Mass[2] = {kaonMassLamC3P, protonMassLamC3P};
-float cand2Mass[2] = {protonMassLamC3P, kaonMassLamC3P};
-float cand1Mass_sigma[2] = {kaonMassLamC3P_sigma, protonMassLamC3P_sigma};
-float cand2Mass_sigma[2] = {protonMassLamC3P_sigma, kaonMassLamC3P_sigma};
+float cand1Mass[2] = {piMassLamC3P, protonMassLamC3P};
+float cand2Mass[2] = {protonMassLamC3P, piMassLamC3P};
+float cand1Mass_sigma[2] = {piMassLamC3P_sigma, protonMassLamC3P_sigma};
+float cand2Mass_sigma[2] = {protonMassLamC3P_sigma, piMassLamC3P_sigma};
 
 // Constructor and (empty) destructor
 LamC3PFitter::LamC3PFitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollector && iC) {
@@ -404,13 +404,13 @@ void LamC3PFitter::fitLamCCandidates(
         if( !trkTSCP31.isValid() ) continue;
 
         double totalE31 = sqrt( trkTSCP1.momentum().mag2() + protonMassLamC3PSquared ) +
-                          sqrt( trkTSCP2.momentum().mag2() + kaonMassLamC3PSquared ) + 
-                          sqrt( trkTSCP31.momentum().mag2() + piMassLamC3PSquared );
+                          sqrt( trkTSCP2.momentum().mag2() + piMassLamC3PSquared ) + 
+                          sqrt( trkTSCP31.momentum().mag2() + kaonMassLamC3PSquared );
         double totalE31Sq = totalE31*totalE31;
 
-        double totalE32 = sqrt( trkTSCP1.momentum().mag2() + kaonMassLamC3PSquared ) +
+        double totalE32 = sqrt( trkTSCP1.momentum().mag2() + piMassLamC3PSquared ) +
                           sqrt( trkTSCP2.momentum().mag2() + protonMassLamC3PSquared ) + 
-                          sqrt( trkTSCP31.momentum().mag2() + piMassLamC3PSquared );
+                          sqrt( trkTSCP31.momentum().mag2() + kaonMassLamC3PSquared );
         double totalE32Sq = totalE32*totalE32;
 
         double totalP3Sq =
@@ -441,7 +441,7 @@ void LamC3PFitter::fitLamCCandidates(
           vector<RefCountedKinematicParticle> lamCParticles;
           lamCParticles.push_back(pFactory.particle(*transTkPtr1,cand1Mass[i],chi,ndf,cand1Mass_sigma[i]));
           lamCParticles.push_back(pFactory.particle(*transTkPtr2,cand2Mass[i],chi,ndf,cand2Mass_sigma[i]));
-          lamCParticles.push_back(pFactory.particle(*transTkPtr3,piMassLamC3P,chi,ndf,piMassLamC3P_sigma));
+          lamCParticles.push_back(pFactory.particle(*transTkPtr3,kaonMassLamC3P,chi,ndf,kaonMassLamC3P_sigma));
 
           KinematicParticleVertexFitter lamCFitter;
           RefCountedKinematicTree lamCVertex;
@@ -482,7 +482,7 @@ void LamC3PFitter::fitLamCCandidates(
 
           cand1TotalE[i] = sqrt( cand1TotalP.mag2() + cand1Mass[i]*cand1Mass[i] );
           cand2TotalE[i] = sqrt( cand2TotalP.mag2() + cand2Mass[i]*cand2Mass[i] );
-          float cand3TotalE = sqrt( cand3TotalP.mag2() + piMassLamC3PSquared );
+          float cand3TotalE = sqrt( cand3TotalP.mag2() + kaonMassLamC3PSquared );
 
           lamCTotalE[i] = cand1TotalE[i] + cand2TotalE[i] + cand3TotalE;
 
