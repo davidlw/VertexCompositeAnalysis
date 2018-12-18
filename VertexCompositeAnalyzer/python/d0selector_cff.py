@@ -30,6 +30,16 @@ d0selectorBDTPrompt = d0selectorBDTPreCut.clone(
 #  mvaCuts = cms.vdouble(4.185e-01,-4.441e-02,1.322e-01,-5.939e-02,1.577e-01,-1.177e-02,-6.253e-04,7.098e-05) #v12
 )
 
+d0selectorBDTNonPromptWS = d0selectorBDTNonPrompt.clone(
+  VertexCompositeCollection = cms.untracked.InputTag("generalD0CandidatesNewWrongSign:D0"),
+  MVACollection = cms.InputTag("generalD0CandidatesNewWrongSign:MVAValues")
+)
+
+d0selectorBDTPromptWS = d0selectorBDTPrompt.clone(
+  VertexCompositeCollection = cms.untracked.InputTag("generalD0CandidatesNewWrongSign:D0"),
+  MVACollection = cms.InputTag("generalD0CandidatesNewWrongSign:MVAValues")
+)
+
 d0selectorMCBDTPreCut = d0selectorMC.clone(
   useAnyMVA = cms.bool(False),
 
@@ -50,6 +60,16 @@ d0selectorMCBDTPrompt = d0selectorMCBDTPreCut.clone(
   BDTCutFileName = cms.string('BDTCuts_PrompD0_HM185.root')
 #  mvaCuts = cms.vdouble(4.185e-01,-4.441e-02,1.322e-01,-5.939e-02,1.577e-01,-1.177e-02,-6.253e-04,7.098e-05) #v12
 )     
+
+d0selectorMCBDTNonPromptWS = d0selectorMCBDTNonPrompt.clone(
+  VertexCompositeCollection = cms.untracked.InputTag("generalD0CandidatesNewWrongSign:D0"),
+  MVACollection = cms.InputTag("generalD0CandidatesNewWrongSign:MVAValues")
+)
+
+d0selectorMCBDTPromptWS = d0selectorMCBDTPrompt.clone(
+  VertexCompositeCollection = cms.untracked.InputTag("generalD0CandidatesNewWrongSign:D0"),
+  MVACollection = cms.InputTag("generalD0CandidatesNewWrongSign:MVAValues")
+)
 
 d0selectorPID = d0selector.clone(
   useAnyMVA = cms.bool(False),

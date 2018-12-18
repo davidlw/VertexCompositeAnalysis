@@ -38,16 +38,19 @@ process.d0ana_mc_genmatch = process.d0ana_mc.clone()
 process.d0ana_mc_genunmatch = process.d0ana_mc.clone()
 process.d0ana_mc_genmatchswap = process.d0ana_mc.clone()
 process.d0ana_mc_genmatchunswap = process.d0ana_mc.clone()
+process.d0ana_mc_wrongsign = process.d0ana_mc.clone()
 
 process.d0ana_mc_genmatch.VertexCompositeCollection = cms.untracked.InputTag("d0selectorMCGenMatch:D0")
 process.d0ana_mc_genunmatch.VertexCompositeCollection = cms.untracked.InputTag("d0selectorMCGenUnMatch:D0")
 process.d0ana_mc_genmatchswap.VertexCompositeCollection = cms.untracked.InputTag("d0selectorMCGenMatchSwap:D0")
 process.d0ana_mc_genmatchunswap.VertexCompositeCollection = cms.untracked.InputTag("d0selectorMCGenMatchUnSwap:D0")
+process.d0ana_mc_wrongsign.VertexCompositeCollection = cms.untracked.InputTag("d0selectorMCWS:D0")
 
 process.d0ana_mc_genmatch.MVACollection = cms.InputTag("d0selectorMCGenMatch:MVAValuesNewD0")
 process.d0ana_mc_genunmatch.MVACollection = cms.InputTag("d0selectorMCGenUnMatch:MVAValuesNewD0")
 process.d0ana_mc_genmatchswap.MVACollection = cms.InputTag("d0selectorMCGenMatchSwap:MVAValuesNewD0")
 process.d0ana_mc_genmatchunswap.MVACollection = cms.InputTag("d0selectorMCGenMatchUnSwap:MVAValuesNewD0")
+process.d0ana_mc_wrongsign.MVACollection = cms.InputTag("d0selectorMCWS:MVAValuesNewD0")
 
 process.d0selectorMCBDTNonPrompt.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_WS.root')
 
@@ -55,6 +58,10 @@ process.d0selectorMCGenMatch = process.d0selectorMCBDTNonPrompt.clone()
 process.d0selectorMCGenUnMatch = process.d0selectorMCBDTNonPrompt.clone()
 process.d0selectorMCGenMatchSwap = process.d0selectorMCBDTNonPrompt.clone()
 process.d0selectorMCGenMatchUnSwap = process.d0selectorMCBDTNonPrompt.clone()
+process.d0selectorMCWS = process.d0selectorMCBDTNonPrompt.clone(
+  VertexCompositeCollection = cms.untracked.InputTag("generalD0CandidatesNewWrongSign:D0"),
+  MVACollection = cms.InputTag("generalD0CandidatesNewWrongSign:MVAValues")
+)
 
 process.d0selectorMCGenMatch.selectGenMatch = cms.untracked.bool(True)
 process.d0selectorMCGenUnMatch.selectGenUnMatch = cms.untracked.bool(True)
@@ -65,7 +72,9 @@ process.d0ana_genmatch_seq = cms.Sequence(process.d0selectorMCGenMatch * process
 process.d0ana_genunmatch_seq = cms.Sequence(process.d0selectorMCGenUnMatch * process.d0ana_mc_genunmatch)
 process.d0ana_genmatchswap_seq = cms.Sequence(process.d0selectorMCGenMatchSwap * process.d0ana_mc_genmatchswap)
 process.d0ana_genmatchunswap_seq = cms.Sequence(process.d0selectorMCGenMatchUnSwap * process.d0ana_mc_genmatchunswap)
+process.d0ana_wrongsign_seq = cms.Sequence(process.d0selectorMCWS * process.d0ana_mc_wrongsign)
 
 process.p1 = cms.Path(process.d0ana_genunmatch_seq)
 process.p2 = cms.Path(process.d0ana_genmatchswap_seq)
 process.p3 = cms.Path(process.d0ana_genmatchunswap_seq)
+process.p4 = cms.Path(process.d0ana_wrongsign_seq)

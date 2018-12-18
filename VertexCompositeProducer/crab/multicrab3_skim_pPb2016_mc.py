@@ -13,12 +13,12 @@ if __name__ == '__main__':
     config.General.transferOutputs = True
     config.General.transferLogs = False
     config.JobType.pluginName = 'Analysis'
-    config.JobType.maxMemoryMB = 3000
-    config.JobType.maxJobRuntimeMin = 2750
+#    config.JobType.maxMemoryMB = 3000
+#    config.JobType.maxJobRuntimeMin = 2750
 #    config.JobType.psetName = '../test/pPbFlowCorrSkim_2016_D0_cfg.py'
-    config.Data.unitsPerJob = 1
+#    config.Data.unitsPerJob = 1
 #    config.Data.totalUnits = 1000
-    config.Data.splitting = 'FileBased'
+    config.Data.splitting = 'Automatic'
     config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
     config.Data.publication = True
     config.Site.storageSite = 'T2_US_MIT'
@@ -36,14 +36,25 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_Prompt_v1'
+    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_MB_v1'
     config.JobType.psetName = '../test/pPbSkim2016_D0Both_mc_cfg.py'
     config.Data.outputDatasetTag = 'pPb_Skim_D0Both_v1'
-    config.Data.inputDataset = '/PromptD0_D0pT-1p2_pPb-EmbEPOS_8p16_Pythia8/pPb816Summer16DR-pPbEmb_80X_mcRun2_pA_v4-v1/AODSIM'
+    config.Data.inputDataset = '/ReggeGribovPartonMC_EposLHC_pPb_4080_4080_DataBS/pPb816Summer16DR-MB_80X_mcRun2_pA_v4-v2/AODSIM'
     submit(config)
 
-    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_NonPrompt_v1'
-    config.JobType.psetName = '../test/pPbSkim2016_D0Both_mc_cfg.py'
-    config.Data.outputDatasetTag = 'pPb_Skim_D0Both_v1'
-    config.Data.inputDataset = '/NonPromptD0_D0pT-1p2_pPb-EmbEPOS_8p16_Pythia8/pPb816Summer16DR-pPbEmb_80X_mcRun2_pA_v4-v1/AODSIM'
+    config.General.requestName = 'pPb2016_Pbp_Skim_D0Both_MB_v1'
+    config.Data.outputDatasetTag = 'Pbp_Skim_D0Both_v1'
+    config.Data.inputDataset = '/ReggeGribovPartonMC_EposLHC_PbP_4080_4080_DataBS/pPb816Summer16DR-MB_80X_mcRun2_pA_v4-v2/AODSIM'
     submit(config)
+
+#    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_Prompt_v1'
+#    config.JobType.psetName = '../test/pPbSkim2016_D0Both_mc_cfg.py'
+#    config.Data.outputDatasetTag = 'pPb_Skim_D0Both_v1'
+#    config.Data.inputDataset = '/PromptD0_D0pT-1p2_pPb-EmbEPOS_8p16_Pythia8/pPb816Summer16DR-pPbEmb_80X_mcRun2_pA_v4-v1/AODSIM'
+#    submit(config)
+
+#    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_NonPrompt_v1'
+#    config.JobType.psetName = '../test/pPbSkim2016_D0Both_mc_cfg.py'
+#    config.Data.outputDatasetTag = 'pPb_Skim_D0Both_v1'
+#    config.Data.inputDataset = '/NonPromptD0_D0pT-1p2_pPb-EmbEPOS_8p16_Pythia8/pPb816Summer16DR-pPbEmb_80X_mcRun2_pA_v4-v1/AODSIM'
+#    submit(config)

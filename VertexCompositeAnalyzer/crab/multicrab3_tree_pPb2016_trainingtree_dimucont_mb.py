@@ -19,12 +19,12 @@ if __name__ == '__main__':
 #    config.Data.totalUnits = -1
     config.Data.splitting = 'Automatic'
 #    config.Data.runRange = '285505-285505'
-    config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
-#    config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
+#    config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
+    config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
     config.Data.publication = False
     config.Data.useParent = True
     config.Data.inputDBS = 'phys03'
-    config.Site.storageSite = 'T2_US_MIT'
+    config.Site.storageSite = 'T2_CH_CERN'
 
     def submit(config):
         try:

@@ -41,14 +41,14 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'pPb2016_pPbMC_PromptD0_TrainingTree_signal_combined_BDTCut_v8'
-    config.Data.outputDatasetTag = 'pPb_TrainingTree_signal_combined_v8'
+    config.General.requestName = 'pPb2016_pPbMC_PromptD0_TrainingTree_signal_combined_BDTCut_v9'
+    config.Data.outputDatasetTag = 'pPb_TrainingTree_signal_combined_v9'
     config.Data.inputDataset = '/PromptD0_D0pT-1p2_pPb-EmbEPOS_8p16_Pythia8/davidlw-pPb_Skim_D0Both_v1-b4e336f1831173b15564965986eff7fd/USER'
     config.JobType.psetName = '../test/D0/d0ana_mc_trainingtree_signal_bdtp.py'
     submit(config)
 
-    config.General.requestName = 'pPb2016_pPbMC_NonPromptD0_TrainingTree_signal_combined_BDTCut_v8'
-    config.Data.outputDatasetTag = 'pPb_TrainingTree_signal_combined_v8'
+    config.General.requestName = 'pPb2016_pPbMC_NonPromptD0_TrainingTree_signal_combined_BDTCut_v9'
+    config.Data.outputDatasetTag = 'pPb_TrainingTree_signal_combined_v9'
     config.JobType.psetName = '../test/D0/d0ana_mc_trainingtree_signal_bdtnp.py'
     config.Data.inputDataset = '/NonPromptD0_D0pT-1p2_pPb-EmbEPOS_8p16_Pythia8/davidlw-pPb_Skim_D0Both_v1-b4e336f1831173b15564965986eff7fd/USER'
     submit(config)
