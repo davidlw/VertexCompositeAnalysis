@@ -55,3 +55,8 @@ if __name__ == '__main__':
     config.General.requestName = 'PbPb2018_D0_BDT_ptsum2p2_pt1_ws_histogram_b3_v2'
     config.Data.inputDataset = '/HIMinimumBias3/davidlw-Skim_D0_DCSOnly327327_v1-5ef0d9856259c20139aa4aaf1006bf0f/USER'
     submit(config)
+
+    config.General.requestName = 'PbPb2018_D0_BDT_ptsum2p2_pt1_ws_histogram_b7_v2'
+    config.Data.inputDataset = '/HIMinimumBias7/davidlw-Skim_D0_DCSOnly327327_v1-c2bc07f5e56345e5d3229c8dec729192/USER'
+    submit(config)
+

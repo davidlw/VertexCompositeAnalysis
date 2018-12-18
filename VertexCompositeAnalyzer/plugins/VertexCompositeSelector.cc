@@ -369,7 +369,7 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
     PID_ = iConfig.getUntrackedParameter<int>("PID");
     PID_dau1_ = iConfig.getUntrackedParameter<int>("PID_dau1");
     PID_dau2_ = iConfig.getUntrackedParameter<int>("PID_dau2");
-    PID_dau3_ = iConfig.getUntrackedParameter<int>("PID_dau3");
+    if(threeProngDecay_) PID_dau3_ = iConfig.getUntrackedParameter<int>("PID_dau3");
     
     //cut variables
     centMin_ = iConfig.getUntrackedParameter<int>("centMin", 0);
@@ -573,8 +573,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
 //      Npixel = cent->multiplicityPixel();
 //      int ntrk = cent->Ntracks();
     }
-    if(centrality >= centMax_ || centrality < centMin_) return;
-
+    if(centrality!=-1 && (centrality >= centMax_ || centrality < centMin_)) return;
 
     //best vertex
     bestvz=-999.9; bestvx=-999.9; bestvy=-999.9;

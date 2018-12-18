@@ -379,7 +379,7 @@ VertexCompositeNtupleProducer::VertexCompositeNtupleProducer(const edm::Paramete
     PID_ = iConfig.getUntrackedParameter<int>("PID");
     PID_dau1_ = iConfig.getUntrackedParameter<int>("PID_dau1");
     PID_dau2_ = iConfig.getUntrackedParameter<int>("PID_dau2");
-    PID_dau3_ = iConfig.getUntrackedParameter<int>("PID_dau3");
+    if(threeProngDecay_) PID_dau3_ = iConfig.getUntrackedParameter<int>("PID_dau3");
     
     saveTree_ = iConfig.getUntrackedParameter<bool>("saveTree");
     saveHistogram_ = iConfig.getUntrackedParameter<bool>("saveHistogram");
