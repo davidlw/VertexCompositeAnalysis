@@ -303,25 +303,25 @@ void LamC3PFitter::fitLamCCandidates(
       TransientTrack* transTkPtr1 = &theTransTracks_sgn1[trdx1];
       TransientTrack* transTkPtr2 = &theTransTracks_sgn1[trdx2];
 
-      double dzvtx1 = trackRef1->dz(bestvtx);
-      double dxyvtx1 = trackRef1->dxy(bestvtx);
-      double dzerror1 = sqrt(trackRef1->dzError()*trackRef1->dzError()+bestvtxError.z()*bestvtxError.z());
-      double dxyerror1 = sqrt(trackRef1->d0Error()*trackRef1->d0Error()+bestvtxError.x()*bestvtxError.y());
-      double dauLongImpactSig1 = dzvtx1/dzerror1;
-      double dauTransImpactSig1 = dxyvtx1/dxyerror1;
+//      double dzvtx1 = trackRef1->dz(bestvtx);
+//      double dxyvtx1 = trackRef1->dxy(bestvtx);
+//      double dzerror1 = sqrt(trackRef1->dzError()*trackRef1->dzError()+bestvtxError.z()*bestvtxError.z());
+//      double dxyerror1 = sqrt(trackRef1->d0Error()*trackRef1->d0Error()+bestvtxError.x()*bestvtxError.y());
+//      double dauLongImpactSig1 = dzvtx1/dzerror1;
+//      double dauTransImpactSig1 = dxyvtx1/dxyerror1;
 
-      double dzvtx2 = trackRef2->dz(bestvtx);
-      double dxyvtx2 = trackRef2->dxy(bestvtx);
-      double dzerror2 = sqrt(trackRef2->dzError()*trackRef2->dzError()+bestvtxError.z()*bestvtxError.z());
-      double dxyerror2 = sqrt(trackRef2->d0Error()*trackRef2->d0Error()+bestvtxError.x()*bestvtxError.y());
-      double dauLongImpactSig2 = dzvtx2/dzerror2;
-      double dauTransImpactSig2 = dxyvtx2/dxyerror2;
+//      double dzvtx2 = trackRef2->dz(bestvtx);
+//      double dxyvtx2 = trackRef2->dxy(bestvtx);
+//      double dzerror2 = sqrt(trackRef2->dzError()*trackRef2->dzError()+bestvtxError.z()*bestvtxError.z());
+//      double dxyerror2 = sqrt(trackRef2->d0Error()*trackRef2->d0Error()+bestvtxError.x()*bestvtxError.y());
+//      double dauLongImpactSig2 = dzvtx2/dzerror2;
+//      double dauTransImpactSig2 = dxyvtx2/dxyerror2;
 
-      double nhits1 = trackRef1->numberOfValidHits();
-      double nhits2 = trackRef2->numberOfValidHits(); 
+//      double nhits1 = trackRef1->numberOfValidHits();
+//      double nhits2 = trackRef2->numberOfValidHits(); 
     
-      double ptErr1 = trackRef1->ptError();
-      double ptErr2 = trackRef2->ptError();
+//      double ptErr1 = trackRef1->ptError();
+//      double ptErr2 = trackRef2->ptError();
 
       // Fill the vector of TransientTracks to send to KVF
       transTracks.push_back(*transTkPtr1);
@@ -361,8 +361,8 @@ void LamC3PFitter::fitLamCCandidates(
       double totalPSq =
         ( trkTSCP1.momentum() + trkTSCP2.momentum() ).mag2();
 
-      double totalPt =
-        ( trkTSCP1.momentum() + trkTSCP2.momentum() ).perp();
+//      double totalPt =
+//        ( trkTSCP1.momentum() + trkTSCP2.momentum() ).perp();
 
       double mass1 = sqrt( totalE1Sq - totalPSq);
       double mass2 = sqrt( totalE2Sq - totalPSq);
@@ -375,15 +375,15 @@ void LamC3PFitter::fitLamCCandidates(
         TrackRef trackRef3 = theTrackRefs_sgn2[trdx3];
         TransientTrack* transTkPtr3 = &theTransTracks_sgn2[trdx3];
   
-        double dzvtx3 = trackRef3->dz(bestvtx);
-        double dxyvtx3 = trackRef3->dxy(bestvtx);
-        double dzerror3 = sqrt(trackRef3->dzError()*trackRef3->dzError()+bestvtxError.z()*bestvtxError.z());
-        double dxyerror3 = sqrt(trackRef3->d0Error()*trackRef3->d0Error()+bestvtxError.x()*bestvtxError.y());
-        double dauLongImpactSig3 = dzvtx3/dzerror3;
-        double dauTransImpactSig3 = dxyvtx3/dxyerror3;
+//        double dzvtx3 = trackRef3->dz(bestvtx);
+//        double dxyvtx3 = trackRef3->dxy(bestvtx);
+//        double dzerror3 = sqrt(trackRef3->dzError()*trackRef3->dzError()+bestvtxError.z()*bestvtxError.z());
+//        double dxyerror3 = sqrt(trackRef3->d0Error()*trackRef3->d0Error()+bestvtxError.x()*bestvtxError.y());
+//        double dauLongImpactSig3 = dzvtx3/dzerror3;
+//        double dauTransImpactSig3 = dxyvtx3/dxyerror3;
 
-        double nhits3 = trackRef3->numberOfValidHits();
-        double ptErr3 = trackRef3->ptError();
+//        double nhits3 = trackRef3->numberOfValidHits();
+//        double ptErr3 = trackRef3->ptError();
 
         transTracks.push_back(*transTkPtr3);
         FreeTrajectoryState trkState3 = transTkPtr3->impactPointTSCP().theState();

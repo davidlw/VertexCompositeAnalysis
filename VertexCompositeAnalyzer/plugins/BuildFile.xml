@@ -21,4 +21,7 @@
 <use name="RecoHI/HiCentralityAlgos"/>
 <use name="DataFormats/MuonReco"/>
 <use name="DataFormats/PatCandidates"/>
+<use name="CondFormats/DataRecord"/>
+<use name="CondFormats/EgammaObjects"/>
+
 <flags EDM_PLUGIN="1"/>
