@@ -13,17 +13,17 @@ process.load('Configuration.StandardSequences.L1Reco_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-process.MessageLogger.cerr.FwkReport.reportEvery = 1
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 process.source = cms.Source("PoolSource",
    fileNames = cms.untracked.vstring(
-#'root://xrootd-cms.infn.it//store/user/anstahll/MTD/MC/NonEmbedded/LambdaC_PiKP_prompt_5p02TeV_TuneCP5_MTD_RECO_20190109/LambdaC_PiKP_prompt_5p02TeV_TuneCP5_MTD/LambdaC_PiKP_prompt_5p02TeV_TuneCP5_MTD_RECO_20190109/190109_204426/0000/Pythia8_TuneCP5_5TeV_LambdaC_PiKP_prompt_pt1_y4_RECO_97.root'
+#'root://xrootd-cms.infn.it//store/user/anstahll/MTD/MC/NonEmbedded/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190109/D0_PiK_prompt_5p02TeV_TuneCP5_MTD/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190109/190109_203806/0000/Pythia8_TuneCP5_5TeV_D0_PiK_prompt_RECO_15.root'
 'root://xrootd-cms.infn.it//store/user/anstahll/MTD/MC/NonEmbedded/Hydjet_5p02TeV_TuneCP5_MTD_RECO_20190110/Hydjet_5p02TeV_TuneCP5_MTD/Hydjet_5p02TeV_TuneCP5_MTD_RECO_20190110/190112_184141/0000/Hydjet_RECO_99.root'
 )
 )
 
 # =============== Other Statements =====================
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 # enable TrigReport, TimeReport and MultiThreading
 process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool( True ),
@@ -82,20 +82,20 @@ process.eventFilter_HM = cms.Sequence(
 
 process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 
-########## LamC3P candidate rereco ###############################################################
-process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalLamC3PCandidates_cff")
-process.generalLamC3PCandidatesNew = process.generalLamC3PCandidates.clone()
-#process.generalLamC3PCandidatesNew.tkNhitsCut = cms.int32(11)
-process.generalLamC3PCandidatesNew.tkPtErrCut = cms.double(0.1)
-process.generalLamC3PCandidatesNew.tkPCut = cms.double(0.7)
-#process.generalLamC3PCandidatesNew.alphaCut = cms.double(1.0)
-#process.generalLamC3PCandidatesNew.alpha2DCut = cms.double(1.0)
-#process.generalLamC3PCandidatesNew.dPt3Cut = cms.double(1.)
+########## D0 candidate rereco ###############################################################
+process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalD0Candidates_cff")
+process.generalD0CandidatesNew = process.generalD0Candidates.clone()
+#process.generalD0CandidatesNew.tkPtSumCut = cms.double(1.6)
+#process.generalD0CandidatesNew.tkEtaDiffCut = cms.double(1.0)
+#process.generalD0CandidatesNew.tkNhitsCut = cms.int32(11)
+process.generalD0CandidatesNew.tkPtErrCut = cms.double(0.1)
+process.generalD0CandidatesNew.tkPCut = cms.double(0.7)
+#process.generalD0CandidatesNew.alphaCut = cms.double(1.0)
+#process.generalD0CandidatesNew.alpha2DCut = cms.double(1.0)
 
-process.generalLamC3PCandidatesNewWrongSign = process.generalLamC3PCandidatesNew.clone(isWrongSign = cms.bool(True))
+process.generalD0CandidatesNewWrongSign = process.generalD0CandidatesNew.clone(isWrongSign = cms.bool(True))
 
-#process.lamc3prereco_step = cms.Path( process.eventFilter_HM * process.generalLamC3PCandidatesNew * process.generalLamC3PCandidatesNewWrongSign )
-process.lamc3prereco_step = cms.Path( process.eventFilter_HM * process.generalLamC3PCandidatesNew )
+process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew )
 
 ###############################################################################################
 
@@ -113,6 +113,6 @@ process.output_HM_step = cms.EndPath(process.output_HM)
 
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
-    process.lamc3prereco_step,
+    process.d0rereco_step,
     process.output_HM_step
 )

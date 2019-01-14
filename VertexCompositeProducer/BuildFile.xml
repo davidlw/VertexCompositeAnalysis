@@ -25,3 +25,5 @@
 <use   name="TrackingTools/TransientTrack"/>
 <use   name="TrackingTools/IPTools"/>
 <use   name="TrackingTools/Records"/>
+<use   name="CondFormats/DataRecord"/>
+<use   name="CondFormats/EgammaObjects"/>

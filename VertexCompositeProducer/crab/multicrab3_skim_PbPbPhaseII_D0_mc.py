@@ -15,7 +15,7 @@ if __name__ == '__main__':
     config.JobType.pluginName = 'Analysis'
     config.JobType.maxMemoryMB = 6000
 #    config.JobType.maxJobRuntimeMin = 2750
-    config.JobType.psetName = '../test/PbPbSkimPhaseII_LamC3P_MC_cfg.py'
+    config.JobType.psetName = '../test/PbPbSkimPhaseII_D0_MC_cfg.py'
     config.Data.unitsPerJob = 5
 #    config.Data.totalUnits = 30
     config.Data.splitting = 'FileBased'
@@ -38,14 +38,14 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'PbPbPhaseIISkimLamC3P_MC_signal_v1'
-    config.Data.inputDataset = '/LambdaC_PiKP_prompt_5p02TeV_TuneCP5_MTD/anstahll-LambdaC_PiKP_prompt_5p02TeV_TuneCP5_MTD_RECO_20190109-659ba6db64ef9fab90134c1663d5c1ab/USER'
-    config.Data.outputDatasetTag = 'Skim_LamC3P_signal_v1'
+    config.General.requestName = 'PbPbPhaseIISkimD0_MC_signal_v1'
+    config.Data.inputDataset = '/D0_PiK_prompt_5p02TeV_TuneCP5_MTD/anstahll-D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190109-659ba6db64ef9fab90134c1663d5c1ab/USER'
+    config.Data.outputDatasetTag = 'Skim_D0_signal_v1'
     submit(config)
 
-    config.General.requestName = 'PbPbPhaseIISkimLamC3P_MC_hydjet_v1'
+    config.General.requestName = 'PbPbPhaseIISkimD0_MC_hydjet_v1'
     config.Data.inputDataset = '/Hydjet_5p02TeV_TuneCP5_MTD/anstahll-Hydjet_5p02TeV_TuneCP5_MTD_RECO_20190110-659ba6db64ef9fab90134c1663d5c1ab/USER'
-    config.Data.outputDatasetTag = 'Skim_LamC3P_hydjet_v1'
+    config.Data.outputDatasetTag = 'Skim_D0_hydjet_v1'
     config.Data.unitsPerJob = 1
-    config.Data.totalUnits = 10
+#    config.Data.totalUnits = 30
     submit(config)
