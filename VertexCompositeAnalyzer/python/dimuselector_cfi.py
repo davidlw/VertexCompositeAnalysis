@@ -5,6 +5,7 @@ dimuselector = cms.EDProducer('VertexCompositeSelector',
   hasSwap = cms.untracked.bool(False),
   decayInGen = cms.untracked.bool(False),
   twoLayerDecay = cms.untracked.bool(False),
+  threeProngDecay = cms.untracked.bool(False),
 
   selectGenMatch = cms.untracked.bool(False),
   selectGenUnMatch = cms.untracked.bool(False),

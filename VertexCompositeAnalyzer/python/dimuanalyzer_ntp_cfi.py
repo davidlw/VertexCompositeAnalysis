@@ -6,6 +6,8 @@ dimuana = cms.EDAnalyzer('VertexCompositeNtupleProducer',
   hasSwap = cms.untracked.bool(False),
   decayInGen = cms.untracked.bool(False),
   twoLayerDecay = cms.untracked.bool(False),
+  threeProngDecay = cms.untracked.bool(False),
+
   #PID used only for GEN and/or GEN match
   PID = cms.untracked.int32(443),
   PID_dau1 = cms.untracked.int32(13),
