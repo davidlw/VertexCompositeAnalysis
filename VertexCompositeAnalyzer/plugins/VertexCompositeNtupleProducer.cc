@@ -87,6 +87,7 @@ private:
   virtual void beginJob() ;
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
   virtual void fillRECO(const edm::Event&, const edm::EventSetup&) ;
+  virtual void fillGEN(const edm::Event&, const edm::EventSetup&) ;
   virtual void endJob() ;
   virtual void initHistogram();
   virtual void initTree();
@@ -146,6 +147,8 @@ private:
     int    massHistBins_;
 
     //options
+    bool doRecoNtuple_;
+    bool doGenNtuple_;   
     bool doGenMatching_;
     bool doGenMatchingTOF_;
     bool hasSwap_;
@@ -324,7 +327,17 @@ private:
     float ddydz2_seg_;
     float ddxdzSig2_seg_;
     float ddydzSig2_seg_;
-    
+
+    // gen info    
+    float pt_gen;
+    float eta_gen;
+    int status_gen;
+    int idmom;
+    float y_gen;
+    int iddau1;
+    int iddau2;
+    int iddau3;
+
     //vector for gen match
     vector< vector<double> > *pVect;
     vector<double> *Dvector1;
@@ -368,6 +381,8 @@ private:
 VertexCompositeNtupleProducer::VertexCompositeNtupleProducer(const edm::ParameterSet& iConfig)
 {
     //options
+    doRecoNtuple_ = iConfig.getUntrackedParameter<bool>("doRecoNtuple");
+    doGenNtuple_ = iConfig.getUntrackedParameter<bool>("doGenNtuple");
     twoLayerDecay_ = iConfig.getUntrackedParameter<bool>("twoLayerDecay");
     threeProngDecay_ = iConfig.getUntrackedParameter<bool>("threeProngDecay");
     doGenMatching_ = iConfig.getUntrackedParameter<bool>("doGenMatching");
@@ -444,7 +459,8 @@ iSetup)
     using namespace edm;
     using namespace reco;
 
-    fillRECO(iEvent,iSetup);
+    if(doGenNtuple_) fillGEN(iEvent,iSetup);
+    if(doRecoNtuple_) fillRECO(iEvent,iSetup);
 }
 
 void
@@ -1468,6 +1484,44 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
     }
 }
 
+void
+VertexCompositeNtupleProducer::fillGEN(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
+    edm::Handle<reco::GenParticleCollection> genpars;
+    iEvent.getByToken(tok_genParticle_,genpars);
+
+    for(unsigned it=0; it<genpars->size(); ++it){
+
+        const reco::GenParticle & trk = (*genpars)[it];
+
+        int id = trk.pdgId();
+        if(fabs(id)!=PID_) continue; //check is target
+        if(decayInGen_ && trk.numberOfDaughters()!=2) continue; //check 2-pron decay if target decays in Gen
+
+        pt_gen = trk.pt();
+        eta_gen = trk.eta();
+        status_gen = trk.status();
+        idmom = -77;
+        y_gen = trk.rapidity();
+
+        if(trk.numberOfMothers()!=0)
+        {
+            const reco::Candidate * mom = trk.mother();
+            idmom = mom->pdgId();
+        }
+
+        if(!decayInGen_) continue;
+
+        const reco::Candidate * Dd1 = trk.daughter(0);
+        const reco::Candidate * Dd2 = trk.daughter(1);
+        const reco::Candidate * Dd3 = trk.daughter(2);
+
+        iddau1 = fabs(Dd1->pdgId());
+        iddau2 = fabs(Dd2->pdgId());
+        if(Dd3) iddau3 = fabs(Dd3->pdgId());
+    }
+}
+
 // ------------ method called once each job just before starting event
 //loop  ------------
 void
@@ -1475,6 +1529,11 @@ VertexCompositeNtupleProducer::beginJob()
 {
     TH1D::SetDefaultSumw2();
     
+    if(!doRecoNtuple_ && !doGenNtuple_)
+    {
+        cout<<"No output for either RECO or GEN!! Fix config!!"<<endl; return;
+    }
+
     if(twoLayerDecay_ && doMuon_)
     {
         cout<<"Muons cannot be coming from two layer decay!! Fix config!!"<<endl; return;
@@ -1731,6 +1790,22 @@ VertexCompositeNtupleProducer::initTree()
               VertexCompositeNtuple->Branch("ddxdzSig2_seg",  &ddxdzSig2_seg_, "ddxdzSig2_seg/F");
               VertexCompositeNtuple->Branch("ddydzSig2_seg",  &ddydzSig2_seg_, "ddydzSig2_seg/F");
            }
+        }
+    }
+
+    if(doGenNtuple_)
+    {
+        VertexCompositeNtuple->Branch("pT_gen",&pt_gen,"pT_gen/F");
+        VertexCompositeNtuple->Branch("eta_gen",&eta_gen,"eta_gen/F");
+        VertexCompositeNtuple->Branch("y_gen",&y_gen,"y_gen/F");
+        VertexCompositeNtuple->Branch("status_gen",&status_gen,"status_gen/I");
+        VertexCompositeNtuple->Branch("MotherID_gen",&idmom,"MotherID_gen/I");
+
+        if(decayInGen_)
+        {
+            VertexCompositeNtuple->Branch("DauID1_gen",&iddau1,"DauID1_gen/I");
+            VertexCompositeNtuple->Branch("DauID2_gen",&iddau2,"DauID2_gen/I");
+            VertexCompositeNtuple->Branch("DauID3_gen",&iddau3,"DauID3_gen/I");
         }
     }
 }

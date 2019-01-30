@@ -4,7 +4,7 @@ analysisSkimContent = cms.PSet(
     outputCommands = cms.untracked.vstring('drop *',
       # event
 #      'keep *_offlinePrimaryVertices_*_*',
-#      'keep *_offlinePrimaryVerticesRecovery_*_*',
+      'keep *_offlinePrimaryVerticesRecovery_*_*',
 #      'keep *_allVertices*_*_*',
 #      'keep *_pixelVertices_*_*',
 #      'keep *_pixel3Vertices_*_*',                                     
@@ -25,8 +25,10 @@ analysisSkimContent = cms.PSet(
 #      'keep *_conversions*_*_*',
       # muon
 #      'keep recoMuons_muons_*_*',      
-#        'keep *_hiCentrality_*_*',
-#        'keep *_hiEvtPlane_*_*',
+#      'keep *_hiCentrality_*_*',
+      'keep *_hiEvtPlane_*_*',
+      'keep *_hiEvtPlaneFlat_*_*',
+      'keep *_centralityBin_*_*',
       # V0
       'keep *_generalD0Candidates*_D0_*',
       'keep *_generalD0Candidates*_MVAValues*_*',

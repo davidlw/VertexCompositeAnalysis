@@ -83,7 +83,7 @@ process.hltHM.andOr = cms.bool(True)
 process.hltHM.throw = cms.bool(False)
 
 process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.dimuselector_cff")
-process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.dimuanalyzer_ntp_cff")
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.dimuanalyzer_tree_cff")
 
 process.TFileService = cms.Service("TFileService",
                                        fileName = 
@@ -111,6 +111,9 @@ process.dimucontana_wrongsign_seq = cms.Sequence(process.dimucontana_wrongsign)
 
 process.p = cms.Path(process.cent_seq * process.dimucontana_seq)
 process.p1 = cms.Path(process.cent_seq * process.dimucontana_wrongsign_seq)
+#process.p = cms.Path(process.dimucontana_seq)
+#process.p1 = cms.Path(process.dimucontana_wrongsign_seq)
+
 
 from HLTrigger.Configuration.CustomConfigs import MassReplaceInputTag
 process = MassReplaceInputTag(process,"offlinePrimaryVertices","offlinePrimaryVerticesRecovery")

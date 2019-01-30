@@ -139,18 +139,6 @@ process.eventFilter_HM = cms.Sequence(
     process.collisionEventSelection
 )
 
-#process.eventFilter_upsilon = cms.Sequence(
-#    process.hltupsilon *
-#    process.offlinePrimaryVerticesRecovery *
-#    process.collisionEventSelection
-#)
-
-#process.eventFilter_jpsi = cms.Sequence(
-#    process.hltjpsi *
-#    process.offlinePrimaryVerticesRecovery *
-#    process.collisionEventSelection
-#)
-
 process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 
 process.pcentandep_step = cms.Path(process.eventFilter_HM * process.cent_seq * process.evtplane_seq)
@@ -162,24 +150,6 @@ process.dimurereco_step = cms.Path( process.eventFilter_HM * process.generalMuMu
 process.dimurerecowrongsign_step = cms.Path( process.eventFilter_HM * process.generalMuMuContinuimCandidatesWrongSign )
 
 ###############################################################################################
-
-process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.dimuselector_cff")
-process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.dimuanalyzer_tree_cff")
-
-process.TFileService = cms.Service("TFileService",
-                                       fileName =
-cms.string('dimucontanatree.root')
-                                   )
-
-process.dimucontana.doMuonFull = cms.untracked.bool(False)
-process.dimucontana_wrongsign.doMuonFull = cms.untracked.bool(False)
-process.dimucontana.isCentrality = cms.bool(True)
-process.dimucontana_wrongsign.isCentrality = cms.bool(True)
-process.dimucontana_seq = cms.Sequence(process.dimucontana)
-process.dimucontana_wrongsign_seq = cms.Sequence(process.dimucontana_wrongsign)
-
-process.ptree = cms.Path(process.eventFilter_HM * process.dimucontana_seq)
-process.ptree1 = cms.Path(process.eventFilter_HM * process.dimucontana_wrongsign_seq)
 
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.ppanalysisSkimContentJPsi_cff")
 process.output_HM = cms.OutputModule("PoolOutputModule",
@@ -197,8 +167,6 @@ process.schedule = cms.Schedule(
     process.pcentandep_step,
     process.dimurereco_step,
 #    process.dimurerecowrongsign_step,
-    process.ptree,
-#    process.ptree1,
     process.output_HM_step
 )
 

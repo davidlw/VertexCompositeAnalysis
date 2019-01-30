@@ -15,14 +15,15 @@ if __name__ == '__main__':
     config.JobType.pluginName = 'Analysis'
 #    config.JobType.maxMemoryMB = 6000
 #    config.JobType.maxJobRuntimeMin = 2750
-    config.JobType.psetName = '../test/PbPbSkimAndTree2018_DiMuCont_cfg.py'
-    config.Data.unitsPerJob = 20
+    config.JobType.psetName = '../test/PbPbSkim2018_DiMuContBoth_cfg.py'
+    config.JobType.inputFiles=['../test/HeavyIonRPRcd_PbPb2018_offline.db']
+#    config.Data.unitsPerJob = 20
 #    config.Data.totalUnits = 100
-    config.Data.splitting = 'LumiBased'
-#    config.Data.splitting = 'Automatic'
-#    config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/HI/DCSOnly/json_DCSONLY_HI.txt'
+#    config.Data.splitting = 'LumiBased'
+    config.Data.splitting = 'Automatic'
+    config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/HI/PromptReco/Cert_326381-327560_HI_PromptReco_Collisions18_JSON_MuonPhys.txt'
     #config.Data.lumiMask = 'Cert_326381-327489_HI_PromptReco_Collisions18_JSON_MuonPhys.txt'
-    config.Data.lumiMask = 'jsondiff_327560_327489.txt'
+#    config.Data.lumiMask = 'jsondiff_327560_327489.txt'
 #    config.Data.lumiMask = 'json_DCSONLY_HI_327327.txt'
     config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
     config.Data.publication = True
@@ -42,19 +43,12 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'PbPbDiMu_v1_MP327560_v1'
+    config.General.requestName = 'PbPbDiMu_v1_MP327560_v2'
     config.Data.inputDataset = '/HIDoubleMuon/HIRun2018A-PromptReco-v1/AOD'
-    config.Data.outputDatasetTag = '2018Skim_DiMuCont_MuonPhysics_v1'
+    config.Data.outputDatasetTag = '2018Skim_DiMuCont_MuonPhysics_v1_NoEvtSel'
     submit(config)
 
-    config.General.requestName = 'PbPbDiMu_v2_MP327560_v1'
+    config.General.requestName = 'PbPbDiMu_v2_MP327560_v2'
     config.Data.inputDataset = '/HIDoubleMuon/HIRun2018A-PromptReco-v2/AOD'
-    submit(config)
-
-    config.General.requestName = 'PbPbDiMu_SMv1_MP327560_v1'
-    config.Data.inputDataset = '/HISingleMuon/HIRun2018A-PromptReco-v1/AOD'
-    submit(config)
-
-    config.General.requestName = 'PbPbDiMu_SMv2_MP327560_v1'
-    config.Data.inputDataset = '/HISingleMuon/HIRun2018A-PromptReco-v2/AOD'
+    config.Data.outputDatasetTag = '2018Skim_DiMuCont_MuonPhysics_v2_NoEvtSel'
     submit(config)
