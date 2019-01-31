@@ -351,10 +351,10 @@ void LamC3PFitter::fitLamCCandidates(
       if( !trkTSCP1.isValid() || !trkTSCP2.isValid() ) continue;
 
       double totalE1 = sqrt( trkTSCP1.momentum().mag2() + protonMassLamC3PSquared ) +
-                      sqrt( trkTSCP2.momentum().mag2() + kaonMassLamC3PSquared );
+                      sqrt( trkTSCP2.momentum().mag2() + piMassLamC3PSquared );
       double totalE1Sq = totalE1*totalE1;
 
-      double totalE2 = sqrt( trkTSCP1.momentum().mag2() + kaonMassLamC3PSquared ) +
+      double totalE2 = sqrt( trkTSCP1.momentum().mag2() + piMassLamC3PSquared ) +
                       sqrt( trkTSCP2.momentum().mag2() + protonMassLamC3PSquared );
       double totalE2Sq = totalE2*totalE2;
 
