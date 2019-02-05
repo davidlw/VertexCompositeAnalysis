@@ -60,6 +60,15 @@ D0Fitter::D0Fitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollect
   token_tracks = iC.consumes<reco::TrackCollection>(theParameters.getParameter<edm::InputTag>("trackRecoAlgorithm"));
   token_vertices = iC.consumes<reco::VertexCollection>(theParameters.getParameter<edm::InputTag>("vertexRecoAlgorithm"));
   token_dedx = iC.consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxHarmonic2"));
+  // MTD track information
+  token_MTDtrack["beta"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTrackBeta"));
+  token_MTDtrack["t0"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTrackt0"));
+  token_MTDtrack["sigmat0"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTracksigmat0"));
+  token_MTDtrack["tmtd"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTracktmtd"));
+  token_MTDtrack["sigmatmtd"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTracksigmatmtd"));
+  token_MTDtrack["p"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTrackp"));
+  token_MTDtrack["pathLength"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTrackPathLength"));
+
 
   // Second, initialize post-fit cuts
   mPiKCutMin = theParameters.getParameter<double>(string("mPiKCutMin"));
@@ -144,11 +153,7 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   //  passing to the KalmanVertexFitter)
   std::vector<TrackRef> theTrackRefs;
   std::vector<TransientTrack> theTransTracks;
-  // Create std::vectors for Tracks' indices (required to read
-  //  track extenders in the following mtd study)
-  std::vector<int> trackIndex; // mtd
-  std::vector<int> negTrackIndex;
-  std::vector<int> posTrackIndex;
+  std::vector<std::map<std::string, float> > theMTDtrackInfo; // mtd
 
   // Handles for tracks, B-field, and tracker geometry
   Handle<reco::TrackCollection> theTrackHandle;
@@ -156,13 +161,17 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   Handle<reco::BeamSpot> theBeamSpotHandle;
   ESHandle<MagneticField> bFieldHandle;
   Handle<edm::ValueMap<reco::DeDxData> > dEdxHandle;
+  std::map<std::string, Handle<edm::ValueMap<float> > > MTDtrackHandle; //mtd
 
   // Get the tracks, vertices from the event, and get the B-field record
   //  from the EventSetup
-  iEvent.getByToken(token_tracks, theTrackHandle); 
+  iEvent.getByToken(token_tracks, theTrackHandle);
   iEvent.getByToken(token_vertices, theVertexHandle);
   iEvent.getByToken(token_beamSpot, theBeamSpotHandle);  
   iEvent.getByToken(token_dedx, dEdxHandle);
+  for (auto const& token : token_MTDtrack) {
+    iEvent.getByToken(token.second, MTDtrackHandle[token.first]);
+  }
 
 
   if( !theTrackHandle->size() ) return;
@@ -234,11 +243,17 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       double dauLongImpactSig = dzvtx/dzerror;
       double dauTransImpactSig = dxyvtx/dxyerror;
 
+      std::map<std::string, float> MTDtrackInfo; // mtd
+      for (auto const& handle : MTDtrackHandle) {
+        if (handle.second.isValid()) {
+          MTDtrackInfo[handle.first] = (*handle.second)[tmpRef];
+        }
+      }
+
       if( fabs(dauTransImpactSig) > dauTransImpactSigCut && fabs(dauLongImpactSig) > dauLongImpactSigCut ) {
         theTrackRefs.push_back( tmpRef );
         theTransTracks.push_back( tmpTk );
-        // record the index to match daughters with track extenderes
-        trackIndex.push_back(indx); // mtd
+        theMTDtrackInfo.push_back( MTDtrackInfo ); // mtd
       }
     }
   }
@@ -264,6 +279,8 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       TrackRef negativeTrackRef;
       TransientTrack* posTransTkPtr = 0;
       TransientTrack* negTransTkPtr = 0;
+      std::map<std::string, float> posMTDtrackInfo; // mtd
+      std::map<std::string, float> negMTDtrackInfo; // mtd
 
       // Look at the two tracks we're looping over.  If they're oppositely
       //  charged, load them into the hypothesized positive and negative tracks
@@ -274,6 +291,8 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	positiveTrackRef = theTrackRefs[trdx2];
 	negTransTkPtr = &theTransTracks[trdx1];
 	posTransTkPtr = &theTransTracks[trdx2];
+        negMTDtrackInfo = theMTDtrackInfo[trdx1];
+        posMTDtrackInfo = theMTDtrackInfo[trdx2];
       }
       else if(!isWrongSign && theTrackRefs[trdx1]->charge() > 0. &&
 	      theTrackRefs[trdx2]->charge() < 0.) {
@@ -281,6 +300,8 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	positiveTrackRef = theTrackRefs[trdx1];
 	negTransTkPtr = &theTransTracks[trdx2];
 	posTransTkPtr = &theTransTracks[trdx1];
+        negMTDtrackInfo = theMTDtrackInfo[trdx2];
+        posMTDtrackInfo = theMTDtrackInfo[trdx1];
       }
       else if(isWrongSign && theTrackRefs[trdx1]->charge() > 0. &&
               theTrackRefs[trdx2]->charge() > 0.) { 
@@ -288,6 +309,8 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
         positiveTrackRef = theTrackRefs[trdx1];
         negTransTkPtr = &theTransTracks[trdx2];
         posTransTkPtr = &theTransTracks[trdx1];
+        negMTDtrackInfo = theMTDtrackInfo[trdx2];
+        posMTDtrackInfo = theMTDtrackInfo[trdx1];
       }
       else if(isWrongSign && theTrackRefs[trdx1]->charge() < 0. &&
               theTrackRefs[trdx2]->charge() < 0.) { 
@@ -295,6 +318,8 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
         positiveTrackRef = theTrackRefs[trdx2];
         negTransTkPtr = &theTransTracks[trdx1];
         posTransTkPtr = &theTransTracks[trdx2];
+        negMTDtrackInfo = theMTDtrackInfo[trdx1];
+        posMTDtrackInfo = theMTDtrackInfo[trdx2];
       }
 
       // If they're not 2 oppositely charged tracks, loop back to the
@@ -497,8 +522,11 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
             cos(d0Angle3D) < collinCut3D || cos(d0Angle2D) < collinCut2D || d0Angle3D > alphaCut || d0Angle2D > alpha2DCut
         ) continue;
 
-        VertexCompositeCandidate* theD0 = 0;
-        theD0 = new VertexCompositeCandidate(0, d0P4, d0Vtx, d0VtxCov, d0VtxChi2, d0VtxNdof);
+        const auto& cand = CompositeCandidate(0, d0P4, d0Vtx);
+        pat::CompositeCandidate* theD0 = new pat::CompositeCandidate(cand);
+        theD0->addUserFloat("vertexNdof", d0VtxNdof);
+        theD0->addUserFloat("vertexChi2", d0VtxChi2);
+        theD0->addUserData<Vertex::CovarianceMatrix>("vertexCovariance", d0VtxCov);
 
         RecoChargedCandidate
           thePosCand(1, Particle::LorentzVector(posCandTotalP.x(),
@@ -523,33 +551,16 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
         theD0->addDaughter(theNegCand);
         theD0->setPdgId(pdg_id[i]);
         addp4.set( *theD0 );
+        
+        // Add MTD information
+        for (auto const& info : posMTDtrackInfo) { theD0->addUserFloat(Form("posCand_%s", info.first.c_str()), info.second); }
+        for (auto const& info : negMTDtrackInfo) { theD0->addUserFloat(Form("negCand_%s", info.first.c_str()), info.second); }
+
         if( theD0->mass() < d0MassD0 + d0MassCut &&
             theD0->mass() > d0MassD0 - d0MassCut ) //&&
 	   // theD0->pt() > dPtCut ) {
         {
           theD0s.push_back( *theD0 );
-          
-          // record index for track extenders with mtd
-          if(!isWrongSign && theTrackRefs[trdx1]->charge() < 0. && // mtd
-    	      theTrackRefs[trdx2]->charge() > 0.) {
-              negTrackIndex.push_back(trackIndex[trdx1]);
-              posTrackIndex.push_back(trackIndex[trdx2]);
-          }
-          else if(!isWrongSign && theTrackRefs[trdx1]->charge() > 0. &&
-    	      theTrackRefs[trdx2]->charge() < 0.) {
-              negTrackIndex.push_back(trackIndex[trdx2]);
-              posTrackIndex.push_back(trackIndex[trdx1]);
-          }
-          else if(isWrongSign && theTrackRefs[trdx1]->charge() > 0. &&
-              theTrackRefs[trdx2]->charge() > 0.) { 
-              negTrackIndex.push_back(trackIndex[trdx2]);
-              posTrackIndex.push_back(trackIndex[trdx1]);
-          }
-          else if(isWrongSign && theTrackRefs[trdx1]->charge() < 0. &&
-              theTrackRefs[trdx2]->charge() < 0.) { 
-              negTrackIndex.push_back(trackIndex[trdx1]);
-              posTrackIndex.push_back(trackIndex[trdx2]);
-          }
 
 // perform MVA evaluation
           if(useAnyMVA_)
@@ -600,7 +611,7 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 }
 // Get methods
 
-const reco::VertexCompositeCandidateCollection& D0Fitter::getD0() const {
+const pat::CompositeCandidateCollection& D0Fitter::getD0() const {
   return theD0s;
 }
 
