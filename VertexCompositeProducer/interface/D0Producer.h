@@ -33,7 +33,7 @@
 #include "FWCore/Framework/interface/ESHandle.h"
 
 #include "DataFormats/VertexReco/interface/Vertex.h"
-#include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"
+#include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
 
 #include "VertexCompositeAnalysis/VertexCompositeProducer/interface/D0Fitter.h"
 

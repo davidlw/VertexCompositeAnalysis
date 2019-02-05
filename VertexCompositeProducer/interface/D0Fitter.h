@@ -50,6 +50,7 @@
 #include "DataFormats/Math/interface/angle.h"
 #include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
 #include "DataFormats/TrackReco/interface/DeDxData.h"
+#include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
@@ -81,7 +82,7 @@ class D0Fitter {
   void fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup);
 
   // Switching to L. Lista's reco::Candidate infrastructure for D0 storage
-  const reco::VertexCompositeCandidateCollection& getD0() const;
+  const pat::CompositeCandidateCollection& getD0() const;
   const std::vector<float>& getMVAVals() const; 
 
 //  auto_ptr<edm::ValueMap<float> > getMVAMap() const;
@@ -89,7 +90,7 @@ class D0Fitter {
 
  private:
   // STL vector of VertexCompositeCandidate that will be filled with VertexCompositeCandidates by fitAll()
-  reco::VertexCompositeCandidateCollection theD0s;
+  pat::CompositeCandidateCollection theD0s;
 
   // Tracker geometry for discerning hit positions
   const TrackerGeometry* trackerGeom;
@@ -102,6 +103,7 @@ class D0Fitter {
   edm::EDGetTokenT<reco::VertexCollection> token_vertices;
   edm::EDGetTokenT<edm::ValueMap<reco::DeDxData> > token_dedx;
   edm::EDGetTokenT<reco::BeamSpot> token_beamSpot;
+  std::map<std::string, edm::EDGetTokenT<edm::ValueMap<float> > > token_MTDtrack;
 
   // Cuts
   double mPiKCutMin;
