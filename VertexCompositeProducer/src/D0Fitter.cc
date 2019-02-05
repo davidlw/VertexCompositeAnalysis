@@ -147,6 +147,8 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   // Create std::vectors for Tracks' indices (required to read
   //  track extenders in the following mtd study)
   std::vector<int> trackIndex; // mtd
+  std::vector<int> negTrackIndex;
+  std::vector<int> posTrackIndex;
 
   // Handles for tracks, B-field, and tracker geometry
   Handle<reco::TrackCollection> theTrackHandle;
@@ -530,23 +532,23 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
           // record index for track extenders with mtd
           if(!isWrongSign && theTrackRefs[trdx1]->charge() < 0. && // mtd
     	      theTrackRefs[trdx2]->charge() > 0.) {
-              negTrackIndex_.push_back(trackIndex[trdx1]);
-              posTrackIndex_.push_back(trackIndex[trdx2]);
+              negTrackIndex.push_back(trackIndex[trdx1]);
+              posTrackIndex.push_back(trackIndex[trdx2]);
           }
           else if(!isWrongSign && theTrackRefs[trdx1]->charge() > 0. &&
     	      theTrackRefs[trdx2]->charge() < 0.) {
-              negTrackIndex_.push_back(trackIndex[trdx2]);
-              posTrackIndex_.push_back(trackIndex[trdx1]);
+              negTrackIndex.push_back(trackIndex[trdx2]);
+              posTrackIndex.push_back(trackIndex[trdx1]);
           }
           else if(isWrongSign && theTrackRefs[trdx1]->charge() > 0. &&
               theTrackRefs[trdx2]->charge() > 0.) { 
-              negTrackIndex_.push_back(trackIndex[trdx2]);
-              posTrackIndex_.push_back(trackIndex[trdx1]);
+              negTrackIndex.push_back(trackIndex[trdx2]);
+              posTrackIndex.push_back(trackIndex[trdx1]);
           }
           else if(isWrongSign && theTrackRefs[trdx1]->charge() < 0. &&
               theTrackRefs[trdx2]->charge() < 0.) { 
-              negTrackIndex_.push_back(trackIndex[trdx1]);
-              posTrackIndex_.push_back(trackIndex[trdx2]);
+              negTrackIndex.push_back(trackIndex[trdx1]);
+              posTrackIndex.push_back(trackIndex[trdx2]);
           }
 
 // perform MVA evaluation
@@ -606,13 +608,6 @@ const std::vector<float>& D0Fitter::getMVAVals() const {
   return mvaVals_;
 }
 
-const std::vector<int>& D0Fitter::getPosTrkIndex() const { // mtd
-  return posTrackIndex_;
-}
-
-const std::vector<int>& D0Fitter::getNegTrkIndex() const {
-  return negTrackIndex_;
-}
 /*
 auto_ptr<edm::ValueMap<float> > D0Fitter::getMVAMap() const {
   return mvaValValueMap;
@@ -621,7 +616,5 @@ auto_ptr<edm::ValueMap<float> > D0Fitter::getMVAMap() const {
 
 void D0Fitter::resetAll() {
     theD0s.clear();
-    negTrackIndex_.clear(); // mtd
-    posTrackIndex_.clear(); // mtd
     mvaVals_.clear();
 }
