@@ -530,23 +530,23 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
           // record index for track extenders with mtd
           if(!isWrongSign && theTrackRefs[trdx1]->charge() < 0. && // mtd
     	      theTrackRefs[trdx2]->charge() > 0.) {
-              negTrackIndex_.push_back(trdx1);
-              posTrackIndex_.push_back(trdx2);
+              negTrackIndex_.push_back(trackIndex[trdx1]);
+              posTrackIndex_.push_back(trackIndex[trdx2]);
           }
           else if(!isWrongSign && theTrackRefs[trdx1]->charge() > 0. &&
     	      theTrackRefs[trdx2]->charge() < 0.) {
-              negTrackIndex_.push_back(trdx2);
-              posTrackIndex_.push_back(trdx1);
+              negTrackIndex_.push_back(trackIndex[trdx2]);
+              posTrackIndex_.push_back(trackIndex[trdx1]);
           }
           else if(isWrongSign && theTrackRefs[trdx1]->charge() > 0. &&
               theTrackRefs[trdx2]->charge() > 0.) { 
-              negTrackIndex_.push_back(trdx2);
-              posTrackIndex_.push_back(trdx1);
+              negTrackIndex_.push_back(trackIndex[trdx2]);
+              posTrackIndex_.push_back(trackIndex[trdx1]);
           }
           else if(isWrongSign && theTrackRefs[trdx1]->charge() < 0. &&
               theTrackRefs[trdx2]->charge() < 0.) { 
-              negTrackIndex_.push_back(trdx1);
-              posTrackIndex_.push_back(trdx2);
+              negTrackIndex_.push_back(trackIndex[trdx1]);
+              posTrackIndex_.push_back(trackIndex[trdx2]);
           }
 
 // perform MVA evaluation
