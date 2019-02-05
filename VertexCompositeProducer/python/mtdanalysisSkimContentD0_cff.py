@@ -61,7 +61,7 @@ analysisSkimContent = cms.PSet(
       # sim track matching
 #      'keep *_trackingParticleRecoTrackAsssociation_*_*',
 #      'keep TrackingParticles_mergedtruth_MergedTrackTruth_*'
-       'keep *_offlinePrimaryVertices4D_*_*'
+       'keep *_offlinePrimaryVertices4D_*_*',
        'keep *_trackExtenderWithMTD_generalTrackBeta_*',
        'keep *_trackExtenderWithMTD_generalTrackt0_*',
        'keep *_trackExtenderWithMTD_generalTracksigmat0_*',
