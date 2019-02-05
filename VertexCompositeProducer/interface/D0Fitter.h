@@ -84,6 +84,10 @@ class D0Fitter {
   const reco::VertexCompositeCandidateCollection& getD0() const;
   const std::vector<float>& getMVAVals() const; 
 
+  // for getting the indices of daughters, used for mtd
+  const std::vector<int>& getPosTrkIndex() const; // mtd
+  const std::vector<int>& getNegTrkIndex() const; // mtd
+
 //  auto_ptr<edm::ValueMap<float> > getMVAMap() const;
   void resetAll();
 
@@ -131,6 +135,11 @@ class D0Fitter {
   bool   isWrongSign;
 
   std::vector<reco::TrackBase::TrackQuality> qualities;
+
+  // Create std::vectors for Tracks' indices (required to read
+  //  track extenders in the following mtd study)
+  std::vector<int> posTrackIndex_; // mtd
+  std::vector<int> negTrackIndex_; // mtd
 
   //setup mva selector
   bool useAnyMVA_;

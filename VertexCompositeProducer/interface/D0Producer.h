@@ -40,6 +40,7 @@
 class D0Producer : public edm::EDProducer {
 public:
   using MVACollection = std::vector<float>;
+  using TrkIndexCollection = std::vector<int>; // mtd
 
   explicit D0Producer(const edm::ParameterSet&);
   ~D0Producer();

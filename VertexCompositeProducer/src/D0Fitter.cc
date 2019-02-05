@@ -144,6 +144,9 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   //  passing to the KalmanVertexFitter)
   std::vector<TrackRef> theTrackRefs;
   std::vector<TransientTrack> theTransTracks;
+  // Create std::vectors for Tracks' indices (required to read
+  //  track extenders in the following mtd study)
+  std::vector<int> trackIndex; // mtd
 
   // Handles for tracks, B-field, and tracker geometry
   Handle<reco::TrackCollection> theTrackHandle;
@@ -232,6 +235,8 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       if( fabs(dauTransImpactSig) > dauTransImpactSigCut && fabs(dauLongImpactSig) > dauLongImpactSigCut ) {
         theTrackRefs.push_back( tmpRef );
         theTransTracks.push_back( tmpTk );
+        // record the index to match daughters with track extenderes
+        trackIndex.push_back(indx); // mtd
       }
     }
   }
@@ -521,6 +526,28 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	   // theD0->pt() > dPtCut ) {
         {
           theD0s.push_back( *theD0 );
+          
+          // record index for track extenders with mtd
+          if(!isWrongSign && theTrackRefs[trdx1]->charge() < 0. && // mtd
+    	      theTrackRefs[trdx2]->charge() > 0.) {
+              negTrackIndex_.push_back(trdx1);
+              posTrackIndex_.push_back(trdx2);
+          }
+          else if(!isWrongSign && theTrackRefs[trdx1]->charge() > 0. &&
+    	      theTrackRefs[trdx2]->charge() < 0.) {
+              negTrackIndex_.push_back(trdx2);
+              posTrackIndex_.push_back(trdx1);
+          }
+          else if(isWrongSign && theTrackRefs[trdx1]->charge() > 0. &&
+              theTrackRefs[trdx2]->charge() > 0.) { 
+              negTrackIndex_.push_back(trdx2);
+              posTrackIndex_.push_back(trdx1);
+          }
+          else if(isWrongSign && theTrackRefs[trdx1]->charge() < 0. &&
+              theTrackRefs[trdx2]->charge() < 0.) { 
+              negTrackIndex_.push_back(trdx1);
+              posTrackIndex_.push_back(trdx2);
+          }
 
 // perform MVA evaluation
           if(useAnyMVA_)
@@ -575,10 +602,17 @@ const reco::VertexCompositeCandidateCollection& D0Fitter::getD0() const {
   return theD0s;
 }
 
-const std::vector<float>& D0Fitter::getMVAVals() const {
+const std::vector<float>& D0Fitter::getMVAVals() const { 
   return mvaVals_;
 }
 
+const std::vector<int>& D0Fitter::getPosTrkIndex() const { // mtd
+  return posTrackIndex_;
+}
+
+const std::vector<int>& D0Fitter::getNegTrkIndex() const {
+  return negTrackIndex_;
+}
 /*
 auto_ptr<edm::ValueMap<float> > D0Fitter::getMVAMap() const {
   return mvaValValueMap;
@@ -587,5 +621,7 @@ auto_ptr<edm::ValueMap<float> > D0Fitter::getMVAMap() const {
 
 void D0Fitter::resetAll() {
     theD0s.clear();
+    negTrackIndex_.clear(); // mtd
+    posTrackIndex_.clear(); // mtd
     mvaVals_.clear();
 }

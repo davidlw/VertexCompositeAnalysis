@@ -30,6 +30,8 @@ D0Producer::D0Producer(const edm::ParameterSet& iConfig) :
   if(iConfig.exists("useAnyMVA")) useAnyMVA_ = iConfig.getParameter<bool>("useAnyMVA");
  
   produces< reco::VertexCompositeCandidateCollection >("D0");
+  produces< TrkIndexCollection >("negTrkIndex"); // mtd
+  produces< TrkIndexCollection >("posTrkIndex"); // mtd
   if(useAnyMVA_) produces<MVACollection>("MVAValuesD0");
 }
 
@@ -62,8 +64,18 @@ void D0Producer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
               theVees.getD0().end(),
               std::back_inserter(*d0Candidates) );
 
+   // create auto ptr for indices of tracks
+   
+   auto negTrkIndexPtr = std::make_unique<TrkIndexCollection>( // mtd
+                 theVees.getNegTrkIndex().begin(),theVees.getNegTrkIndex().end());
+   auto posTrkIndexPtr = std::make_unique<TrkIndexCollection>( // mtd
+                 theVees.getPosTrkIndex().begin(),theVees.getPosTrkIndex().end());
+   
+
    // Write the collections to the Event
    iEvent.put( std::move(d0Candidates), std::string("D0") );
+   iEvent.put( std::move(negTrkIndexPtr), std::string("negTrkIndex") ); // mtd
+   iEvent.put( std::move(posTrkIndexPtr), std::string("posTrkIndex") );
     
    if(useAnyMVA_) 
    {
