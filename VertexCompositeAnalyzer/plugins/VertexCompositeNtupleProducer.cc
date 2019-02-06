@@ -40,8 +40,9 @@
 
 #include "DataFormats/Candidate/interface/Candidate.h"
 
-#include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"
-#include "DataFormats/Candidate/interface/VertexCompositeCandidateFwd.h"
+#include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
+//#include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"
+//#include "DataFormats/Candidate/interface/VertexCompositeCandidateFwd.h"
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
@@ -73,6 +74,7 @@
 //
 
 #define PI 3.1416
+#define c_cm_ns 2.99792458e1 //[cm/ns] // mtd
 
 using namespace std;
 
@@ -138,7 +140,11 @@ private:
     TH2F*  hEtaD3VsMVA[6][10];
     TH2F*  hdedxHarmonic2D3VsMVA[6][10];
     TH2F*  hdedxHarmonic2D3VsP[6][10];
+
+    TH2F*  hptvs1overbeta[6][10];  // mtd
     
+    bool   isUseMtd_;
+
     bool   saveTree_;
     bool   saveHistogram_;
     bool   saveAllHistogram_;
@@ -231,7 +237,7 @@ private:
     bool trkquality2;
     bool trkquality3;
     float pt1;
-    float pt2;
+    float pt2;    
     float pt3;
     float ptErr1;
     float ptErr2;
@@ -264,6 +270,15 @@ private:
     float trkChi2;
     float trkChi3;
    
+    // mtd info
+    float beta1;  // mtd
+    float beta1err;  // mtd
+    float beta2;
+    float beta2err;
+    // now, we do not use them since we only deal with D0
+    //float beta3;  // mtd
+    //float beta3err;
+
     //grand-dau info
     float grand_dzos1;
     float grand_dzos2;
@@ -354,7 +369,8 @@ private:
     //tokens
     edm::EDGetTokenT<reco::VertexCollection> tok_offlinePV_;
     edm::EDGetTokenT<reco::TrackCollection> tok_generalTrk_;
-    edm::EDGetTokenT<reco::VertexCompositeCandidateCollection> recoVertexCompositeCandidateCollection_Token_;
+    //edm::EDGetTokenT<reco::VertexCompositeCandidateCollection> recoVertexCompositeCandidateCollection_Token_;
+    edm::EDGetTokenT<pat::CompositeCandidateCollection> patCompositeCandidateCollection_Token_;
     edm::EDGetTokenT<MVACollection> MVAValues_Token_;
 
     edm::EDGetTokenT<edm::ValueMap<reco::DeDxData> > Dedx_Token1_;
@@ -381,6 +397,9 @@ private:
 VertexCompositeNtupleProducer::VertexCompositeNtupleProducer(const edm::ParameterSet& iConfig)
 {
     //options
+    isUseMtd_ = false; // mtd
+    if(iConfig.exists("isUseMtd")) isUseMtd_ = iConfig.getUntrackedParameter<bool>("isUseMtd");
+
     doRecoNtuple_ = iConfig.getUntrackedParameter<bool>("doRecoNtuple");
     doGenNtuple_ = iConfig.getUntrackedParameter<bool>("doGenNtuple");
     twoLayerDecay_ = iConfig.getUntrackedParameter<bool>("twoLayerDecay");
@@ -417,7 +436,8 @@ VertexCompositeNtupleProducer::VertexCompositeNtupleProducer(const edm::Paramete
     //input tokens
     tok_offlinePV_ = consumes<reco::VertexCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCollection"));
     tok_generalTrk_ = consumes<reco::TrackCollection>(iConfig.getUntrackedParameter<edm::InputTag>("TrackCollection"));
-    recoVertexCompositeCandidateCollection_Token_ = consumes<reco::VertexCompositeCandidateCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCompositeCollection"));
+    //recoVertexCompositeCandidateCollection_Token_ = consumes<reco::VertexCompositeCandidateCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCompositeCollection"));
+    patCompositeCandidateCollection_Token_ = consumes<pat::CompositeCandidateCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCompositeCollection"));
     MVAValues_Token_ = consumes<MVACollection>(iConfig.getParameter<edm::InputTag>("MVACollection"));
     tok_muon_ = consumes<reco::MuonCollection>(iConfig.getUntrackedParameter<edm::InputTag>("MuonCollection"));
     Dedx_Token1_ = consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxHarmonic2"));
@@ -473,9 +493,12 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
     edm::Handle<reco::TrackCollection> tracks;
     iEvent.getByToken(tok_generalTrk_, tracks);
 
-    edm::Handle<reco::VertexCompositeCandidateCollection> v0candidates;
-    iEvent.getByToken(recoVertexCompositeCandidateCollection_Token_,v0candidates);
-    const reco::VertexCompositeCandidateCollection * v0candidates_ = v0candidates.product();
+    //edm::Handle<reco::VertexCompositeCandidateCollection> v0candidates;
+    edm::Handle<pat::CompositeCandidateCollection> v0candidates;
+    //iEvent.getByToken(recoVertexCompositeCandidateCollection_Token_,v0candidates);
+    //const reco::VertexCompositeCandidateCollection * v0candidates_ = v0candidates.product();
+    iEvent.getByToken(patCompositeCandidateCollection_Token_,v0candidates);
+    const pat::CompositeCandidateCollection * v0candidates_ = v0candidates.product();
     
     edm::Handle<MVACollection> mvavalues;
     if(useAnyMVA_)
@@ -633,7 +656,8 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
     //RECO Candidate info
     for(unsigned it=0; it<v0candidates_->size(); ++it){
         
-        const reco::VertexCompositeCandidate & trk = (*v0candidates_)[it];
+        //const reco::VertexCompositeCandidate & trk = (*v0candidates_)[it];
+        const pat::CompositeCandidate & trk = (*v0candidates_)[it];
         
         double secvz=-999.9, secvx=-999.9, secvy=-999.9;
         secvz = trk.vz(); secvx = trk.vx(); secvy = trk.vy();
@@ -834,6 +858,27 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         p1 = d1->p();
         p2 = d2->p();
         
+        //mtd info
+        //d1 corresponds to positive track
+        //d2 corresponds to negative track
+        if(isUseMtd_)  // mtd
+        {
+            const float t0_PV = vtx.t();
+            const float t0err_PV = vtx.tError();
+
+            const float dt1_PV = trk.userFloat("posCand_tmtd") - t0_PV;
+            const float sigma_t1mtd = trk.userFloat("posCand_sigmatmtd");
+            const float pathLength1  = trk.userFloat("posCand_pathLength");
+            beta1 = (dt1_PV!=0. ? (pathLength1/dt1_PV)*(1./c_cm_ns) : 1.0E+15);
+            beta1err = std::sqrt(beta1*beta1 * (std::pow(sigma_t1mtd/dt1_PV,2) + std::pow(t0err_PV/dt1_PV,2)));
+
+            const float dt2_PV = trk.userFloat("negCand_tmtd") - t0_PV;
+            const float sigma_t2mtd = trk.userFloat("negCand_sigmatmtd");
+            const float pathLength2  = trk.userFloat("negCand_pathLength");
+            beta2 = (dt2_PV!=0. ? (pathLength2/dt2_PV)*(1./c_cm_ns) : 1.0E+15);
+            beta2err = std::sqrt(beta2*beta2 * (std::pow(sigma_t2mtd/dt2_PV,2) + std::pow(t0err_PV/dt2_PV,2)));
+        }
+        
         //eta
         eta1 = d1->eta();
         eta2 = d2->eta();
@@ -933,8 +978,10 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         }
 
         //vtxChi2
-        vtxChi2 = trk.vertexChi2();
-        ndf = trk.vertexNdof();
+        //vtxChi2 = trk.vertexChi2();
+        //ndf = trk.vertexNdof();
+        vtxChi2 = trk.userFloat("vertexChi2");
+        ndf = trk.userFloat("vertexNdof");
         VtxProb = TMath::Prob(vtxChi2,ndf);
         
         //PAngle
@@ -955,7 +1002,8 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         typedef ROOT::Math::SVector<double, 3> SVector3;
         typedef ROOT::Math::SVector<double, 6> SVector6;
         
-        SMatrixSym3D totalCov = vtx.covariance() + trk.vertexCovariance();
+        //SMatrixSym3D totalCov = vtx.covariance() + trk.vertexCovariance();
+        SMatrixSym3D totalCov = vtx.covariance() + *trk.userData<reco::Vertex::CovarianceMatrix>("vertexCovariance");
         SVector3 distanceVector(secvx-bestvx,secvy-bestvy,secvz-bestvz);
         
         dl = ROOT::Math::Mag(distanceVector);
@@ -965,7 +1013,9 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         
         //Decay length 2D
         SVector6 v1(vtx.covariance(0,0), vtx.covariance(0,1),vtx.covariance(1,1),0,0,0);
-        SVector6 v2(trk.vertexCovariance(0,0), trk.vertexCovariance(0,1),trk.vertexCovariance(1,1),0,0,0);
+        const SMatrixSym3D& trkCovMat = *trk.userData<reco::Vertex::CovarianceMatrix>("vertexCovariance");
+        //SVector6 v2(trk.vertexCovariance(0,0), trk.vertexCovariance(0,1),trk.vertexCovariance(1,1),0,0,0);
+        SVector6 v2(trkCovMat(0,0), trkCovMat(0,1),trkCovMat(1,1),0,0,0);
         
         SMatrixSym3D sv1(v1);
         SMatrixSym3D sv2(v2);
@@ -1740,6 +1790,13 @@ VertexCompositeNtupleProducer::initTree()
             VertexCompositeNtuple->Branch("dedxHarmonic2D2",&H2dedx2,"dedxHarmonic2D2/F");
 //            VertexCompositeNtuple->Branch("dedxTruncated40Daugther2",&T4dedx2,"dedxTruncated40Daugther2/F");
 //            VertexCompositeNtuple->Branch("normalizedChi2Daugther2",&trkChi2,"normalizedChi2Daugther2/F");
+            if(isUseMtd_){  // mtd
+                VertexCompositeNtuple->Branch("beta1", &beta1, "beta1/F");
+                VertexCompositeNtuple->Branch("beta2", &beta1, "beta2/F");
+                VertexCompositeNtuple->Branch("beta1err", &beta1err, "beta1err/F");
+                VertexCompositeNtuple->Branch("beta2err", &beta1err, "beta2err/F");
+            }
+
             if(threeProngDecay_)
             {
               VertexCompositeNtuple->Branch("zDCASignificanceDaugther3",&dzos3,"zDCASignificanceDaugther3/F");

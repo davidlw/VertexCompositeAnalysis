@@ -45,8 +45,10 @@
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/RecoCandidate/interface/RecoCandidate.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
-#include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"
-#include "DataFormats/Candidate/interface/VertexCompositeCandidateFwd.h"
+
+#include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
+//#include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"
+//#include "DataFormats/Candidate/interface/VertexCompositeCandidateFwd.h"
 
 #include "DataFormats/TrackReco/interface/DeDxData.h"
 
@@ -325,7 +327,8 @@ private:
     //tokens
     edm::EDGetTokenT<reco::VertexCollection> tok_offlinePV_;
     edm::EDGetTokenT<reco::TrackCollection> tok_generalTrk_;
-    edm::EDGetTokenT<reco::VertexCompositeCandidateCollection> recoVertexCompositeCandidateCollection_Token_;
+    //edm::EDGetTokenT<reco::VertexCompositeCandidateCollection> recoVertexCompositeCandidateCollection_Token_;
+    edm::EDGetTokenT<pat::CompositeCandidateCollection> patCompositeCandidateCollection_Token_;
     edm::EDGetTokenT<MVACollection> MVAValues_Token_;
     edm::EDGetTokenT<edm::ValueMap<reco::DeDxData> > Dedx_Token1_;
     edm::EDGetTokenT<edm::ValueMap<reco::DeDxData> > Dedx_Token2_;
@@ -336,7 +339,8 @@ private:
 
     std::string v0IDName_;
 
-    reco::VertexCompositeCandidateCollection theVertexComps;
+    //reco::VertexCompositeCandidateCollection theVertexComps;
+    pat::CompositeCandidateCollection theVertexComps;
     MVACollection theMVANew;
 };
 
@@ -407,7 +411,8 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
     //input tokens
     tok_offlinePV_ = consumes<reco::VertexCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCollection"));
     tok_generalTrk_ = consumes<reco::TrackCollection>(iConfig.getUntrackedParameter<edm::InputTag>("TrackCollection"));
-    recoVertexCompositeCandidateCollection_Token_ = consumes<reco::VertexCompositeCandidateCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCompositeCollection"));
+    //recoVertexCompositeCandidateCollection_Token_ = consumes<reco::VertexCompositeCandidateCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCompositeCollection"));
+    patCompositeCandidateCollection_Token_ = consumes<pat::CompositeCandidateCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCompositeCompositeCollection"));
     tok_muon_ = consumes<reco::MuonCollection>(iConfig.getUntrackedParameter<edm::InputTag>("MuonCollection"));
     Dedx_Token1_ = consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxHarmonic2"));
     Dedx_Token2_ = consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxTruncated40"));
@@ -481,7 +486,8 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
 
     v0IDName_ = (iConfig.getUntrackedParameter<edm::InputTag>("VertexCompositeCollection")).instance();
 
-    produces< reco::VertexCompositeCandidateCollection >(v0IDName_);
+    //produces< reco::VertexCompositeCandidateCollection >(v0IDName_);
+    produces< pat::CompositeCandidateCollection >(v0IDName_);
     produces<MVACollection>(Form("MVAValuesNew%s",v0IDName_.c_str()));
 
     isPionD1 = true;
@@ -514,7 +520,8 @@ VertexCompositeSelector::produce(edm::Event& iEvent, const edm::EventSetup& iSet
     fillRECO(iEvent,iSetup);
 
 //    std::make_unique< reco::VertexCompositeCandidateCollection > theNewV0Cands( new reco::VertexCompositeCandidateCollection );
-    auto theNewV0Cands = std::make_unique<reco::VertexCompositeCandidateCollection>();
+    //auto theNewV0Cands = std::make_unique<reco::VertexCompositeCandidateCollection>();
+    auto theNewV0Cands = std::make_unique<pat::CompositeCandidateCollection>();
 
     theNewV0Cands->reserve( theVertexComps.size() );
 
@@ -543,9 +550,12 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
     edm::Handle<reco::TrackCollection> tracks;
     iEvent.getByToken(tok_generalTrk_, tracks);
 
-    edm::Handle<reco::VertexCompositeCandidateCollection> v0candidates;
-    iEvent.getByToken(recoVertexCompositeCandidateCollection_Token_,v0candidates);
-    const reco::VertexCompositeCandidateCollection * v0candidates_ = v0candidates.product();
+    //edm::Handle<reco::VertexCompositeCandidateCollection> v0candidates;
+    //iEvent.getByToken(recoVertexCompositeCandidateCollection_Token_,v0candidates);
+    //const reco::VertexCompositeCandidateCollection * v0candidates_ = v0candidates.product();
+    edm::Handle<pat::CompositeCandidateCollection> v0candidates;
+    iEvent.getByToken(patCompositeCandidateCollection_Token_,v0candidates);
+    const pat::CompositeCandidateCollection * v0candidates_ = v0candidates.product();
     
     edm::Handle<MVACollection> mvavalues;
     if(useAnyMVA_ && useExistingMVA_)
@@ -704,7 +714,8 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
     //RECO Candidate info
     for(unsigned it=0; it<v0candidates_->size(); ++it){
         
-        const reco::VertexCompositeCandidate & trk = (*v0candidates_)[it];
+        //const reco::VertexCompositeCandidate & trk = (*v0candidates_)[it];
+        const pat::CompositeCandidate & trk = (*v0candidates_)[it];
         
         double secvz=-999.9, secvx=-999.9, secvy=-999.9;
         secvz = trk.vz(); secvx = trk.vx(); secvy = trk.vy();
@@ -953,8 +964,10 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         }
 
         //vtxChi2
-        vtxChi2 = trk.vertexChi2();
-        ndf = trk.vertexNdof();
+        //vtxChi2 = trk.vertexChi2();
+        //ndf = trk.vertexNdof();
+        vtxChi2 = trk.userFloat("vertexChi2");
+        ndf = trk.userFloat("vertexNdof");
         VtxProb = TMath::Prob(vtxChi2,ndf);
 
         if(VtxProb < candVtxProbMin_) continue;       
@@ -979,7 +992,8 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         typedef ROOT::Math::SVector<double, 3> SVector3;
         typedef ROOT::Math::SVector<double, 6> SVector6;
         
-        SMatrixSym3D totalCov = vtx.covariance() + trk.vertexCovariance();
+        //SMatrixSym3D totalCov = vtx.covariance() + trk.vertexCovariance();
+        SMatrixSym3D totalCov = vtx.covariance() + *trk.userData<reco::Vertex::CovarianceMatrix>("vertexCovariance");
         SVector3 distanceVector(secvx-bestvx,secvy-bestvy,secvz-bestvz);
         
         dl = ROOT::Math::Mag(distanceVector);
@@ -990,7 +1004,9 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
  
         //Decay length 2D
         SVector6 v1(vtx.covariance(0,0), vtx.covariance(0,1),vtx.covariance(1,1),0,0,0);
-        SVector6 v2(trk.vertexCovariance(0,0), trk.vertexCovariance(0,1),trk.vertexCovariance(1,1),0,0,0);
+        const SMatrixSym3D& trkCovMat = *trk.userData<reco::Vertex::CovarianceMatrix>("vertexCovariance");
+        //SVector6 v2(trk.vertexCovariance(0,0), trk.vertexCovariance(0,1),trk.vertexCovariance(1,1),0,0,0);
+        SVector6 v2(trkCovMat(0,0), trkCovMat(0,1),trkCovMat(1,1),0,0,0);
         
         SMatrixSym3D sv1(v1);
         SMatrixSym3D sv2(v2);
