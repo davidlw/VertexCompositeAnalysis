@@ -33,7 +33,7 @@ process.GlobalTag.globaltag = '103X_upgrade2018_realistic_HI_v6'
 # =============== Import Sequences =====================
 
 process.PAprimaryVertexFilter = cms.EDFilter("VertexSelector",
-    src = cms.InputTag("offlinePrimaryVertices"),
+    src = cms.InputTag("offlinePrimaryVertices4D"),
     cut = cms.string("!isFake && abs(z) <= 50 && position.Rho <= 5 && tracksSize >= 2"),
 #    cut = cms.string("!isFake && abs(z) <= 1 && position.Rho <= 2 && tracksSize >= 5"),
     filter = cms.bool(True),   # otherwise it won't filter the events
