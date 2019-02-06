@@ -1,4 +1,9 @@
 import FWCore.ParameterSet.Config as cms
+
+from Configuration.StandardSequences.Eras import eras
+
+process = cms.Process('MTDAnalysis',eras.Phase2C4_timing_layer_bar)
+
 process = cms.Process("ANASKIM")
 
 process.load('Configuration.StandardSequences.Services_cff')
@@ -6,9 +11,11 @@ process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('HeavyIonsAnalysis.Configuration.collisionEventSelection_cff')
 process.load('Configuration.EventContent.EventContent_cff')
-process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+#process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+process.load('Configuration.Geometry.GeometryExtended2023D35Reco_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
+process.load('Configuration.StandardSequences.Reconstruction_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 process.MessageLogger.cerr.FwkReport.reportEvery = 2
 
@@ -24,14 +31,6 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.GlobalTag.globaltag = '103X_upgrade2018_realistic_HI_v6'
 
 # =============== Import Sequences =====================
-#Trigger Selection
-### Comment out for the timing being assuming running on secondary dataset with trigger bit selected already
-import HLTrigger.HLTfilters.hltHighLevel_cfi
-process.hltHM = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
-#process.hltHM.HLTPaths = ['HLT_PAFullTracks_Multiplicity280_v*']
-process.hltHM.HLTPaths = ['HLT_PAFullTracks_Multiplicity280_v*']
-process.hltHM.andOr = cms.bool(True)
-process.hltHM.throw = cms.bool(False)
 
 process.PAprimaryVertexFilter = cms.EDFilter("VertexSelector",
     src = cms.InputTag("offlinePrimaryVertices"),
@@ -55,7 +54,6 @@ process.PAcollisionEventSelection = cms.Sequence(
                                          )
 
 process.eventFilter_HM = cms.Sequence( 
-#    process.hltHM *
     process.PAcollisionEventSelection
 )
 
@@ -74,15 +72,20 @@ process.generalD0CandidatesNew.tkPtCut = cms.double(0.7)
 process.generalD0CandidatesNew.alphaCut = cms.double(1.0)
 process.generalD0CandidatesNew.alpha2DCut = cms.double(1.0)
 
-process.generalD0CandidatesNewWrongSign = process.generalD0Candidates.clone(isWrongSign = cms.bool(True))
+#process.generalD0CandidatesNewWrongSign = process.generalD0Candidates.clone(isWrongSign = cms.bool(True))
 
-process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew * process.generalD0CandidatesNewWrongSign )
+#process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew * process.generalD0CandidatesNewWrongSign )
+
+process.load('RecoMTD.TrackExtender.trackExtenderWithMTD_cfi')
+
+process.load('RecoLocalFastTime.FTLRecProducers.mtdTrackingRecHits_cfi')
+process.load('RecoLocalFastTime.FTLClusterizer.mtdClusters_cfi')
+
+process.d0rereco_step = cms.Path(process.mtdClusters * process.mtdTrackingRecHits * process.trackExtenderWithMTD + process.eventFilter_HM * process.generalD0CandidatesNew )
 
 ###############################################################################################
 
-#process.load("RiceHIG.Skim2013.ppanalysisSkimContentFull_cff")
-#process.load("RiceHIG.Skim2013.ppanalysisSkimContentSlim_cff")
-process.load("VertexCompositeAnalysis.VertexCompositeProducer.ppanalysisSkimContentD0_cff")
+process.load("VertexCompositeAnalysis.VertexCompositeProducer.mtdanalysisSkimContentD0_cff")
 process.output_HM = cms.OutputModule("PoolOutputModule",
     outputCommands = process.analysisSkimContent.outputCommands,
     fileName = cms.untracked.string('/afs/cern.ch/user/y/yousen/public/mtdreserach/CMSSW_10_4_0_mtd5/src/VertexCompositeAnalysis/VertexCompositeProducer/test/prompt_d0.root'),
