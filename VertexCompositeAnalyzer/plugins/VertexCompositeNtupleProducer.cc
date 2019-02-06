@@ -141,7 +141,7 @@ private:
     TH2F*  hdedxHarmonic2D3VsMVA[6][10];
     TH2F*  hdedxHarmonic2D3VsP[6][10];
 
-    TH2F*  hptvs1overbeta[6][10];  // mtd
+    TH2F*  h1overBetaVsP[6][10];  // mtd
     
     bool   isUseMtd_;
 
@@ -1514,6 +1514,10 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
                 hEtaD2VsMVA[iy][ipt]->Fill(mva,eta2);
                 hdedxHarmonic2D2VsMVA[iy][ipt]->Fill(mva,H2dedx2);
                 hdedxHarmonic2D2VsP[iy][ipt]->Fill(p2,H2dedx2);
+
+                if(isUseMtd_) h1overBetaVsP[iy][ipt]->Fill(p1, 1./beta1); // mtd
+                if(isUseMtd_) h1overBetaVsP[iy][ipt]->Fill(p2, 1./beta2);
+
                 if(threeProngDecay_)
                 {
                   hzDCASignificanceDaugther3VsMVA[iy][ipt]->Fill(mva,dzos3);
@@ -1634,6 +1638,8 @@ VertexCompositeNtupleProducer::initHistogram()
    hEtaD2VsMVA[iy][ipt] = fs->make<TH2F>(Form("hEtaD2VsMVA_y%d_pt%d",iy,ipt),";mva;EtaD2;",100,-1.,1.,40,-4,4);
    hdedxHarmonic2D2VsMVA[iy][ipt] = fs->make<TH2F>(Form("hdedxHarmonic2D2VsMVA_y%d_pt%d",iy,ipt),";mva;dedxHarmonic2D2;",100,-1.,1.,100,0,10);
    hdedxHarmonic2D2VsP[iy][ipt] = fs->make<TH2F>(Form("hdedxHarmonic2D2VsP_y%d_pt%d",iy,ipt),";p (GeV);dedxHarmonic2D2",100,0,10,100,0,10);
+
+   if(isUseMtd_) h1overBetaVsP[iy][ipt] = fs->make<TH2F>(Form("h1overBetaVsP_y%d_pt%d", iy, ipt), ";p (GeV);1/beta", 100, 0, 5, 80, 0.9, 1.7);
 
    if(threeProngDecay_)
    {

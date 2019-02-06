@@ -3,8 +3,8 @@ import FWCore.ParameterSet.Config as cms
 analysisSkimContent = cms.PSet(
     outputCommands = cms.untracked.vstring('drop *',
       # event
-#      'keep *_offlinePrimaryVertices_*_*',
-      'keep *_offlinePrimaryVerticesRecovery_*_*',
+      'keep *_offlinePrimaryVertices_*_*',
+#      'keep *_offlinePrimaryVerticesRecovery_*_*',
 #      'keep *_allVertices*_*_*',
 #      'keep *_pixelVertices_*_*',
 #      'keep *_pixel3Vertices_*_*',                                     
@@ -26,9 +26,9 @@ analysisSkimContent = cms.PSet(
       # muon
 #      'keep recoMuons_muons_*_*',      
 #      'keep *_hiCentrality_*_*',
-      'keep *_hiEvtPlane_*_*',
-      'keep *_hiEvtPlaneFlat_*_*',
-      'keep *_centralityBin_*_*',
+#      'keep *_hiEvtPlane_*_*',
+#      'keep *_hiEvtPlaneFlat_*_*',
+#      'keep *_centralityBin_*_*',
       # V0
       'keep *_generalD0Candidates*_D0_*',
       'keep *_generalD0Candidates*_MVAValues*_*',
@@ -62,13 +62,13 @@ analysisSkimContent = cms.PSet(
 #      'keep *_trackingParticleRecoTrackAsssociation_*_*',
 #      'keep TrackingParticles_mergedtruth_MergedTrackTruth_*'
        'keep *_offlinePrimaryVertices4D_*_*',
-       'keep *_trackExtenderWithMTD_generalTrackBeta_*',
-       'keep *_trackExtenderWithMTD_generalTrackt0_*',
-       'keep *_trackExtenderWithMTD_generalTracksigmat0_*',
-       'keep *_trackExtenderWithMTD_generalTracktmtd_*',
-       'keep *_trackExtenderWithMTD_generalTracksigmatmtd_*',
-       'keep *_trackExtenderWithMTD_generalTrackp_*',
-       'keep *_trackExtenderWithMTD_generalTrackPathLength_*',
+#       'keep *_trackExtenderWithMTD_generalTrackBeta_*',
+#       'keep *_trackExtenderWithMTD_generalTrackt0_*',
+#       'keep *_trackExtenderWithMTD_generalTracksigmat0_*',
+#       'keep *_trackExtenderWithMTD_generalTracktmtd_*',
+#       'keep *_trackExtenderWithMTD_generalTracksigmatmtd_*',
+#       'keep *_trackExtenderWithMTD_generalTrackp_*',
+#       'keep *_trackExtenderWithMTD_generalTrackPathLength_*',
        'keep *_generalTracks_*_*'
       )
     )
