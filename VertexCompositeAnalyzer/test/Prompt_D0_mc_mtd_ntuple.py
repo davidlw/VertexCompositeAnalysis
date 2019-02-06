@@ -39,6 +39,7 @@ process.d0ana.useAnyMVA = cms.bool(False)
 process.d0ana.VertexCompositeCollection = cms.untracked.InputTag("d0selector:D0")
 process.d0ana.MVACollection = cms.InputTag("d0selector:MVAValuesNewD0")
 process.d0ana.saveHistogram = cms.untracked.bool(True)
+process.d0ana.saveAllHistogram = cms.untracked.bool(True)
 process.d0ana.saveTree = cms.untracked.bool(False)
 
 process.d0selectorCutNew = process.d0selector.clone()
