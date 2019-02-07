@@ -7,7 +7,7 @@ from httplib import HTTPException
 from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
 
-config.General.workArea = 'VertexCompositePromptD0Ana'
+config.General.workArea = 'VertexCompositePromptD0Ana_mtd'
 config.General.transferOutputs = True
 config.General.transferLogs = False
 config.JobType.pluginName = 'Analysis'
