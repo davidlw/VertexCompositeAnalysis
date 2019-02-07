@@ -13,7 +13,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1000)
 process.options   = cms.untracked.PSet( wantSummary = 
 cms.untracked.bool(True) )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) 
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) 
 )
 
 process.source = cms.Source("PoolSource",
@@ -42,7 +42,7 @@ process.d0ana.VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices4
 process.d0ana.VertexCompositeCollection = cms.untracked.InputTag("d0selector:D0")
 process.d0ana.MVACollection = cms.InputTag("d0selector:MVAValuesNewD0")
 process.d0ana.saveHistogram = cms.untracked.bool(True)
-process.d0ana.saveAllHistogram = cms.untracked.bool(True)
+process.d0ana.saveAllHistogram = cms.untracked.bool(False)
 process.d0ana.saveTree = cms.untracked.bool(False)
 
 process.d0selector.VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices4D")

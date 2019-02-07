@@ -74,7 +74,6 @@
 //
 
 #define PI 3.1416
-#define c_cm_ns 2.99792458e1 //[cm/ns] // mtd
 
 using namespace std;
 
@@ -141,7 +140,8 @@ private:
     TH2F*  hdedxHarmonic2D3VsMVA[6][10];
     TH2F*  hdedxHarmonic2D3VsP[6][10];
 
-    TH2F*  h1overBetaVsP[6][10];  // mtd
+    TH2F*  h1overBetaVsPmatchD0[6][10];  // mtd
+    TH2F*  h1overBetaVsP; // mtd
     
     bool   isUseMtd_;
 
@@ -271,10 +271,10 @@ private:
     float trkChi3;
    
     // mtd info
-    float beta1;  // mtd
-    float beta1err;  // mtd
-    float beta2;
-    float beta2err;
+    float beta1_PV;  // mtd
+    float beta1_PVerr;  // mtd
+    float beta2_PV;
+    float beta2_PVerr;
     // now, we do not use them since we only deal with D0
     //float beta3;  // mtd
     //float beta3err;
@@ -863,20 +863,11 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         //d2 corresponds to negative track
         if(isUseMtd_)  // mtd
         {
-            const float t0_PV = vtx.t();
-            const float t0err_PV = vtx.tError();
+            beta1_PV = trk.userFloat("posCand_beta_PV");
+            beta1_PVerr = trk.userFloat("posCand_sigmabeta_PV");
 
-            const float dt1_PV = trk.userFloat("posCand_tmtd") - t0_PV;
-            const float sigma_t1mtd = trk.userFloat("posCand_sigmatmtd");
-            const float pathLength1  = trk.userFloat("posCand_pathLength");
-            beta1 = (dt1_PV!=0. ? (pathLength1/dt1_PV)*(1./c_cm_ns) : 1.0E+15);
-            beta1err = std::sqrt(beta1*beta1 * (std::pow(sigma_t1mtd/dt1_PV,2) + std::pow(t0err_PV/dt1_PV,2)));
-
-            const float dt2_PV = trk.userFloat("negCand_tmtd") - t0_PV;
-            const float sigma_t2mtd = trk.userFloat("negCand_sigmatmtd");
-            const float pathLength2  = trk.userFloat("negCand_pathLength");
-            beta2 = (dt2_PV!=0. ? (pathLength2/dt2_PV)*(1./c_cm_ns) : 1.0E+15);
-            beta2err = std::sqrt(beta2*beta2 * (std::pow(sigma_t2mtd/dt2_PV,2) + std::pow(t0err_PV/dt2_PV,2)));
+            beta2_PV = trk.userFloat("negCand_beta_PV");
+            beta2_PVerr = trk.userFloat("negCand_sigmabeta_PV");
         }
         
         //eta
@@ -1474,7 +1465,12 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
 
         if(saveTree_) VertexCompositeNtuple->Fill();
         if(saveHistogram_)
-        {
+        { 
+          if(isUseMtd_){
+             h1overBetaVsP->Fill(p1, 1./beta1_PV);
+             h1overBetaVsP->Fill(p2, 1./beta2_PV);
+          }
+
           for(unsigned int ipt=0;ipt<pTBins_.size()-1;ipt++)
             for(unsigned int iy=0;iy<yBins_.size()-1;iy++)
             {
@@ -1515,8 +1511,8 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
                 hdedxHarmonic2D2VsMVA[iy][ipt]->Fill(mva,H2dedx2);
                 hdedxHarmonic2D2VsP[iy][ipt]->Fill(p2,H2dedx2);
 
-                if(isUseMtd_) h1overBetaVsP[iy][ipt]->Fill(p1, 1./beta1); // mtd
-                if(isUseMtd_) h1overBetaVsP[iy][ipt]->Fill(p2, 1./beta2);
+                if(isUseMtd_) h1overBetaVsPmatchD0[iy][ipt]->Fill(p1, 1./beta1_PV); // mtd
+                if(isUseMtd_) h1overBetaVsPmatchD0[iy][ipt]->Fill(p2, 1./beta2_PV);
 
                 if(threeProngDecay_)
                 {
@@ -1600,6 +1596,7 @@ VertexCompositeNtupleProducer::beginJob()
 void
 VertexCompositeNtupleProducer::initHistogram()
 {
+  if(isUseMtd_) h1overBetaVsP = fs->make<TH2F>("h1overBetaVsP", ";p (GeV);1/beta", 100, 0, 5, 80, 0.9, 1.7);
   for(unsigned int ipt=0;ipt<pTBins_.size()-1;ipt++)
   {
     for(unsigned int iy=0;iy<yBins_.size()-1;iy++)
@@ -1639,7 +1636,7 @@ VertexCompositeNtupleProducer::initHistogram()
    hdedxHarmonic2D2VsMVA[iy][ipt] = fs->make<TH2F>(Form("hdedxHarmonic2D2VsMVA_y%d_pt%d",iy,ipt),";mva;dedxHarmonic2D2;",100,-1.,1.,100,0,10);
    hdedxHarmonic2D2VsP[iy][ipt] = fs->make<TH2F>(Form("hdedxHarmonic2D2VsP_y%d_pt%d",iy,ipt),";p (GeV);dedxHarmonic2D2",100,0,10,100,0,10);
 
-   if(isUseMtd_) h1overBetaVsP[iy][ipt] = fs->make<TH2F>(Form("h1overBetaVsP_y%d_pt%d", iy, ipt), ";p (GeV);1/beta", 100, 0, 5, 80, 0.9, 1.7);
+   if(isUseMtd_) h1overBetaVsPmatchD0[iy][ipt] = fs->make<TH2F>(Form("h1overBetaVsPmatchD0_y%d_pt%d", iy, ipt), ";p (GeV);1/beta", 100, 0, 5, 80, 0.9, 1.7);
 
    if(threeProngDecay_)
    {
@@ -1797,10 +1794,10 @@ VertexCompositeNtupleProducer::initTree()
 //            VertexCompositeNtuple->Branch("dedxTruncated40Daugther2",&T4dedx2,"dedxTruncated40Daugther2/F");
 //            VertexCompositeNtuple->Branch("normalizedChi2Daugther2",&trkChi2,"normalizedChi2Daugther2/F");
             if(isUseMtd_){  // mtd
-                VertexCompositeNtuple->Branch("beta1", &beta1, "beta1/F");
-                VertexCompositeNtuple->Branch("beta2", &beta1, "beta2/F");
-                VertexCompositeNtuple->Branch("beta1err", &beta1err, "beta1err/F");
-                VertexCompositeNtuple->Branch("beta2err", &beta1err, "beta2err/F");
+                VertexCompositeNtuple->Branch("beta1_PV", &beta1_PV, "beta1_PV/F");
+                VertexCompositeNtuple->Branch("beta2_PV", &beta1_PV, "beta2_PV/F");
+                VertexCompositeNtuple->Branch("beta1_PVerr", &beta1_PVerr, "beta1_PVerr/F");
+                VertexCompositeNtuple->Branch("beta2_PVerr", &beta1_PVerr, "beta2_PVerr/F");
             }
 
             if(threeProngDecay_)
