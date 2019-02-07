@@ -50,6 +50,8 @@ float piMassD0_sigma = 3.5E-7f;
 float kaonMassD0_sigma = 1.6E-5f;
 float d0MassD0_sigma = d0MassD0*1.e-6;
 
+const double c_cm_ns = 2.99792458e1; //[cm/ns] // mtd
+
 // Constructor and (empty) destructor
 D0Fitter::D0Fitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollector && iC) {
 //		   const edm::Event& iEvent, const edm::EventSetup& iSetup, edm::ConsumesCollector && iC) {
@@ -249,6 +251,15 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
           MTDtrackInfo[handle.first] = (*handle.second)[tmpRef];
         }
       }
+      const float t0_PV = vtxPrimary->t();
+      const float t0err_PV = vtxPrimary->tError();
+      const float dt_PV = MTDtrackInfo["tmtd"] - t0_PV;
+      const float sigma_tmtd = MTDtrackInfo["sigmatmtd"];
+      const float pathLength = MTDtrackInfo["pathLength"];
+      const float beta_PV = (dt_PV!=0. ? (pathLength/dt_PV)*(1./c_cm_ns) : 1.0E+15);
+      const float sigmabeta_PV = std::sqrt(beta_PV*beta_PV * (std::pow(sigma_tmtd/dt_PV,2) + std::pow(t0err_PV/dt_PV,2)));
+      MTDtrackInfo["beta_PV"] = beta_PV;
+      MTDtrackInfo["sigmabeta_PV"] = sigmabeta_PV;
 
       if( fabs(dauTransImpactSig) > dauTransImpactSigCut && fabs(dauLongImpactSig) > dauLongImpactSigCut ) {
         theTrackRefs.push_back( tmpRef );
