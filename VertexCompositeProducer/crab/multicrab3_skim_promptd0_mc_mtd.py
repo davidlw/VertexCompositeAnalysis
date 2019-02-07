@@ -5,20 +5,20 @@ from httplib import HTTPException
 # We want to put all the CRAB project directories from the tasks we submit here into one common directory.
 # That's why we need to set this parameter (here or above in the configuration file, it does not matter, we will not overwrite it).
 from CRABClient.UserUtilities import config, getUsernameFromSiteDB
-config = Configuration()
+config = config()
 
-config.General.workArea = 'VertexCompositeAna_mtd'
+config.General.workArea = 'VertexCompositePromptD0Ana_mtd'
 config.General.transferOutputs = True
 config.General.transferLogs = False
 config.JobType.pluginName = 'Analysis'
-config.JobType.maxMemoryMB = 3000
+#config.JobType.maxMemoryMB = 3000
 config.JobType.maxJobRuntimeMin = 2750
 config.Data.unitsPerJob = 1
 config.Data.splitting = 'FileBased'
-config.Data.outLFNDirBase = '/store/group/phys_heavyions/yousen/promptd0'
+config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 config.Data.publication = True
 #config.Data.inputDBS = 'phys03'
-config.Site.storageSite = 'T2_CH_CERN'
+config.Site.storageSite = 'T2_US_MIT'
 
 def submit(config):
     try:
