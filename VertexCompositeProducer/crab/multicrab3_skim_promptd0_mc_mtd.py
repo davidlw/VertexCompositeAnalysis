@@ -17,11 +17,10 @@ if __name__ == '__main__':
     config.JobType.maxJobRuntimeMin = 2750
     config.Data.unitsPerJob = 1
     config.Data.splitting = 'FileBased'
-    config.Data.outLFNDirBase = '/eos/cms/store/group/phys_heavyions/yousen/promptd0'
+    config.Data.outLFNDirBase = '/store/group/phys_heavyions/yousen/promptd0'
     config.Data.publication = True
     #config.Data.inputDBS = 'phys03'
-    config.Site.storageSite = 'T2_US_MIT'
-#    config.Site.storageSite = 'T3_US_Rice'
+    config.Site.storageSite = 'T2_CH_CERN'
 
     def submit(config):
         try:
@@ -38,5 +37,5 @@ if __name__ == '__main__':
     config.General.requestName = 'PromptD0_mc_mtd_v1'
     config.JobType.psetName = '../test/PromptD0_mc_mtd_cfg.py'
     config.Data.outputDatasetTag = 'promptd0_mc_mtd_Skim_v1'
-    config.Data.inputDataset = '/D0_PiK_prompt_5p02TeV_TuneCP5_MTD/anstahll-D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126-8c6abfe98cf25191ce912f4177fc40d8/USER'
+    config.Data.inputDataset = '/D0_PiK_prompt_pt0_y4_5p5TeV_TuneCP5_Pythia8/PhaseIIMTDTDRAutumn18DR-NoPU_103X_upgrade2023_realistic_v2-v1/FEVT'
     submit(config)
