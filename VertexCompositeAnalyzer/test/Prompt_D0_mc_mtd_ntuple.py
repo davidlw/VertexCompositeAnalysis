@@ -18,7 +18,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1)
 
 process.source = cms.Source("PoolSource",
                                 fileNames = cms.untracked.vstring(
-'file:///afs/cern.ch/user/y/yousen/public/mtdreserach/CMSSW_10_4_0_mtd5/src/VertexCompositeAnalysis/VertexCompositeProducer/test/prompt_d0.root'
+'/store/user/yousen/D0_PiK_prompt_pt0_y4_5p5TeV_TuneCP5_Pythia8/promptd0_mc_mtd_Skim_v1/190207_191503/0000/prompt_d0_74.root'
                 ),
 #secondaryFileNames = cms.untracked.vstring(
 #'root://cms-xrd-global.cern.ch//store/hidata/PARun2016C/PAHighMultiplicity1/AOD/PromptReco-v1/000/285/517/00000/98B099A2-2DB0-E611-BE2C-02163E0119D7.root'
@@ -43,7 +43,7 @@ process.d0ana.VertexCompositeCollection = cms.untracked.InputTag("d0selector:D0"
 process.d0ana.MVACollection = cms.InputTag("d0selector:MVAValuesNewD0")
 process.d0ana.saveHistogram = cms.untracked.bool(True)
 process.d0ana.saveAllHistogram = cms.untracked.bool(False)
-process.d0ana.saveTree = cms.untracked.bool(False)
+process.d0ana.saveTree = cms.untracked.bool(True)
 
 process.d0selector.VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices4D")
 

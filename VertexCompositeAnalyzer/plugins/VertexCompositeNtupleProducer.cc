@@ -140,8 +140,8 @@ private:
     TH2F*  hdedxHarmonic2D3VsMVA[6][10];
     TH2F*  hdedxHarmonic2D3VsP[6][10];
 
-    TH2F*  h1overBetaVsPmatchD0[6][10];  // mtd
-    TH2F*  h1overBetaVsP; // mtd
+    TH2F*  h1overBetaPVVsPmatchD0[6][10];  // mtd
+    TH2F*  h1overBetaPVVsP; // mtd
     
     bool   isUseMtd_;
 
@@ -1467,8 +1467,8 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         if(saveHistogram_)
         { 
           if(isUseMtd_){
-             h1overBetaVsP->Fill(p1, 1./beta1_PV);
-             h1overBetaVsP->Fill(p2, 1./beta2_PV);
+             h1overBetaPVVsP->Fill(p1, 1./beta1_PV);
+             h1overBetaPVVsP->Fill(p2, 1./beta2_PV);
           }
 
           for(unsigned int ipt=0;ipt<pTBins_.size()-1;ipt++)
@@ -1511,8 +1511,8 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
                 hdedxHarmonic2D2VsMVA[iy][ipt]->Fill(mva,H2dedx2);
                 hdedxHarmonic2D2VsP[iy][ipt]->Fill(p2,H2dedx2);
 
-                if(isUseMtd_) h1overBetaVsPmatchD0[iy][ipt]->Fill(p1, 1./beta1_PV); // mtd
-                if(isUseMtd_) h1overBetaVsPmatchD0[iy][ipt]->Fill(p2, 1./beta2_PV);
+                if(isUseMtd_) h1overBetaPVVsPmatchD0[iy][ipt]->Fill(p1, 1./beta1_PV); // mtd
+                if(isUseMtd_) h1overBetaPVVsPmatchD0[iy][ipt]->Fill(p2, 1./beta2_PV);
 
                 if(threeProngDecay_)
                 {
@@ -1596,7 +1596,7 @@ VertexCompositeNtupleProducer::beginJob()
 void
 VertexCompositeNtupleProducer::initHistogram()
 {
-  if(isUseMtd_) h1overBetaVsP = fs->make<TH2F>("h1overBetaVsP", ";p (GeV);1/beta", 100, 0, 5, 80, 0.9, 1.7);
+  if(isUseMtd_) h1overBetaPVVsP = fs->make<TH2F>("h1overBetaPVVsP", ";p (GeV);1/beta", 100, 0, 5, 80, 0.9, 1.7);
   for(unsigned int ipt=0;ipt<pTBins_.size()-1;ipt++)
   {
     for(unsigned int iy=0;iy<yBins_.size()-1;iy++)
@@ -1636,7 +1636,7 @@ VertexCompositeNtupleProducer::initHistogram()
    hdedxHarmonic2D2VsMVA[iy][ipt] = fs->make<TH2F>(Form("hdedxHarmonic2D2VsMVA_y%d_pt%d",iy,ipt),";mva;dedxHarmonic2D2;",100,-1.,1.,100,0,10);
    hdedxHarmonic2D2VsP[iy][ipt] = fs->make<TH2F>(Form("hdedxHarmonic2D2VsP_y%d_pt%d",iy,ipt),";p (GeV);dedxHarmonic2D2",100,0,10,100,0,10);
 
-   if(isUseMtd_) h1overBetaVsPmatchD0[iy][ipt] = fs->make<TH2F>(Form("h1overBetaVsPmatchD0_y%d_pt%d", iy, ipt), ";p (GeV);1/beta", 100, 0, 5, 80, 0.9, 1.7);
+   if(isUseMtd_) h1overBetaPVVsPmatchD0[iy][ipt] = fs->make<TH2F>(Form("h1overBetaPVVsPmatchD0_y%d_pt%d", iy, ipt), ";p (GeV);1/beta", 100, 0, 5, 80, 0.9, 1.7);
 
    if(threeProngDecay_)
    {
