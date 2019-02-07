@@ -1,0 +1,815 @@
+DEBUG 2019-02-07 13:40:39,212: 	 Executing command: 'checkwrite'
+DEBUG 2019-02-07 13:40:39,216: 	 Found CRAB cache file /afs/cern.ch/user/y/yousen/.crab3
+DEBUG 2019-02-07 13:40:39,282: 	 Checking credentials
+DEBUG 2019-02-07 13:40:39,284: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 13:40:39,284: 	 Getting proxy life time left
+DEBUG 2019-02-07 13:40:40,604: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 43170
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:40:41,715: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 43169
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:40:41,716: 	 Proxy lifetime 43170 secs is different from voms extension lifetime 43169 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 13:40:41,716: 	 Proxy valid for 11:59:29 hours
+DEBUG 2019-02-07 13:40:41,834: 	 Executing : 
+ command : openssl x509 -in ~/.globus/usercert.pem -subject -noout
+ output : subject= /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=yousen/CN=834165/CN=Yousen Zhang
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:40:41,834: 	 Checking credentials
+DEBUG 2019-02-07 13:40:41,836: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 13:40:41,836: 	 Getting proxy life time left
+DEBUG 2019-02-07 13:40:42,951: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 43168
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:40:44,767: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 43166
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:40:44,768: 	 Proxy lifetime 43168 secs is different from voms extension lifetime 43166 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 13:40:44,768: 	 Proxy valid for 11:59:26 hours
+DEBUG 2019-02-07 13:40:46,084: 	 Executing : 
+ command : env X509_USER_PROXY=/tmp/x509up_u118775 voms-proxy-info -fqan
+ output : /cms/Role=NULL/Capability=NULL
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:40:46,084: 	 Command use: checkwrite
+DEBUG 2019-02-07 13:40:46,085: 	 Options use: ['--site=T2_US_MIT']
+DEBUG 2019-02-07 13:40:46,085: 	 Instance is None
+DEBUG 2019-02-07 13:40:46,085: 	 Server base url is None
+INFO 2019-02-07 13:40:46,091: 	 Will check write permission in the default location /store/user/<username>
+INFO 2019-02-07 13:40:46,091: 	 Retrieving DN from proxy...
+INFO 2019-02-07 13:40:47,471: 	 DN is: /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=yousen/CN=834165/CN=Yousen Zhang
+INFO 2019-02-07 13:40:47,472: 	 Retrieving username for this DN...
+DEBUG 2019-02-07 13:40:47,472: 	 Retrieving username from SiteDB...
+DEBUG 2019-02-07 13:40:52,129: 	 Username is: yousen
+DEBUG 2019-02-07 13:40:52,129: 	 Retrieving username from CRIC...
+DEBUG 2019-02-07 13:40:58,072: 	 Username is: yousen
+INFO 2019-02-07 13:40:58,072: 	 username is yousen
+INFO 2019-02-07 13:40:58,072: 	 Validating LFN /store/user/yousen...
+INFO 2019-02-07 13:40:58,073: 	 LFN /store/user/yousen is valid.
+INFO 2019-02-07 13:40:58,115: 	 Will use `gfal-copy`, `gfal-rm` commands for checking write permissions
+INFO 2019-02-07 13:40:58,116: 	 Will check write permission in /store/user/yousen on site T2_US_MIT
+INFO 2019-02-07 13:40:58,270: 	 
+Attempting to create (dummy) directory crab3checkwrite_20190207_134058 and copy (dummy) file crab3checkwrite_20190207_134058.tmp to /store/user/yousen
+
+INFO 2019-02-07 13:40:58,281: 	 Executing command: which scram >/dev/null 2>&1 && eval `scram unsetenv -sh`; gfal-copy -p -v -t 180 file:///afs/cern.ch/user/y/yousen/public/mtdreserach/CMSSW_10_4_0_mtd5/src/VertexCompositeAnalysis/VertexCompositeProducer/crab3checkwrite_20190207_134058.tmp 'gsiftp://se01.cmsaf.mit.edu:2811/cms/store/user/yousen/crab3checkwrite_20190207_134058/crab3checkwrite_20190207_134058.tmp'
+INFO 2019-02-07 13:40:58,282: 	 Please wait...
+INFO 2019-02-07 13:41:03,565: 	 
+Successfully created directory crab3checkwrite_20190207_134058 and copied file crab3checkwrite_20190207_134058.tmp to /store/user/yousen
+INFO 2019-02-07 13:41:03,566: 	 
+Attempting to delete file gsiftp://se01.cmsaf.mit.edu:2811/cms/store/user/yousen/crab3checkwrite_20190207_134058/crab3checkwrite_20190207_134058.tmp
+
+INFO 2019-02-07 13:41:03,566: 	 Executing command: which scram >/dev/null 2>&1 && eval `scram unsetenv -sh`; gfal-rm -v -t 180 'gsiftp://se01.cmsaf.mit.edu:2811/cms/store/user/yousen/crab3checkwrite_20190207_134058/crab3checkwrite_20190207_134058.tmp'
+INFO 2019-02-07 13:41:03,566: 	 Please wait...
+INFO 2019-02-07 13:41:07,405: 	 
+Successfully deleted file gsiftp://se01.cmsaf.mit.edu:2811/cms/store/user/yousen/crab3checkwrite_20190207_134058/crab3checkwrite_20190207_134058.tmp
+INFO 2019-02-07 13:41:07,406: 	 
+Attempting to delete directory gsiftp://se01.cmsaf.mit.edu:2811/cms/store/user/yousen/crab3checkwrite_20190207_134058/
+
+INFO 2019-02-07 13:41:07,406: 	 Executing command: which scram >/dev/null 2>&1 && eval `scram unsetenv -sh`; gfal-rm -r -v -t 180 'gsiftp://se01.cmsaf.mit.edu:2811/cms/store/user/yousen/crab3checkwrite_20190207_134058/'
+INFO 2019-02-07 13:41:07,406: 	 Please wait...
+INFO 2019-02-07 13:41:12,480: 	 
+Successfully deleted directory gsiftp://se01.cmsaf.mit.edu:2811/cms/store/user/yousen/crab3checkwrite_20190207_134058/
+INFO 2019-02-07 13:41:12,482: 	 
+Checkwrite Result:
+INFO 2019-02-07 13:41:12,482: 	 Success: Able to write in /store/user/yousen on site T2_US_MIT
+DEBUG 2019-02-07 13:43:15,278: 	 Executing command: 'checkwrite'
+DEBUG 2019-02-07 13:43:15,278: 	 Found CRAB cache file /afs/cern.ch/user/y/yousen/.crab3
+DEBUG 2019-02-07 13:43:15,295: 	 Checking credentials
+DEBUG 2019-02-07 13:43:15,296: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 13:43:15,296: 	 Getting proxy life time left
+DEBUG 2019-02-07 13:43:16,613: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 43014
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:43:17,830: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 43013
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:43:17,831: 	 Proxy lifetime 43014 secs is different from voms extension lifetime 43013 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 13:43:17,831: 	 Proxy valid for 11:56:53 hours
+DEBUG 2019-02-07 13:43:17,951: 	 Executing : 
+ command : openssl x509 -in ~/.globus/usercert.pem -subject -noout
+ output : subject= /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=yousen/CN=834165/CN=Yousen Zhang
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:43:17,952: 	 Checking credentials
+DEBUG 2019-02-07 13:43:17,952: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 13:43:17,952: 	 Getting proxy life time left
+DEBUG 2019-02-07 13:43:19,880: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 43011
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:43:21,202: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 43009
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:43:21,203: 	 Proxy lifetime 43011 secs is different from voms extension lifetime 43009 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 13:43:21,203: 	 Proxy valid for 11:56:49 hours
+DEBUG 2019-02-07 13:43:22,619: 	 Executing : 
+ command : env X509_USER_PROXY=/tmp/x509up_u118775 voms-proxy-info -fqan
+ output : /cms/Role=NULL/Capability=NULL
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:43:22,619: 	 Command use: checkwrite
+DEBUG 2019-02-07 13:43:22,619: 	 Options use: ['--site=T2_US_MI', '--lfn=']
+DEBUG 2019-02-07 13:43:22,620: 	 Instance is None
+DEBUG 2019-02-07 13:43:22,620: 	 Server base url is None
+INFO 2019-02-07 13:43:22,628: 	 Validating LFN ...
+INFO 2019-02-07 13:43:22,628: 	 Refusing to check write permission in , because this is not an allowed LFN for stageout.
+The LFN must start with either '/store/user/<username>/' or '/store/group/<groupname>/' (or '/store/local/<something>/' if publication is off), where username is your username as registered in CMS (i.e. the username of your CERN primary account).
+LFN  is not valid.
+DEBUG 2019-02-07 13:43:44,900: 	 Executing command: 'checkwrite'
+DEBUG 2019-02-07 13:43:44,900: 	 Found CRAB cache file /afs/cern.ch/user/y/yousen/.crab3
+DEBUG 2019-02-07 13:43:44,913: 	 Checking credentials
+DEBUG 2019-02-07 13:43:44,916: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 13:43:44,916: 	 Getting proxy life time left
+DEBUG 2019-02-07 13:43:46,249: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 42984
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:43:47,681: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 42983
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:43:47,681: 	 Proxy lifetime 42984 secs is different from voms extension lifetime 42983 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 13:43:47,682: 	 Proxy valid for 11:56:23 hours
+DEBUG 2019-02-07 13:43:47,802: 	 Executing : 
+ command : openssl x509 -in ~/.globus/usercert.pem -subject -noout
+ output : subject= /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=yousen/CN=834165/CN=Yousen Zhang
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:43:47,802: 	 Checking credentials
+DEBUG 2019-02-07 13:43:47,802: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 13:43:47,802: 	 Getting proxy life time left
+DEBUG 2019-02-07 13:43:48,919: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 42982
+
+ error: 
+ retcode : 0
+ERROR 2019-02-07 13:43:49,718: 	 Keyboard Interrupted
+DEBUG 2019-02-07 13:43:56,332: 	 Executing command: 'checkwrite'
+DEBUG 2019-02-07 13:43:56,332: 	 Found CRAB cache file /afs/cern.ch/user/y/yousen/.crab3
+DEBUG 2019-02-07 13:43:56,343: 	 Checking credentials
+DEBUG 2019-02-07 13:43:56,344: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 13:43:56,344: 	 Getting proxy life time left
+DEBUG 2019-02-07 13:43:57,688: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 42973
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:43:59,022: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 42972
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:43:59,023: 	 Proxy lifetime 42973 secs is different from voms extension lifetime 42972 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 13:43:59,024: 	 Proxy valid for 11:56:12 hours
+DEBUG 2019-02-07 13:43:59,156: 	 Executing : 
+ command : openssl x509 -in ~/.globus/usercert.pem -subject -noout
+ output : subject= /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=yousen/CN=834165/CN=Yousen Zhang
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:43:59,158: 	 Checking credentials
+DEBUG 2019-02-07 13:43:59,158: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 13:43:59,158: 	 Getting proxy life time left
+DEBUG 2019-02-07 13:44:00,577: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 42970
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:44:01,899: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 42969
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:44:01,900: 	 Proxy lifetime 42970 secs is different from voms extension lifetime 42969 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 13:44:01,900: 	 Proxy valid for 11:56:09 hours
+DEBUG 2019-02-07 13:44:03,011: 	 Executing : 
+ command : env X509_USER_PROXY=/tmp/x509up_u118775 voms-proxy-info -fqan
+ output : /cms/Role=NULL/Capability=NULL
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:44:03,011: 	 Command use: checkwrite
+DEBUG 2019-02-07 13:44:03,011: 	 Options use: ['--site=T2_US_MIT', '--lfn=/eos/cms/store/group/phys_heavyions/yousen']
+DEBUG 2019-02-07 13:44:03,012: 	 Instance is None
+DEBUG 2019-02-07 13:44:03,012: 	 Server base url is None
+INFO 2019-02-07 13:44:03,018: 	 Validating LFN /eos/cms/store/group/phys_heavyions/yousen...
+INFO 2019-02-07 13:44:03,018: 	 Refusing to check write permission in /eos/cms/store/group/phys_heavyions/yousen, because this is not an allowed LFN for stageout.
+The LFN must start with either '/store/user/<username>/' or '/store/group/<groupname>/' (or '/store/local/<something>/' if publication is off), where username is your username as registered in CMS (i.e. the username of your CERN primary account).
+LFN /eos/cms/store/group/phys_heavyions/yousen is not valid.
+DEBUG 2019-02-07 13:44:24,312: 	 Executing command: 'checkwrite'
+DEBUG 2019-02-07 13:44:24,312: 	 Found CRAB cache file /afs/cern.ch/user/y/yousen/.crab3
+DEBUG 2019-02-07 13:44:24,336: 	 Checking credentials
+DEBUG 2019-02-07 13:44:24,338: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 13:44:24,338: 	 Getting proxy life time left
+DEBUG 2019-02-07 13:44:25,567: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 42945
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:44:26,682: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 42944
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:44:26,683: 	 Proxy lifetime 42945 secs is different from voms extension lifetime 42944 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 13:44:26,683: 	 Proxy valid for 11:55:44 hours
+DEBUG 2019-02-07 13:44:26,803: 	 Executing : 
+ command : openssl x509 -in ~/.globus/usercert.pem -subject -noout
+ output : subject= /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=yousen/CN=834165/CN=Yousen Zhang
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:44:26,804: 	 Checking credentials
+DEBUG 2019-02-07 13:44:26,804: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 13:44:26,804: 	 Getting proxy life time left
+DEBUG 2019-02-07 13:44:27,920: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 42943
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:44:29,050: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 42942
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:44:29,051: 	 Proxy lifetime 42943 secs is different from voms extension lifetime 42942 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 13:44:29,051: 	 Proxy valid for 11:55:42 hours
+DEBUG 2019-02-07 13:44:30,271: 	 Executing : 
+ command : env X509_USER_PROXY=/tmp/x509up_u118775 voms-proxy-info -fqan
+ output : /cms/Role=NULL/Capability=NULL
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:44:30,272: 	 Command use: checkwrite
+DEBUG 2019-02-07 13:44:30,272: 	 Options use: ['--site=T2_US_MIT', '--lfn=/eos/cms/store/yousen']
+DEBUG 2019-02-07 13:44:30,272: 	 Instance is None
+DEBUG 2019-02-07 13:44:30,272: 	 Server base url is None
+INFO 2019-02-07 13:44:30,278: 	 Validating LFN /eos/cms/store/yousen...
+INFO 2019-02-07 13:44:30,279: 	 Refusing to check write permission in /eos/cms/store/yousen, because this is not an allowed LFN for stageout.
+The LFN must start with either '/store/user/<username>/' or '/store/group/<groupname>/' (or '/store/local/<something>/' if publication is off), where username is your username as registered in CMS (i.e. the username of your CERN primary account).
+LFN /eos/cms/store/yousen is not valid.
+DEBUG 2019-02-07 13:46:36,926: 	 Executing command: 'checkwrite'
+DEBUG 2019-02-07 13:46:36,927: 	 Found CRAB cache file /afs/cern.ch/user/y/yousen/.crab3
+DEBUG 2019-02-07 13:46:36,950: 	 Checking credentials
+DEBUG 2019-02-07 13:46:36,952: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 13:46:36,952: 	 Getting proxy life time left
+DEBUG 2019-02-07 13:46:38,269: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 42812
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:46:39,401: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 42811
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:46:39,402: 	 Proxy lifetime 42812 secs is different from voms extension lifetime 42811 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 13:46:39,402: 	 Proxy valid for 11:53:31 hours
+DEBUG 2019-02-07 13:46:39,519: 	 Executing : 
+ command : openssl x509 -in ~/.globus/usercert.pem -subject -noout
+ output : subject= /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=yousen/CN=834165/CN=Yousen Zhang
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:46:39,519: 	 Checking credentials
+DEBUG 2019-02-07 13:46:39,519: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 13:46:39,519: 	 Getting proxy life time left
+DEBUG 2019-02-07 13:46:40,647: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 42810
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:46:41,865: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 42809
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:46:41,865: 	 Proxy lifetime 42810 secs is different from voms extension lifetime 42809 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 13:46:41,865: 	 Proxy valid for 11:53:29 hours
+DEBUG 2019-02-07 13:46:43,491: 	 Executing : 
+ command : env X509_USER_PROXY=/tmp/x509up_u118775 voms-proxy-info -fqan
+ output : /cms/Role=NULL/Capability=NULL
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:46:43,492: 	 Command use: checkwrite
+DEBUG 2019-02-07 13:46:43,492: 	 Options use: ['--site=T2_CH_CERN', '--lfn=/eos/cms/store/yousen']
+DEBUG 2019-02-07 13:46:43,492: 	 Instance is None
+DEBUG 2019-02-07 13:46:43,492: 	 Server base url is None
+INFO 2019-02-07 13:46:43,499: 	 Validating LFN /eos/cms/store/yousen...
+INFO 2019-02-07 13:46:43,500: 	 Refusing to check write permission in /eos/cms/store/yousen, because this is not an allowed LFN for stageout.
+The LFN must start with either '/store/user/<username>/' or '/store/group/<groupname>/' (or '/store/local/<something>/' if publication is off), where username is your username as registered in CMS (i.e. the username of your CERN primary account).
+LFN /eos/cms/store/yousen is not valid.
+DEBUG 2019-02-07 13:46:52,199: 	 Executing command: 'checkwrite'
+DEBUG 2019-02-07 13:46:52,199: 	 Found CRAB cache file /afs/cern.ch/user/y/yousen/.crab3
+DEBUG 2019-02-07 13:46:52,210: 	 Checking credentials
+DEBUG 2019-02-07 13:46:52,212: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 13:46:52,212: 	 Getting proxy life time left
+DEBUG 2019-02-07 13:46:53,732: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 42797
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:46:54,863: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 42796
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:46:54,863: 	 Proxy lifetime 42797 secs is different from voms extension lifetime 42796 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 13:46:54,863: 	 Proxy valid for 11:53:16 hours
+DEBUG 2019-02-07 13:46:54,984: 	 Executing : 
+ command : openssl x509 -in ~/.globus/usercert.pem -subject -noout
+ output : subject= /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=yousen/CN=834165/CN=Yousen Zhang
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:46:54,985: 	 Checking credentials
+DEBUG 2019-02-07 13:46:54,985: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 13:46:54,985: 	 Getting proxy life time left
+DEBUG 2019-02-07 13:46:56,095: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 42794
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:46:57,207: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 42793
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:46:57,208: 	 Proxy lifetime 42794 secs is different from voms extension lifetime 42793 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 13:46:57,208: 	 Proxy valid for 11:53:13 hours
+DEBUG 2019-02-07 13:46:58,336: 	 Executing : 
+ command : env X509_USER_PROXY=/tmp/x509up_u118775 voms-proxy-info -fqan
+ output : /cms/Role=NULL/Capability=NULL
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:46:58,337: 	 Command use: checkwrite
+DEBUG 2019-02-07 13:46:58,337: 	 Options use: ['--site=T2_CH_CERN']
+DEBUG 2019-02-07 13:46:58,337: 	 Instance is None
+DEBUG 2019-02-07 13:46:58,337: 	 Server base url is None
+INFO 2019-02-07 13:46:58,342: 	 Will check write permission in the default location /store/user/<username>
+INFO 2019-02-07 13:46:58,343: 	 Retrieving DN from proxy...
+INFO 2019-02-07 13:47:00,243: 	 DN is: /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=yousen/CN=834165/CN=Yousen Zhang
+INFO 2019-02-07 13:47:00,244: 	 Retrieving username for this DN...
+DEBUG 2019-02-07 13:47:00,244: 	 Retrieving username from SiteDB...
+DEBUG 2019-02-07 13:47:04,107: 	 Username is: yousen
+DEBUG 2019-02-07 13:47:04,108: 	 Retrieving username from CRIC...
+DEBUG 2019-02-07 13:47:08,959: 	 Username is: yousen
+INFO 2019-02-07 13:47:08,959: 	 username is yousen
+INFO 2019-02-07 13:47:08,960: 	 Validating LFN /store/user/yousen...
+INFO 2019-02-07 13:47:08,960: 	 LFN /store/user/yousen is valid.
+INFO 2019-02-07 13:47:08,985: 	 Will use `gfal-copy`, `gfal-rm` commands for checking write permissions
+INFO 2019-02-07 13:47:08,986: 	 Will check write permission in /store/user/yousen on site T2_CH_CERN
+INFO 2019-02-07 13:47:09,147: 	 
+Attempting to create (dummy) directory crab3checkwrite_20190207_134708 and copy (dummy) file crab3checkwrite_20190207_134708.tmp to /store/user/yousen
+
+INFO 2019-02-07 13:47:09,154: 	 Executing command: which scram >/dev/null 2>&1 && eval `scram unsetenv -sh`; gfal-copy -p -v -t 180 file:///afs/cern.ch/user/y/yousen/public/mtdreserach/CMSSW_10_4_0_mtd5/src/VertexCompositeAnalysis/VertexCompositeProducer/crab3checkwrite_20190207_134708.tmp 'gsiftp://eoscmsftp.cern.ch//eos/cms/store/user/yousen/crab3checkwrite_20190207_134708/crab3checkwrite_20190207_134708.tmp'
+INFO 2019-02-07 13:47:09,154: 	 Please wait...
+INFO 2019-02-07 13:47:10,535: 	 Failed running copy command
+INFO 2019-02-07 13:47:10,535: 	   Stdout:
+    Copying 85 bytes file:///afs/cern.ch/user/y/yousen/public/mtdreserach/CMSSW_10_4_0_mtd5/src/VertexCompositeAnalysis/VertexCompositeProducer/crab3checkwrite_20190207_134708.tmp => gsiftp://eoscmsftp.cern.ch//eos/cms/store/user/yousen/crab3checkwrite_20190207_134708/crab3checkwrite_20190207_134708.tmp
+    event: [1549543630449] BOTH   GFAL2:CORE:COPY	LIST:ENTER	
+    event: [1549543630449] BOTH   GFAL2:CORE:COPY	LIST:ITEM	file:///afs/cern.ch/user/y/yousen/public/mtdreserach/CMSSW_10_4_0_mtd5/src/VertexCompositeAnalysis/VertexCompositeProducer/crab3checkwrite_20190207_134708.tmp => gsiftp://eoscmsftp.cern.ch//eos/cms/store/user/yousen/crab3checkwrite_20190207_134708/crab3checkwrite_20190207_134708.tmp
+    event: [1549543630449] BOTH   GFAL2:CORE:COPY	LIST:EXIT	
+    
+INFO 2019-02-07 13:47:10,536: 	   Stderr:
+    gfal-copy error: 13 (Permission denied) - globus_ftp_client: the server responded with an error 500 mkdir() fail : [ERROR] Error response: Permission denied   
+    
+INFO 2019-02-07 13:47:10,634: 	 
+Checkwrite Result:
+INFO 2019-02-07 13:47:10,635: 	 Error: Unable to write in /store/user/yousen on site T2_CH_CERN
+       You may want to contact the site administrators sending them the 'crab checkwrite' output as printed above.
+INFO 2019-02-07 13:47:10,635: 	 Note: You cannot write to a site if you did not ask permission.
+INFO 2019-02-07 13:47:12,761: 	 Additional diagnostic info for CERN EOS
+== id ==>:
+uid=118775(yousen) gid=1399(zh) groups=1399(zh),2766(def-cg),1096017687 context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+== voms-proxy-info -all ==>:
+subject   : /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=yousen/CN=834165/CN=Yousen Zhang/CN=403514173
+issuer    : /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=yousen/CN=834165/CN=Yousen Zhang
+identity  : /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=yousen/CN=834165/CN=Yousen Zhang
+type      : RFC3820 compliant impersonation proxy
+strength  : 2048
+path      : /tmp/x509up_u118775
+timeleft  : 11:52:58
+key usage : Digital Signature, Key Encipherment
+=== VO cms extension information ===
+VO        : cms
+subject   : /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=yousen/CN=834165/CN=Yousen Zhang
+issuer    : /DC=ch/DC=cern/OU=computers/CN=voms2.cern.ch
+attribute : /cms/Role=NULL/Capability=NULL
+timeleft  : 11:52:58
+uri       : voms2.cern.ch:15002
+
+== uberftp eoscmsftp.cern.ch pwd ==>:
+220 eoscmsftp07.cern.ch GridFTP Server 13.9 (gcc64, 1541697274-0) [Grid Community Toolkit 6.2] ready.
+230 User yousen logged in.
+/afs/cern.ch/user/y/yousen
+
+DEBUG 2019-02-07 13:49:01,331: 	 Executing command: 'checkwrite'
+DEBUG 2019-02-07 13:49:01,331: 	 Found CRAB cache file /afs/cern.ch/user/y/yousen/.crab3
+DEBUG 2019-02-07 13:49:01,343: 	 Checking credentials
+DEBUG 2019-02-07 13:49:01,345: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 13:49:01,345: 	 Getting proxy life time left
+DEBUG 2019-02-07 13:49:02,766: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 42668
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:49:03,991: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 42667
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:49:03,992: 	 Proxy lifetime 42668 secs is different from voms extension lifetime 42667 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 13:49:03,992: 	 Proxy valid for 11:51:07 hours
+DEBUG 2019-02-07 13:49:04,115: 	 Executing : 
+ command : openssl x509 -in ~/.globus/usercert.pem -subject -noout
+ output : subject= /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=yousen/CN=834165/CN=Yousen Zhang
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:49:04,116: 	 Checking credentials
+DEBUG 2019-02-07 13:49:04,116: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 13:49:04,116: 	 Getting proxy life time left
+DEBUG 2019-02-07 13:49:05,547: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 42665
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:49:06,869: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 42664
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:49:06,870: 	 Proxy lifetime 42665 secs is different from voms extension lifetime 42664 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 13:49:06,870: 	 Proxy valid for 11:51:04 hours
+DEBUG 2019-02-07 13:49:08,091: 	 Executing : 
+ command : env X509_USER_PROXY=/tmp/x509up_u118775 voms-proxy-info -fqan
+ output : /cms/Role=NULL/Capability=NULL
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:49:08,092: 	 Command use: checkwrite
+DEBUG 2019-02-07 13:49:08,092: 	 Options use: ['--site=T2_CH_CERN', '--lfn=/eos/cms/store/group/phys_heavyions/yousen/']
+DEBUG 2019-02-07 13:49:08,092: 	 Instance is None
+DEBUG 2019-02-07 13:49:08,092: 	 Server base url is None
+INFO 2019-02-07 13:49:08,098: 	 Validating LFN /eos/cms/store/group/phys_heavyions/yousen/...
+INFO 2019-02-07 13:49:08,098: 	 Refusing to check write permission in /eos/cms/store/group/phys_heavyions/yousen/, because this is not an allowed LFN for stageout.
+The LFN must start with either '/store/user/<username>/' or '/store/group/<groupname>/' (or '/store/local/<something>/' if publication is off), where username is your username as registered in CMS (i.e. the username of your CERN primary account).
+LFN /eos/cms/store/group/phys_heavyions/yousen/ is not valid.
+DEBUG 2019-02-07 13:51:16,548: 	 Executing command: 'checkwrite'
+DEBUG 2019-02-07 13:51:16,548: 	 Found CRAB cache file /afs/cern.ch/user/y/yousen/.crab3
+DEBUG 2019-02-07 13:51:16,569: 	 Checking credentials
+DEBUG 2019-02-07 13:51:16,570: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 13:51:16,570: 	 Getting proxy life time left
+DEBUG 2019-02-07 13:51:17,888: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 42533
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:51:18,900: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 42532
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:51:18,900: 	 Proxy lifetime 42533 secs is different from voms extension lifetime 42532 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 13:51:18,900: 	 Proxy valid for 11:48:52 hours
+DEBUG 2019-02-07 13:51:19,015: 	 Executing : 
+ command : openssl x509 -in ~/.globus/usercert.pem -subject -noout
+ output : subject= /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=yousen/CN=834165/CN=Yousen Zhang
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:51:19,015: 	 Checking credentials
+DEBUG 2019-02-07 13:51:19,015: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 13:51:19,015: 	 Getting proxy life time left
+DEBUG 2019-02-07 13:51:21,038: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 42530
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:51:22,481: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 42528
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:51:22,481: 	 Proxy lifetime 42530 secs is different from voms extension lifetime 42528 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 13:51:22,481: 	 Proxy valid for 11:48:48 hours
+DEBUG 2019-02-07 13:51:23,697: 	 Executing : 
+ command : env X509_USER_PROXY=/tmp/x509up_u118775 voms-proxy-info -fqan
+ output : /cms/Role=NULL/Capability=NULL
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 13:51:23,698: 	 Command use: checkwrite
+DEBUG 2019-02-07 13:51:23,698: 	 Options use: ['--site=T2_CH_CERN', '--lfn=/store/group/phys_heavyions/yousen/']
+DEBUG 2019-02-07 13:51:23,698: 	 Instance is None
+DEBUG 2019-02-07 13:51:23,698: 	 Server base url is None
+INFO 2019-02-07 13:51:23,705: 	 Validating LFN /store/group/phys_heavyions/yousen/...
+INFO 2019-02-07 13:51:23,705: 	 LFN /store/group/phys_heavyions/yousen/ is valid.
+INFO 2019-02-07 13:51:23,731: 	 Will use `gfal-copy`, `gfal-rm` commands for checking write permissions
+INFO 2019-02-07 13:51:23,732: 	 Will check write permission in /store/group/phys_heavyions/yousen/ on site T2_CH_CERN
+INFO 2019-02-07 13:51:24,037: 	 
+Attempting to create (dummy) directory crab3checkwrite_20190207_135123 and copy (dummy) file crab3checkwrite_20190207_135123.tmp to /store/group/phys_heavyions/yousen/
+
+INFO 2019-02-07 13:51:24,043: 	 Executing command: which scram >/dev/null 2>&1 && eval `scram unsetenv -sh`; gfal-copy -p -v -t 180 file:///afs/cern.ch/user/y/yousen/public/mtdreserach/CMSSW_10_4_0_mtd5/src/VertexCompositeAnalysis/VertexCompositeProducer/crab3checkwrite_20190207_135123.tmp 'gsiftp://eoscmsftp.cern.ch//eos/cms/store/group/phys_heavyions/yousen//crab3checkwrite_20190207_135123/crab3checkwrite_20190207_135123.tmp'
+INFO 2019-02-07 13:51:24,043: 	 Please wait...
+INFO 2019-02-07 13:51:25,277: 	 
+Successfully created directory crab3checkwrite_20190207_135123 and copied file crab3checkwrite_20190207_135123.tmp to /store/group/phys_heavyions/yousen/
+INFO 2019-02-07 13:51:25,278: 	 
+Attempting to delete file gsiftp://eoscmsftp.cern.ch//eos/cms/store/group/phys_heavyions/yousen//crab3checkwrite_20190207_135123/crab3checkwrite_20190207_135123.tmp
+
+INFO 2019-02-07 13:51:25,278: 	 Executing command: which scram >/dev/null 2>&1 && eval `scram unsetenv -sh`; gfal-rm -v -t 180 'gsiftp://eoscmsftp.cern.ch//eos/cms/store/group/phys_heavyions/yousen//crab3checkwrite_20190207_135123/crab3checkwrite_20190207_135123.tmp'
+INFO 2019-02-07 13:51:25,278: 	 Please wait...
+INFO 2019-02-07 13:51:25,935: 	 
+Successfully deleted file gsiftp://eoscmsftp.cern.ch//eos/cms/store/group/phys_heavyions/yousen//crab3checkwrite_20190207_135123/crab3checkwrite_20190207_135123.tmp
+INFO 2019-02-07 13:51:25,936: 	 
+Attempting to delete directory gsiftp://eoscmsftp.cern.ch//eos/cms/store/group/phys_heavyions/yousen//crab3checkwrite_20190207_135123/
+
+INFO 2019-02-07 13:51:25,936: 	 Executing command: which scram >/dev/null 2>&1 && eval `scram unsetenv -sh`; gfal-rm -r -v -t 180 'gsiftp://eoscmsftp.cern.ch//eos/cms/store/group/phys_heavyions/yousen//crab3checkwrite_20190207_135123/'
+INFO 2019-02-07 13:51:25,936: 	 Please wait...
+INFO 2019-02-07 13:51:26,911: 	 
+Successfully deleted directory gsiftp://eoscmsftp.cern.ch//eos/cms/store/group/phys_heavyions/yousen//crab3checkwrite_20190207_135123/
+INFO 2019-02-07 13:51:27,008: 	 
+Checkwrite Result:
+INFO 2019-02-07 13:51:27,008: 	 Success: Able to write in /store/group/phys_heavyions/yousen/ on site T2_CH_CERN
+DEBUG 2019-02-07 14:21:32,257: 	 Executing command: 'submit'
+DEBUG 2019-02-07 14:21:32,258: 	 Found CRAB cache file /afs/cern.ch/user/y/yousen/.crab3
+DEBUG 2019-02-07 14:21:32,288: 	 Checking credentials
+DEBUG 2019-02-07 14:21:32,290: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 14:21:32,290: 	 Getting proxy life time left
+DEBUG 2019-02-07 14:21:33,524: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 43143
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 14:21:34,741: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 43142
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 14:21:34,741: 	 Proxy lifetime 43143 secs is different from voms extension lifetime 43142 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 14:21:34,741: 	 Proxy valid for 11:59:02 hours
+INFO 2019-02-07 14:21:34,741: 	 Will use CRAB configuration file crab/multicrab3_skim_promptd0_mc_mtd.py
+DEBUG 2019-02-07 14:21:34,742: 	 Loading CRAB configuration file.
+ERROR 2019-02-07 14:21:34,743: 	 Error while loading CRAB configuration:
+Unable to find a Configuration object instance in file:
+/afs/cern.ch/user/y/yousen/public/mtdreserach/CMSSW_10_4_0_mtd5/src/VertexCompositeAnalysis/VertexCompositeProducer/crab/multicrab3_skim_promptd0_mc_mtd.py
+
+Please refer to https://twiki.cern.ch/twiki/bin/view/CMSPublic/CRAB3CommonErrors#Syntax_error_in_CRAB_configurati
+See the ./crab.log file for more details.
+The documentation about the CRAB configuration file can be found in https://twiki.cern.ch/twiki/bin/view/CMSPublic/CRAB3ConfigurationFile
+ERROR 2019-02-07 14:21:34,743: 	 Caught exception
+Traceback (most recent call last):
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1812/bin/crab", line 160, in <module>
+    client()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1812/bin/crab", line 146, in __call__
+    self.cmd = sub_cmd(self.logger, args[1:])
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1812/lib/python2.7/site-packages/CRABClient/Commands/submit.py", line 34, in __init__
+    SubCommand.__init__(self, logger, cmdargs, disable_interspersed_args=True)
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1812/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 303, in __init__
+    self.loadConfig(self.options.config, self.args)
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1812/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 84, in loadConfig
+    raise ConfigurationException(configmsg)
+ConfigurationException: Error while loading CRAB configuration:
+Unable to find a Configuration object instance in file:
+/afs/cern.ch/user/y/yousen/public/mtdreserach/CMSSW_10_4_0_mtd5/src/VertexCompositeAnalysis/VertexCompositeProducer/crab/multicrab3_skim_promptd0_mc_mtd.py
+
+Please refer to https://twiki.cern.ch/twiki/bin/view/CMSPublic/CRAB3CommonErrors#Syntax_error_in_CRAB_configurati
+See the ./crab.log file for more details.
+The documentation about the CRAB configuration file can be found in https://twiki.cern.ch/twiki/bin/view/CMSPublic/CRAB3ConfigurationFile
+DEBUG 2019-02-07 14:27:11,444: 	 Executing command: 'checkwrite'
+DEBUG 2019-02-07 14:27:11,445: 	 Found CRAB cache file /afs/cern.ch/user/y/yousen/.crab3
+DEBUG 2019-02-07 14:27:11,461: 	 Checking credentials
+DEBUG 2019-02-07 14:27:11,462: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 14:27:11,462: 	 Getting proxy life time left
+DEBUG 2019-02-07 14:27:13,383: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 42803
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 14:27:14,507: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 42802
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 14:27:14,508: 	 Proxy lifetime 42803 secs is different from voms extension lifetime 42802 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 14:27:14,508: 	 Proxy valid for 11:53:22 hours
+DEBUG 2019-02-07 14:27:14,627: 	 Executing : 
+ command : openssl x509 -in ~/.globus/usercert.pem -subject -noout
+ output : subject= /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=yousen/CN=834165/CN=Yousen Zhang
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 14:27:14,628: 	 Checking credentials
+DEBUG 2019-02-07 14:27:14,628: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 14:27:14,628: 	 Getting proxy life time left
+DEBUG 2019-02-07 14:27:15,740: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 42801
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 14:27:16,861: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 42800
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 14:27:16,862: 	 Proxy lifetime 42801 secs is different from voms extension lifetime 42800 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 14:27:16,862: 	 Proxy valid for 11:53:20 hours
+DEBUG 2019-02-07 14:27:17,974: 	 Executing : 
+ command : env X509_USER_PROXY=/tmp/x509up_u118775 voms-proxy-info -fqan
+ output : /cms/Role=NULL/Capability=NULL
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 14:27:17,974: 	 Command use: checkwrite
+DEBUG 2019-02-07 14:27:17,974: 	 Options use: ['--site=T2_CH_CERN', '--lfn=/store/group/phys_heavyions/yousen/promptd0']
+DEBUG 2019-02-07 14:27:17,974: 	 Instance is None
+DEBUG 2019-02-07 14:27:17,975: 	 Server base url is None
+INFO 2019-02-07 14:27:17,986: 	 Validating LFN /store/group/phys_heavyions/yousen/promptd0...
+INFO 2019-02-07 14:27:17,986: 	 LFN /store/group/phys_heavyions/yousen/promptd0 is valid.
+INFO 2019-02-07 14:27:18,057: 	 Will use `gfal-copy`, `gfal-rm` commands for checking write permissions
+INFO 2019-02-07 14:27:18,057: 	 Will check write permission in /store/group/phys_heavyions/yousen/promptd0 on site T2_CH_CERN
+INFO 2019-02-07 14:27:18,160: 	 
+Attempting to create (dummy) directory crab3checkwrite_20190207_142718 and copy (dummy) file crab3checkwrite_20190207_142718.tmp to /store/group/phys_heavyions/yousen/promptd0
+
+INFO 2019-02-07 14:27:18,169: 	 Executing command: which scram >/dev/null 2>&1 && eval `scram unsetenv -sh`; gfal-copy -p -v -t 180 file:///afs/cern.ch/user/y/yousen/public/mtdreserach/CMSSW_10_4_0_mtd5/src/VertexCompositeAnalysis/VertexCompositeProducer/crab3checkwrite_20190207_142718.tmp 'gsiftp://eoscmsftp.cern.ch//eos/cms/store/group/phys_heavyions/yousen/promptd0/crab3checkwrite_20190207_142718/crab3checkwrite_20190207_142718.tmp'
+INFO 2019-02-07 14:27:18,169: 	 Please wait...
+INFO 2019-02-07 14:27:19,764: 	 
+Successfully created directory crab3checkwrite_20190207_142718 and copied file crab3checkwrite_20190207_142718.tmp to /store/group/phys_heavyions/yousen/promptd0
+INFO 2019-02-07 14:27:19,765: 	 
+Attempting to delete file gsiftp://eoscmsftp.cern.ch//eos/cms/store/group/phys_heavyions/yousen/promptd0/crab3checkwrite_20190207_142718/crab3checkwrite_20190207_142718.tmp
+
+INFO 2019-02-07 14:27:19,765: 	 Executing command: which scram >/dev/null 2>&1 && eval `scram unsetenv -sh`; gfal-rm -v -t 180 'gsiftp://eoscmsftp.cern.ch//eos/cms/store/group/phys_heavyions/yousen/promptd0/crab3checkwrite_20190207_142718/crab3checkwrite_20190207_142718.tmp'
+INFO 2019-02-07 14:27:19,765: 	 Please wait...
+INFO 2019-02-07 14:27:20,832: 	 
+Successfully deleted file gsiftp://eoscmsftp.cern.ch//eos/cms/store/group/phys_heavyions/yousen/promptd0/crab3checkwrite_20190207_142718/crab3checkwrite_20190207_142718.tmp
+INFO 2019-02-07 14:27:20,833: 	 
+Attempting to delete directory gsiftp://eoscmsftp.cern.ch//eos/cms/store/group/phys_heavyions/yousen/promptd0/crab3checkwrite_20190207_142718/
+
+INFO 2019-02-07 14:27:20,833: 	 Executing command: which scram >/dev/null 2>&1 && eval `scram unsetenv -sh`; gfal-rm -r -v -t 180 'gsiftp://eoscmsftp.cern.ch//eos/cms/store/group/phys_heavyions/yousen/promptd0/crab3checkwrite_20190207_142718/'
+INFO 2019-02-07 14:27:20,833: 	 Please wait...
+INFO 2019-02-07 14:27:21,627: 	 
+Successfully deleted directory gsiftp://eoscmsftp.cern.ch//eos/cms/store/group/phys_heavyions/yousen/promptd0/crab3checkwrite_20190207_142718/
+INFO 2019-02-07 14:27:21,678: 	 
+Checkwrite Result:
+INFO 2019-02-07 14:27:21,678: 	 Success: Able to write in /store/group/phys_heavyions/yousen/promptd0 on site T2_CH_CERN
+DEBUG 2019-02-07 14:28:26,432: 	 Executing command: 'submit'
+DEBUG 2019-02-07 14:28:26,432: 	 Found CRAB cache file /afs/cern.ch/user/y/yousen/.crab3
+DEBUG 2019-02-07 14:28:26,448: 	 Checking credentials
+DEBUG 2019-02-07 14:28:26,449: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 14:28:26,449: 	 Getting proxy life time left
+DEBUG 2019-02-07 14:28:28,294: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 42728
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 14:28:29,509: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 42727
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 14:28:29,509: 	 Proxy lifetime 42728 secs is different from voms extension lifetime 42727 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 14:28:29,509: 	 Proxy valid for 11:52:07 hours
+INFO 2019-02-07 14:28:29,510: 	 Will use CRAB configuration file crab/multicrab3_skim_promptd0_mc_mtd.py
+DEBUG 2019-02-07 14:28:29,510: 	 Loading CRAB configuration file.
+ERROR 2019-02-07 14:28:29,515: 	 Error while loading CRAB configuration:
+Unable to find a Configuration object instance in file:
+/afs/cern.ch/user/y/yousen/public/mtdreserach/CMSSW_10_4_0_mtd5/src/VertexCompositeAnalysis/VertexCompositeProducer/crab/multicrab3_skim_promptd0_mc_mtd.py
+
+Please refer to https://twiki.cern.ch/twiki/bin/view/CMSPublic/CRAB3CommonErrors#Syntax_error_in_CRAB_configurati
+See the ./crab.log file for more details.
+The documentation about the CRAB configuration file can be found in https://twiki.cern.ch/twiki/bin/view/CMSPublic/CRAB3ConfigurationFile
+ERROR 2019-02-07 14:28:29,515: 	 Caught exception
+Traceback (most recent call last):
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1812/bin/crab", line 160, in <module>
+    client()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1812/bin/crab", line 146, in __call__
+    self.cmd = sub_cmd(self.logger, args[1:])
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1812/lib/python2.7/site-packages/CRABClient/Commands/submit.py", line 34, in __init__
+    SubCommand.__init__(self, logger, cmdargs, disable_interspersed_args=True)
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1812/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 303, in __init__
+    self.loadConfig(self.options.config, self.args)
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1812/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 84, in loadConfig
+    raise ConfigurationException(configmsg)
+ConfigurationException: Error while loading CRAB configuration:
+Unable to find a Configuration object instance in file:
+/afs/cern.ch/user/y/yousen/public/mtdreserach/CMSSW_10_4_0_mtd5/src/VertexCompositeAnalysis/VertexCompositeProducer/crab/multicrab3_skim_promptd0_mc_mtd.py
+
+Please refer to https://twiki.cern.ch/twiki/bin/view/CMSPublic/CRAB3CommonErrors#Syntax_error_in_CRAB_configurati
+See the ./crab.log file for more details.
+The documentation about the CRAB configuration file can be found in https://twiki.cern.ch/twiki/bin/view/CMSPublic/CRAB3ConfigurationFile
+DEBUG 2019-02-07 14:34:30,708: 	 Executing command: 'submit'
+DEBUG 2019-02-07 14:34:30,708: 	 Found CRAB cache file /afs/cern.ch/user/y/yousen/.crab3
+DEBUG 2019-02-07 14:34:30,723: 	 Checking credentials
+DEBUG 2019-02-07 14:34:30,725: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-07 14:34:30,725: 	 Getting proxy life time left
+DEBUG 2019-02-07 14:34:33,979: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 42363
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 14:34:35,515: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 42361
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-07 14:34:35,515: 	 Proxy lifetime 42363 secs is different from voms extension lifetime 42361 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-07 14:34:35,515: 	 Proxy valid for 11:46:01 hours
+INFO 2019-02-07 14:34:35,516: 	 Will use CRAB configuration file crab/multicrab3_skim_promptd0_mc_mtd.py
+DEBUG 2019-02-07 14:34:35,516: 	 Loading CRAB configuration file.
+ERROR 2019-02-07 14:34:35,534: 	 Error while loading CRAB configuration:
+Unable to find a Configuration object instance in file:
+/afs/cern.ch/user/y/yousen/public/mtdreserach/CMSSW_10_4_0_mtd5/src/VertexCompositeAnalysis/VertexCompositeProducer/crab/multicrab3_skim_promptd0_mc_mtd.py
+
+Please refer to https://twiki.cern.ch/twiki/bin/view/CMSPublic/CRAB3CommonErrors#Syntax_error_in_CRAB_configurati
+See the ./crab.log file for more details.
+The documentation about the CRAB configuration file can be found in https://twiki.cern.ch/twiki/bin/view/CMSPublic/CRAB3ConfigurationFile
+ERROR 2019-02-07 14:34:35,534: 	 Caught exception
+Traceback (most recent call last):
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1812/bin/crab", line 160, in <module>
+    client()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1812/bin/crab", line 146, in __call__
+    self.cmd = sub_cmd(self.logger, args[1:])
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1812/lib/python2.7/site-packages/CRABClient/Commands/submit.py", line 34, in __init__
+    SubCommand.__init__(self, logger, cmdargs, disable_interspersed_args=True)
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1812/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 303, in __init__
+    self.loadConfig(self.options.config, self.args)
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc493/cms/crabclient/3.3.1812/lib/python2.7/site-packages/CRABClient/Commands/SubCommand.py", line 84, in loadConfig
+    raise ConfigurationException(configmsg)
+ConfigurationException: Error while loading CRAB configuration:
+Unable to find a Configuration object instance in file:
+/afs/cern.ch/user/y/yousen/public/mtdreserach/CMSSW_10_4_0_mtd5/src/VertexCompositeAnalysis/VertexCompositeProducer/crab/multicrab3_skim_promptd0_mc_mtd.py
+
+Please refer to https://twiki.cern.ch/twiki/bin/view/CMSPublic/CRAB3CommonErrors#Syntax_error_in_CRAB_configurati
+See the ./crab.log file for more details.
+The documentation about the CRAB configuration file can be found in https://twiki.cern.ch/twiki/bin/view/CMSPublic/CRAB3ConfigurationFile
