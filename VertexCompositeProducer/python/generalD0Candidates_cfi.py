@@ -4,7 +4,7 @@ generalD0Candidates = cms.EDProducer("D0Producer",
                                      
     # InputTag that tells which TrackCollection to use for vertexing
     trackRecoAlgorithm = cms.InputTag('generalTracks'),
-    vertexRecoAlgorithm = cms.InputTag('offlinePrimaryVertices'),
+    vertexRecoAlgorithm = cms.InputTag('offlinePrimaryVertices4D'),
 
     trackQualities = cms.vstring('highPurity'),
                                      
