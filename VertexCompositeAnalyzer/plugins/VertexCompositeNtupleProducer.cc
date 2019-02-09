@@ -1662,6 +1662,7 @@ void
 VertexCompositeNtupleProducer::initTree()
 { 
     VertexCompositeNtuple = fs->make< TTree>("VertexCompositeNtuple","VertexCompositeNtuple");
+    genCandidateNtuple = fs->make< TTree>("genCandidateNtuple","genCandidateNtuple");
     
     VertexCompositeNtuple->Branch("pT",&pt,"pT/F");
     VertexCompositeNtuple->Branch("y",&y,"y/F");
