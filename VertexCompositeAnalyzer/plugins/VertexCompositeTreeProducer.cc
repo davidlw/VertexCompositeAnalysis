@@ -196,6 +196,7 @@ private:
     float mva[MAXCAN];
     float pt[MAXCAN];
     float eta[MAXCAN];
+    float phi[MAXCAN];
     float flavor[MAXCAN];
     float y[MAXCAN];
     float mass[MAXCAN];
@@ -700,6 +701,7 @@ VertexCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::Event
         eta[it] = trk.eta();
         y[it] = trk.rapidity();
         pt[it] = trk.pt();
+        phi[it] = trk.phi();
         flavor[it] = trk.pdgId()/abs(trk.pdgId());
 
         mva[it] = 0.0;
@@ -1689,6 +1691,7 @@ VertexCompositeTreeProducer::initTree()
     // particle info
     VertexCompositeNtuple->Branch("pT",&pt,"pT[candSize]/F");
     VertexCompositeNtuple->Branch("y",&y,"y[candSize]/F");
+    VertexCompositeNtuple->Branch("phi",&phi,"phi[candSize]/F");
     VertexCompositeNtuple->Branch("mass",&mass,"mass[candSize]/F");
     if(useAnyMVA_) VertexCompositeNtuple->Branch("mva",&mva,"mva[candSize]/F");
 
@@ -1696,7 +1699,7 @@ VertexCompositeTreeProducer::initTree()
     {
         //Composite candidate info RECO
         VertexCompositeNtuple->Branch("flavor",&flavor,"flavor[candSize]/F");
-        VertexCompositeNtuple->Branch("eta",&eta,"eta[candSize]/F");
+//        VertexCompositeNtuple->Branch("eta",&eta,"eta[candSize]/F");
         VertexCompositeNtuple->Branch("VtxProb",&VtxProb,"VtxProb[candSize]/F");
 //        VertexCompositeNtuple->Branch("VtxChi2",&vtxChi2,"VtxChi2[candSize]/F");
 //        VertexCompositeNtuple->Branch("VtxNDF",&ndf,"VtxNDF[candSize]/F");
@@ -1731,7 +1734,7 @@ VertexCompositeTreeProducer::initTree()
             VertexCompositeNtuple->Branch("massDaugther1",&grand_mass,"massDaugther1[candSize]/F");
             VertexCompositeNtuple->Branch("pTD1",&pt1,"pTD1[candSize]/F");
             VertexCompositeNtuple->Branch("EtaD1",&eta1,"EtaD1[candSize]/F");
-//            VertexCompositeNtuple->Branch("PhiD1",&phi1,"PhiD1[candSize]/F");
+            VertexCompositeNtuple->Branch("PhiD1",&phi1,"PhiD1[candSize]/F");
             VertexCompositeNtuple->Branch("VtxProbDaugther1",&grand_VtxProb,"VtxProbDaugther1[candSize]/F");
 //            VertexCompositeNtuple->Branch("VtxChi2Daugther1",&grand_vtxChi2,"VtxChi2Daugther1[candSize]/F");
 //            VertexCompositeNtuple->Branch("VtxNDFDaugther1",&grand_ndf,"VtxNDFDaugther1[candSize]/F");
@@ -1751,7 +1754,7 @@ VertexCompositeTreeProducer::initTree()
             VertexCompositeNtuple->Branch("pTerrD2",&ptErr2,"pTerrD2[candSize]/F");
 //            VertexCompositeNtuple->Branch("pD2",&p2,"pD2[candSize]/F");
             VertexCompositeNtuple->Branch("EtaD2",&eta2,"EtaD2[candSize]/F");
-//            VertexCompositeNtuple->Branch("PhiD2",&phi2,"PhiD2[candSize]/F");
+            VertexCompositeNtuple->Branch("PhiD2",&phi2,"PhiD2[candSize]/F");
 //            VertexCompositeNtuple->Branch("chargeD2",&charge2,"chargeD2[candSize]/I");
             VertexCompositeNtuple->Branch("dedxHarmonic2D2",&H2dedx2,"dedxHarmonic2D2[candSize]/F");
 //            VertexCompositeNtuple->Branch("dedxTruncated40Daugther2",&T4dedx2,"dedxTruncated40Daugther2[candSize]/F");
@@ -1791,7 +1794,7 @@ VertexCompositeTreeProducer::initTree()
             VertexCompositeNtuple->Branch("pTerrD1",&ptErr1,"pTerrD1[candSize]/F");
 //            VertexCompositeNtuple->Branch("pD1",&p1,"pD1[candSize]/F");
             VertexCompositeNtuple->Branch("EtaD1",&eta1,"EtaD1[candSize]/F");
-//            VertexCompositeNtuple->Branch("PhiD1",&eta1,"PhiD1[candSize]/F");
+            VertexCompositeNtuple->Branch("PhiD1",&phi1,"PhiD1[candSize]/F");
 //            VertexCompositeNtuple->Branch("chargeD1",&charge1,"chargeD1[candSize]/I");
             VertexCompositeNtuple->Branch("dedxHarmonic2D1",&H2dedx1,"dedxHarmonic2D1[candSize]/F");
 //            VertexCompositeNtuple->Branch("dedxTruncated40Daugther1",&T4dedx1,"dedxTruncated40Daugther1[candSize]/F");
@@ -1804,7 +1807,7 @@ VertexCompositeTreeProducer::initTree()
             VertexCompositeNtuple->Branch("pTerrD2",&ptErr2,"pTerrD2[candSize]/F");
 //            VertexCompositeNtuple->Branch("pD2",&p2,"pD2[candSize]/F");
             VertexCompositeNtuple->Branch("EtaD2",&eta2,"EtaD2[candSize]/F");
-//            VertexCompositeNtuple->Branch("PhiD2",&eta2,"PhiD2[candSize]/F");
+            VertexCompositeNtuple->Branch("PhiD2",&phi2,"PhiD2[candSize]/F");
 //            VertexCompositeNtuple->Branch("chargeD2",&charge2,"chargeD2[candSize]/I");
             VertexCompositeNtuple->Branch("dedxHarmonic2D2",&H2dedx2,"dedxHarmonic2D2[candSize]/F");
 //            VertexCompositeNtuple->Branch("dedxTruncated40Daugther2",&T4dedx2,"dedxTruncated40Daugther2[candSize]/F");
