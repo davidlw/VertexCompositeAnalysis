@@ -21,16 +21,8 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 2
 
 process.source = cms.Source("PoolSource",
    fileNames = cms.untracked.vstring(
-'root://xrootd-cms.infn.it//store/user/anstahll/MTD/MC/NonEmbedded/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/D0_PiK_prompt_5p02TeV_TuneCP5_MTD/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/190126_200650/0000/D0_RECO_98.root',
-#'root://xrootd-cms.infn.it//store/user/anstahll/MTD/MC/NonEmbedded/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/D0_PiK_prompt_5p02TeV_TuneCP5_MTD/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/190126_200650/0000/D0_RECO_97.root',
-#'/store/user/anstahll/MTD/MC/NonEmbedded/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/D0_PiK_prompt_5p02TeV_TuneCP5_MTD/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/190126_200650/0000/D0_RECO_84.root',
-#'/store/user/anstahll/MTD/MC/NonEmbedded/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/D0_PiK_prompt_5p02TeV_TuneCP5_MTD/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/190126_200650/0000/D0_RECO_80.root',
-#'/store/user/anstahll/MTD/MC/NonEmbedded/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/D0_PiK_prompt_5p02TeV_TuneCP5_MTD/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/190126_200650/0000/D0_RECO_81.root',
-#'/store/user/anstahll/MTD/MC/NonEmbedded/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/D0_PiK_prompt_5p02TeV_TuneCP5_MTD/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/190126_200650/0000/D0_RECO_78.root',
-#'/store/user/anstahll/MTD/MC/NonEmbedded/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/D0_PiK_prompt_5p02TeV_TuneCP5_MTD/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/190126_200650/0000/D0_RECO_77.root',
-#'/store/user/anstahll/MTD/MC/NonEmbedded/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/D0_PiK_prompt_5p02TeV_TuneCP5_MTD/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/190126_200650/0000/D0_RECO_76.root',
-#'/store/user/anstahll/MTD/MC/NonEmbedded/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/D0_PiK_prompt_5p02TeV_TuneCP5_MTD/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/190126_200650/0000/D0_RECO_75.root',
-#'/store/user/anstahll/MTD/MC/NonEmbedded/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/D0_PiK_prompt_5p02TeV_TuneCP5_MTD/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/190126_200650/0000/D0_RECO_73.root'
+#'root://xrootd-cms.infn.it//store/user/anstahll/MTD/MC/NonEmbedded/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/D0_PiK_prompt_5p02TeV_TuneCP5_MTD/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/190126_200650/0000/D0_RECO_98.root',
+'root://xrootd-cms.infn.it//store/mc/PhaseIIMTDTDRAutumn18DR/D0_PiK_prompt_pt0_y4_5p5TeV_TuneCP5_Pythia8/FEVT/NoPU_103X_upgrade2023_realistic_v2-v1/30000/FFDBA739-F97F-B347-BAB9-91EC1A7F2CE1.root'
 )
 )
 
@@ -81,16 +73,42 @@ process.generalD0CandidatesNew.tkPtCut = cms.double(0.7)
 #process.generalD0CandidatesNew.alphaCut = cms.double(1.0)
 #process.generalD0CandidatesNew.alpha2DCut = cms.double(1.0)
 
-#process.generalD0CandidatesNewWrongSign = process.generalD0Candidates.clone(isWrongSign = cms.bool(True))
-
-#process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew * process.generalD0CandidatesNewWrongSign )
-
 process.load('RecoMTD.TrackExtender.trackExtenderWithMTD_cfi')
-
 process.load('RecoLocalFastTime.FTLRecProducers.mtdTrackingRecHits_cfi')
 process.load('RecoLocalFastTime.FTLClusterizer.mtdClusters_cfi')
 
-process.d0rereco_step = cms.Path(process.mtdClusters * process.mtdTrackingRecHits * process.trackExtenderWithMTD + process.eventFilter_HM * process.generalD0CandidatesNew )
+# centrality setup
+process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000") 
+process.GlobalTag.toGet.extend([ 
+    cms.PSet(record = cms.string("HeavyIonRcd"), 
+        tag = cms.string("CentralityTable_HFtowers200_HydjetTuneCP5MTD_v1040mtd4x1_mc"), 
+        connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"), 
+        label = cms.untracked.string("HFtowers") 
+        ), 
+    ]) 
+process.load('RecoHI.HiCentralityAlgos.HiCentrality_cfi') 
+process.hiCentrality.produceHFhits = False 
+process.hiCentrality.produceHFtowers = True
+process.hiCentrality.produceEcalhits = False 
+process.hiCentrality.produceZDChits = False 
+process.hiCentrality.produceETmidRapidity = False 
+process.hiCentrality.producePixelhits = False 
+process.hiCentrality.produceTracks = False 
+process.hiCentrality.producePixelTracks = False 
+process.hiCentrality.reUseCentrality = False
+process.hiCentrality.srcReUse = cms.InputTag("hiCentrality","","RECO") 
+process.hiCentrality.srcTracks = cms.InputTag("generalTracks") 
+process.hiCentrality.srcVertex = cms.InputTag("offlinePrimaryVertices") 
+process.load("RecoHI.HiCentralityAlgos.CentralityBin_cfi") 
+process.centralityBin.Centrality = cms.InputTag("hiCentrality") 
+process.centralityBin.centralityVariable = cms.string("HFtowers") 
+process.centralityBin.nonDefaultGlauberModel = cms.string("") 
+process.hiCentrality.srcEBhits = cms.InputTag("HGCalRecHit","HGCHEBRecHits")
+process.hiCentrality.srcEEhits = cms.InputTag("HGCalRecHit","HGCEERecHits")
+
+process.cent_seq = cms.Sequence(process.hiCentrality * process.centralityBin)
+
+process.d0rereco_step = cms.Path(process.mtdClusters * process.mtdTrackingRecHits * process.trackExtenderWithMTD + process.cent_seq + process.eventFilter_HM * process.generalD0CandidatesNew )
 
 ###############################################################################################
 
