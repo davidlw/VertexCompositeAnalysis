@@ -26,7 +26,7 @@ process.source = cms.Source("PoolSource",
 )
 
 # =============== Other Statements =====================
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(30))
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.GlobalTag.globaltag = '103X_upgrade2018_realistic_HI_v6'
 
@@ -72,16 +72,42 @@ process.generalD0CandidatesNew.tkPtCut = cms.double(0.7)
 #process.generalD0CandidatesNew.alphaCut = cms.double(1.0)
 #process.generalD0CandidatesNew.alpha2DCut = cms.double(1.0)
 
-#process.generalD0CandidatesNewWrongSign = process.generalD0Candidates.clone(isWrongSign = cms.bool(True))
-
-#process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew * process.generalD0CandidatesNewWrongSign )
-
 process.load('RecoMTD.TrackExtender.trackExtenderWithMTD_cfi')
-
 process.load('RecoLocalFastTime.FTLRecProducers.mtdTrackingRecHits_cfi')
 process.load('RecoLocalFastTime.FTLClusterizer.mtdClusters_cfi')
 
-process.d0rereco_step = cms.Path(process.mtdClusters * process.mtdTrackingRecHits * process.trackExtenderWithMTD + process.eventFilter_HM * process.generalD0CandidatesNew )
+# centrality setup
+process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000") 
+process.GlobalTag.toGet.extend([ 
+    cms.PSet(record = cms.string("HeavyIonRcd"), 
+        tag = cms.string("CentralityTable_HFtowers200_HydjetTuneCP5MTD_v1040mtd4x1_mc"), 
+        connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"), 
+        label = cms.untracked.string("HFtowers") 
+        ), 
+    ]) 
+process.load('RecoHI.HiCentralityAlgos.HiCentrality_cfi') 
+process.hiCentrality.produceHFhits = False 
+process.hiCentrality.produceHFtowers = True
+process.hiCentrality.produceEcalhits = False 
+process.hiCentrality.produceZDChits = False 
+process.hiCentrality.produceETmidRapidity = False 
+process.hiCentrality.producePixelhits = False 
+process.hiCentrality.produceTracks = False 
+process.hiCentrality.producePixelTracks = False 
+process.hiCentrality.reUseCentrality = False
+process.hiCentrality.srcReUse = cms.InputTag("hiCentrality","","RECO") 
+process.hiCentrality.srcTracks = cms.InputTag("generalTracks") 
+process.hiCentrality.srcVertex = cms.InputTag("offlinePrimaryVertices") 
+process.load("RecoHI.HiCentralityAlgos.CentralityBin_cfi") 
+process.centralityBin.Centrality = cms.InputTag("hiCentrality") 
+process.centralityBin.centralityVariable = cms.string("HFtowers") 
+process.centralityBin.nonDefaultGlauberModel = cms.string("") 
+process.hiCentrality.srcEBhits = cms.InputTag("HGCalRecHit","HGCHEBRecHits")
+process.hiCentrality.srcEEhits = cms.InputTag("HGCalRecHit","HGCEERecHits")
+
+process.cent_seq = cms.Sequence(process.hiCentrality * process.centralityBin)
+
+process.d0rereco_step = cms.Path(process.mtdClusters * process.mtdTrackingRecHits * process.trackExtenderWithMTD + process.cent_seq + process.eventFilter_HM * process.generalD0CandidatesNew )
 
 ###############################################################################################
 
