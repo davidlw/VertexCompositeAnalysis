@@ -11,13 +11,15 @@ config.General.workArea = 'VertexCompositeHyJetsAna_mtd'
 config.General.transferOutputs = True
 config.General.transferLogs = False
 config.JobType.pluginName = 'Analysis'
-#config.JobType.maxMemoryMB = 3000
+config.JobType.maxMemoryMB = 5000
 config.JobType.maxJobRuntimeMin = 2750
 config.Data.unitsPerJob = 1
 config.Data.splitting = 'FileBased'
 config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 config.Data.publication = True
 config.Data.inputDBS = 'phys03'
+#config.Data.ignoreLocality = True
+#config.Site.whitelist = ['T2_CH_*' , 'T2_US_*' , 'T2_FR_*']
 config.Site.storageSite = 'T2_US_MIT'
 
 def submit(config):
@@ -32,8 +34,8 @@ def submit(config):
 ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
 #############################################################################################
 
-config.General.requestName = 'HyJets_mc_mtd_v1'
+config.General.requestName = 'HyJets_mc_mtd_v4'
 config.JobType.psetName = '../test/HyJets_mc_mtd_cfg.py'
-config.Data.outputDatasetTag = 'hyjets_mc_mtd_Skim_v1'
+config.Data.outputDatasetTag = 'hyjets_mc_mtd_Skim_v4'
 config.Data.inputDataset = '/Hydjet_5p02TeV_TuneCP5_MTD/anstahll-Hydjet_5p02TeV_TuneCP5_MTD_RECO_20190127-8c6abfe98cf25191ce912f4177fc40d8/USER'
 submit(config)
