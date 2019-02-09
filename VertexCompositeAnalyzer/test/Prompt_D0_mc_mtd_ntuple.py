@@ -63,11 +63,12 @@ cms.string('promptd0_mc_mtd.root')
 #process.centralityBin.centralityVariable = cms.string("HFtowers") 
 #process.centralityBin.nonDefaultGlauberModel = cms.string("") 
 
-process.d0ana.isUseMtd = cms.untracked.bool(True);
-process.d0ana.doRecoNtuple = cms.untracked.bool(True);
-process.d0ana.doGenNtuple = cms.untracked.bool(True);
-process.d0ana.doGenMatching = cms.untracked.bool(True);
-process.d0ana.doGenMatchingTOF = cms.untracked.bool(True);
+process.d0ana.isUseMtd = cms.untracked.bool(True)
+process.d0ana.doRecoNtuple = cms.untracked.bool(True)
+process.d0ana.doGenNtuple = cms.untracked.bool(True)
+process.d0ana.doGenMatching = cms.untracked.bool(True)
+process.d0ana.doGenMatchingTOF = cms.untracked.bool(True)
+process.d0ana.decayInGen = cms.untracked.bool(True)
 process.d0ana.useAnyMVA = cms.bool(False)
 process.d0ana.VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices4D")
 process.d0ana.VertexCompositeCollection = cms.untracked.InputTag("d0selector:D0")

@@ -100,6 +100,7 @@ private:
     edm::Service<TFileService> fs;
 
     TTree* VertexCompositeNtuple;
+    TTree* genCandidateNtuple;
     TH2F*  hMassVsMVA[6][10];
     TH2F*  hpTVsMVA[6][10];
     TH2F*  hetaVsMVA[6][10];
@@ -1569,6 +1570,8 @@ VertexCompositeNtupleProducer::fillGEN(const edm::Event& iEvent, const edm::Even
         iddau1 = fabs(Dd1->pdgId());
         iddau2 = fabs(Dd2->pdgId());
         if(Dd3) iddau3 = fabs(Dd3->pdgId());
+
+        genCandidateNtuple->Fill(); // fill all gen partciles
     }
 }
 
@@ -1866,6 +1869,19 @@ VertexCompositeNtupleProducer::initTree()
             VertexCompositeNtuple->Branch("DauID1_gen",&iddau1,"DauID1_gen/I");
             VertexCompositeNtuple->Branch("DauID2_gen",&iddau2,"DauID2_gen/I");
             VertexCompositeNtuple->Branch("DauID3_gen",&iddau3,"DauID3_gen/I");
+        }
+
+        genCandidateNtuple->Branch("pT_gen",&pt_gen,"pT_gen/F");
+        genCandidateNtuple->Branch("eta_gen",&eta_gen,"eta_gen/F");
+        genCandidateNtuple->Branch("y_gen",&y_gen,"y_gen/F");
+        genCandidateNtuple->Branch("status_gen",&status_gen,"status_gen/I");
+        genCandidateNtuple->Branch("MotherID_gen",&idmom,"MotherID_gen/I");
+
+        if(decayInGen_)
+        {
+            genCandidateNtuple->Branch("DauID1_gen",&iddau1,"DauID1_gen/I");
+            genCandidateNtuple->Branch("DauID2_gen",&iddau2,"DauID2_gen/I");
+            genCandidateNtuple->Branch("DauID3_gen",&iddau3,"DauID3_gen/I");
         }
     }
 }
