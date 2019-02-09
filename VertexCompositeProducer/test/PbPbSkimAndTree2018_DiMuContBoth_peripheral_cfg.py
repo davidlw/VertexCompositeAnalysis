@@ -99,6 +99,12 @@ process.hltupsilon.HLTPaths = ['HLT_HIL3Mu2p5NHitQ10_L2Mu2_M7toinf_v*']
 process.hltjpsi = process.hltHM.clone()
 process.hltjpsi.HLTPaths = ['HLT_HIL3Mu0NHitQ10_L2Mu0_MAXdR3p5_M1to5_v*']
 
+process.hltperi1 = process.hltHM.clone()
+process.hltperi1.HLTPaths = ['HLT_HIL1DoubleMuOpen_OS_Centrality_40_100_v*']
+
+process.hltperi2 = process.hltHM.clone()
+process.hltperi2.HLTPaths = ['HLT_HIL1DoubleMuOpen_Centrality_50_100_v*']
+
 process.load("RecoVertex.PrimaryVertexProducer.OfflinePrimaryVerticesRecovery_cfi")
 
 process.pprimaryVertexFilter = cms.EDFilter("VertexSelector",
@@ -134,7 +140,7 @@ process.collisionEventSelection = cms.Sequence(
                                          )
 
 process.eventFilter_HM = cms.Sequence( 
-    process.hltupsilon *
+    process.hltperi1 *
     process.offlinePrimaryVerticesRecovery *
     process.collisionEventSelection
 )

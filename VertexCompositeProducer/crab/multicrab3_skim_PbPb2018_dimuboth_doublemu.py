@@ -15,7 +15,7 @@ if __name__ == '__main__':
     config.JobType.pluginName = 'Analysis'
 #    config.JobType.maxMemoryMB = 6000
 #    config.JobType.maxJobRuntimeMin = 2750
-    config.JobType.psetName = '../test/PbPbSkim2018_DiMuContBoth_cfg.py'
+    config.JobType.psetName = '../test/PbPbSkimAndTree2018_DiMuContBoth_cfg.py'
     config.JobType.inputFiles=['../test/HeavyIonRPRcd_PbPb2018_offline.db']
 #    config.Data.unitsPerJob = 20
 #    config.Data.totalUnits = 100
@@ -43,12 +43,19 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'PbPbDiMu_v1_MP327560_v2'
+    config.General.requestName = 'PbPbDiMu_v1_MP327560_v3'
     config.Data.inputDataset = '/HIDoubleMuon/HIRun2018A-PromptReco-v1/AOD'
-    config.Data.outputDatasetTag = '2018Skim_DiMuCont_MuonPhysics_v1_NoEvtSel'
+    config.Data.outputDatasetTag = '2018Skimv1_DiMuCont_MuonPhysics_HLTMass7toInf_v3'
+    config.JobType.psetName = '../test/PbPbSkimAndTree2018_DiMuContBoth_cfg.py'
     submit(config)
 
-    config.General.requestName = 'PbPbDiMu_v2_MP327560_v2'
+    config.General.requestName = 'PbPbDiMu_v2_MP327560_v3'
     config.Data.inputDataset = '/HIDoubleMuon/HIRun2018A-PromptReco-v2/AOD'
-    config.Data.outputDatasetTag = '2018Skim_DiMuCont_MuonPhysics_v2_NoEvtSel'
+    config.Data.outputDatasetTag = '2018Skimv2_DiMuCont_MuonPhysics_HLTMass7toInf_v3'
+    submit(config)
+
+    config.General.requestName = 'PbPbDiMuPeri_v2_MP327560_v3'
+    config.Data.inputDataset = '/HIDoubleMuonPsiPeri/HIRun2018A-PromptReco-v2/AOD'
+    config.Data.outputDatasetTag = '2018Skimv2_DiMuCont_MuonPhysics_HLT40100OS_v3'
+    config.JobType.psetName = '../test/PbPbSkimAndTree2018_DiMuContBoth_peripheral_cfg.py'
     submit(config)

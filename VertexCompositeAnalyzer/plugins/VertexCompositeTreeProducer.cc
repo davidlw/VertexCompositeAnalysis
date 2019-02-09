@@ -39,7 +39,6 @@
 #include "DataFormats/RecoCandidate/interface/RecoCandidate.h"
 
 #include "DataFormats/Candidate/interface/Candidate.h"
-
 #include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"
 #include "DataFormats/Candidate/interface/VertexCompositeCandidateFwd.h"
 
@@ -62,6 +61,11 @@
 #include "DataFormats/MuonReco/interface/MuonSegmentMatch.h"
 #include "DataFormats/HeavyIonEvent/interface/CentralityBins.h"
 #include "DataFormats/HeavyIonEvent/interface/Centrality.h"
+#include "DataFormats/HeavyIonEvent/interface/EvtPlane.h"
+
+//#include "RecoHI/HiEvtPlaneAlgos/interface/HiEvtPlaneFlatten.h"
+//#include "RecoHI/HiEvtPlaneAlgos/interface/HiEvtPlaneList.h"
+//#include "RecoHI/HiEvtPlaneAlgos/interface/LoadEPDB.h"
 
 #include <Math/Functions.h>
 #include <Math/SVector.h>
@@ -181,6 +185,12 @@ private:
     float bestvy;
     float bestvz;
     int candSize;
+    float ephfpAngle[3];
+    float ephfmAngle[3];
+    float ephfpQ[3];
+    float ephfmQ[3];
+    float ephfpSumW;
+    float ephfmSumW;
     
     //Composite candidate info
     float mva[MAXCAN];
@@ -351,6 +361,7 @@ private:
     bool useAnyMVA_;
     bool isSkimMVA_;
     bool isCentrality_;
+    bool isEventPlane_;
 
     edm::Handle<int> cbin_;
 
@@ -367,6 +378,8 @@ private:
 
     edm::EDGetTokenT<int> tok_centBinLabel_;
     edm::EDGetTokenT<reco::Centrality> tok_centSrc_;
+
+    edm::EDGetTokenT<reco::EvtPlaneCollection> tok_eventplaneSrc_;
 };
 
 //
@@ -433,6 +446,13 @@ VertexCompositeTreeProducer::VertexCompositeTreeProducer(const edm::ParameterSet
     {
       tok_centBinLabel_ = consumes<int>(iConfig.getParameter<edm::InputTag>("centralityBinLabel"));
       tok_centSrc_ = consumes<reco::Centrality>(iConfig.getParameter<edm::InputTag>("centralitySrc"));
+    }
+
+    isEventPlane_ = false;
+    if(iConfig.exists("isEventPlane")) isEventPlane_ = iConfig.getParameter<bool>("isEventPlane");
+    if(isEventPlane_)
+    {
+      tok_eventplaneSrc_ = consumes<reco::EvtPlaneCollection>(iConfig.getParameter<edm::InputTag>("eventplaneSrc"));
     }
 
     if(useAnyMVA_ && iConfig.exists("MVACollection"))
@@ -511,6 +531,39 @@ VertexCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::Event
       Npixel = cent->multiplicityPixel();
 //      int ntrk = cent->Ntracks();
     }
+
+    if(isEventPlane_)
+    {
+      edm::Handle<reco::EvtPlaneCollection> eventplanes;
+      iEvent.getByToken(tok_eventplaneSrc_,eventplanes);
+
+      const reco::EvtPlane & ephfp1 = (*eventplanes)[0];
+      const reco::EvtPlane & ephfm1 = (*eventplanes)[1];
+      const reco::EvtPlane & ephfp2 = (*eventplanes)[6];
+      const reco::EvtPlane & ephfm2 = (*eventplanes)[7];
+      const reco::EvtPlane & ephfp3 = (*eventplanes)[13];
+      const reco::EvtPlane & ephfm3 = (*eventplanes)[14];
+     
+      ephfpAngle[0] = ephfp1.angle(2);
+      ephfpAngle[1] = ephfp2.angle(2);
+      ephfpAngle[2] = ephfp3.angle(2);
+
+      ephfmAngle[0] = ephfm1.angle(2);
+      ephfmAngle[1] = ephfm2.angle(2);
+      ephfmAngle[2] = ephfm3.angle(2);
+
+      ephfpQ[0] = ephfp1.q(2);
+      ephfpQ[1] = ephfp2.q(2);
+      ephfpQ[2] = ephfp3.q(2);
+
+      ephfmQ[0] = ephfm1.q(2);
+      ephfmQ[1] = ephfm2.q(2);
+      ephfmQ[2] = ephfm3.q(2);
+
+      ephfpSumW = ephfp2.sumw();
+      ephfmSumW = ephfm2.sumw();
+    }
+
     //best vertex
     bestvz=-999.9; bestvx=-999.9; bestvy=-999.9;
     double bestvzError=-999.9, bestvxError=-999.9, bestvyError=-999.9;
@@ -1623,6 +1676,15 @@ VertexCompositeTreeProducer::initTree()
     VertexCompositeNtuple->Branch("bestvtxZ",&bestvz,"bestvtxZ/F");
     VertexCompositeNtuple->Branch("candSize",&candSize,"candSize/I");
     if(isCentrality_) VertexCompositeNtuple->Branch("centrality",&centrality,"centrality/I");
+    if(isEventPlane_) 
+    {
+      VertexCompositeNtuple->Branch("ephfpAngle",&ephfpAngle,"ephfpAngle[3]/F");
+      VertexCompositeNtuple->Branch("ephfmAngle",&ephfmAngle,"ephfmAngle[3]/F");
+      VertexCompositeNtuple->Branch("ephfpQ",&ephfpQ,"ephfpQ[3]/F");
+      VertexCompositeNtuple->Branch("ephfmQ",&ephfmQ,"ephfmQ[3]/F");
+      VertexCompositeNtuple->Branch("ephfpSumW",&ephfpSumW,"ephfpSumW/F");
+      VertexCompositeNtuple->Branch("ephfmSumW",&ephfmSumW,"ephfmSumW/F");
+    }
 
     // particle info
     VertexCompositeNtuple->Branch("pT",&pt,"pT[candSize]/F");

@@ -18,7 +18,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1
 process.source = cms.Source("PoolSource",
    fileNames = cms.untracked.vstring(
 #'root://xrootd-cms.infn.it//store/user/anstahll/MTD/MC/NonEmbedded/LambdaC_PiKP_prompt_5p02TeV_TuneCP5_MTD_RECO_20190109/LambdaC_PiKP_prompt_5p02TeV_TuneCP5_MTD/LambdaC_PiKP_prompt_5p02TeV_TuneCP5_MTD_RECO_20190109/190109_204426/0000/Pythia8_TuneCP5_5TeV_LambdaC_PiKP_prompt_pt1_y4_RECO_97.root'
-'root://xrootd-cms.infn.it//store/user/anstahll/MTD/MC/NonEmbedded/Hydjet_5p02TeV_TuneCP5_MTD_RECO_20190110/Hydjet_5p02TeV_TuneCP5_MTD/Hydjet_5p02TeV_TuneCP5_MTD_RECO_20190110/190112_184141/0000/Hydjet_RECO_99.root'
+'root://cmsxrootd.fnal.gov//store/user/anstahll/MTD/MC/NonEmbedded/Hydjet_5p02TeV_TuneCP5_MTD_RECO_20190110/Hydjet_5p02TeV_TuneCP5_MTD/Hydjet_5p02TeV_TuneCP5_MTD_RECO_20190110/190112_184141/0000/Hydjet_RECO_99.root'
 )
 )
 
@@ -85,9 +85,9 @@ process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 ########## LamC3P candidate rereco ###############################################################
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalLamC3PCandidates_cff")
 process.generalLamC3PCandidatesNew = process.generalLamC3PCandidates.clone()
-#process.generalLamC3PCandidatesNew.tkNhitsCut = cms.int32(11)
+process.generalLamC3PCandidatesNew.tkNhitsCut = cms.int32(11)
 process.generalLamC3PCandidatesNew.tkPtErrCut = cms.double(0.1)
-process.generalLamC3PCandidatesNew.tkPCut = cms.double(0.7)
+process.generalLamC3PCandidatesNew.tkPCut = cms.double(1)
 #process.generalLamC3PCandidatesNew.alphaCut = cms.double(1.0)
 #process.generalLamC3PCandidatesNew.alpha2DCut = cms.double(1.0)
 #process.generalLamC3PCandidatesNew.dPt3Cut = cms.double(1.)

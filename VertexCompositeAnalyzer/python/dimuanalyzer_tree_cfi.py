@@ -26,6 +26,9 @@ dimuana = cms.EDAnalyzer('VertexCompositeTreeProducer',
   centralityBinLabel = cms.InputTag("centralityBin","HFtowers"),
   centralitySrc = cms.InputTag("hiCentrality"),
 
+  isEventPlane = cms.bool(False),
+  eventplaneSrc = cms.InputTag("hiEvtPlaneFlat"),
+
   saveTree = cms.untracked.bool(True),
   saveHistogram = cms.untracked.bool(False),
   saveAllHistogram = cms.untracked.bool(False),

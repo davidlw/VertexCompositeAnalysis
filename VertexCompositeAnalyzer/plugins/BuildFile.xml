@@ -21,6 +21,7 @@
 <use name="RecoHI/HiCentralityAlgos"/>
 <use name="DataFormats/MuonReco"/>
 <use name="DataFormats/PatCandidates"/>
+<use name="DataFormats/HeavyIonEvent"/>
 <use name="CondFormats/DataRecord"/>
 <use name="CondFormats/EgammaObjects"/>
 
