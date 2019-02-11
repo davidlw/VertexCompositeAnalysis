@@ -143,6 +143,8 @@ private:
 
     TH2F*  h1overBetaPVVsPmatchD0[6][10];  // mtd
     TH2F*  h1overBetaPVVsP; // mtd
+
+    TH1F*  hCent; // mtd
     
     bool   isUseMtd_;
 
@@ -529,6 +531,7 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
       HFsumET = cent->EtHFtowerSum();
       Npixel = cent->multiplicityPixel();
 //      int ntrk = cent->Ntracks();
+      hCent->Fill(centrality);
     }
     //best vertex
     bestvz=-999.9; bestvx=-999.9; bestvy=-999.9;
@@ -1599,7 +1602,8 @@ VertexCompositeNtupleProducer::beginJob()
 void
 VertexCompositeNtupleProducer::initHistogram()
 {
-  if(isUseMtd_) h1overBetaPVVsP = fs->make<TH2F>("h1overBetaPVVsP", ";p (GeV);1/beta", 100, 0, 5, 80, 0.9, 1.7);
+  if(isUseMtd_) h1overBetaPVVsP = fs->make<TH2F>("h1overBetaPVVsP", ";p (GeV);1/beta", 100, 0, 5, 80, 0.9, 1.7); // mtd
+  if(isCentrality_) hCent = fs->make<TH1F>("hCent", ";int centrality;", 200, 0, 200);  
   for(unsigned int ipt=0;ipt<pTBins_.size()-1;ipt++)
   {
     for(unsigned int iy=0;iy<yBins_.size()-1;iy++)
