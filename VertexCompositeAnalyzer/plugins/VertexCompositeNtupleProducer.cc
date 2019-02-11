@@ -1799,9 +1799,9 @@ VertexCompositeNtupleProducer::initTree()
 //            VertexCompositeNtuple->Branch("normalizedChi2Daugther2",&trkChi2,"normalizedChi2Daugther2/F");
             if(isUseMtd_){  // mtd
                 VertexCompositeNtuple->Branch("beta1_PV", &beta1_PV, "beta1_PV/F");
-                VertexCompositeNtuple->Branch("beta2_PV", &beta1_PV, "beta2_PV/F");
+                VertexCompositeNtuple->Branch("beta2_PV", &beta2_PV, "beta2_PV/F");
                 VertexCompositeNtuple->Branch("beta1_PVerr", &beta1_PVerr, "beta1_PVerr/F");
-                VertexCompositeNtuple->Branch("beta2_PVerr", &beta1_PVerr, "beta2_PVerr/F");
+                VertexCompositeNtuple->Branch("beta2_PVerr", &beta2_PVerr, "beta2_PVerr/F");
             }
 
             if(threeProngDecay_)
