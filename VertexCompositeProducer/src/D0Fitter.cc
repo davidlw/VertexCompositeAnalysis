@@ -46,9 +46,9 @@ const float piMassD0Squared = piMassD0*piMassD0;
 const float kaonMassD0 = 0.493677;
 const float kaonMassD0Squared = kaonMassD0*kaonMassD0;
 const float d0MassD0 = 1.86484;
-float piMassD0_sigma = 3.5E-7f;
-float kaonMassD0_sigma = 1.6E-5f;
-float d0MassD0_sigma = d0MassD0*1.e-6;
+const float piMassD0_sigma = 3.5E-7f;
+const float kaonMassD0_sigma = 1.6E-5f;
+const float d0MassD0_sigma = d0MassD0*1.e-6;
 
 const double c_cm_ns = 2.99792458e1; //[cm/ns] // mtd
 
@@ -250,14 +250,16 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
         if (handle.second.isValid()) {
           MTDtrackInfo[handle.first] = (*handle.second)[tmpRef];
         }
+        else { edm::LogError("D0Fitter") << "Collection " << handle.first << " is not valid"; }
       }
       const float t0_PV = vtxPrimary->t();
       const float t0err_PV = vtxPrimary->tError();
-      const float dt_PV = MTDtrackInfo["tmtd"] - t0_PV;
-      const float sigma_tmtd = MTDtrackInfo["sigmatmtd"];
-      const float pathLength = MTDtrackInfo["pathLength"];
-      const float beta_PV = (dt_PV!=0. ? (pathLength/dt_PV)*(1./c_cm_ns) : 1.0E+15);
+      const float dt_PV = MTDtrackInfo.at("tmtd") - t0_PV;
+      const float sigma_tmtd = MTDtrackInfo.at("sigmatmtd");
+      const float pathLength = MTDtrackInfo.at("pathLength");
+      const float beta_PV = (pathLength/dt_PV)*(1./c_cm_ns);
       const float sigmabeta_PV = std::sqrt(beta_PV*beta_PV * (std::pow(sigma_tmtd/dt_PV,2) + std::pow(t0err_PV/dt_PV,2)));
+      MTDtrackInfo["dt_PV"] = dt_PV;
       MTDtrackInfo["beta_PV"] = beta_PV;
       MTDtrackInfo["sigmabeta_PV"] = sigmabeta_PV;
 
@@ -558,8 +560,8 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
         }
 
         AddFourMomenta addp4;
-        theD0->addDaughter(thePosCand);
-        theD0->addDaughter(theNegCand);
+        theD0->addDaughter(thePosCand, "posCand");
+        theD0->addDaughter(theNegCand, "negCand");
         theD0->setPdgId(pdg_id[i]);
         addp4.set( *theD0 );
         
