@@ -16,12 +16,12 @@ config.JobType.pluginName = 'Analysis'
 config.Data.unitsPerJob = 4
 #    config.Data.totalUnits = 20
 config.Data.splitting = 'FileBased'
-config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
+#config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
+config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
 config.Data.publication = False
 #config.Data.useParent = True
 config.Data.inputDBS = 'phys03'
-#config.Site.storageSite = 'T2_US_MIT'
-config.Site.storageSite = 'T3_US_FNALLPC'
+config.Site.storageSite = 'T2_CH_CERN'
 
 def submit(config):
     try:
@@ -36,7 +36,6 @@ def submit(config):
 #############################################################################################
 
 config.General.requestName = 'prompt_d0_ntp_mc_mtd_v2'
-config.JobType.psetName = '../test/Prompt_D0_mc_mtd_ntuple.py'
-config.Data.inputDataset = '/D0_PiK_prompt_pt0_y4_5p5TeV_TuneCP5_Pythia8/yousen-promptd0_mc_mtd_Skim_v4-1aa0ccfae4ad0b2d166db07820a01939/USER'
-config.Data.outputDatasetTag = 'prompt_d0_mc_mtd_v2'
+config.JobType.psetName = '../test/PromptD0_PhaseIIMTD_mc_ntuple.py'
+config.Data.inputDataset = '/D0_PiK_prompt_pt0_y4_5p5TeV_TuneCP5_Pythia8/davidlw-promptd0_mc_mtd_Skim_v5-518064ae9bcf22482a736e046621efd8/USER'
 submit(config)

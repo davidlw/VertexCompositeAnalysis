@@ -4,7 +4,7 @@ generalLamC3PCandidates = cms.EDProducer("LamC3PProducer",
                                      
     # InputTag that tells which TrackCollection to use for vertexing
     trackRecoAlgorithm = cms.InputTag('generalTracks'),
-    vertexRecoAlgorithm = cms.InputTag('offlinePrimaryVertices'),
+    vertexRecoAlgorithm = cms.InputTag('offlinePrimaryVertices4D'),
 
     trackQualities = cms.vstring('highPurity'),
                                      
@@ -18,7 +18,7 @@ generalLamC3PCandidates = cms.EDProducer("LamC3PProducer",
 
     mPiKPCutMin = cms.double(2.13),
     mPiKPCutMax = cms.double(2.45),
-    mKPCutMin = cms.double(0.938+0.494),
+    mKPCutMin = cms.double(0.938+0.140),
     mKPCutMax = cms.double(2.45),
 
     #   Track impact parameter significance >
@@ -38,7 +38,11 @@ generalLamC3PCandidates = cms.EDProducer("LamC3PProducer",
     vtxSignificance2DCut = cms.double(0.0),
     vtxSignificance3DCut = cms.double(0.0),
     lamCMassCut = cms.double(0.15),
-    dPt3Cut = cms.double(1.0),
+
+    dPt3CutMin = cms.double(0.0),
+    dPt3CutMax = cms.double(10000.0),
+    dY3CutMin = cms.double(-10000.0),
+    dY3CutMax = cms.double(10000.0),
 
     isWrongSign = cms.bool(False),
 
