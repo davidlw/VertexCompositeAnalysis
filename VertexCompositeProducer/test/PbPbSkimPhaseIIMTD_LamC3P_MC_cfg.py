@@ -26,7 +26,7 @@ process.source = cms.Source("PoolSource",
 )
 
 # =============== Other Statements =====================
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(50))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(30))
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.GlobalTag.globaltag = '103X_upgrade2023_realistic_v2'
 
@@ -125,7 +125,8 @@ process.lamc3prereco_step = cms.Path( process.cent_seq + process.eventFilter_HM 
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.mtdanalysisSkimContentD0_cff")
 process.output_HM = cms.OutputModule("PoolOutputModule",
     outputCommands = process.analysisSkimContent.outputCommands,
-    fileName = cms.untracked.string('/eos/cms/store/group/phys_heavyions/davidlw/hyjets_lambdac.root'),
+#    fileName = cms.untracked.string('/eos/cms/store/group/phys_heavyions/davidlw/hyjets_lambdac.root'),
+    fileName = cms.untracked.string('hyjets_lambdac.root'),
     SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eventFilter_HM_step')),
     dataset = cms.untracked.PSet(
       dataTier = cms.untracked.string('AOD')

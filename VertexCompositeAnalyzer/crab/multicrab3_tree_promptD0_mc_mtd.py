@@ -35,7 +35,7 @@ def submit(config):
 ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
 #############################################################################################
 
-config.General.requestName = 'prompt_d0_ntp_mc_mtd_v2'
+config.General.requestName = 'prompt_d0_ntp_mc_mtd_v3'
 config.JobType.psetName = '../test/PromptD0_PhaseIIMTD_mc_ntuple.py'
 config.Data.inputDataset = '/D0_PiK_prompt_pt0_y4_5p5TeV_TuneCP5_Pythia8/davidlw-promptd0_mc_mtd_Skim_v5-518064ae9bcf22482a736e046621efd8/USER'
 submit(config)
