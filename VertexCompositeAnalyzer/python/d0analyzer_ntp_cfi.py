@@ -61,7 +61,7 @@ d0ana_mc = cms.EDAnalyzer('VertexCompositeNtupleProducer',
 
   saveTree = cms.untracked.bool(True),
   saveHistogram = cms.untracked.bool(False),
-  saveAllHistogram = cms.untracked.bool(True),
+  saveAllHistogram = cms.untracked.bool(False),
   massHistPeak = cms.untracked.double(1.86),
   massHistWidth = cms.untracked.double(0.2),
   massHistBins = cms.untracked.int32(100),

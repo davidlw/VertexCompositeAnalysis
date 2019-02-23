@@ -50,6 +50,7 @@
 #include "DataFormats/Math/interface/angle.h"
 #include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
 #include "DataFormats/TrackReco/interface/DeDxData.h"
+#include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
@@ -84,6 +85,8 @@ class LamC3PFitter {
                           std::vector<reco::TrackRef> theTrackRefs_sgn2,
                           std::vector<reco::TransientTrack> theTransTracks_sgn1,
                           std::vector<reco::TransientTrack> theTransTracks_sgn2,
+                          std::vector<std::map<std::string, float> > theMTDtrackInfo_sgn1,
+                          std::vector<std::map<std::string, float> > theMTDtrackInfo_sgn2,
                           bool isVtxPV, 
                           reco::VertexCollection::const_iterator vtxPrimary, edm::Handle<reco::BeamSpot> theBeamSpotHandle,
                           math::XYZPoint bestvtx, math::XYZPoint bestvtxError,
@@ -91,7 +94,7 @@ class LamC3PFitter {
                         );
 
   // Switching to L. Lista's reco::Candidate infrastructure for LamC3P storage
-  const reco::VertexCompositeCandidateCollection& getLamC3P() const;
+  const pat::CompositeCandidateCollection& getLamC3P() const;
   const std::vector<float>& getMVAVals() const; 
 
 //  auto_ptr<edm::ValueMap<float> > getMVAMap() const;
@@ -99,7 +102,7 @@ class LamC3PFitter {
 
  private:
   // STL vector of VertexCompositeCandidate that will be filled with VertexCompositeCandidates by fitAll()
-  reco::VertexCompositeCandidateCollection theLamC3Ps;
+  pat::CompositeCandidateCollection theLamC3Ps;
 
   // Tracker geometry for discerning hit positions
   const TrackerGeometry* trackerGeom;
@@ -112,6 +115,7 @@ class LamC3PFitter {
   edm::EDGetTokenT<reco::VertexCollection> token_vertices;
   edm::EDGetTokenT<edm::ValueMap<reco::DeDxData> > token_dedx;
   edm::EDGetTokenT<reco::BeamSpot> token_beamSpot;
+  std::map<std::string, edm::EDGetTokenT<edm::ValueMap<float> > > token_MTDtrack;
 
   // Cuts
   double mKPCutMin;
@@ -137,7 +141,10 @@ class LamC3PFitter {
   double dauTransImpactSigCut;
   double dauLongImpactSigCut;
   double VtxChiProbCut;
-  double dPt3Cut;
+  double dPt3CutMin;
+  double dPt3CutMax;
+  double dY3CutMin;
+  double dY3CutMax;
   double alphaCut;
   double alpha2DCut;
   bool   isWrongSign;
