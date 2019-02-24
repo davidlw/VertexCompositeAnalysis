@@ -13,12 +13,12 @@ config.General.transferLogs = False
 config.JobType.pluginName = 'Analysis'
 #    config.JobType.maxMemoryMB = 8000
 #    config.JobType.maxJobRuntimeMin = 2750
-#config.Data.unitsPerJob = 5
+config.Data.unitsPerJob = 1
 #    config.Data.totalUnits = 20
 config.Data.splitting = 'FileBased'
 config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
-#config.Data.publication = False
-#config.Data.useParent = True
+config.Data.publication = False
+config.Data.useParent = True
 config.Data.inputDBS = 'phys03'
 config.Site.storageSite = 'T2_US_MIT'
 

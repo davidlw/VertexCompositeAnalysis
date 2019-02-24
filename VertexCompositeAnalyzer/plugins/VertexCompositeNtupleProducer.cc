@@ -278,6 +278,10 @@ private:
     float beta1_PVerr;  // mtd
     float beta2_PV;
     float beta2_PVerr;
+    float sigmatmtd1;
+    float sigmatmtd2;
+    float pathLength1;
+    float pathLength2;
     // now, we do not use them since we only deal with D0
     //float beta3;  // mtd
     //float beta3err;
@@ -870,8 +874,14 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             beta1_PV = trk.userFloat("posCand_beta_PV");
             beta1_PVerr = trk.userFloat("posCand_sigmabeta_PV");
 
+            pathLength1 = trk.userFloat("posCand_pathLength");
+            sigmatmtd1 = trk.userFloat("posCand_sigmatmtd");
+
             beta2_PV = trk.userFloat("negCand_beta_PV");
             beta2_PVerr = trk.userFloat("negCand_sigmabeta_PV");
+
+            pathLength2 = trk.userFloat("negCand_pathLength");
+            sigmatmtd2 = trk.userFloat("negCand_sigmatmtd");
         }
         
         //eta
@@ -1574,6 +1584,8 @@ VertexCompositeNtupleProducer::fillGEN(const edm::Event& iEvent, const edm::Even
         iddau2 = fabs(Dd2->pdgId());
         if(Dd3) iddau3 = fabs(Dd3->pdgId());
 
+        //if(idmom == 421) std::cout << Dd2->pdgId() << std::endl;
+        //std::cout << idmom << std::endl;
         genCandidateNtuple->Fill(); // fill all gen partciles
     }
 }
@@ -1806,6 +1818,10 @@ VertexCompositeNtupleProducer::initTree()
                 VertexCompositeNtuple->Branch("beta2_PV", &beta2_PV, "beta2_PV/F");
                 VertexCompositeNtuple->Branch("beta1_PVerr", &beta1_PVerr, "beta1_PVerr/F");
                 VertexCompositeNtuple->Branch("beta2_PVerr", &beta2_PVerr, "beta2_PVerr/F");
+                VertexCompositeNtuple->Branch("sigmatmtd1", &sigmatmtd1, "sigmatmtd1/F");
+                VertexCompositeNtuple->Branch("sigmatmtd2", &sigmatmtd2, "sigmatmtd2/F");
+                VertexCompositeNtuple->Branch("pathLength1", &pathLength1, "pathLength1/F");
+                VertexCompositeNtuple->Branch("pathLength2", &pathLength2, "pathLength2/F");
             }
 
             if(threeProngDecay_)

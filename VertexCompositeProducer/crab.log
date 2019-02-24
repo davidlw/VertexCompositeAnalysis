@@ -813,3 +813,71 @@ Unable to find a Configuration object instance in file:
 Please refer to https://twiki.cern.ch/twiki/bin/view/CMSPublic/CRAB3CommonErrors#Syntax_error_in_CRAB_configurati
 See the ./crab.log file for more details.
 The documentation about the CRAB configuration file can be found in https://twiki.cern.ch/twiki/bin/view/CMSPublic/CRAB3ConfigurationFile
+DEBUG 2019-02-09 07:48:45,356: 	 Executing command: 'submit'
+DEBUG 2019-02-09 07:48:45,356: 	 Found CRAB cache file /afs/cern.ch/user/y/yousen/.crab3
+DEBUG 2019-02-09 07:48:45,365: 	 Checking credentials
+DEBUG 2019-02-09 07:48:45,366: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-09 07:48:45,366: 	 Getting proxy life time left
+DEBUG 2019-02-09 07:48:46,172: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 86392
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-09 07:48:46,982: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 86392
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-09 07:48:46,983: 	 Proxy valid for 23:59:52 hours
+DEBUG 2019-02-09 07:48:33,447: 	 Executing command: 'submit'
+DEBUG 2019-02-09 07:48:33,448: 	 Found CRAB cache file /afs/cern.ch/user/y/yousen/.crab3
+DEBUG 2019-02-09 07:48:33,465: 	 Checking credentials
+DEBUG 2019-02-09 07:48:33,465: 	 Proxy file /tmp/x509up_u118775 not found
+DEBUG 2019-02-09 07:48:33,465: 	 Creating new proxy for 24:00 hours with VO group '' and VO role 'NULL'.
+DEBUG 2019-02-09 07:48:40,184: 	 Executing : 
+ command : voms-proxy-init -voms cms:/cms -valid 24:00 -rfc
+ output : None
+ error: None
+ retcode : 0
+DEBUG 2019-02-09 07:48:40,994: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 86398
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-09 07:48:41,801: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 86397
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-09 07:48:41,801: 	 Proxy lifetime 86398 secs is different from voms extension lifetime 86397 secs for proxy: /tmp/x509up_u118775
+DEBUG 2019-02-09 07:48:42,609: 	 Executing : 
+ command : env X509_USER_PROXY=/tmp/x509up_u118775 voms-proxy-info -fqan
+ output : /cms/Role=NULL/Capability=NULL
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-09 07:48:42,610: 	 Proxy created.
+INFO 2019-02-09 07:48:42,610: 	 Will use CRAB configuration file crab/multicrab3_skim_hyjets_mc_mtd.py
+DEBUG 2019-02-09 07:48:42,611: 	 Loading CRAB configuration file.
+DEBUG 2019-02-09 07:48:45,356: 	 Executing command: 'submit'
+DEBUG 2019-02-09 07:48:45,356: 	 Found CRAB cache file /afs/cern.ch/user/y/yousen/.crab3
+DEBUG 2019-02-09 07:48:45,365: 	 Checking credentials
+DEBUG 2019-02-09 07:48:45,366: 	 Found proxy file /tmp/x509up_u118775
+DEBUG 2019-02-09 07:48:45,366: 	 Getting proxy life time left
+DEBUG 2019-02-09 07:48:46,172: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -timeleft
+ output : 86392
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-09 07:48:46,982: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u118775 -actimeleft
+ output : 86392
+
+ error: 
+ retcode : 0
+DEBUG 2019-02-09 07:48:46,983: 	 Proxy valid for 23:59:52 hours
