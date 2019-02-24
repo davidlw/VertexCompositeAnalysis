@@ -21,13 +21,12 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 2
 
 process.source = cms.Source("PoolSource",
    fileNames = cms.untracked.vstring(
-#'root://xrootd-cms.infn.it//store/user/anstahll/MTD/MC/NonEmbedded/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/D0_PiK_prompt_5p02TeV_TuneCP5_MTD/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/190126_200650/0000/D0_RECO_98.root',
-'root://xrootd-cms.infn.it//store/mc/PhaseIIMTDTDRAutumn18DR/D0_PiK_prompt_pt0_y4_5p5TeV_TuneCP5_Pythia8/FEVT/NoPU_103X_upgrade2023_realistic_v2-v1/30000/FFDBA739-F97F-B347-BAB9-91EC1A7F2CE1.root'
+'root://xrootd-cms.infn.it//store/user/anstahll/MTD/MC/NonEmbedded/Hydjet_5p02TeV_TuneCP5_MTD_RECO_20190127/Hydjet_5p02TeV_TuneCP5_MTD/Hydjet_5p02TeV_TuneCP5_MTD_RECO_20190127/190127_085926/0000/Hydjet_RECO_9.root'
 )
 )
 
 # =============== Other Statements =====================
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(30))
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.GlobalTag.globaltag = '103X_upgrade2023_realistic_v2'
 
@@ -49,12 +48,12 @@ process.PAprimaryVertexFilter = cms.EDFilter("VertexSelector",
 #)
 
 process.PAcollisionEventSelection = cms.Sequence(
-                                         process.hfCoincFilter *
+                                         process.hfCoincFilter * 
                                          process.PAprimaryVertexFilter #*
 #                                         process.NoScraping
                                          )
 
-process.eventFilter_HM = cms.Sequence(
+process.eventFilter_HM = cms.Sequence( 
     process.PAcollisionEventSelection
 )
 
@@ -63,59 +62,71 @@ process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 #process.dEdx_step = cms.Path( process.eventFilter_HM * process.produceEnergyLoss )
 
 ########## D0 candidate rereco ###############################################################
-process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalD0Candidates_cff")
-process.generalD0CandidatesNew = process.generalD0Candidates.clone()
-#process.generalD0CandidatesNew.tkPtSumCut = cms.double(2.1)
-#process.generalD0CandidatesNew.tkEtaDiffCut = cms.double(1.0)
-process.generalD0CandidatesNew.tkNhitsCut = cms.int32(11)
-process.generalD0CandidatesNew.tkPtErrCut = cms.double(0.1)
-process.generalD0CandidatesNew.tkPtCut = cms.double(0.7)
-#process.generalD0CandidatesNew.alphaCut = cms.double(1.0)
-#process.generalD0CandidatesNew.alpha2DCut = cms.double(1.0)
+process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalLamC3PCandidates_cff")
+process.generalLamC3PCandidatesNew = process.generalLamC3PCandidates.clone()
+#process.generalLamC3PCandidatesNew.tkPtSumCut = cms.double(2.1)
+#process.generalLamC3PCandidatesNew.tkEtaDiffCut = cms.double(1.0)
+process.generalLamC3PCandidatesNew.tkNhitsCut = cms.int32(11)
+process.generalLamC3PCandidatesNew.tkPtErrCut = cms.double(0.1)
+process.generalLamC3PCandidatesNew.tkPtCut = cms.double(0.7)
+process.generalLamC3PCandidatesNew.tkEtaCut = cms.double(3.0)
+#process.generalLamC3PCandidatesNew.alphaCut = cms.double(1.0)
+#process.generalLamC3PCandidatesNew.alpha2DCut = cms.double(1.0)
+
+process.generalLamC3PCandidatesNew.tkDCACut = cms.double(0.5)
+process.generalLamC3PCandidatesNew.dPt3CutMin = cms.double(0.9)
+process.generalLamC3PCandidatesNew.dPt3CutMax = cms.double(2.1)
+process.generalLamC3PCandidatesNew.dY3CutMin = cms.double(-3.2)
+process.generalLamC3PCandidatesNew.dY3CutMax = cms.double(3.2)
 
 process.load('RecoMTD.TrackExtender.trackExtenderWithMTD_cfi')
 process.load('RecoLocalFastTime.FTLRecProducers.mtdTrackingRecHits_cfi')
 process.load('RecoLocalFastTime.FTLClusterizer.mtdClusters_cfi')
 
+process.SimpleMemoryCheck = cms.Service("SimpleMemoryCheck",
+    ignoreTotal = cms.untracked.int32(1)
+)
+
 # centrality setup
-process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
-process.GlobalTag.toGet.extend([
-    cms.PSet(record = cms.string("HeavyIonRcd"),
-        tag = cms.string("CentralityTable_HFtowers200_HydjetTuneCP5MTD_v1040mtd4x1_mc"),
-        connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
-        label = cms.untracked.string("HFtowers")
-        ),
-    ])
-process.load('RecoHI.HiCentralityAlgos.HiCentrality_cfi')
-process.hiCentrality.produceHFhits = False
+process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000") 
+process.GlobalTag.toGet.extend([ 
+    cms.PSet(record = cms.string("HeavyIonRcd"), 
+        tag = cms.string("CentralityTable_HFtowers200_HydjetTuneCP5MTD_v1040mtd4x1_mc"), 
+        connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"), 
+        label = cms.untracked.string("HFtowers") 
+        ), 
+    ]) 
+process.load('RecoHI.HiCentralityAlgos.HiCentrality_cfi') 
+process.hiCentrality.produceHFhits = False 
 process.hiCentrality.produceHFtowers = True
-process.hiCentrality.produceEcalhits = False
-process.hiCentrality.produceZDChits = False
-process.hiCentrality.produceETmidRapidity = False
-process.hiCentrality.producePixelhits = False
-process.hiCentrality.produceTracks = False
-process.hiCentrality.producePixelTracks = False
+process.hiCentrality.produceEcalhits = False 
+process.hiCentrality.produceZDChits = False 
+process.hiCentrality.produceETmidRapidity = False 
+process.hiCentrality.producePixelhits = False 
+process.hiCentrality.produceTracks = False 
+process.hiCentrality.producePixelTracks = False 
 process.hiCentrality.reUseCentrality = False
-process.hiCentrality.srcReUse = cms.InputTag("hiCentrality","","RECO")
-process.hiCentrality.srcTracks = cms.InputTag("generalTracks")
-process.hiCentrality.srcVertex = cms.InputTag("offlinePrimaryVertices")
-process.load("RecoHI.HiCentralityAlgos.CentralityBin_cfi")
-process.centralityBin.Centrality = cms.InputTag("hiCentrality")
-process.centralityBin.centralityVariable = cms.string("HFtowers")
-process.centralityBin.nonDefaultGlauberModel = cms.string("")
+process.hiCentrality.srcReUse = cms.InputTag("hiCentrality","","RECO") 
+process.hiCentrality.srcTracks = cms.InputTag("generalTracks") 
+process.hiCentrality.srcVertex = cms.InputTag("offlinePrimaryVertices") 
+process.load("RecoHI.HiCentralityAlgos.CentralityBin_cfi") 
+process.centralityBin.Centrality = cms.InputTag("hiCentrality") 
+process.centralityBin.centralityVariable = cms.string("HFtowers") 
+process.centralityBin.nonDefaultGlauberModel = cms.string("") 
 process.hiCentrality.srcEBhits = cms.InputTag("HGCalRecHit","HGCHEBRecHits")
 process.hiCentrality.srcEEhits = cms.InputTag("HGCalRecHit","HGCEERecHits")
 
 process.cent_seq = cms.Sequence(process.hiCentrality * process.centralityBin)
 
-process.d0rereco_step = cms.Path(process.mtdClusters * process.mtdTrackingRecHits * process.trackExtenderWithMTD + process.cent_seq + process.eventFilter_HM * process.generalD0CandidatesNew )
+process.lamc3prereco_step = cms.Path( process.cent_seq + process.eventFilter_HM * process.generalLamC3PCandidatesNew )
 
 ###############################################################################################
 
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.mtdanalysisSkimContentD0_cff")
 process.output_HM = cms.OutputModule("PoolOutputModule",
     outputCommands = process.analysisSkimContent.outputCommands,
-    fileName = cms.untracked.string('prompt_d0.root'),
+#    fileName = cms.untracked.string('/eos/cms/store/group/phys_heavyions/davidlw/hyjets_lambdac.root'),
+    fileName = cms.untracked.string('hyjets_lambdac.root'),
     SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eventFilter_HM_step')),
     dataset = cms.untracked.PSet(
       dataTier = cms.untracked.string('AOD')
@@ -126,6 +137,6 @@ process.output_HM_step = cms.EndPath(process.output_HM)
 
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
-    process.d0rereco_step,
+    process.lamc3prereco_step,
     process.output_HM_step
 )

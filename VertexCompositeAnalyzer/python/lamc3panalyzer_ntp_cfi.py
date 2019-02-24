@@ -12,7 +12,7 @@ lamc3pana = cms.EDAnalyzer('VertexCompositeNtupleProducer',
   PID_dau1 = cms.untracked.int32(211),
   PID_dau2 = cms.untracked.int32(321),
   PID_dau3 = cms.untracked.int32(2212),
-  deltaR = cms.untracked.double(0.03),
+  deltaR = cms.untracked.double(0.5),
   VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices"),
   TrackCollection = cms.untracked.InputTag("generalTracks"),
   VertexCompositeCollection = cms.untracked.InputTag("generalLamC3PCandidatesNew:LamC3P"),
@@ -73,5 +73,9 @@ lamc3pana_mc = cms.EDAnalyzer('VertexCompositeNtupleProducer',
 
   useAnyMVA = cms.bool(False),
   isSkimMVA = cms.untracked.bool(False),
-  MVACollection = cms.InputTag("generalLamC3PCandidatesNew:MVAValues")
+  MVACollection = cms.InputTag("generalLamC3PCandidatesNew:MVAValues"),
+
+  isCentrality = cms.bool(False),
+  centralityBinLabel = cms.InputTag("centralityBin","HFtowers"),
+  centralitySrc = cms.InputTag("hiCentrality")
                               )

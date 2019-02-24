@@ -32,8 +32,8 @@ def submit(config):
 ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
 #############################################################################################
 
-config.General.requestName = 'PromptD0_mc_mtd_v6'
-config.JobType.psetName = '../test/PromptD0_PhaseIIMTD_mc_cfg.py'
-config.Data.outputDatasetTag = 'promptd0_mc_mtd_Skim_v6'
-config.Data.inputDataset = '/D0_PiK_prompt_pt0_y4_5p5TeV_TuneCP5_Pythia8/PhaseIIMTDTDRAutumn18DR-NoPU_103X_upgrade2023_realistic_v2-v1/FEVT'
+config.General.requestName = 'LambdaC_mc_mtd_v7'
+config.JobType.psetName = '../test/LamC3P_PhaseIIMTD_mc_cfg.py'
+config.Data.outputDatasetTag = 'lambdac_mc_mtd_Skim_pca2mm_v7'
+config.Data.inputDataset = '/LambdaC_PiKP_prompt_pt1_y4_5p5TeV_TuneCP5_Pythia8/PhaseIIMTDTDRAutumn18DR-NoPU_103X_upgrade2023_realistic_v2-v1/FEVT'
 submit(config)

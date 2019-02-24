@@ -63,6 +63,8 @@
 #include "DataFormats/MuonReco/interface/MuonSegmentMatch.h"
 #include "DataFormats/HeavyIonEvent/interface/CentralityBins.h"
 #include "DataFormats/HeavyIonEvent/interface/Centrality.h"
+#include "DataFormats/Math/interface/deltaR.h"
+
 
 #include <Math/Functions.h>
 #include <Math/SVector.h>
@@ -274,17 +276,12 @@ private:
     float trkChi3;
    
     // mtd info
-    float beta1_PV;  // mtd
+    float beta1_PV;     // mtd
     float beta1_PVerr;  // mtd
     float beta2_PV;
     float beta2_PVerr;
-    float sigmatmtd1;
-    float sigmatmtd2;
-    float pathLength1;
-    float pathLength2;
-    // now, we do not use them since we only deal with D0
-    //float beta3;  // mtd
-    //float beta3err;
+    float beta3_PV;     // mtd
+    float beta3_PVerr;
 
     //grand-dau info
     float grand_dzos1;
@@ -361,11 +358,13 @@ private:
     int iddau3;
 
     //vector for gen match
-    vector< vector<double> > *pVect;
-    vector<double> *Dvector1;
-    vector<double> *Dvector2;
-    vector<double> *Dvector3;
-    vector<int> *pVectIDmom;
+//    vector< vector<double> > pVect;
+/*
+    vector<double> Dvector1;
+    vector<double> Dvector2;
+    vector<double> Dvector3;
+*/
+//    vector<int> pVectIDmom;
     
     bool useAnyMVA_;
     bool isSkimMVA_;
@@ -574,10 +573,13 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
     }
 
     //Gen info for matching
+    vector< vector<double> > pVect;
+    vector<int> pVectIDmom;
+    
     if(doGenMatching_)
     {
-        pVect = new vector< vector<double>>;
-        pVectIDmom = new vector<int>;
+//        pVect = new vector< vector<double>>;
+//        pVectIDmom = new vector<int>;
         
 //        edm::Handle<reco::GenParticleCollection> genpars;
 //        iEvent.getByToken(tok_genParticle_,genpars);
@@ -594,6 +596,8 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             
             int id = trk.pdgId();
             if(fabs(id)!=PID_) continue; //check is target
+
+            if(trk.status()!=2) continue; //check status
             if(decayInGen_ && trk.numberOfDaughters()!=2 && !threeProngDecay_) continue; //check 2-pron decay if target decays in Gen
             if(decayInGen_ && trk.numberOfDaughters()!=3 && threeProngDecay_) continue; //check 2-pron decay if target decays in Gen
             
@@ -622,41 +626,44 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
               && !(fabs(Dd1->pdgId())==PID_dau3_ && fabs(Dd2->pdgId())==PID_dau2_ && fabs(Dd3->pdgId())==PID_dau1_) ) continue;
             }
 
-            Dvector1 = new vector<double>;
-            Dvector2 = new vector<double>;
+            vector<double> Dvector1;
+            vector<double> Dvector2;
+
+//            Dvector1 = new vector<double>;
+//            Dvector2 = new vector<double>;
             
-            Dvector1->push_back(Dd1->pt());
-            Dvector1->push_back(Dd1->eta());
-            Dvector1->push_back(Dd1->phi());
-            Dvector1->push_back(Dd1->charge());
-            Dvector1->push_back(Dd1->mass());
+            Dvector1.push_back(Dd1->pt());
+            Dvector1.push_back(Dd1->eta());
+            Dvector1.push_back(Dd1->phi());
+            Dvector1.push_back(Dd1->charge());
+            Dvector1.push_back(Dd1->mass());
             
-            Dvector2->push_back(Dd2->pt());
-            Dvector2->push_back(Dd2->eta());
-            Dvector2->push_back(Dd2->phi());
-            Dvector2->push_back(Dd2->charge());
-            Dvector2->push_back(Dd2->mass());
+            Dvector2.push_back(Dd2->pt());
+            Dvector2.push_back(Dd2->eta());
+            Dvector2.push_back(Dd2->phi());
+            Dvector2.push_back(Dd2->charge());
+            Dvector2.push_back(Dd2->mass());
             
-            pVect->push_back(*Dvector1);
-            pVect->push_back(*Dvector2);
+            pVect.push_back(Dvector1);
+            pVect.push_back(Dvector2);
             
-            pVectIDmom->push_back(idmom_tmp);
+            pVectIDmom.push_back(idmom_tmp);
             
-            delete Dvector1;
-            delete Dvector2;
+//            delete Dvector1;
+//            delete Dvector2;
 
             if(threeProngDecay_)
             {
-              Dvector3 = new vector<double>;
+              vector<double> Dvector3;
 
-              Dvector3->push_back(Dd3->pt());
-              Dvector3->push_back(Dd3->eta());
-              Dvector3->push_back(Dd3->phi());
-              Dvector3->push_back(Dd3->charge());
-              Dvector3->push_back(Dd3->mass());
+              Dvector3.push_back(Dd3->pt());
+              Dvector3.push_back(Dd3->eta());
+              Dvector3.push_back(Dd3->phi());
+              Dvector3.push_back(Dd3->charge());
+              Dvector3.push_back(Dd3->mass());
 
-              pVect->push_back(*Dvector3);
-              delete Dvector3;
+              pVect.push_back(Dvector3);
+//              delete Dvector3;
             }
         }
     }
@@ -692,17 +699,19 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         if(doGenMatching_)
         {
             matchGEN = false;
-            int nGenDau = (int)pVect->size();
+            int nGenDau = (int)pVect.size();
             isSwap = false;
             idmom_reco = -77;
             
             for(int i=0;i<nGenDau;i++)
             {
-                vector<double> Dvector1 = (*pVect)[i]; //get GEN daugther vector
+                vector<double> Dvector1 = pVect[i]; //get GEN daugther vector
+
                 if(d1->charge()!=Dvector1.at(3)) continue; //check match charge
-                double deltaR = sqrt(pow(d1->eta()-Dvector1.at(1),2)+pow(d1->phi()-Dvector1.at(2),2));
-                
+
+                double deltaR = reco::deltaR(d1->eta(), d1->phi(), Dvector1.at(1), Dvector1.at(2));
                 if(deltaR > deltaR_) continue; //check deltaR matching
+
                 if(fabs((d1->pt()-Dvector1.at(0))/d1->pt()) > 0.5) continue; //check deltaPt matching
                 double d1massGEN = Dvector1.at(4);
                 double d1mass = d1->mass();
@@ -713,9 +722,9 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
                 {
                   if(i%2==0)
                   {
-                    vector<double> Dvector2 = (*pVect)[i+1]; //get GEN daugther vector for track2
+                    vector<double> Dvector2 = pVect[i+1]; //get GEN daugther vector for track2
                     if(d2->charge()!=Dvector2.at(3)) continue; //check match charge
-                    double deltaR = sqrt(pow(d2->eta()-Dvector2.at(1),2)+pow(d2->phi()-Dvector2.at(2),2));
+                    double deltaR = reco::deltaR(d2->eta(), d2->phi(), Dvector2.at(1), Dvector2.at(2));
                     
                     if(deltaR > deltaR_) continue; //check deltaR matching
                     if(fabs((d2->pt()-Dvector2.at(0))/d2->pt()) > 0.5) continue; //check deltaPt matching
@@ -727,9 +736,9 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
 
                   if(i%2==1)
                   {
-                    vector<double> Dvector2 = (*pVect)[i-1]; //get GEN daugther vector for track2
+                    vector<double> Dvector2 = pVect[i-1]; //get GEN daugther vector for track2
                     if(d2->charge()!=Dvector2.at(3)) continue; //check match charge
-                    double deltaR = sqrt(pow(d2->eta()-Dvector2.at(1),2)+pow(d2->phi()-Dvector2.at(2),2));
+                    double deltaR = reco::deltaR(d2->eta(), d2->phi(), Dvector2.at(1), Dvector2.at(2));
                     
                     if(deltaR > deltaR_) continue; //check deltaR matching
                     if(fabs((d2->pt()-Dvector2.at(0))/d2->pt()) > 0.5) continue; //check deltaPt matching
@@ -743,23 +752,23 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
                   if(abs(d1massGEN - d1mass)>0.01 || abs(d2massGEN - d2mass)>0.01) isSwap = true;
 
                   //check prompt & record mom id
-                  idmom_reco = pVectIDmom->at(i/2);
+                  idmom_reco = pVectIDmom.at(i/2);
                 }
 
                 if(nGenDau==3)
                 {
                   if(i%3==0)
                   {
-                    vector<double> Dvector2 = (*pVect)[i+1]; //get GEN daugther vector for track2
-                    vector<double> Dvector3 = (*pVect)[i+2]; //get GEN daugther vector for track3
+                    vector<double> Dvector2 = pVect[i+1]; //get GEN daugther vector for track2
+                    vector<double> Dvector3 = pVect[i+2]; //get GEN daugther vector for track3
 
                     if(!(d2->charge()==Dvector2.at(3) && d3->charge()==Dvector3.at(3)) 
                     && !(d3->charge()==Dvector2.at(3) && d2->charge()==Dvector3.at(3))) continue; //check match charge
 
-                    double deltaR22 = sqrt(pow(d2->eta()-Dvector2.at(1),2)+pow(d2->phi()-Dvector2.at(2),2));
-                    double deltaR33 = sqrt(pow(d3->eta()-Dvector3.at(1),2)+pow(d3->phi()-Dvector3.at(2),2));
-                    double deltaR23 = sqrt(pow(d2->eta()-Dvector3.at(1),2)+pow(d2->phi()-Dvector3.at(2),2));
-                    double deltaR32 = sqrt(pow(d3->eta()-Dvector2.at(1),2)+pow(d3->phi()-Dvector2.at(2),2));
+                    double deltaR22 = reco::deltaR(d2->eta(), d2->phi(), Dvector2.at(1), Dvector2.at(2));
+                    double deltaR33 = reco::deltaR(d3->eta(), d3->phi(), Dvector3.at(1), Dvector3.at(2));
+                    double deltaR23 = reco::deltaR(d2->eta(), d2->phi(), Dvector3.at(1), Dvector3.at(2));
+                    double deltaR32 = reco::deltaR(d3->eta(), d3->phi(), Dvector2.at(1), Dvector2.at(2));
 
                     if(!(deltaR22 < deltaR_ && deltaR33 < deltaR_) && !(deltaR23 < deltaR_ && deltaR32 < deltaR_) ) continue;
 
@@ -780,16 +789,16 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
 
                   if(i%3==1)
                   {
-                    vector<double> Dvector2 = (*pVect)[i-1]; //get GEN daugther vector for track2
-                    vector<double> Dvector3 = (*pVect)[i+1]; //get GEN daugther vector for track3
+                    vector<double> Dvector2 = pVect[i-1]; //get GEN daugther vector for track2
+                    vector<double> Dvector3 = pVect[i+1]; //get GEN daugther vector for track3
 
                     if(!(d2->charge()==Dvector2.at(3) && d3->charge()==Dvector3.at(3))
                     && !(d3->charge()==Dvector2.at(3) && d2->charge()==Dvector3.at(3))) continue; //check match charge
 
-                    double deltaR22 = sqrt(pow(d2->eta()-Dvector2.at(1),2)+pow(d2->phi()-Dvector2.at(2),2));
-                    double deltaR33 = sqrt(pow(d3->eta()-Dvector3.at(1),2)+pow(d3->phi()-Dvector3.at(2),2));
-                    double deltaR23 = sqrt(pow(d2->eta()-Dvector3.at(1),2)+pow(d2->phi()-Dvector3.at(2),2));
-                    double deltaR32 = sqrt(pow(d3->eta()-Dvector2.at(1),2)+pow(d3->phi()-Dvector2.at(2),2));
+                    double deltaR22 = reco::deltaR(d2->eta(), d2->phi(), Dvector2.at(1), Dvector2.at(2));
+                    double deltaR33 = reco::deltaR(d3->eta(), d3->phi(), Dvector3.at(1), Dvector3.at(2));
+                    double deltaR23 = reco::deltaR(d2->eta(), d2->phi(), Dvector3.at(1), Dvector3.at(2));
+                    double deltaR32 = reco::deltaR(d3->eta(), d3->phi(), Dvector2.at(1), Dvector2.at(2));
 
                     if(!(deltaR22 < deltaR_ && deltaR33 < deltaR_) && !(deltaR23 < deltaR_ && deltaR32 < deltaR_) ) continue;
 
@@ -810,16 +819,16 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
 
                   if(i%3==2)
                   { 
-                    vector<double> Dvector2 = (*pVect)[i-2]; //get GEN daugther vector for track2
-                    vector<double> Dvector3 = (*pVect)[i-1]; //get GEN daugther vector for track3
+                    vector<double> Dvector2 = pVect[i-2]; //get GEN daugther vector for track2
+                    vector<double> Dvector3 = pVect[i-1]; //get GEN daugther vector for track3
 
                     if(!(d2->charge()==Dvector2.at(3) && d3->charge()==Dvector3.at(3))
                     && !(d3->charge()==Dvector2.at(3) && d2->charge()==Dvector3.at(3))) continue; //check match charge
 
-                    double deltaR22 = sqrt(pow(d2->eta()-Dvector2.at(1),2)+pow(d2->phi()-Dvector2.at(2),2));
-                    double deltaR33 = sqrt(pow(d3->eta()-Dvector3.at(1),2)+pow(d3->phi()-Dvector3.at(2),2));
-                    double deltaR23 = sqrt(pow(d2->eta()-Dvector3.at(1),2)+pow(d2->phi()-Dvector3.at(2),2));
-                    double deltaR32 = sqrt(pow(d3->eta()-Dvector2.at(1),2)+pow(d3->phi()-Dvector2.at(2),2));
+                    double deltaR22 = reco::deltaR(d2->eta(), d2->phi(), Dvector2.at(1), Dvector2.at(2));
+                    double deltaR33 = reco::deltaR(d3->eta(), d3->phi(), Dvector3.at(1), Dvector3.at(2));
+                    double deltaR23 = reco::deltaR(d2->eta(), d2->phi(), Dvector3.at(1), Dvector3.at(2));
+                    double deltaR32 = reco::deltaR(d3->eta(), d3->phi(), Dvector2.at(1), Dvector2.at(2));
 
                     if(!(deltaR22 < deltaR_ && deltaR33 < deltaR_) && !(deltaR23 < deltaR_ && deltaR32 < deltaR_) ) continue;
 
@@ -842,9 +851,8 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
                   if(abs(d1massGEN - d1mass)>0.01 || abs(d2massGEN - d2mass)>0.01 || abs(d3massGEN - d3mass)>0.01) isSwap = true;
                   
                   //check prompt & record mom id
-                  idmom_reco = pVectIDmom->at(i/3);
+                  idmom_reco = pVectIDmom.at(i/3);
                 }
-
             }
         }
         
@@ -869,19 +877,21 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         //mtd info
         //d1 corresponds to positive track
         //d2 corresponds to negative track
+        //d3 corresponds to the third track
         if(isUseMtd_)  // mtd
         {
             beta1_PV = trk.userFloat("posCand_beta_PV");
             beta1_PVerr = trk.userFloat("posCand_sigmabeta_PV");
 
-            pathLength1 = trk.userFloat("posCand_pathLength");
-            sigmatmtd1 = trk.userFloat("posCand_sigmatmtd");
 
             beta2_PV = trk.userFloat("negCand_beta_PV");
             beta2_PVerr = trk.userFloat("negCand_sigmabeta_PV");
 
-            pathLength2 = trk.userFloat("negCand_pathLength");
-            sigmatmtd2 = trk.userFloat("negCand_sigmatmtd");
+            if(threeProngDecay_)
+            {
+              beta3_PV = trk.userFloat("cand3_beta_PV");
+              beta3_PVerr = trk.userFloat("cand3_sigmabeta_PV");
+            }
         }
         
         //eta
@@ -925,12 +935,11 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
               int id = trk.pdgId();
               TVector3 trkvect(trk.px(),trk.py(),trk.pz());
 
-//cout<<trk.pdgId()<<" "<<trk.numberOfDaughters()<<" "<<trk.charge()<<endl;
               if(fabs(id)!=PID_ && trk.charge())
               {
                 // matching daughter 1
                 double deltaR = trkvect.DeltaR(dauvec1);
-                if(deltaR < deltaR_ && fabs((trk.pt()-pt1)/pt1) < 0.5 && trk.charge()==charge1 && pid1==-99999)
+                if(deltaR < deltaR_ && fabs((trk.pt()-pt1)/pt1) < 0.5 && trk.charge()==charge1 && trk.status()==1 && pid1==-99999)
                 {
                   pid1 = id;
             //      tof1 = ;
@@ -938,16 +947,15 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
 
                 // matching daughter 2
                 deltaR = trkvect.DeltaR(dauvec2);
-                if(deltaR < deltaR_ && fabs((trk.pt()-pt2)/pt2) < 0.5 && trk.charge()==charge2 && pid2==-99999)
+                if(deltaR < deltaR_ && fabs((trk.pt()-pt2)/pt2) < 0.5 && trk.charge()==charge2 && trk.status()==1 && pid2==-99999)
                 {
                   pid2 = id;
             //      tof2 = ;
                 }
               }
 
-              if(fabs(id)==PID_ && trk.numberOfDaughters()==2)
+              if(fabs(id)==PID_ && trk.numberOfDaughters()==2 && trk.status()==2)
               {
-//cout<<trk.pdgId()<<" "<<trk.numberOfDaughters()<<" "<<trk.charge()<<endl;
                 const reco::Candidate * Dd1 = trk.daughter(0);
                 const reco::Candidate * Dd2 = trk.daughter(1);
                 TVector3 d1vect(Dd1->px(),Dd1->py(),Dd1->pz());
@@ -963,13 +971,13 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
                 deltaR = d2vect.DeltaR(dauvec1);
                 if(deltaR < deltaR_ && fabs((Dd2->pt()-pt1)/pt1) < 0.5 && Dd2->charge()==charge1 && pid1==-99999)
                 {
-                  pid1 = id1;
+                  pid1 = id2;
                 }
 
                 deltaR = d1vect.DeltaR(dauvec2);
                 if(deltaR < deltaR_ && fabs((Dd1->pt()-pt2)/pt2) < 0.5 && Dd1->charge()==charge2 && pid2==-99999)
                 {
-                  pid2 = id2;
+                  pid2 = id1;
                 }
                 deltaR = d2vect.DeltaR(dauvec2);
                 if(deltaR < deltaR_ && fabs((Dd2->pt()-pt2)/pt2) < 0.5 && Dd2->charge()==charge2 && pid2==-99999)
@@ -1086,14 +1094,12 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         
         //trk dEdx
         H2dedx2 = -999.9;
-        
         if(dEdxHandle1.isValid()){
             const edm::ValueMap<reco::DeDxData> dEdxTrack = *dEdxHandle1.product();
             H2dedx2 = dEdxTrack[dau2].dEdx();
         }
         
         T4dedx2 = -999.9;
-        
         if(dEdxHandle2.isValid()){
             const edm::ValueMap<reco::DeDxData> dEdxTrack = *dEdxHandle2.product();
             T4dedx2 = dEdxTrack[dau2].dEdx();
@@ -1106,7 +1112,7 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         ptErr2 = dau2->ptError();
         
         //vertexCovariance 00-xError 11-y 22-z
-        secvz = trk.vz(); secvx = trk.vx(); secvy = trk.vy();
+//        secvz = trk.vz(); secvx = trk.vx(); secvy = trk.vy();
         
         //trkNHits
         nhit2 = dau2->numberOfValidHits();
@@ -1122,6 +1128,37 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         dzos2 = dzbest2/dzerror2;
         dxyos2 = dxybest2/dxyerror2;
         
+        if(threeProngDecay_ && d3)
+        {
+          auto dau3 = d3->get<reco::TrackRef>();
+
+          trkquality3 = dau3->quality(reco::TrackBase::highPurity);
+
+          H2dedx3 = -999.9;
+          if(dEdxHandle1.isValid()){
+              const edm::ValueMap<reco::DeDxData> dEdxTrack = *dEdxHandle1.product();
+              H2dedx3 = dEdxTrack[dau3].dEdx();
+          }
+
+          T4dedx3 = -999.9;
+          if(dEdxHandle2.isValid()){
+              const edm::ValueMap<reco::DeDxData> dEdxTrack = *dEdxHandle2.product();
+              T4dedx3 = dEdxTrack[dau3].dEdx();
+          }
+
+          ptErr3 = dau3->ptError();
+          trkChi3 = dau3->normalizedChi2();
+          nhit3 = dau3->numberOfValidHits();
+
+          double dzbest3 = dau3->dz(bestvtx);
+          double dxybest3 = dau3->dxy(bestvtx);
+          double dzerror3 = sqrt(dau3->dzError()*dau3->dzError()+bestvzError*bestvzError);
+          double dxyerror3 = sqrt(dau3->d0Error()*dau3->d0Error()+bestvxError*bestvyError);
+
+          dzos3 = dzbest3/dzerror3;
+          dxyos3 = dxybest3/dxyerror3;
+        }
+
         if(doMuon_)
         {
           edm::Handle<reco::MuonCollection> theMuonHandle;
@@ -1405,7 +1442,7 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             grand_ptErr2 = gdau2->ptError();
             
             //vertexCovariance 00-xError 11-y 22-z
-            secvz = d1->vz(); secvx = d1->vx(); secvy = d1->vy();
+            double trdvz = d1->vz(); double trdvx = d1->vx(); double trdvy = d1->vy();
             
             //trkNHits
             grand_nhit1 = gdau1->numberOfValidHits();
@@ -1436,10 +1473,10 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             grand_VtxProb = TMath::Prob(grand_vtxChi2,grand_ndf);
             
             //PAngle
-            TVector3 ptosvec(secvx-bestvx,secvy-bestvy,secvz-bestvz);
+            TVector3 ptosvec(-bestvx+trdvx,-bestvy+trdvy,-bestvz+trdvz);
             TVector3 secvec(d1->px(),d1->py(),d1->pz());
             
-            TVector3 ptosvec2D(secvx-bestvx,secvy-bestvy,0);
+            TVector3 ptosvec2D(-bestvx+trdvx,-bestvy+trdvy,0);
             TVector3 secvec2D(d1->px(),d1->py(),0);
             
             grand_agl = cos(secvec.Angle(ptosvec));
@@ -1454,7 +1491,7 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             typedef ROOT::Math::SVector<double, 6> SVector6;
             
             SMatrixSym3D totalCov = vtx.covariance() + d1->vertexCovariance();
-            SVector3 distanceVector(secvx-bestvx,secvy-bestvy,secvz-bestvz);
+            SVector3 distanceVector(-bestvx+trdvx,-bestvy+trdvy,-bestvz+trdvz);
             
             grand_dl = ROOT::Math::Mag(distanceVector);
             grand_dlerror = sqrt(ROOT::Math::Similarity(totalCov, distanceVector))/grand_dl;
@@ -1469,7 +1506,7 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             SMatrixSym3D sv2(v2);
             
             SMatrixSym3D totalCov2D = sv1 + sv2;
-            SVector3 distanceVector2D(secvx-bestvx,secvy-bestvy,0);
+            SVector3 distanceVector2D(trdvx-bestvx,trdvy-bestvy,0);
             
             double gdl2D = ROOT::Math::Mag(distanceVector2D);
             double gdl2Derror = sqrt(ROOT::Math::Similarity(totalCov2D, distanceVector2D))/gdl2D;
@@ -1483,6 +1520,7 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
           if(isUseMtd_){
              h1overBetaPVVsP->Fill(p1, 1./beta1_PV);
              h1overBetaPVVsP->Fill(p2, 1./beta2_PV);
+             if(threeProngDecay_) h1overBetaPVVsP->Fill(p3, 1./beta3_PV);
           }
 
           for(unsigned int ipt=0;ipt<pTBins_.size()-1;ipt++)
@@ -1527,6 +1565,7 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
 
                 if(isUseMtd_) h1overBetaPVVsPmatchD0[iy][ipt]->Fill(p1, 1./beta1_PV); // mtd
                 if(isUseMtd_) h1overBetaPVVsPmatchD0[iy][ipt]->Fill(p2, 1./beta2_PV);
+                if(isUseMtd_ && threeProngDecay_) h1overBetaPVVsPmatchD0[iy][ipt]->Fill(p3, 1./beta3_PV);
 
                 if(threeProngDecay_)
                 {
@@ -1724,9 +1763,9 @@ VertexCompositeNtupleProducer::initTree()
         if(doGenMatchingTOF_)
         {
           VertexCompositeNtuple->Branch("PIDD1",&pid1,"PIDD1/I");
-          VertexCompositeNtuple->Branch("PIDD2",&pid1,"PIDD2/I");
+          VertexCompositeNtuple->Branch("PIDD2",&pid2,"PIDD2/I");
           VertexCompositeNtuple->Branch("TOFD1",&tof1,"TOFD1/F");
-          VertexCompositeNtuple->Branch("TOFD2",&tof1,"TOFD2/F");
+          VertexCompositeNtuple->Branch("TOFD2",&tof2,"TOFD2/F");
         }
 
         //daugther & grand daugther info
@@ -1818,10 +1857,11 @@ VertexCompositeNtupleProducer::initTree()
                 VertexCompositeNtuple->Branch("beta2_PV", &beta2_PV, "beta2_PV/F");
                 VertexCompositeNtuple->Branch("beta1_PVerr", &beta1_PVerr, "beta1_PVerr/F");
                 VertexCompositeNtuple->Branch("beta2_PVerr", &beta2_PVerr, "beta2_PVerr/F");
-                VertexCompositeNtuple->Branch("sigmatmtd1", &sigmatmtd1, "sigmatmtd1/F");
-                VertexCompositeNtuple->Branch("sigmatmtd2", &sigmatmtd2, "sigmatmtd2/F");
-                VertexCompositeNtuple->Branch("pathLength1", &pathLength1, "pathLength1/F");
-                VertexCompositeNtuple->Branch("pathLength2", &pathLength2, "pathLength2/F");
+                if(threeProngDecay_)
+                {
+                  VertexCompositeNtuple->Branch("beta3_PV", &beta3_PV, "beta3_PV/F");
+                  VertexCompositeNtuple->Branch("beta3_PVerr", &beta3_PVerr, "beta3_PVerr/F");
+                }
             }
 
             if(threeProngDecay_)
@@ -1830,10 +1870,10 @@ VertexCompositeNtupleProducer::initTree()
               VertexCompositeNtuple->Branch("xyDCASignificanceDaugther3",&dxyos3,"xyDCASignificanceDaugther3/F");
               VertexCompositeNtuple->Branch("NHitD3",&nhit3,"NHitD3/F");
               VertexCompositeNtuple->Branch("HighPurityDaugther3",&trkquality3,"HighPurityDaugther3/O");
-              VertexCompositeNtuple->Branch("pTD3",&pt1,"pTD3/F");
+              VertexCompositeNtuple->Branch("pTD3",&pt3,"pTD3/F");
               VertexCompositeNtuple->Branch("pTerrD3",&ptErr3,"pTerrD3/F");
-              VertexCompositeNtuple->Branch("EtaD3",&eta1,"EtaD3/F");
-              VertexCompositeNtuple->Branch("dedxHarmonic2D3",&H2dedx1,"dedxHarmonic2D3/F");
+              VertexCompositeNtuple->Branch("EtaD3",&eta3,"EtaD3/F");
+              VertexCompositeNtuple->Branch("dedxHarmonic2D3",&H2dedx3,"dedxHarmonic2D3/F");
             }
         }
         

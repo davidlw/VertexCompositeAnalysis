@@ -29,7 +29,7 @@ LamC3PProducer::LamC3PProducer(const edm::ParameterSet& iConfig) :
   useAnyMVA_ = false;
   if(iConfig.exists("useAnyMVA")) useAnyMVA_ = iConfig.getParameter<bool>("useAnyMVA");
  
-  produces< reco::VertexCompositeCandidateCollection >("LamC3P");
+  produces< pat::CompositeCandidateCollection >("LamC3P");
   if(useAnyMVA_) produces<MVACollection>("MVAValuesLamC3P");
 }
 
@@ -55,7 +55,7 @@ void LamC3PProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
 //   std::auto_ptr< reco::VertexCompositeCandidateCollection >
 //     lamCCandidates( new reco::VertexCompositeCandidateCollection );
 //
-   auto lamCCandidates = std::make_unique<reco::VertexCompositeCandidateCollection>();
+   auto lamCCandidates = std::make_unique<pat::CompositeCandidateCollection>();
    lamCCandidates->reserve( theVees.getLamC3P().size() );
 
    std::copy( theVees.getLamC3P().begin(),
