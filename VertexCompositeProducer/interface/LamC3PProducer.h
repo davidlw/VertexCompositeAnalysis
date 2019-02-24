@@ -34,6 +34,7 @@
 
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"
+#include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
 
 #include "VertexCompositeAnalysis/VertexCompositeProducer/interface/LamC3PFitter.h"
 

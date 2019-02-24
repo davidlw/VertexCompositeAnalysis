@@ -7,20 +7,21 @@ from httplib import HTTPException
 from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
 
-config.General.workArea = 'VertexCompositeHyJetsAna_mtd'
+config.General.workArea = 'VertexCompositePromptD0Ana_mtd'
 config.General.transferOutputs = True
 config.General.transferLogs = False
 config.JobType.pluginName = 'Analysis'
-config.JobType.maxMemoryMB = 5000
-config.JobType.maxJobRuntimeMin = 2750
+#    config.JobType.maxMemoryMB = 8000
+#    config.JobType.maxJobRuntimeMin = 2750
 config.Data.unitsPerJob = 1
+#    config.Data.totalUnits = 20
 config.Data.splitting = 'FileBased'
-config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
-config.Data.publication = True
+#config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
+config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
+config.Data.publication = False
+#config.Data.useParent = True
 config.Data.inputDBS = 'phys03'
-#config.Data.ignoreLocality = True
-#config.Site.whitelist = ['T2_CH_*' , 'T2_US_*' , 'T2_FR_*']
-config.Site.storageSite = 'T2_US_MIT'
+config.Site.storageSite = 'T2_CH_CERN'
 
 def submit(config):
     try:
@@ -34,8 +35,7 @@ def submit(config):
 ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
 #############################################################################################
 
-config.General.requestName = 'HyJets_mc_mtd_v4'
-config.JobType.psetName = '../test/HyJets_mc_mtd_cfg.py'
-config.Data.outputDatasetTag = 'hyjets_mc_mtd_Skim_v4'
-config.Data.inputDataset = '/Hydjet_5p02TeV_TuneCP5_MTD/anstahll-Hydjet_5p02TeV_TuneCP5_MTD_RECO_20190127-8c6abfe98cf25191ce912f4177fc40d8/USER'
+config.General.requestName = 'prompt_lamc3p_ntp_mc_mtd_v6'
+config.JobType.psetName = '../test/LamC3P_PhaseIIMTD_mc_ntuple.py'
+config.Data.inputDataset = '/LambdaC_PiKP_prompt_pt1_y4_5p5TeV_TuneCP5_Pythia8/davidlw-lambdac_mc_mtd_Skim_v6-64de1c7bdd0509478b59ed6462a54226/USER'
 submit(config)

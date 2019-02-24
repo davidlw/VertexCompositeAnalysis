@@ -58,6 +58,8 @@ float cand2Mass[2] = {protonMassLamC3P, piMassLamC3P};
 float cand1Mass_sigma[2] = {piMassLamC3P_sigma, protonMassLamC3P_sigma};
 float cand2Mass_sigma[2] = {protonMassLamC3P_sigma, piMassLamC3P_sigma};
 
+const double c_cm_ns = 2.99792458e1; //[cm/ns] // mtd
+
 // Constructor and (empty) destructor
 LamC3PFitter::LamC3PFitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollector && iC) {
 //		   const edm::Event& iEvent, const edm::EventSetup& iSetup, edm::ConsumesCollector && iC) {
@@ -68,6 +70,14 @@ LamC3PFitter::LamC3PFitter(const edm::ParameterSet& theParameters,  edm::Consume
   token_tracks = iC.consumes<reco::TrackCollection>(theParameters.getParameter<edm::InputTag>("trackRecoAlgorithm"));
   token_vertices = iC.consumes<reco::VertexCollection>(theParameters.getParameter<edm::InputTag>("vertexRecoAlgorithm"));
   token_dedx = iC.consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxHarmonic2"));
+  // MTD track information
+  token_MTDtrack["beta"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTrackBeta"));
+  token_MTDtrack["t0"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTrackt0"));
+  token_MTDtrack["sigmat0"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTracksigmat0"));
+  token_MTDtrack["tmtd"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTracktmtd"));
+  token_MTDtrack["sigmatmtd"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTracksigmatmtd"));
+  token_MTDtrack["p"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTrackp"));
+  token_MTDtrack["pathLength"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTrackPathLength"));
 
   // Second, initialize post-fit cuts
   mKPCutMin = theParameters.getParameter<double>(string("mKPCutMin"));
@@ -93,7 +103,10 @@ LamC3PFitter::LamC3PFitter(const edm::ParameterSet& theParameters,  edm::Consume
   dauTransImpactSigCut = theParameters.getParameter<double>(string("dauTransImpactSigCut"));
   dauLongImpactSigCut = theParameters.getParameter<double>(string("dauLongImpactSigCut"));
   VtxChiProbCut = theParameters.getParameter<double>(string("VtxChiProbCut"));
-  dPt3Cut = theParameters.getParameter<double>(string("dPt3Cut"));
+  dPt3CutMin = theParameters.getParameter<double>(string("dPt3CutMin"));
+  dPt3CutMax = theParameters.getParameter<double>(string("dPt3CutMax"));
+  dY3CutMin = theParameters.getParameter<double>(string("dY3CutMin"));
+  dY3CutMax = theParameters.getParameter<double>(string("dY3CutMax"));
   alphaCut = theParameters.getParameter<double>(string("alphaCut"));
   alpha2DCut = theParameters.getParameter<double>(string("alpha2DCut"));
   isWrongSign = theParameters.getParameter<bool>(string("isWrongSign"));
@@ -153,6 +166,8 @@ void LamC3PFitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetu
   std::vector<TrackRef> theTrackRefs_neg;
   std::vector<TransientTrack> theTransTracks_pos;
   std::vector<TransientTrack> theTransTracks_neg;
+  std::vector<std::map<std::string, float> > theMTDtrackInfo_pos; // mtd
+  std::vector<std::map<std::string, float> > theMTDtrackInfo_neg; // mtd
 
   // Handles for tracks, B-field, and tracker geometry
   Handle<reco::TrackCollection> theTrackHandle;
@@ -160,6 +175,7 @@ void LamC3PFitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetu
   Handle<reco::BeamSpot> theBeamSpotHandle;
   ESHandle<MagneticField> bFieldHandle;
   Handle<edm::ValueMap<reco::DeDxData> > dEdxHandle;
+  std::map<std::string, Handle<edm::ValueMap<float> > > MTDtrackHandle; //mtd
 
   // Get the tracks, vertices from the event, and get the B-field record
   //  from the EventSetup
@@ -167,6 +183,9 @@ void LamC3PFitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetu
   iEvent.getByToken(token_vertices, theVertexHandle);
   iEvent.getByToken(token_beamSpot, theBeamSpotHandle);  
   iEvent.getByToken(token_dedx, dEdxHandle);
+  for (auto const& token : token_MTDtrack) {
+    iEvent.getByToken(token.second, MTDtrackHandle[token.first]);
+  }
 
   if( !theTrackHandle->size() ) return;
   iSetup.get<IdealMagneticFieldRecord>().get(bFieldHandle);
@@ -238,16 +257,36 @@ void LamC3PFitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetu
       double dauLongImpactSig = dzvtx/dzerror;
       double dauTransImpactSig = dxyvtx/dxyerror;
 
+      std::map<std::string, float> MTDtrackInfo; // mtd
+      for (auto const& handle : MTDtrackHandle) {
+        if (handle.second.isValid()) {
+          MTDtrackInfo[handle.first] = (*handle.second)[tmpRef];
+        }
+        else { edm::LogError("LamC3PFitter") << "Collection " << handle.first << " is not valid"; }
+      }
+      const float t0_PV = vtxPrimary->t();
+      const float t0err_PV = vtxPrimary->tError();
+      const float dt_PV = MTDtrackInfo.at("tmtd") - t0_PV;
+      const float sigma_tmtd = MTDtrackInfo.at("sigmatmtd");
+      const float pathLength = MTDtrackInfo.at("pathLength");
+      const float beta_PV = (pathLength/dt_PV)*(1./c_cm_ns);
+      const float sigmabeta_PV = std::sqrt(beta_PV*beta_PV * (std::pow(sigma_tmtd/dt_PV,2) + std::pow(t0err_PV/dt_PV,2)));
+      MTDtrackInfo["dt_PV"] = dt_PV;
+      MTDtrackInfo["beta_PV"] = beta_PV;
+      MTDtrackInfo["sigmabeta_PV"] = sigmabeta_PV;
+
       if( fabs(dauTransImpactSig) > dauTransImpactSigCut && fabs(dauLongImpactSig) > dauLongImpactSigCut ) {
         if(tmpRef->charge()>0.0)
         {
           theTrackRefs_pos.push_back( tmpRef );
           theTransTracks_pos.push_back( tmpTk );
+          theMTDtrackInfo_pos.push_back( MTDtrackInfo ); // mtd
         }
         if(tmpRef->charge()<0.0)
         {
           theTrackRefs_neg.push_back( tmpRef );
           theTransTracks_neg.push_back( tmpTk );
+          theMTDtrackInfo_neg.push_back( MTDtrackInfo ); // mtd
         }
       }
     }
@@ -255,13 +294,13 @@ void LamC3PFitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
   if(!isWrongSign)
   {
-    fitLamCCandidates(theTrackRefs_pos,theTrackRefs_neg,theTransTracks_pos,theTransTracks_neg,isVtxPV,vtxPrimary,theBeamSpotHandle,bestvtx,bestvtxError,4122);
-    fitLamCCandidates(theTrackRefs_neg,theTrackRefs_pos,theTransTracks_neg,theTransTracks_pos,isVtxPV,vtxPrimary,theBeamSpotHandle,bestvtx,bestvtxError,-4122);
+    fitLamCCandidates(theTrackRefs_pos,theTrackRefs_neg,theTransTracks_pos,theTransTracks_neg,theMTDtrackInfo_pos,theMTDtrackInfo_neg,isVtxPV,vtxPrimary,theBeamSpotHandle,bestvtx,bestvtxError,4122);
+    fitLamCCandidates(theTrackRefs_neg,theTrackRefs_pos,theTransTracks_neg,theTransTracks_pos,theMTDtrackInfo_neg,theMTDtrackInfo_pos,isVtxPV,vtxPrimary,theBeamSpotHandle,bestvtx,bestvtxError,-4122);
   }
   else 
   {
-    fitLamCCandidates(theTrackRefs_pos,theTrackRefs_pos,theTransTracks_pos,theTransTracks_pos,isVtxPV,vtxPrimary,theBeamSpotHandle,bestvtx,bestvtxError,4122);
-    fitLamCCandidates(theTrackRefs_neg,theTrackRefs_neg,theTransTracks_neg,theTransTracks_neg,isVtxPV,vtxPrimary,theBeamSpotHandle,bestvtx,bestvtxError,-4122);    
+    fitLamCCandidates(theTrackRefs_pos,theTrackRefs_pos,theTransTracks_pos,theTransTracks_pos,theMTDtrackInfo_pos,theMTDtrackInfo_pos,isVtxPV,vtxPrimary,theBeamSpotHandle,bestvtx,bestvtxError,4122);
+    fitLamCCandidates(theTrackRefs_neg,theTrackRefs_neg,theTransTracks_neg,theTransTracks_neg,theMTDtrackInfo_neg,theMTDtrackInfo_neg,isVtxPV,vtxPrimary,theBeamSpotHandle,bestvtx,bestvtxError,-4122);    
   }
 }
 
@@ -270,6 +309,8 @@ void LamC3PFitter::fitLamCCandidates(
                                   std::vector<reco::TrackRef> theTrackRefs_sgn2,
                                   std::vector<reco::TransientTrack> theTransTracks_sgn1,
                                   std::vector<reco::TransientTrack> theTransTracks_sgn2,
+                                  std::vector<std::map<std::string, float> > theMTDtrackInfo_sgn1,
+                                  std::vector<std::map<std::string, float> > theMTDtrackInfo_sgn2,
                                   bool isVtxPV,
                                   reco::VertexCollection::const_iterator vtxPrimary, edm::Handle<reco::BeamSpot> theBeamSpotHandle,
                                   math::XYZPoint bestvtx, math::XYZPoint bestvtxError,
@@ -302,6 +343,8 @@ void LamC3PFitter::fitLamCCandidates(
       TrackRef trackRef2 = theTrackRefs_sgn1[trdx2];
       TransientTrack* transTkPtr1 = &theTransTracks_sgn1[trdx1];
       TransientTrack* transTkPtr2 = &theTransTracks_sgn1[trdx2];
+      std::map<std::string, float> theMTDtrackInfo1 = theMTDtrackInfo_sgn1[trdx1]; // mtd
+      std::map<std::string, float> theMTDtrackInfo2 = theMTDtrackInfo_sgn1[trdx2]; // mtd
 
 //      double dzvtx1 = trackRef1->dz(bestvtx);
 //      double dxyvtx1 = trackRef1->dxy(bestvtx);
@@ -374,6 +417,7 @@ void LamC3PFitter::fitLamCCandidates(
 
         TrackRef trackRef3 = theTrackRefs_sgn2[trdx3];
         TransientTrack* transTkPtr3 = &theTransTracks_sgn2[trdx3];
+        std::map<std::string, float> theMTDtrackInfo3 = theMTDtrackInfo_sgn2[trdx3]; // mtd
   
 //        double dzvtx3 = trackRef3->dz(bestvtx);
 //        double dxyvtx3 = trackRef3->dxy(bestvtx);
@@ -419,11 +463,18 @@ void LamC3PFitter::fitLamCCandidates(
         double totalPt3 =
           ( trkTSCP1.momentum() + trkTSCP2.momentum() + trkTSCP31.momentum()).perp();
 
+        double totalPz3 =
+          ( trkTSCP1.momentum() + trkTSCP2.momentum() + trkTSCP31.momentum()).z();
+
         double mass31 = sqrt( totalE31Sq - totalP3Sq);
         double mass32 = sqrt( totalE32Sq - totalP3Sq);
 
-        if( (mass31 > mPiKPCutMax || mass31 < mPiKPCutMin) && (mass32 > mPiKPCutMax || mass32 < mPiKPCutMin)) continue;
-        if( totalPt3 < dPt3Cut ) continue;
+        double rapidity31 = 0.5*log((totalE31+totalPz3)/(totalE31-totalPz3));
+        double rapidity32 = 0.5*log((totalE32+totalPz3)/(totalE32-totalPz3));   
+
+        if((mass31 > mPiKPCutMax || mass31 < mPiKPCutMin) && (mass32 > mPiKPCutMax || mass32 < mPiKPCutMin)) continue;
+        if((rapidity31 > dY3CutMax || rapidity31 < dY3CutMin) && (rapidity32 > dY3CutMax || rapidity32 < dY3CutMin)) continue;
+        if(totalPt3 < dPt3CutMin || totalPt3 > dPt3CutMax) continue;
 
         // Create the vertex fitter object and vertex the tracks
         float cand1TotalE[2]={0.0};
@@ -538,8 +589,11 @@ void LamC3PFitter::fitLamCCandidates(
               cos(lamCAngle3D) < collinCut3D || cos(lamCAngle2D) < collinCut2D || lamCAngle3D > alphaCut || lamCAngle2D > alpha2DCut
           ) continue;
 
-          VertexCompositeCandidate* theLamC3P = 0;
-          theLamC3P = new VertexCompositeCandidate(lamCCharge, lamCP4, lamCVtx, lamCVtxCov, lamCVtxChi2, lamCVtxNdof);
+          const auto& cand = CompositeCandidate(lamCCharge, lamCP4, lamCVtx);
+          pat::CompositeCandidate* theLamC3P = new pat::CompositeCandidate(cand);
+          theLamC3P->addUserFloat("vertexNdof", lamCVtxNdof);
+          theLamC3P->addUserFloat("vertexChi2", lamCVtxChi2);
+          theLamC3P->addUserData<Vertex::CovarianceMatrix>("vertexCovariance", lamCVtxCov);
 
           RecoChargedCandidate
             theCand1(lamCCharge, Particle::LorentzVector(cand1TotalP.x(),
@@ -560,14 +614,40 @@ void LamC3PFitter::fitLamCCandidates(
             theCand3.setTrack(trackRef3);
 
           AddFourMomenta addp4;
-          theLamC3P->addDaughter(theCand1);
-          theLamC3P->addDaughter(theCand2);
-          theLamC3P->addDaughter(theCand3);
+          if(lamCCharge>0)
+          {
+            theLamC3P->addDaughter(theCand1);
+            theLamC3P->addDaughter(theCand3);
+            theLamC3P->addDaughter(theCand2);
+          }
+          if(lamCCharge<0)
+          { 
+            theLamC3P->addDaughter(theCand3);
+            theLamC3P->addDaughter(theCand1);
+            theLamC3P->addDaughter(theCand2);
+          }
+
           theLamC3P->setPdgId(pdg_id);
           addp4.set( *theLamC3P );
+
+          // Add MTD information
+          if(lamCCharge>0)
+          {
+            for (auto const& info : theMTDtrackInfo1) { theLamC3P->addUserFloat(Form("posCand_%s", info.first.c_str()), info.second); }
+            for (auto const& info : theMTDtrackInfo3) { theLamC3P->addUserFloat(Form("negCand_%s", info.first.c_str()), info.second); }
+            for (auto const& info : theMTDtrackInfo2) { theLamC3P->addUserFloat(Form("cand3_%s", info.first.c_str()), info.second); }
+          }
+          if(lamCCharge<0)
+          {
+            for (auto const& info : theMTDtrackInfo3) { theLamC3P->addUserFloat(Form("posCand_%s", info.first.c_str()), info.second); }
+            for (auto const& info : theMTDtrackInfo1) { theLamC3P->addUserFloat(Form("negCand_%s", info.first.c_str()), info.second); }
+            for (auto const& info : theMTDtrackInfo2) { theLamC3P->addUserFloat(Form("cand3_%s", info.first.c_str()), info.second); }
+          }
+
           if( theLamC3P->mass() < lamCMassLamC3P + lamCMassCut &&
-              theLamC3P->mass() > lamCMassLamC3P - lamCMassCut ) //&&
-	     // theLamC3P->pt() > dPtCut ) {
+              theLamC3P->mass() > lamCMassLamC3P - lamCMassCut && 
+	      theLamC3P->pt() > dPt3CutMin && theLamC3P->pt() < dPt3CutMax && 
+              theLamC3P->y() > dY3CutMin && theLamC3P->y() < dY3CutMax ) 
           {
             theLamC3Ps.push_back( *theLamC3P );
           }
@@ -621,7 +701,7 @@ void LamC3PFitter::fitLamCCandidates(
 }
 // Get methods
 
-const reco::VertexCompositeCandidateCollection& LamC3PFitter::getLamC3P() const {
+const pat::CompositeCandidateCollection& LamC3PFitter::getLamC3P() const {
   return theLamC3Ps;
 }
 
