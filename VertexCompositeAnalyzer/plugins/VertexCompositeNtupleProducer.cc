@@ -534,7 +534,8 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
       HFsumET = cent->EtHFtowerSum();
       Npixel = cent->multiplicityPixel();
 //      int ntrk = cent->Ntracks();
-      hCent->Fill(centrality);
+
+      if(saveHistogram_) hCent->Fill(centrality);
     }
     //best vertex
     bestvz=-999.9; bestvx=-999.9; bestvy=-999.9;
