@@ -1655,7 +1655,8 @@ VertexCompositeNtupleProducer::fillGEN(const edm::Event& iEvent, const edm::Even
 
         int id = trk.pdgId();
         if(fabs(id)!=PID_) continue; //check is target
-        if(decayInGen_ && trk.numberOfDaughters()!=2) continue; //check 2-pron decay if target decays in Gen
+        if(decayInGen_ && trk.numberOfDaughters()!=2 && !threeProngDecay_) continue; //check 2-pron decay if target decays in Gen
+        if(decayInGen_ && trk.numberOfDaughters()!=3 && threeProngDecay_) continue; //check 3-pron decay if target decays in Gen
 
         pt_gen = trk.pt();
         eta_gen = trk.eta();
