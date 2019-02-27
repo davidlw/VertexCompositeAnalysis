@@ -293,12 +293,7 @@ private:
     float pathLength3;
     bool  isMtdDau1;
     bool  isMtdDau2;
-    float t0_PV1;
-    float sigmat0_PV1;
-    float t0_PV2;
-    float sigmat0_PV2;
-    float t0_PV3;
-    float sigmat0_PV3;
+    bool  isMtdDau3;
 
     float t0_PV;
     float sigmat0_PV;
@@ -913,12 +908,6 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             isMtdDau1 = sigmatmtd1 >=0;
             isMtdDau2 = sigmatmtd2 >=0;
 
-            t0_PV1 = trk.userFloat("posCand_t0_PV");
-            t0_PV2 = trk.userFloat("negCand_t0_PV");
-
-            sigmat0_PV1 = trk.userFloat("posCand_sigmat0_PV");
-            sigmat0_PV2 = trk.userFloat("negCand_sigmat0_PV");
-
             t0_PV = vtx.t();
             sigmat0_PV = vtx.tError();
 
@@ -937,6 +926,7 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
                 beta2_PVerr = trk.userFloat("negCand_sigmabeta_PV");
             }
             if(threeProngDecay_ ){ 
+               isMtdDau3 = sigmatmtd3 >=0;
                if(trk.userFloat("cand3_sigmatmtd")>=0.){
                   beta3_PV = trk.userFloat("cand3_beta_PV");
                   beta3_PVerr = trk.userFloat("cand3_sigmabeta_PV");
@@ -944,9 +934,6 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
                tmtd3 = trk.userFloat("cand3_tmtd");
                sigmatmtd3 = trk.userFloat("cand3_sigmatmtd");
                pathLength3 = trk.userFloat("cand3_pathLength");
-               t0_PV3 = trk.userFloat("cand3_t0_PV");
-               sigmat0_PV3 = trk.userFloat("cand3_sigmat0_PV");
-               
             }
         }
         
@@ -1910,6 +1897,8 @@ VertexCompositeNtupleProducer::initTree()
 //            VertexCompositeNtuple->Branch("dedxTruncated40Daugther2",&T4dedx2,"dedxTruncated40Daugther2/F");
 //            VertexCompositeNtuple->Branch("normalizedChi2Daugther2",&trkChi2,"normalizedChi2Daugther2/F");
             if(isUseMtd_){  // mtd
+                VertexCompositeNtuple->Branch("t0_PV", &t0_PV, "t0_PV/F");
+                VertexCompositeNtuple->Branch("sigmat0_PV", &sigmat0_PV, "sigmat0_PV/F");
                 VertexCompositeNtuple->Branch("beta1_PV", &beta1_PV, "beta1_PV/F");
                 VertexCompositeNtuple->Branch("beta2_PV", &beta2_PV, "beta2_PV/F");
                 VertexCompositeNtuple->Branch("beta1_PVerr", &beta1_PVerr, "beta1_PVerr/F");
@@ -1922,12 +1911,6 @@ VertexCompositeNtupleProducer::initTree()
                 VertexCompositeNtuple->Branch("pathLength2", &pathLength2, "pathLength2/F");
                 VertexCompositeNtuple->Branch("isMtdDau1", &isMtdDau1, "isMtdDau1/O");
                 VertexCompositeNtuple->Branch("isMtdDau2", &isMtdDau2, "isMtdDau2/O");
-                VertexCompositeNtuple->Branch("t0_PV1", &t0_PV1, "tmtd1/F");
-                VertexCompositeNtuple->Branch("t0_PV2", &t0_PV2, "tmtd2/F");
-                VertexCompositeNtuple->Branch("sigmat0_PV1", &sigmat0_PV1, "sigmat0_PV1/F");
-                VertexCompositeNtuple->Branch("sigmat0_PV2", &sigmat0_PV2, "sigmat0_PV2/F");
-                VertexCompositeNtuple->Branch("t0_PV", &t0_PV, "t0_PV/F");
-                VertexCompositeNtuple->Branch("sigmat0_PV", &sigmat0_PV, "sigmat0_PV/F");
                 if(threeProngDecay_)
                 {
                   VertexCompositeNtuple->Branch("beta3_PV", &beta3_PV, "beta3_PV/F");
@@ -1935,6 +1918,7 @@ VertexCompositeNtupleProducer::initTree()
                   VertexCompositeNtuple->Branch("tmtd3", &tmtd3, "tmtd3/F");
                   VertexCompositeNtuple->Branch("sigmatmtd3", &sigmatmtd3, "sigmatmtd3/F");
                   VertexCompositeNtuple->Branch("pathLength3", &pathLength3, "pathLength3/F");
+                  VertexCompositeNtuple->Branch("isMtdDau3", &isMtdDau3, "isMtdDau3/O");
                 }
             }
 
