@@ -23,13 +23,13 @@ config.Data.publication = False
 config.Data.inputDBS = 'global'
 config.Site.storageSite = 'T2_CH_CERN'
 
-def submit(config):
-    try:
-        crabCommand('submit', config = config)
-    except HTTPException as hte:
-        print "Failed submitting task: %s" % (hte.headers)
-    except ClientException as cle:
-        print "Failed submitting task: %s" % (cle)
+#def submit(config):
+#    try:
+#        crabCommand('submit', config = config)
+#    except HTTPException as hte:
+#        print "Failed submitting task: %s" % (hte.headers)
+#    except ClientException as cle:
+#        print "Failed submitting task: %s" % (cle)
 
 #############################################################################################
 ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
@@ -38,4 +38,4 @@ def submit(config):
 config.General.requestName = 'prompt_d0_ntp_mc_mtd_full_v1'
 config.JobType.psetName = '../test/PromptD0_PhaseIIMTD_mc_production.py'
 config.Data.inputDataset = '/D0_PiK_prompt_pt0_y4_5p5TeV_TuneCP5_Pythia8/PhaseIIMTDTDRAutumn18DR-NoPU_103X_upgrade2023_realistic_v2-v1/FEVT'
-submit(config)
+#submit(config)

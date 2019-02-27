@@ -282,6 +282,14 @@ private:
     float beta2_PVerr;
     float beta3_PV;     // mtd
     float beta3_PVerr;
+    float tmtd1;
+    float tmtd2;
+    float sigmatmtd1;
+    float sigmatmtd2;
+    float pathLength1;
+    float pathLength2;
+    bool  isMtdDau1;
+    bool  isMtdDau2;
 
     //grand-dau info
     float grand_dzos1;
@@ -886,6 +894,18 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
 
             beta2_PV = trk.userFloat("negCand_beta_PV");
             beta2_PVerr = trk.userFloat("negCand_sigmabeta_PV");
+
+            tmtd1 = trk.userFloat("posCand_tmtd");
+            sigmatmtd1 = trk.userFloat("posCand_sigmatmtd");
+
+            tmtd2 = trk.userFloat("negCand_tmtd");
+            sigmatmtd2 = trk.userFloat("negCand_sigmatmtd");
+
+            pathLength1 = trk.userFloat("posCand_pathLength");
+            pathLength2 = trk.userFloat("negCand_pathLength");
+
+            isMtdDau1 = sigmatmtd1 >0 && pathLength1 >0;
+            isMtdDau2 = sigmatmtd2 >0 && pathLength2 >0;
 
             if(threeProngDecay_)
             {
@@ -1857,6 +1877,14 @@ VertexCompositeNtupleProducer::initTree()
                 VertexCompositeNtuple->Branch("beta2_PV", &beta2_PV, "beta2_PV/F");
                 VertexCompositeNtuple->Branch("beta1_PVerr", &beta1_PVerr, "beta1_PVerr/F");
                 VertexCompositeNtuple->Branch("beta2_PVerr", &beta2_PVerr, "beta2_PVerr/F");
+                VertexCompositeNtuple->Branch("tmtd1", &tmtd1, "tmtd1/F");
+                VertexCompositeNtuple->Branch("tmtd2", &tmtd2, "tmtd2/F");
+                VertexCompositeNtuple->Branch("sigmatmtd1", &sigmatmtd1, "sigmatmtd1/F");
+                VertexCompositeNtuple->Branch("sigmatmtd2", &sigmatmtd2, "sigmatmtd2/F");
+                VertexCompositeNtuple->Branch("pathLength1", &pathLength1, "pathLength1/F");
+                VertexCompositeNtuple->Branch("pathLength2", &pathLength2, "pathLength2/F");
+                VertexCompositeNtuple->Branch("isMtdDau1", &isMtdDau1, "isMtdDau1/O");
+                VertexCompositeNtuple->Branch("isMtdDau2", &isMtdDau2, "isMtdDau2/O");
                 if(threeProngDecay_)
                 {
                   VertexCompositeNtuple->Branch("beta3_PV", &beta3_PV, "beta3_PV/F");

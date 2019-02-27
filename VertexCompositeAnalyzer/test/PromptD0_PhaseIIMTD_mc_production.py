@@ -31,7 +31,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 
 process.GlobalTag.globaltag = '103X_upgrade2023_realistic_v2'
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) 
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(2000) 
 )
 
 process.source = cms.Source("PoolSource",
