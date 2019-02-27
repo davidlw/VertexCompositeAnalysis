@@ -881,14 +881,21 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         //d3 corresponds to the third track
         if(isUseMtd_)  // mtd
         {
-            beta1_PV = trk.userFloat("posCand_beta_PV");
-            beta1_PVerr = trk.userFloat("posCand_sigmabeta_PV");
-
-
-            beta2_PV = trk.userFloat("negCand_beta_PV");
-            beta2_PVerr = trk.userFloat("negCand_sigmabeta_PV");
-
-            if(threeProngDecay_)
+            beta1_PV = -99.;
+            beta2_PV = -99.;
+            beta3_PV = -99.;
+            beta1_PVerr = -99.;
+            beta2_PVerr = -99.;
+            beta3_PVerr = -99.;
+            if (trk.userFloat("posCand_sigmatmtd")>=-0.) {
+                beta1_PV = trk.userFloat("posCand_beta_PV");
+                beta1_PVerr = trk.userFloat("posCand_sigmabeta_PV");
+            }
+            if (trk.userFloat("negCand_sigmatmtd")>=0.) {
+                beta2_PV = trk.userFloat("negCand_beta_PV");
+                beta2_PVerr = trk.userFloat("negCand_sigmabeta_PV");
+            }
+            if(threeProngDecay_ && trk.userFloat("cand3_sigmatmtd")>=0.)
             {
               beta3_PV = trk.userFloat("cand3_beta_PV");
               beta3_PVerr = trk.userFloat("cand3_sigmabeta_PV");
