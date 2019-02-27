@@ -7,7 +7,7 @@ analysisSkimContent = cms.PSet(
 #      'keep *_offlinePrimaryVerticesRecovery_*_*',
 #      'keep *_allVertices*_*_*',
 #      'keep *_pixelVertices_*_*',
-#      'keep *_pixel3Vertices_*_*',                                     
+#      'keep *_pixel3Vertices_*_*',
 #      'keep *_sortedGoodVertices_*_*',
 #      'keep *_bestVertex_*_*',
 #      'keep *_offlineBeamSpot_*_*',
@@ -24,7 +24,7 @@ analysisSkimContent = cms.PSet(
 #      'keep *_photons*_*_*',
 #      'keep *_conversions*_*_*',
       # muon
-#      'keep recoMuons_muons_*_*',      
+#      'keep recoMuons_muons_*_*',
       'keep *_hiCentrality_*_*',
 #      'keep *_hiEvtPlane_*_*',
 #      'keep *_hiEvtPlaneFlat_*_*',
@@ -36,7 +36,7 @@ analysisSkimContent = cms.PSet(
       'keep *_generalLamC3PCandidates*_LamC3P_*',
       'keep *_generalLamC3PCandidates*_MVAValues*_*',
       # tracks
-#      'keep recoTracks_generalTracks*_*_*',  
+#      'keep recoTracks_generalTracks*_*_*',
 #      'keep recoTracks_pixelTracks_*_*',
 #      'keep recoTracks_refitterForDeDx_*_*',
 #      'keep recoTracks_selectTracks*_*_*',
@@ -47,7 +47,7 @@ analysisSkimContent = cms.PSet(
 #      'keep *DeDx*_*_*_*',
 #      'keep *_pACentrality_*_*',
       # clusters
-#      'keep *_siPixelClusters_*_*',       
+#      'keep *_siPixelClusters_*_*',
       # PFCandidate
 #      'keep *_particleFlow_*_*',
       # mc (if present)
@@ -61,7 +61,7 @@ analysisSkimContent = cms.PSet(
       # sim track matching
 #      'keep *_trackingParticleRecoTrackAsssociation_*_*',
 #      'keep TrackingParticles_mergedtruth_MergedTrackTruth_*'
-       'keep *_offlinePrimaryVertices4D_*_*',
+       'keep *_offlinePrimaryVertices4D*_*_*',
 #       'keep *_trackExtenderWithMTD_generalTrackBeta_*',
 #       'keep *_trackExtenderWithMTD_generalTrackt0_*',
 #       'keep *_trackExtenderWithMTD_generalTracksigmat0_*',
