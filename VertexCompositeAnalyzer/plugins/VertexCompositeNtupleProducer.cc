@@ -542,7 +542,8 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
       HFsumET = cent->EtHFtowerSum();
       Npixel = cent->multiplicityPixel();
 //      int ntrk = cent->Ntracks();
-      hCent->Fill(centrality);
+
+      if(saveHistogram_) hCent->Fill(centrality);
     }
     //best vertex
     bestvz=-999.9; bestvx=-999.9; bestvy=-999.9;
@@ -888,13 +889,6 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         //d3 corresponds to the third track
         if(isUseMtd_)  // mtd
         {
-            beta1_PV = trk.userFloat("posCand_beta_PV");
-            beta1_PVerr = trk.userFloat("posCand_sigmabeta_PV");
-
-
-            beta2_PV = trk.userFloat("negCand_beta_PV");
-            beta2_PVerr = trk.userFloat("negCand_sigmabeta_PV");
-
             tmtd1 = trk.userFloat("posCand_tmtd");
             sigmatmtd1 = trk.userFloat("posCand_sigmatmtd");
 
@@ -907,7 +901,21 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             isMtdDau1 = sigmatmtd1 >0 && pathLength1 >0;
             isMtdDau2 = sigmatmtd2 >0 && pathLength2 >0;
 
-            if(threeProngDecay_)
+            beta1_PV = -99.;
+            beta2_PV = -99.;
+            beta3_PV = -99.;
+            beta1_PVerr = -99.;
+            beta2_PVerr = -99.;
+            beta3_PVerr = -99.;
+            if (trk.userFloat("posCand_sigmatmtd")>=-0.) {
+                beta1_PV = trk.userFloat("posCand_beta_PV");
+                beta1_PVerr = trk.userFloat("posCand_sigmabeta_PV");
+            }
+            if (trk.userFloat("negCand_sigmatmtd")>=0.) {
+                beta2_PV = trk.userFloat("negCand_beta_PV");
+                beta2_PVerr = trk.userFloat("negCand_sigmabeta_PV");
+            }
+            if(threeProngDecay_ && trk.userFloat("cand3_sigmatmtd")>=0.)
             {
               beta3_PV = trk.userFloat("cand3_beta_PV");
               beta3_PVerr = trk.userFloat("cand3_sigmabeta_PV");

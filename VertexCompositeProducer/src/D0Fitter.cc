@@ -257,9 +257,10 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       const float dt_PV = MTDtrackInfo.at("tmtd") - t0_PV;
       const float sigma_tmtd = MTDtrackInfo.at("sigmatmtd");
       const float pathLength = MTDtrackInfo.at("pathLength");
-      const float beta_PV = (pathLength/dt_PV)*(1./c_cm_ns);
-      const float sigmabeta_PV = std::sqrt(beta_PV*beta_PV * (std::pow(sigma_tmtd/dt_PV,2) + std::pow(t0err_PV/dt_PV,2)));
-      MTDtrackInfo["dt_PV"] = dt_PV;
+      const float beta_PV = sigma_tmtd>=0. ? (pathLength/dt_PV)*(1./c_cm_ns) : -99.;
+      const float sigmabeta_PV = sigma_tmtd>=0. ? std::sqrt(beta_PV*beta_PV * (std::pow(sigma_tmtd/dt_PV,2) + std::pow(t0err_PV/dt_PV,2))) : -99.;
+      MTDtrackInfo["t0_PV"] = t0_PV;
+      MTDtrackInfo["sigmat0_PV"] = t0err_PV;
       MTDtrackInfo["beta_PV"] = beta_PV;
       MTDtrackInfo["sigmabeta_PV"] = sigmabeta_PV;
 
