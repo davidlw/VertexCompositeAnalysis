@@ -1932,6 +1932,9 @@ VertexCompositeNtupleProducer::initTree()
                 {
                   VertexCompositeNtuple->Branch("beta3_PV", &beta3_PV, "beta3_PV/F");
                   VertexCompositeNtuple->Branch("beta3_PVerr", &beta3_PVerr, "beta3_PVerr/F");
+                  VertexCompositeNtuple->Branch("tmtd3", &tmtd3, "tmtd3/F");
+                  VertexCompositeNtuple->Branch("sigmatmtd3", &sigmatmtd3, "sigmatmtd3/F");
+                  VertexCompositeNtuple->Branch("pathLength3", &pathLength3, "pathLength3/F");
                 }
             }
 
