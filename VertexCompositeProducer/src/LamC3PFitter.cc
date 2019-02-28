@@ -37,6 +37,7 @@
 #include <Math/SMatrix.h>
 #include <TMath.h>
 #include <TVector3.h>
+#include <TLorentzVector.h>
 #include "TrackingTools/IPTools/interface/IPTools.h"
 #include "CommonTools/Statistics/interface/ChiSquaredProbability.h"
 #include "CondFormats/DataRecord/interface/GBRWrapperRcd.h"
@@ -359,6 +360,15 @@ void LamC3PFitter::fitLamCCandidates(
       std::map<std::string, float> theMTDtrackInfo1 = theMTDtrackInfo_sgn1[trdx1]; // mtd
       std::map<std::string, float> theMTDtrackInfo2 = theMTDtrackInfo_sgn1[trdx2]; // mtd
 
+      TLorentzVector track1Mom, track2Mom;
+      track1Mom.SetPtEtaPhiM(trackRef1->pt(), trackRef1->eta(), trackRef1->phi(), protonMassLamC3PSquared);
+      track2Mom.SetPtEtaPhiM(trackRef2->pt(), trackRef2->eta(), trackRef2->phi(), kaonMassLamC3PSquared);
+      const double preMass1 = (track1Mom + track2Mom).M();
+      track1Mom.SetPtEtaPhiM(trackRef1->pt(), trackRef1->eta(), trackRef1->phi(), kaonMassLamC3PSquared);
+      track2Mom.SetPtEtaPhiM(trackRef2->pt(), trackRef2->eta(), trackRef2->phi(), protonMassLamC3PSquared);
+      const double preMass2 = (track1Mom + track2Mom).M();
+      if( (preMass1 > mKPCutMax+0.1 || preMass1 < mKPCutMin-0.1) && (preMass2 > mKPCutMax+0.1 || preMass2 < mKPCutMin-0.1)) continue;
+
 //      double dzvtx1 = trackRef1->dz(bestvtx);
 //      double dxyvtx1 = trackRef1->dxy(bestvtx);
 //      double dzerror1 = sqrt(trackRef1->dzError()*trackRef1->dzError()+bestvtxError.z()*bestvtxError.z());
@@ -431,6 +441,18 @@ void LamC3PFitter::fitLamCCandidates(
         TrackRef trackRef3 = theTrackRefs_sgn2[trdx3];
         TransientTrack* transTkPtr3 = &theTransTracks_sgn2[trdx3];
         std::map<std::string, float> theMTDtrackInfo3 = theMTDtrackInfo_sgn2[trdx3]; // mtd
+
+        TLorentzVector track1Mom, track2Mom, track3Mom;
+        track1Mom.SetPtEtaPhiM(trackRef1->pt(), trackRef1->eta(), trackRef1->phi(), protonMassLamC3PSquared);
+        track2Mom.SetPtEtaPhiM(trackRef2->pt(), trackRef2->eta(), trackRef2->phi(), piMassLamC3PSquared);
+        track3Mom.SetPtEtaPhiM(trackRef3->pt(), trackRef3->eta(), trackRef3->phi(), kaonMassLamC3PSquared);
+        const double preMass31 = (track1Mom + track2Mom + track3Mom).M();
+        track1Mom.SetPtEtaPhiM(trackRef1->pt(), trackRef1->eta(), trackRef1->phi(), piMassLamC3PSquared);
+        track2Mom.SetPtEtaPhiM(trackRef2->pt(), trackRef2->eta(), trackRef2->phi(), protonMassLamC3PSquared);
+        track3Mom.SetPtEtaPhiM(trackRef3->pt(), trackRef3->eta(), trackRef3->phi(), kaonMassLamC3PSquared);
+        const double preMass32 = (track1Mom + track2Mom + track3Mom).M();
+
+        if((preMass31 > mPiKPCutMax+0.1 || preMass31 < mPiKPCutMin-0.1) && (preMass32 > mPiKPCutMax+0.1 || preMass32 < mPiKPCutMin-0.1)) continue;
   
 //        double dzvtx3 = trackRef3->dz(bestvtx);
 //        double dxyvtx3 = trackRef3->dxy(bestvtx);
@@ -520,6 +542,12 @@ void LamC3PFitter::fitLamCCandidates(
           RefCountedKinematicVertex lamCDecayVertex = lamCVertex->currentDecayVertex();
           if(!lamCDecayVertex->vertexIsValid()) continue;
 
+          double lamCVtxChi2(lamCDecayVertex->chiSquared());
+          double lamCVtxNdof(lamCDecayVertex->degreesOfFreedom());
+          double lamCNormalizedChi2 = lamCVtxChi2/lamCVtxNdof;
+
+          if( lamCNormalizedChi2 > chi2Cut ) continue;
+
   	  float lamCC2Prob = TMath::Prob(lamCDecayVertex->chiSquared(),lamCDecayVertex->degreesOfFreedom());
   	  if (lamCC2Prob < VtxChiProbCut) continue;
 
@@ -552,6 +580,10 @@ void LamC3PFitter::fitLamCCandidates(
 
           const Particle::LorentzVector lamCP4(lamCTotalP.x(), lamCTotalP.y(), lamCTotalP.z(), lamCTotalE[i]);
 
+          if (lamCP4.M() > lamCMassLamC3P + lamCMassCut || lamCP4.M() < lamCMassLamC3P - lamCMassCut) continue;
+	  if (lamCP4.Pt() < dPt3CutMin || lamCP4.Pt() > dPt3CutMax) continue;
+	  if (lamCP4.Rapidity() < dY3CutMin || lamCP4.Rapidity() > dY3CutMax) continue;
+
           Particle::Point lamCVtx((*lamCDecayVertex).position().x(), (*lamCDecayVertex).position().y(), (*lamCDecayVertex).position().z());
           std::vector<double> lamCVtxEVec;
           lamCVtxEVec.push_back( lamCDecayVertex->error().cxx() );
@@ -562,9 +594,6 @@ void LamC3PFitter::fitLamCCandidates(
           lamCVtxEVec.push_back( lamCDecayVertex->error().czz() );
           SMatrixSym3D lamCVtxCovMatrix(lamCVtxEVec.begin(), lamCVtxEVec.end());
           const Vertex::CovarianceMatrix lamCVtxCov(lamCVtxCovMatrix);
-          double lamCVtxChi2(lamCDecayVertex->chiSquared());
-          double lamCVtxNdof(lamCDecayVertex->degreesOfFreedom());
-          double lamCNormalizedChi2 = lamCVtxChi2/lamCVtxNdof;
 
           double rVtxMag = 99999.0; 
           double lVtxMag = 99999.0;
