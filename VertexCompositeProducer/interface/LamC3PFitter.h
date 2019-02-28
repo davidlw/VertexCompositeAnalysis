@@ -127,6 +127,10 @@ class LamC3PFitter {
   int    tkNhitsCut;
   double tkPtErrCut;
   double tkPtCut;
+  double tkPCut;
+  double tkPtTrapCutPar0;
+  double tkPtTrapCutPar1;
+  double tkPtTrapCutPar2;
   double tkEtaCut;
   double tkPtSumCut;
   double tkEtaDiffCut;

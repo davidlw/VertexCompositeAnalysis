@@ -80,6 +80,9 @@ D0Fitter::D0Fitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollect
   tkNhitsCut = theParameters.getParameter<int>(string("tkNhitsCut"));
   tkPtCut = theParameters.getParameter<double>(string("tkPtCut"));
   tkPtErrCut = theParameters.getParameter<double>(string("tkPtErrCut"));
+  tkPtTrapCutPar0 = theParameters.getParameter<double>(string("tkPtTrapCutPar0"));
+  tkPtTrapCutPar1 = theParameters.getParameter<double>(string("tkPtTrapCutPar1"));
+  tkPtTrapCutPar2 = theParameters.getParameter<double>(string("tkPtTrapCutPar2"));
   tkEtaCut = theParameters.getParameter<double>(string("tkEtaCut"));
   tkPtSumCut = theParameters.getParameter<double>(string("tkPtSumCut"));
   tkEtaDiffCut = theParameters.getParameter<double>(string("tkEtaDiffCut"));
@@ -233,7 +236,9 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
     if( tmpRef->normalizedChi2() < tkChi2Cut &&
         tmpRef->numberOfValidHits() >= tkNhitsCut &&
         tmpRef->ptError() / tmpRef->pt() < tkPtErrCut &&
-        tmpRef->pt() > tkPtCut && fabs(tmpRef->eta()) < tkEtaCut ) {
+        tmpRef->pt() > tkPtCut && tmpRef->p() > tkPCut && fabs(tmpRef->eta()) < tkEtaCut &&
+        tmpRef->pt() > (tkPtTrapCutPar0-tkPtTrapCutPar1*(fabs(tmpRef->eta())-tkPtTrapCutPar2)) )
+    {
 //      TransientTrack tmpTk( *tmpRef, &(*bFieldHandle), globTkGeomHandle );
       TransientTrack tmpTk( *tmpRef, magField );
 
