@@ -17,7 +17,7 @@ process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-process.MessageLogger.cerr.FwkReport.reportEvery = 2
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 process.source = cms.Source("PoolSource",
    fileNames = cms.untracked.vstring(
@@ -26,7 +26,7 @@ process.source = cms.Source("PoolSource",
 )
 
 # =============== Other Statements =====================
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.GlobalTag.globaltag = '103X_upgrade2023_realistic_v2'
 
@@ -117,10 +117,31 @@ process.hiCentrality.srcEBhits = cms.InputTag("HGCalRecHit","HGCHEBRecHits")
 process.hiCentrality.srcEEhits = cms.InputTag("HGCalRecHit","HGCEERecHits")
 
 process.cent_seq = cms.Sequence(process.hiCentrality * process.centralityBin)
+process.cent_step = cms.Path( process.eventFilter_HM * process.cent_seq )
 
-process.lamc3prereco_step = cms.Path(process.cent_seq + process.eventFilter_HM * process.generalLamC3PCandidatesNew )
+process.lamc3prereco_step = cms.Path( process.eventFilter_HM * process.generalLamC3PCandidatesNew )
 
 ###############################################################################################
+
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.lamc3pselector_cff")
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.lamc3panalyzer_ntp_cff")
+
+process.TFileService = cms.Service("TFileService",
+                                       fileName =
+cms.string('lambdac_mc_mtd_tree.root')
+                                   )
+
+process.lamc3pana_mc.isUseMtd = cms.untracked.bool(True)
+process.lamc3pana_mc.doRecoNtuple = cms.untracked.bool(True)
+process.lamc3pana_mc.doGenNtuple = cms.untracked.bool(True)
+process.lamc3pana_mc.VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices4D")
+process.lamc3pana_mc.VertexCompositeCollection = cms.untracked.InputTag("lamc3pselectorMC:LamC3P")
+process.lamc3pana_mc.MVACollection = cms.InputTag("lamc3pselectorMC:MVAValuesNewLamC3P")
+process.lamc3pana_mc.isCentrality = cms.bool(True)
+process.lamc3pselectorMC.VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices4D")
+
+process.lamc3pana_seq = cms.Sequence(process.lamc3pselectorMC * process.lamc3pana_mc)
+process.lamc3pana_step = cms.Path( process.eventFilter_HM * process.lamc3pana_seq )
 
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.mtdanalysisSkimContentD0_cff")
 process.output_HM = cms.OutputModule("PoolOutputModule",
@@ -136,6 +157,8 @@ process.output_HM_step = cms.EndPath(process.output_HM)
 
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
+    process.cent_step,
     process.lamc3prereco_step,
+    process.lamc3pana_step,
     process.output_HM_step
 )
