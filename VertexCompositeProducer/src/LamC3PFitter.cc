@@ -88,11 +88,14 @@ LamC3PFitter::LamC3PFitter(const edm::ParameterSet& theParameters,  edm::Consume
   tkDCACut = theParameters.getParameter<double>(string("tkDCACut"));
   tkChi2Cut = theParameters.getParameter<double>(string("tkChi2Cut"));
   tkNhitsCut = theParameters.getParameter<int>(string("tkNhitsCut"));
-  tkPtCut = theParameters.getParameter<double>(string("tkPtCut"));
-  tkPCut = theParameters.getParameter<double>(string("tkPCut"));
-  tkPtTrapCutPar0 = theParameters.getParameter<double>(string("tkPtTrapCutPar0"));
-  tkPtTrapCutPar1 = theParameters.getParameter<double>(string("tkPtTrapCutPar1"));
-  tkPtTrapCutPar2 = theParameters.getParameter<double>(string("tkPtTrapCutPar2"));
+  tkPtMidCut = theParameters.getParameter<double>(string("tkPtMidCut"));
+  tkPMidCut = theParameters.getParameter<double>(string("tkPMidCut"));
+  tkPtFwdCut = theParameters.getParameter<double>(string("tkPtFwdCut"));
+  tkPFwdCut = theParameters.getParameter<double>(string("tkPFwdCut"));
+  tkEtaBound = theParameters.getParameter<double>(string("tkEtaBound"));
+//  tkPtTrapCutPar0 = theParameters.getParameter<double>(string("tkPtTrapCutPar0"));
+//  tkPtTrapCutPar1 = theParameters.getParameter<double>(string("tkPtTrapCutPar1"));
+//  tkPtTrapCutPar2 = theParameters.getParameter<double>(string("tkPtTrapCutPar2"));
   tkPtErrCut = theParameters.getParameter<double>(string("tkPtErrCut"));
   tkEtaCut = theParameters.getParameter<double>(string("tkEtaCut"));
 //  tkPtSumCut = theParameters.getParameter<double>(string("tkPtSumCut"));
@@ -251,8 +254,9 @@ std::cout<<"Total number of tracks: "<<theTrackHandle->size()<<std::endl;
     if( tmpRef->normalizedChi2() < tkChi2Cut &&
         tmpRef->numberOfValidHits() >= tkNhitsCut &&
         tmpRef->ptError() / tmpRef->pt() < tkPtErrCut &&
-        tmpRef->pt() > tkPtCut && tmpRef->p() > tkPCut && fabs(tmpRef->eta()) < tkEtaCut && 
-        tmpRef->pt() > (tkPtTrapCutPar0-tkPtTrapCutPar1*(fabs(tmpRef->eta())-tkPtTrapCutPar2)) )
+        fabs(tmpRef->eta()) < tkEtaCut && 
+        ((tmpRef->pt() > tkPtMidCut && tmpRef->p() > tkPMidCut && fabs(tmpRef->eta()) < tkEtaBound) || (tmpRef->pt() > tkPtFwdCut && tmpRef->p() > tkPFwdCut && fabs(tmpRef->eta()) > tkEtaBound)) ) //&& 
+//       tmpRef->pt() > (tkPtTrapCutPar0-tkPtTrapCutPar1*(fabs(tmpRef->eta())-tkPtTrapCutPar2)) )
     {
 //      TransientTrack tmpTk( *tmpRef, &(*bFieldHandle), globTkGeomHandle );
       TransientTrack tmpTk( *tmpRef, magField );
