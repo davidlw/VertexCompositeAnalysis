@@ -1,22 +1,10 @@
-import os
-import sys
-
 import FWCore.ParameterSet.Config as cms
-import FWCore.ParameterSet.VarParsing as VarParsing
 
 from Configuration.StandardSequences.Eras import eras
 
 process = cms.Process('MTDAnalysis',eras.Phase2C4_timing_layer_bar)
 
-#process = cms.Process("ANASKIM")
-
-# setup 'standard'  options
-#paras = VarParsing.VarParsing ('test')
-#paras.pTMin = 1.95
-#paras.pTMax = 3.0
-
-# get and parse the command line arguments
-#options.parseArguments()
+process = cms.Process("ANASKIM")
 
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
@@ -33,13 +21,12 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 2
 
 process.source = cms.Source("PoolSource",
    fileNames = cms.untracked.vstring(
-'root://xrootd-cms.infn.it//store/user/anstahll/MTD/MC/NonEmbedded/Hydjet_5p02TeV_TuneCP5_MTD_RECO_20190127/Hydjet_5p02TeV_TuneCP5_MTD/Hydjet_5p02TeV_TuneCP5_MTD_RECO_20190127/190127_085926/0000/Hydjet_RECO_9.root'
-),
-                        skipEvents=cms.untracked.uint32(24)
+'root://xrootd-cms.infn.it//store/user/anstahll/MTD/MC/NonEmbedded/Hydjet_5p02TeV_TuneCP5_MTD_RECO_20190127/Hydjet_5p02TeV_TuneCP5_MTD/Hydjet_5p02TeV_TuneCP5_MTD_RECO_20190127/190127_085926/0000/Hydjet_RECO_99.root'
+)
 )
 
 # =============== Other Statements =====================
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(30))
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.GlobalTag.globaltag = '103X_upgrade2023_realistic_v2'
 
@@ -61,8 +48,7 @@ process.PAprimaryVertexFilter = cms.EDFilter("VertexSelector",
 #)
 
 process.PAcollisionEventSelection = cms.Sequence(
-                                         #process.hfCoincFilter * 
-                                         #process.hfCoincFilter3 *
+#                                         process.hfCoincFilter * 
                                          process.PAprimaryVertexFilter #*
 #                                         process.NoScraping
                                          )
@@ -76,34 +62,21 @@ process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 #process.dEdx_step = cms.Path( process.eventFilter_HM * process.produceEnergyLoss )
 
 ########## D0 candidate rereco ###############################################################
-process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalLamC3PCandidates_cff")
-process.generalLamC3PCandidatesNew = process.generalLamC3PCandidates.clone()
-#process.generalLamC3PCandidatesNew.tkPtSumCut = cms.double(2.1)
-#process.generalLamC3PCandidatesNew.tkEtaDiffCut = cms.double(1.0)
-process.generalLamC3PCandidatesNew.tkNhitsCut = cms.int32(11)
-process.generalLamC3PCandidatesNew.tkPtErrCut = cms.double(0.1)
-process.generalLamC3PCandidatesNew.tkPCut = cms.double(0.7)
-process.generalLamC3PCandidatesNew.tkEtaCut = cms.double(3.0)
-process.generalLamC3PCandidatesNew.tkPtMidCut = cms.double(0.7)
-process.generalLamC3PCandidatesNew.tkPFwdCut = cms.double(0.7)
-process.generalLamC3PCandidatesNew.tkPtFwdCut = cms.double(0.)
-#process.generalLamC3PCandidatesNew.alphaCut = cms.double(1.0)
-#process.generalLamC3PCandidatesNew.alpha2DCut = cms.double(1.0)
-process.generalLamC3PCandidatesNew.VtxChiProbCut = cms.double(0.15)
-
-process.generalLamC3PCandidatesNew.tkDCACut = cms.double(0.5)
-process.generalLamC3PCandidatesNew.dPt3CutMin = cms.double(1.95)
-#process.generalLamC3PCandidatesNew.dPt3CutMax = cms.double(1000)
-process.generalLamC3PCandidatesNew.dY3CutMin = cms.double(-3.1)
-process.generalLamC3PCandidatesNew.dY3CutMax = cms.double(3.1)
+process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalD0Candidates_cff")
+process.generalD0CandidatesNew = process.generalD0Candidates.clone()
+#process.generalD0CandidatesNew.tkPtSumCut = cms.double(2.1)
+#process.generalD0CandidatesNew.tkEtaDiffCut = cms.double(1.0)
+process.generalD0CandidatesNew.tkNhitsCut = cms.int32(11)
+process.generalD0CandidatesNew.tkPtErrCut = cms.double(0.1)
+process.generalD0CandidatesNew.tkPtMidCut = cms.double(0.7)
+process.generalD0CandidatesNew.tkPFwdCut = cms.double(0.7)
+process.generalD0CandidatesNew.tkPtFwdCut = cms.double(0.)
+#process.generalD0CandidatesNew.alphaCut = cms.double(1.0)
+#process.generalD0CandidatesNew.alpha2DCut = cms.double(1.0)
 
 process.load('RecoMTD.TrackExtender.trackExtenderWithMTD_cfi')
 process.load('RecoLocalFastTime.FTLRecProducers.mtdTrackingRecHits_cfi')
 process.load('RecoLocalFastTime.FTLClusterizer.mtdClusters_cfi')
-
-process.SimpleMemoryCheck = cms.Service("SimpleMemoryCheck",
-    ignoreTotal = cms.untracked.int32(1)
-)
 
 # centrality setup
 process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000") 
@@ -137,14 +110,33 @@ process.hiCentrality.srcEEhits = cms.InputTag("HGCalRecHit","HGCEERecHits")
 process.cent_seq = cms.Sequence(process.hiCentrality * process.centralityBin)
 process.cent_step = cms.Path( process.eventFilter_HM * process.cent_seq )
 
-process.lamc3prereco_step = cms.Path( process.eventFilter_HM * process.generalLamC3PCandidatesNew )
-
+process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew )
 ###############################################################################################
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0selector_cff")
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0analyzer_ntp_cff")
+
+process.TFileService = cms.Service("TFileService",
+                                       fileName =
+cms.string('hyjets_mc_d0_mtd_tree.root')
+                                   )
+
+process.d0ana_mc.isUseMtd = cms.untracked.bool(True)
+process.d0ana_mc.doRecoNtuple = cms.untracked.bool(True)
+process.d0ana_mc.doGenNtuple = cms.untracked.bool(True)
+process.d0ana_mc.doGenMatching = cms.untracked.bool(False)
+process.d0ana_mc.VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices4D")
+process.d0ana_mc.VertexCompositeCollection = cms.untracked.InputTag("d0selectorMC:D0")
+process.d0ana_mc.MVACollection = cms.InputTag("d0selectorMC:MVAValuesNewD0")
+process.d0ana_mc.isCentrality = cms.bool(True)
+process.d0selectorMC.VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices4D")
+
+process.d0ana_seq = cms.Sequence(process.d0selectorMC * process.d0ana_mc)
+process.d0ana_step = cms.Path( process.eventFilter_HM * process.d0ana_seq )
+
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.mtdanalysisSkimContentD0_cff")
 process.output_HM = cms.OutputModule("PoolOutputModule",
     outputCommands = process.analysisSkimContent.outputCommands,
-#    fileName = cms.untracked.string('/eos/cms/store/group/phys_heavyions/MTD/LamC3P_test/hyjets_lambdac_cent_pt2to2p5_pca2mm_b3.root'),
-    fileName = cms.untracked.string('hyjets_lambdac.root'),
+    fileName = cms.untracked.string('hyjets_d0.root'),
     SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eventFilter_HM_step')),
     dataset = cms.untracked.PSet(
       dataTier = cms.untracked.string('AOD')
@@ -156,6 +148,7 @@ process.output_HM_step = cms.EndPath(process.output_HM)
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
     process.cent_step,
-    process.lamc3prereco_step,
+    process.d0rereco_step,
+    process.d0ana_step,
     process.output_HM_step
 )

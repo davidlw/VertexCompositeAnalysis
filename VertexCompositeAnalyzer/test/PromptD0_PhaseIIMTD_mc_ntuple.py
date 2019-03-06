@@ -42,6 +42,7 @@ process.d0ana_mc.doGenNtuple = cms.untracked.bool(True)
 process.d0ana_mc.VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices4D")
 process.d0ana_mc.VertexCompositeCollection = cms.untracked.InputTag("d0selectorMC:D0")
 process.d0ana_mc.MVACollection = cms.InputTag("d0selectorMC:MVAValuesNewD0")
+process.d0ana_mc.isCentrality = cms.bool(True)
 
 process.d0selectorMC.VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices4D")
 

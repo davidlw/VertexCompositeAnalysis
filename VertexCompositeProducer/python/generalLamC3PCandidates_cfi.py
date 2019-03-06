@@ -12,9 +12,9 @@ generalLamC3PCandidates = cms.EDProducer("LamC3PProducer",
     tkNhitsCut = cms.int32(5), #trk Nhits >=
     tkPtErrCut = cms.double(9999.0), #trk pT err <
     tkPtMidCut = cms.double(0.3), #trk pT >
-    tkPMidCut = cms.double(0.3), #trk p >
+    tkPMidCut = cms.double(0.), #trk p >
     tkPtFwdCut = cms.double(0.3), #trk pT >
-    tkPFwdCut = cms.double(0.3), #trk p >
+    tkPFwdCut = cms.double(0.), #trk p >
     tkEtaBound = cms.double(1.5), 
 #    tkPtTrapCutPar0 = cms.double(0.3), #trk pT > a-b*(abs(eta)-c)
 #    tkPtTrapCutPar1 = cms.double(0.28125), #trk pT > a-b*(abs(eta)-c)

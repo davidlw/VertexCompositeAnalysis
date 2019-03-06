@@ -49,7 +49,7 @@ process.PAprimaryVertexFilter = cms.EDFilter("VertexSelector",
 #)
 
 process.PAcollisionEventSelection = cms.Sequence(
-                                         process.hfCoincFilter * 
+                                         #process.hfCoincFilter * 
                                          process.PAprimaryVertexFilter #*
 #                                         process.NoScraping
                                          )
@@ -69,7 +69,7 @@ process.generalD0CandidatesNew = process.generalD0Candidates.clone()
 #process.generalD0CandidatesNew.tkEtaDiffCut = cms.double(1.0)
 process.generalD0CandidatesNew.tkNhitsCut = cms.int32(11)
 process.generalD0CandidatesNew.tkPtErrCut = cms.double(0.1)
-process.generalD0CandidatesNew.tkPCut = cms.double(0.7)
+#process.generalD0CandidatesNew.tkPCut = cms.double(0.7)
 #process.generalD0CandidatesNew.alphaCut = cms.double(1.0)
 #process.generalD0CandidatesNew.alpha2DCut = cms.double(1.0)
 
@@ -107,9 +107,9 @@ process.hiCentrality.srcEBhits = cms.InputTag("HGCalRecHit","HGCHEBRecHits")
 process.hiCentrality.srcEEhits = cms.InputTag("HGCalRecHit","HGCEERecHits")
 
 process.cent_seq = cms.Sequence(process.hiCentrality * process.centralityBin)
+process.cent_step = cms.Path( process.eventFilter_HM * process.cent_seq )
 
-process.d0rereco_step = cms.Path( process.cent_seq + process.eventFilter_HM * process.generalD0CandidatesNew )
-
+process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew )
 ###############################################################################################
 
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.mtdanalysisSkimContentD0_cff")
@@ -126,6 +126,7 @@ process.output_HM_step = cms.EndPath(process.output_HM)
 
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
+    process.cent_step,
     process.d0rereco_step,
     process.output_HM_step
 )

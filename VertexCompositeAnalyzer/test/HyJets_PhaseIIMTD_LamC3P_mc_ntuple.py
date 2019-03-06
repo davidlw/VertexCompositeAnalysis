@@ -29,10 +29,10 @@ process.TFileService = cms.Service("TFileService",
 cms.string('hyjets_mc_mtd.root')
                                    )
 
-process.lamc3pana_mc.isUseMtd = cms.untracked.bool(True);
-process.lamc3pana_mc.doRecoNtuple = cms.untracked.bool(True);
-process.lamc3pana_mc.doGenNtuple = cms.untracked.bool(True);
-process.lamc3pana_mc.doGenMatching = cms.untracked.bool(False);
+process.lamc3pana_mc.isUseMtd = cms.untracked.bool(True)
+process.lamc3pana_mc.doRecoNtuple = cms.untracked.bool(True)
+process.lamc3pana_mc.doGenNtuple = cms.untracked.bool(True)
+process.lamc3pana_mc.doGenMatching = cms.untracked.bool(False)
 process.lamc3pana_mc.VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices4D")
 process.lamc3pana_mc.VertexCompositeCollection = cms.untracked.InputTag("lamc3pselectorMC:LamC3P")
 process.lamc3pana_mc.MVACollection = cms.InputTag("lamc3pselectorMC:MVAValuesNewLamC3P")

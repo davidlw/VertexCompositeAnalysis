@@ -140,6 +140,29 @@ process.cent_step = cms.Path( process.eventFilter_HM * process.cent_seq )
 process.lamc3prereco_step = cms.Path( process.eventFilter_HM * process.generalLamC3PCandidatesNew )
 
 ###############################################################################################
+
+
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.lamc3pselector_cff")
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.lamc3panalyzer_ntp_cff")
+
+process.TFileService = cms.Service("TFileService",
+                                       fileName =
+cms.string('hyjets_mc_lamc3p_mtd_tree.root')
+                                   )
+
+process.lamc3pana_mc.isUseMtd = cms.untracked.bool(True)
+process.lamc3pana_mc.doRecoNtuple = cms.untracked.bool(True)
+process.lamc3pana_mc.doGenNtuple = cms.untracked.bool(True)
+process.lamc3pana_mc.doGenMatching = cms.untracked.bool(False)
+process.lamc3pana_mc.VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices4D")
+process.lamc3pana_mc.VertexCompositeCollection = cms.untracked.InputTag("lamc3pselectorMC:LamC3P")
+process.lamc3pana_mc.MVACollection = cms.InputTag("lamc3pselectorMC:MVAValuesNewLamC3P")
+process.lamc3pana_mc.isCentrality = cms.bool(True)
+process.lamc3pselectorMC.VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices4D")
+
+process.lamc3pana_seq = cms.Sequence(process.lamc3pselectorMC * process.lamc3pana_mc)
+process.lamc3pana_step = cms.Path( process.eventFilter_HM * process.lamc3pana_seq )
+
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.mtdanalysisSkimContentD0_cff")
 process.output_HM = cms.OutputModule("PoolOutputModule",
     outputCommands = process.analysisSkimContent.outputCommands,
@@ -157,5 +180,6 @@ process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
     process.cent_step,
     process.lamc3prereco_step,
+    process.lamc3pana_step,
     process.output_HM_step
 )
