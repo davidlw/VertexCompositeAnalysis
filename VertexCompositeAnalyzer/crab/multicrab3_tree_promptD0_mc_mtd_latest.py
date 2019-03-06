@@ -17,7 +17,7 @@ config.Data.unitsPerJob = 1
 #    config.Data.totalUnits = 20
 config.Data.splitting = 'FileBased'
 #config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
-config.Data.outLFNDirBase = '/store/group/phys_heavyions/yousen/'
+config.Data.outLFNDirBase = '/store/group/phys_heavyions/MTD/yousen/VertexCompositeAnalysis/PromptD0/'
 config.Data.publication = False
 #config.Data.useParent = True
 config.Data.inputDBS = 'global'
@@ -35,7 +35,7 @@ config.Site.storageSite = 'T2_CH_CERN'
 ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
 #############################################################################################
 
-config.General.requestName = 'prompt_d0_ntp_mc_mtd_full_v1'
+config.General.requestName = 'prompt_d0_ntp_mc_mtd_full_v2'
 config.JobType.psetName = '../test/PromptD0_PhaseIIMTD_mc_production.py'
 config.Data.inputDataset = '/D0_PiK_prompt_pt0_y4_5p5TeV_TuneCP5_Pythia8/PhaseIIMTDTDRAutumn18DR-NoPU_103X_upgrade2023_realistic_v2-v1/FEVT'
 #submit(config)

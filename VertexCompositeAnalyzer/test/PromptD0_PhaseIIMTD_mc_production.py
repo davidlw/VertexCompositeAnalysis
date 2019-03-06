@@ -63,14 +63,15 @@ process.eventFilter_HM = cms.Sequence(
 process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 
 # D0 reconstruction
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0selector_cff")
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalD0Candidates_cff")
 process.generalD0CandidatesNew = process.generalD0Candidates.clone()
 process.generalD0CandidatesNew.tkNhitsCut = cms.int32(11)
 process.generalD0CandidatesNew.tkPtErrCut = cms.double(0.1)
 process.generalD0CandidatesNew.tkPCut = cms.double(0.7)
 
-#process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew )
-process.d0rereco_step = cms.Path( process.generalD0CandidatesNew )
+process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew )
+#process.d0rereco_step = cms.Path( process.generalD0CandidatesNew )
 
 # D0 ntuple production
 process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0analyzer_ntp_cff")
@@ -84,9 +85,13 @@ process.d0ana_mc.isUseMtd = cms.untracked.bool(True)
 process.d0ana_mc.doRecoNtuple = cms.untracked.bool(True)
 process.d0ana_mc.doGenNtuple = cms.untracked.bool(True)
 process.d0ana_mc.VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices4D")
-process.d0ana_mc.VertexCompositeCollection = cms.untracked.InputTag("generalD0CandidatesNew:D0")
+process.d0ana_mc.VertexCompositeCollection = cms.untracked.InputTag("d0selectorMC:D0")
 
-process.d0ana_mc_step = cms.Path(process.d0ana_mc)
+process.d0selectorMC.VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices4D")
+
+#process.d0ana_mc_step = cms.Path(process.d0ana_mc)
+process.d0ana_seq = cms.Sequence( process.eventFilter_HM* process.d0selectorMC * process.d0ana_mc)
+process.d0ana_mc_step = cms.Path(process.d0ana_seq)
  
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
