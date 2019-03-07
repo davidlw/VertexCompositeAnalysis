@@ -5,6 +5,14 @@ generalD0Candidates = cms.EDProducer("D0Producer",
     # InputTag that tells which TrackCollection to use for vertexing
     trackRecoAlgorithm = cms.InputTag('generalTracks'),
     vertexRecoAlgorithm = cms.InputTag('offlinePrimaryVertices4D'),
+                                     
+    trackBeta = cms.InputTag("trackExtenderWithMTD:generalTrackBeta"),
+    trackt0 = cms.InputTag("tofPID:t0"),
+    trackSigmat0 = cms.InputTag("tofPID:sigmat0"),
+    tracktmtd = cms.InputTag("trackExtenderWithMTD:generalTracktmtd"),
+    trackSigmatmtd = cms.InputTag("trackExtenderWithMTD:generalTracksigmatmtd"),
+    trackp = cms.InputTag("trackExtenderWithMTD:generalTrackp"),
+    trackPathLength = cms.InputTag("trackExtenderWithMTD:generalTrackPathLength"),
 
     trackQualities = cms.vstring('highPurity'),
                                      
@@ -12,13 +20,10 @@ generalD0Candidates = cms.EDProducer("D0Producer",
     tkNhitsCut = cms.int32(5), #trk Nhits >=
     tkPtErrCut = cms.double(9999.0), #trk pT err <
     tkPtMidCut = cms.double(0.3), #trk pT >
-    tkPMidCut = cms.double(0.), #trk p >
-    tkPtFwdCut = cms.double(0.3), #trk pT >
-    tkPFwdCut = cms.double(0.), #trk p >
-    tkEtaBound = cms.double(1.5), 
-#    tkPtTrapCutPar0 = cms.double(0.75), #trk pT > a-b*(abs(eta)-c)
-#    tkPtTrapCutPar1 = cms.double(0.28125), #trk pT > a-b*(abs(eta)-c), 0.3 at eta=3
-#    tkPtTrapCutPar2 = cms.double(1.4), #trk pT > a-b*abs(eta)-c)
+    tkPMidCut = cms.double(0.0), #trk p >
+    tkPtFwdCut = cms.double(0.0), #trk pT >
+    tkPFwdCut = cms.double(0.0), #trk p >
+    tkEtaBound = cms.double(1.5),
     tkEtaCut = cms.double(999.0), #trk abs(eta) <
     tkPtSumCut = cms.double(0.0), 
     tkEtaDiffCut = cms.double(999.0), 

@@ -294,6 +294,9 @@ private:
     bool  isMtdDau1;
     bool  isMtdDau2;
     bool  isMtdDau3;
+    bool  isGoodMtdDau1;
+    bool  isGoodMtdDau2;
+    bool  isGoodMtdDau3;
 
     float t0_PV;
     float sigmat0_PV;
@@ -896,6 +899,9 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
         //d3 corresponds to the third track
         if(isUseMtd_)  // mtd
         {
+            t0_PV = vtx.t();
+            sigmat0_PV = vtx.tError();
+
             tmtd1 = trk.userFloat("posCand_tmtd");
             sigmatmtd1 = trk.userFloat("posCand_sigmatmtd");
 
@@ -905,11 +911,11 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             pathLength1 = trk.userFloat("posCand_pathLength");
             pathLength2 = trk.userFloat("negCand_pathLength");
 
-            isMtdDau1 = sigmatmtd1 >=0;
-            isMtdDau2 = sigmatmtd2 >=0;
+            isMtdDau1 = sigmatmtd1>=0;
+            isMtdDau2 = sigmatmtd2>=0;
 
-            t0_PV = vtx.t();
-            sigmat0_PV = vtx.tError();
+            isGoodMtdDau1 = (isMtdDau1 && (fabs(trk.userFloat("posCand_t0") - t0_PV)<3.0*trk.userFloat("posCand_sigmat0")));
+            isGoodMtdDau2 = (isMtdDau2 && (fabs(trk.userFloat("negCand_t0") - t0_PV)<3.0*trk.userFloat("negCand_sigmat0")));
 
             beta1_PV = -99.;
             beta2_PV = -99.;
@@ -917,23 +923,24 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             beta1_PVerr = -99.;
             beta2_PVerr = -99.;
             beta3_PVerr = -99.;
-            if (trk.userFloat("posCand_sigmatmtd")>=-0.) {
+            if (isMtdDau1) {
                 beta1_PV = trk.userFloat("posCand_beta_PV");
                 beta1_PVerr = trk.userFloat("posCand_sigmabeta_PV");
             }
-            if (trk.userFloat("negCand_sigmatmtd")>=0.) {
+            if (isMtdDau2) {
                 beta2_PV = trk.userFloat("negCand_beta_PV");
                 beta2_PVerr = trk.userFloat("negCand_sigmabeta_PV");
             }
-            if(threeProngDecay_ ){ 
-               isMtdDau3 = sigmatmtd3 >=0;
-               if(trk.userFloat("cand3_sigmatmtd")>=0.){
-                  beta3_PV = trk.userFloat("cand3_beta_PV");
-                  beta3_PVerr = trk.userFloat("cand3_sigmabeta_PV");
-               }
+            if(threeProngDecay_ ){
                tmtd3 = trk.userFloat("cand3_tmtd");
                sigmatmtd3 = trk.userFloat("cand3_sigmatmtd");
                pathLength3 = trk.userFloat("cand3_pathLength");
+               isMtdDau3 = sigmatmtd3>=0;
+               isGoodMtdDau3 = (isMtdDau3 && (fabs(trk.userFloat("cand3Cand_t0") - t0_PV)<3.0*trk.userFloat("cand3_sigmat0")));
+               if(isMtdDau3){
+                  beta3_PV = trk.userFloat("cand3_beta_PV");
+                  beta3_PVerr = trk.userFloat("cand3_sigmabeta_PV");
+               }
             }
         }
         
@@ -1911,6 +1918,8 @@ VertexCompositeNtupleProducer::initTree()
                 VertexCompositeNtuple->Branch("pathLength2", &pathLength2, "pathLength2/F");
                 VertexCompositeNtuple->Branch("isMtdDau1", &isMtdDau1, "isMtdDau1/O");
                 VertexCompositeNtuple->Branch("isMtdDau2", &isMtdDau2, "isMtdDau2/O");
+                VertexCompositeNtuple->Branch("isGoodMtdDau1", &isGoodMtdDau1, "isGoodMtdDau1/O");
+                VertexCompositeNtuple->Branch("isGoodMtdDau2", &isGoodMtdDau2, "isGoodMtdDau2/O");
                 if(threeProngDecay_)
                 {
                   VertexCompositeNtuple->Branch("beta3_PV", &beta3_PV, "beta3_PV/F");
@@ -1919,6 +1928,7 @@ VertexCompositeNtupleProducer::initTree()
                   VertexCompositeNtuple->Branch("sigmatmtd3", &sigmatmtd3, "sigmatmtd3/F");
                   VertexCompositeNtuple->Branch("pathLength3", &pathLength3, "pathLength3/F");
                   VertexCompositeNtuple->Branch("isMtdDau3", &isMtdDau3, "isMtdDau3/O");
+                  VertexCompositeNtuple->Branch("isGoodMtdDau3", &isGoodMtdDau3, "isGoodMtdDau3/O");
                 }
             }
 
