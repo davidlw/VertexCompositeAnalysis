@@ -2,16 +2,13 @@ import FWCore.ParameterSet.Config as cms
 
 from Configuration.StandardSequences.Eras import eras
 
-process = cms.Process('MTDAnalysis',eras.Phase2C4_timing_layer_bar)
-
-process = cms.Process("ANASKIM")
+process = cms.Process('ANASKIM',eras.Phase2C4_timing_layer_bar)
 
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('HeavyIonsAnalysis.Configuration.collisionEventSelection_cff')
 process.load('Configuration.EventContent.EventContent_cff')
-#process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.Geometry.GeometryExtended2023D35Reco_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
@@ -20,14 +17,11 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 process.MessageLogger.cerr.FwkReport.reportEvery = 200
 
 process.source = cms.Source("PoolSource",
-   fileNames = cms.untracked.vstring(
-#'root://xrootd-cms.infn.it//store/user/anstahll/MTD/MC/NonEmbedded/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/D0_PiK_prompt_5p02TeV_TuneCP5_MTD/D0_PiK_prompt_5p02TeV_TuneCP5_MTD_RECO_20190126/190126_200650/0000/D0_RECO_98.root',
-'root://xrootd-cms.infn.it//store/mc/PhaseIIMTDTDRAutumn18DR/D0_PiK_prompt_pt0_y4_5p5TeV_TuneCP5_Pythia8/FEVT/NoPU_103X_upgrade2023_realistic_v2-v1/30000/FFDBA739-F97F-B347-BAB9-91EC1A7F2CE1.root'
-)
+   fileNames = cms.untracked.vstring('/store/mc/PhaseIIMTDTDRAutumn18DR/D0_PiK_prompt_pt0_y4_5p5TeV_TuneCP5_Pythia8/FEVT/NoPU_103X_upgrade2023_realistic_v2-v1/30000/FFDBA739-F97F-B347-BAB9-91EC1A7F2CE1.root')
 )
 
 # =============== Other Statements =====================
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.GlobalTag.globaltag = '103X_upgrade2023_realistic_v2'
 
@@ -36,22 +30,11 @@ process.GlobalTag.globaltag = '103X_upgrade2023_realistic_v2'
 process.PAprimaryVertexFilter = cms.EDFilter("VertexSelector",
     src = cms.InputTag("offlinePrimaryVertices4D"),
     cut = cms.string("!isFake && abs(z) <= 50 && position.Rho <= 5 && tracksSize >= 2"),
-#    cut = cms.string("!isFake && abs(z) <= 1 && position.Rho <= 2 && tracksSize >= 5"),
     filter = cms.bool(True),   # otherwise it won't filter the events
 )
 
-#Reject beam scraping events standard pp configuration
-#process.NoScraping = cms.EDFilter("FilterOutScraping",
-#    applyfilter = cms.untracked.bool(True),
-#    debugOn = cms.untracked.bool(False),
-#    numtrack = cms.untracked.uint32(10),
-#    thresh = cms.untracked.double(0.25)
-#)
-
 process.PAcollisionEventSelection = cms.Sequence(
-                                         #process.hfCoincFilter * 
-                                         process.PAprimaryVertexFilter #*
-#                                         process.NoScraping
+                                         process.PAprimaryVertexFilter
                                          )
 
 process.eventFilter_HM = cms.Sequence( 
@@ -60,22 +43,11 @@ process.eventFilter_HM = cms.Sequence(
 
 process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 
-#process.dEdx_step = cms.Path( process.eventFilter_HM * process.produceEnergyLoss )
-
 ########## D0 candidate rereco ###############################################################
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalD0Candidates_cff")
 process.generalD0CandidatesNew = process.generalD0Candidates.clone()
-#process.generalD0CandidatesNew.tkPtSumCut = cms.double(2.1)
-#process.generalD0CandidatesNew.tkEtaDiffCut = cms.double(1.0)
 process.generalD0CandidatesNew.tkNhitsCut = cms.int32(11)
 process.generalD0CandidatesNew.tkPtErrCut = cms.double(0.1)
-#process.generalD0CandidatesNew.tkPCut = cms.double(0.7)
-#process.generalD0CandidatesNew.alphaCut = cms.double(1.0)
-#process.generalD0CandidatesNew.alpha2DCut = cms.double(1.0)
-
-process.load('RecoMTD.TrackExtender.trackExtenderWithMTD_cfi')
-process.load('RecoLocalFastTime.FTLRecProducers.mtdTrackingRecHits_cfi')
-process.load('RecoLocalFastTime.FTLClusterizer.mtdClusters_cfi')
 
 # centrality setup
 process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000") 
@@ -98,7 +70,7 @@ process.hiCentrality.producePixelTracks = False
 process.hiCentrality.reUseCentrality = False
 process.hiCentrality.srcReUse = cms.InputTag("hiCentrality","","RECO") 
 process.hiCentrality.srcTracks = cms.InputTag("generalTracks") 
-process.hiCentrality.srcVertex = cms.InputTag("offlinePrimaryVertices") 
+process.hiCentrality.srcVertex = cms.InputTag("offlinePrimaryVertices4D") 
 process.load("RecoHI.HiCentralityAlgos.CentralityBin_cfi") 
 process.centralityBin.Centrality = cms.InputTag("hiCentrality") 
 process.centralityBin.centralityVariable = cms.string("HFtowers") 
@@ -110,6 +82,29 @@ process.cent_seq = cms.Sequence(process.hiCentrality * process.centralityBin)
 process.cent_step = cms.Path( process.eventFilter_HM * process.cent_seq )
 
 process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew )
+###############################################################################################
+
+# MTD RE-RECO
+process.reconstruction_step = cms.Path()
+process.load("Configuration.StandardSequences.Reconstruction_cff")
+process.pfPileUpIso.PFCandidates = cms.InputTag("particleFlowPtrs")
+process.pfNoPileUpIso.bottomCollection = cms.InputTag("particleFlowPtrs")
+process.reconstruction_step += process.mtdClusters
+process.reconstruction_step += process.mtdTrackingRecHits
+process.trackExtenderWithMTD.UseVertex = cms.bool(True) #run trackExtender using vertex constrain
+process.trackExtenderWithMTD.DZCut = 0.3
+process.reconstruction_step += process.trackExtenderWithMTD
+process.tofPID.vtxsSrc = cms.InputTag('offlinePrimaryVertices4D')
+process.tofPID.fixedT0Error = cms.double(0.035) #put a constant 0.035 [ns] error for each track (cannot
+process.reconstruction_step += process.tofPID
+                                     
+process.generalD0CandidatesNew.trackBeta = cms.InputTag("trackExtenderWithMTD:generalTrackBeta:ANASKIM")
+process.generalD0CandidatesNew.trackt0 = cms.InputTag("tofPID:t0:ANASKIM")
+process.generalD0CandidatesNew.trackSigmat0 = cms.InputTag("tofPID:sigmat0:ANASKIM")
+process.generalD0CandidatesNew.tracktmtd = cms.InputTag("trackExtenderWithMTD:generalTracktmtd:ANASKIM")
+process.generalD0CandidatesNew.trackSigmatmtd = cms.InputTag("trackExtenderWithMTD:generalTracksigmatmtd:ANASKIM")
+process.generalD0CandidatesNew.trackp = cms.InputTag("trackExtenderWithMTD:generalTrackp:ANASKIM")
+process.generalD0CandidatesNew.trackPathLength = cms.InputTag("trackExtenderWithMTD:generalTrackPathLength:ANASKIM")
 ###############################################################################################
 
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.mtdanalysisSkimContentD0_cff")
@@ -126,6 +121,7 @@ process.output_HM_step = cms.EndPath(process.output_HM)
 
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
+    process.reconstruction_step,
     process.cent_step,
     process.d0rereco_step,
     process.output_HM_step

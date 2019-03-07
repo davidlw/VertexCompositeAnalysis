@@ -72,13 +72,13 @@ LamC3PFitter::LamC3PFitter(const edm::ParameterSet& theParameters,  edm::Consume
   token_vertices = iC.consumes<reco::VertexCollection>(theParameters.getParameter<edm::InputTag>("vertexRecoAlgorithm"));
   token_dedx = iC.consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxHarmonic2"));
   // MTD track information
-  token_MTDtrack["beta"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTrackBeta"));
-  token_MTDtrack["t0"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTrackt0"));
-  token_MTDtrack["sigmat0"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTracksigmat0"));
-  token_MTDtrack["tmtd"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTracktmtd"));
-  token_MTDtrack["sigmatmtd"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTracksigmatmtd"));
-  token_MTDtrack["p"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTrackp"));
-  token_MTDtrack["pathLength"] = iC.consumes<edm::ValueMap<float> >(edm::InputTag("trackExtenderWithMTD:generalTrackPathLength"));
+  token_MTDtrack["beta"] = iC.consumes<edm::ValueMap<float> >(theParameters.getParameter<edm::InputTag>("trackBeta"));
+  token_MTDtrack["t0"] = iC.consumes<edm::ValueMap<float> >(theParameters.getParameter<edm::InputTag>("trackt0"));
+  token_MTDtrack["sigmat0"] = iC.consumes<edm::ValueMap<float> >(theParameters.getParameter<edm::InputTag>("trackSigmat0"));
+  token_MTDtrack["tmtd"] = iC.consumes<edm::ValueMap<float> >(theParameters.getParameter<edm::InputTag>("tracktmtd"));
+  token_MTDtrack["sigmatmtd"] = iC.consumes<edm::ValueMap<float> >(theParameters.getParameter<edm::InputTag>("trackSigmatmtd"));
+  token_MTDtrack["p"] = iC.consumes<edm::ValueMap<float> >(theParameters.getParameter<edm::InputTag>("trackp"));
+  token_MTDtrack["pathLength"] = iC.consumes<edm::ValueMap<float> >(theParameters.getParameter<edm::InputTag>("trackPathLength"));
 
   // Second, initialize post-fit cuts
   mKPCutMin = theParameters.getParameter<double>(string("mKPCutMin"));
@@ -93,9 +93,6 @@ LamC3PFitter::LamC3PFitter(const edm::ParameterSet& theParameters,  edm::Consume
   tkPtFwdCut = theParameters.getParameter<double>(string("tkPtFwdCut"));
   tkPFwdCut = theParameters.getParameter<double>(string("tkPFwdCut"));
   tkEtaBound = theParameters.getParameter<double>(string("tkEtaBound"));
-//  tkPtTrapCutPar0 = theParameters.getParameter<double>(string("tkPtTrapCutPar0"));
-//  tkPtTrapCutPar1 = theParameters.getParameter<double>(string("tkPtTrapCutPar1"));
-//  tkPtTrapCutPar2 = theParameters.getParameter<double>(string("tkPtTrapCutPar2"));
   tkPtErrCut = theParameters.getParameter<double>(string("tkPtErrCut"));
   tkEtaCut = theParameters.getParameter<double>(string("tkEtaCut"));
 //  tkPtSumCut = theParameters.getParameter<double>(string("tkPtSumCut"));
@@ -255,8 +252,7 @@ std::cout<<"Total number of tracks: "<<theTrackHandle->size()<<std::endl;
         tmpRef->numberOfValidHits() >= tkNhitsCut &&
         tmpRef->ptError() / tmpRef->pt() < tkPtErrCut &&
         fabs(tmpRef->eta()) < tkEtaCut && 
-        ((tmpRef->pt() > tkPtMidCut && tmpRef->p() > tkPMidCut && fabs(tmpRef->eta()) < tkEtaBound) || (tmpRef->pt() > tkPtFwdCut && tmpRef->p() > tkPFwdCut && fabs(tmpRef->eta()) > tkEtaBound)) ) //&& 
-//       tmpRef->pt() > (tkPtTrapCutPar0-tkPtTrapCutPar1*(fabs(tmpRef->eta())-tkPtTrapCutPar2)) )
+        ((tmpRef->pt() > tkPtMidCut && tmpRef->p() > tkPMidCut && fabs(tmpRef->eta()) < tkEtaBound) || (tmpRef->pt() > tkPtFwdCut && tmpRef->p() > tkPFwdCut && fabs(tmpRef->eta()) > tkEtaBound)) )
     {
 //      TransientTrack tmpTk( *tmpRef, &(*bFieldHandle), globTkGeomHandle );
       TransientTrack tmpTk( *tmpRef, magField );

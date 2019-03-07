@@ -10,10 +10,10 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 #        limit = cms.untracked.int32(-1)
 #        )
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1000)
-process.options   = cms.untracked.PSet( wantSummary = 
+process.options   = cms.untracked.PSet( wantSummary =
 cms.untracked.bool(True) )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) 
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1)
 )
 
 process.source = cms.Source("PoolSource",
@@ -32,7 +32,7 @@ process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0selector_cff")
 process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0analyzer_ntp_cff")
 
 process.TFileService = cms.Service("TFileService",
-                                       fileName = 
+                                       fileName =
 cms.string('promptd0_mc_mtd.root')
                                    )
 

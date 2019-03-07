@@ -10,23 +10,20 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 #        limit = cms.untracked.int32(-1)
 #        )
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1000)
-process.options   = cms.untracked.PSet( wantSummary = 
+process.options   = cms.untracked.PSet( wantSummary =
 cms.untracked.bool(True) )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) 
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1)
 )
 
 process.source = cms.Source("PoolSource",
-                                fileNames = cms.untracked.vstring(
-'/store/user/yousen/Hydjet_5p02TeV_TuneCP5_MTD/hyjets_mc_mtd_Skim_v1/190207_195017/0000/hyjets_10.root'
-                ),
+        fileNames = cms.untracked.vstring('file:hyjets_d0.root'),
                             )
 process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0selector_cff")
 process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0analyzer_ntp_cff")
 
 process.TFileService = cms.Service("TFileService",
-                                       fileName = 
-cms.string('hyjets_mc_mtd.root')
+                                       fileName = cms.string('hyjets_mc_mtd_d0.root')
                                    )
 
 process.d0ana_mc.isUseMtd = cms.untracked.bool(True);
