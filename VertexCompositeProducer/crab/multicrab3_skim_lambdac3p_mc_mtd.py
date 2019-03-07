@@ -15,10 +15,15 @@ config.JobType.maxMemoryMB = 4000
 config.JobType.maxJobRuntimeMin = 2750
 config.Data.unitsPerJob = 1
 config.Data.splitting = 'FileBased'
-config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
+#config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 config.Data.publication = True
 #config.Data.inputDBS = 'phys03'
-config.Site.storageSite = 'T2_US_MIT'
+config.Data.ignoreLocality = True
+config.Site.whitelist = ['T2_CH_*' , 'T2_US_*' , 'T2_FR_*']
+#config.Site.storageSite = 'T2_US_MIT'
+config.Data.outLFNDirBase = '/store/group/phys_heavyions/MTD/%s/' % (getUsernameFromSiteDB())
+config.Site.storageSite = 'T2_CH_CERN'
+
 
 def submit(config):
     try:
@@ -32,8 +37,8 @@ def submit(config):
 ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
 #############################################################################################
 
-config.General.requestName = 'LambdaC_mc_mtd_v7'
+config.General.requestName = 'LambdaC_mc_mtd_v8'
 config.JobType.psetName = '../test/LamC3P_PhaseIIMTD_mc_cfg.py'
-config.Data.outputDatasetTag = 'lambdac_mc_mtd_Skim_pca2mm_v7'
+config.Data.outputDatasetTag = 'lambdac_mc_mtd_SkimAndTree_pca5mm_v8'
 config.Data.inputDataset = '/LambdaC_PiKP_prompt_pt1_y4_5p5TeV_TuneCP5_Pythia8/PhaseIIMTDTDRAutumn18DR-NoPU_103X_upgrade2023_realistic_v2-v1/FEVT'
 submit(config)

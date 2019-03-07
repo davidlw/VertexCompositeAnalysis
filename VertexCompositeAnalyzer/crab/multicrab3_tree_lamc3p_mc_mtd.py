@@ -17,7 +17,8 @@ config.Data.unitsPerJob = 1
 #    config.Data.totalUnits = 20
 config.Data.splitting = 'FileBased'
 #config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
-config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
+#config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
+config.Data.outLFNDirBase = '/store/group/phys_heavyions/MTD/%s/' % (getUsernameFromSiteDB())
 config.Data.publication = False
 #config.Data.useParent = True
 config.Data.inputDBS = 'phys03'
@@ -35,7 +36,7 @@ def submit(config):
 ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
 #############################################################################################
 
-config.General.requestName = 'prompt_lamc3p_ntp_mc_mtd_v6'
+config.General.requestName = 'prompt_lamc3p_ntp_mc_mtd_v8'
 config.JobType.psetName = '../test/LamC3P_PhaseIIMTD_mc_ntuple.py'
-config.Data.inputDataset = '/LambdaC_PiKP_prompt_pt1_y4_5p5TeV_TuneCP5_Pythia8/davidlw-lambdac_mc_mtd_Skim_v6-64de1c7bdd0509478b59ed6462a54226/USER'
+config.Data.inputDataset = '/LambdaC_PiKP_prompt_pt1_y4_5p5TeV_TuneCP5_Pythia8/davidlw-lambdac_mc_mtd_SkimAndTree_pca5mm_v8-67bef1cebfc4748f1d89b9d261cf8089/USER'
 submit(config)

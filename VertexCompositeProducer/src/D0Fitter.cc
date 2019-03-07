@@ -78,8 +78,15 @@ D0Fitter::D0Fitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollect
   tkDCACut = theParameters.getParameter<double>(string("tkDCACut"));
   tkChi2Cut = theParameters.getParameter<double>(string("tkChi2Cut"));
   tkNhitsCut = theParameters.getParameter<int>(string("tkNhitsCut"));
-  tkPtCut = theParameters.getParameter<double>(string("tkPtCut"));
   tkPtErrCut = theParameters.getParameter<double>(string("tkPtErrCut"));
+  tkPtMidCut = theParameters.getParameter<double>(string("tkPtMidCut"));
+  tkPMidCut = theParameters.getParameter<double>(string("tkPMidCut"));
+  tkPtFwdCut = theParameters.getParameter<double>(string("tkPtFwdCut"));
+  tkPFwdCut = theParameters.getParameter<double>(string("tkPFwdCut"));
+  tkEtaBound = theParameters.getParameter<double>(string("tkEtaBound"));
+//  tkPtTrapCutPar0 = theParameters.getParameter<double>(string("tkPtTrapCutPar0"));
+//  tkPtTrapCutPar1 = theParameters.getParameter<double>(string("tkPtTrapCutPar1"));
+//  tkPtTrapCutPar2 = theParameters.getParameter<double>(string("tkPtTrapCutPar2"));
   tkEtaCut = theParameters.getParameter<double>(string("tkEtaCut"));
   tkPtSumCut = theParameters.getParameter<double>(string("tkPtSumCut"));
   tkEtaDiffCut = theParameters.getParameter<double>(string("tkEtaDiffCut"));
@@ -233,7 +240,11 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
     if( tmpRef->normalizedChi2() < tkChi2Cut &&
         tmpRef->numberOfValidHits() >= tkNhitsCut &&
         tmpRef->ptError() / tmpRef->pt() < tkPtErrCut &&
-        tmpRef->pt() > tkPtCut && fabs(tmpRef->eta()) < tkEtaCut ) {
+        fabs(tmpRef->eta()) < tkEtaCut &&
+        ((tmpRef->pt() > tkPtMidCut && tmpRef->p() > tkPMidCut && fabs(tmpRef->eta()) < tkEtaBound) || (tmpRef->pt() > tkPtFwdCut && tmpRef->p() > tkPFwdCut && fabs(tmpRef->eta()) > tkEtaBound)) ) 
+//        tmpRef->pt() > tkPtCut && tmpRef->p() > tkPCut && fabs(tmpRef->eta()) < tkEtaCut &&
+//        tmpRef->pt() > (tkPtTrapCutPar0-tkPtTrapCutPar1*(fabs(tmpRef->eta())-tkPtTrapCutPar2)) )
+    {
 //      TransientTrack tmpTk( *tmpRef, &(*bFieldHandle), globTkGeomHandle );
       TransientTrack tmpTk( *tmpRef, magField );
 

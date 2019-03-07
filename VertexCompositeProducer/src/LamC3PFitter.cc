@@ -88,7 +88,14 @@ LamC3PFitter::LamC3PFitter(const edm::ParameterSet& theParameters,  edm::Consume
   tkDCACut = theParameters.getParameter<double>(string("tkDCACut"));
   tkChi2Cut = theParameters.getParameter<double>(string("tkChi2Cut"));
   tkNhitsCut = theParameters.getParameter<int>(string("tkNhitsCut"));
-  tkPtCut = theParameters.getParameter<double>(string("tkPtCut"));
+  tkPtMidCut = theParameters.getParameter<double>(string("tkPtMidCut"));
+  tkPMidCut = theParameters.getParameter<double>(string("tkPMidCut"));
+  tkPtFwdCut = theParameters.getParameter<double>(string("tkPtFwdCut"));
+  tkPFwdCut = theParameters.getParameter<double>(string("tkPFwdCut"));
+  tkEtaBound = theParameters.getParameter<double>(string("tkEtaBound"));
+//  tkPtTrapCutPar0 = theParameters.getParameter<double>(string("tkPtTrapCutPar0"));
+//  tkPtTrapCutPar1 = theParameters.getParameter<double>(string("tkPtTrapCutPar1"));
+//  tkPtTrapCutPar2 = theParameters.getParameter<double>(string("tkPtTrapCutPar2"));
   tkPtErrCut = theParameters.getParameter<double>(string("tkPtErrCut"));
   tkEtaCut = theParameters.getParameter<double>(string("tkEtaCut"));
 //  tkPtSumCut = theParameters.getParameter<double>(string("tkPtSumCut"));
@@ -229,6 +236,7 @@ void LamC3PFitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetu
   math::XYZPoint bestvtxError(xVtxError,yVtxError,zVtxError);
 
   // Fill vectors of TransientTracks and TrackRefs after applying preselection cuts.
+std::cout<<"Total number of tracks: "<<theTrackHandle->size()<<std::endl;
   for(unsigned int indx = 0; indx < theTrackHandle->size(); indx++) {
     TrackRef tmpRef( theTrackHandle, indx );
     bool quality_ok = true;
@@ -246,7 +254,10 @@ void LamC3PFitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetu
     if( tmpRef->normalizedChi2() < tkChi2Cut &&
         tmpRef->numberOfValidHits() >= tkNhitsCut &&
         tmpRef->ptError() / tmpRef->pt() < tkPtErrCut &&
-        tmpRef->pt() > tkPtCut && fabs(tmpRef->eta()) < tkEtaCut ) {
+        fabs(tmpRef->eta()) < tkEtaCut && 
+        ((tmpRef->pt() > tkPtMidCut && tmpRef->p() > tkPMidCut && fabs(tmpRef->eta()) < tkEtaBound) || (tmpRef->pt() > tkPtFwdCut && tmpRef->p() > tkPFwdCut && fabs(tmpRef->eta()) > tkEtaBound)) ) //&& 
+//       tmpRef->pt() > (tkPtTrapCutPar0-tkPtTrapCutPar1*(fabs(tmpRef->eta())-tkPtTrapCutPar2)) )
+    {
 //      TransientTrack tmpTk( *tmpRef, &(*bFieldHandle), globTkGeomHandle );
       TransientTrack tmpTk( *tmpRef, magField );
 
@@ -294,10 +305,15 @@ void LamC3PFitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetu
     }
   }
 
+std::cout<<"Total number of positive tracks: "<<theTrackRefs_pos.size()<<std::endl;
+std::cout<<"Total number of negative tracks: "<<theTrackRefs_neg.size()<<std::endl;
+
   if(!isWrongSign)
   {
     fitLamCCandidates(theTrackRefs_pos,theTrackRefs_neg,theTransTracks_pos,theTransTracks_neg,theMTDtrackInfo_pos,theMTDtrackInfo_neg,isVtxPV,vtxPrimary,theBeamSpotHandle,bestvtx,bestvtxError,4122);
+std::cout<<"total number of LambdaC+:"<<theLamC3Ps.size()<<std::endl;
     fitLamCCandidates(theTrackRefs_neg,theTrackRefs_pos,theTransTracks_neg,theTransTracks_pos,theMTDtrackInfo_neg,theMTDtrackInfo_pos,isVtxPV,vtxPrimary,theBeamSpotHandle,bestvtx,bestvtxError,-4122);
+std::cout<<"total number of LambdaC-:"<<theLamC3Ps.size()<<std::endl;
   }
   else 
   {

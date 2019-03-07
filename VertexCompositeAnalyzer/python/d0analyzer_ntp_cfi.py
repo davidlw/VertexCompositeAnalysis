@@ -60,7 +60,7 @@ d0ana_mc = cms.EDAnalyzer('VertexCompositeNtupleProducer',
   doMuonFull = cms.untracked.bool(False),
 
   saveTree = cms.untracked.bool(True),
-  saveHistogram = cms.untracked.bool(False),
+  saveHistogram = cms.untracked.bool(True),
   saveAllHistogram = cms.untracked.bool(False),
   massHistPeak = cms.untracked.double(1.86),
   massHistWidth = cms.untracked.double(0.2),
@@ -71,5 +71,9 @@ d0ana_mc = cms.EDAnalyzer('VertexCompositeNtupleProducer',
 
   useAnyMVA = cms.bool(False),
   isSkimMVA = cms.untracked.bool(False),
-  MVACollection = cms.InputTag("generalD0CandidatesNew:MVAValues")
+  MVACollection = cms.InputTag("generalD0CandidatesNew:MVAValues"),
+
+  isCentrality = cms.bool(False),
+  centralityBinLabel = cms.InputTag("centralityBin","HFtowers"),
+  centralitySrc = cms.InputTag("hiCentrality")
                               )

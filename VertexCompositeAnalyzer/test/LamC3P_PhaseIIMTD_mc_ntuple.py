@@ -38,6 +38,7 @@ process.lamc3pana_mc.doGenNtuple = cms.untracked.bool(True)
 process.lamc3pana_mc.VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices4D")
 process.lamc3pana_mc.VertexCompositeCollection = cms.untracked.InputTag("lamc3pselectorMC:LamC3P")
 process.lamc3pana_mc.MVACollection = cms.InputTag("lamc3pselectorMC:MVAValuesNewLamC3P")
+process.lamc3pana_mc.isCentrality = cms.bool(True)
 
 process.lamc3pselectorMC.VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices4D")
 
