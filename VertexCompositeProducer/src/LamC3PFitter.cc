@@ -38,6 +38,7 @@
 #include <TMath.h>
 #include <TVector3.h>
 #include <TLorentzVector.h>
+#include <TF1.h>
 #include "TrackingTools/IPTools/interface/IPTools.h"
 #include "CommonTools/Statistics/interface/ChiSquaredProbability.h"
 #include "CondFormats/DataRecord/interface/GBRWrapperRcd.h"
@@ -61,6 +62,25 @@ float cand2Mass_sigma[2] = {protonMassLamC3P_sigma, piMassLamC3P_sigma};
 
 const double c_cm_ns = 2.99792458e1; //[cm/ns] // mtd
 
+inline float LamC3PFitter::invBetaPion(const float& p){
+    return std::sqrt(1 + std::pow(piMassLamC3P/p,2));
+}
+
+inline float LamC3PFitter::invBetaKaon(const float& p){
+    return std::sqrt(1 + std::pow(kaonMassLamC3P/p,2));
+}
+
+inline float LamC3PFitter::invBetaProton(const float& p){
+    return std::sqrt(1 + std::pow(protonMassLamC3P/p,2));
+}
+
+TF1* fExpPionBTL = new TF1("fExpPionBTL_dInvBetaRMS","0.005 + 0.016*exp(-x/4.4)", 0.7, 1000);
+TF1* fExpKaonBTL = new TF1("fExpKaonBTL_dInvBetaRMS","0.005 + 0.016*exp(-x/4.4)", 0.7, 1000);
+TF1* fExpProtonBTL = new TF1("fExpProtonBTL_dInvBetaRMS","0.005 + 0.016*exp(-x/4.4)", 0.7, 1000);
+TF1* fExpPionETL = new TF1("fExpPionETL_dInvBetaRMS","0.003 + 0.006*exp(-x/7.6)", 0.7, 1000);
+TF1* fExpKaonETL = new TF1("fExpKaonETL_dInvBetaRMS","0.003 + 0.006*exp(-x/7.6)", 0.7, 1000);
+TF1* fExpProtonETL = new TF1("fExpProtonETL_dInvBetaRMS","0.003 + 0.017*exp(-x/7.6)", 0.7, 1000);
+
 // Constructor and (empty) destructor
 LamC3PFitter::LamC3PFitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollector && iC) {
 //		   const edm::Event& iEvent, const edm::EventSetup& iSetup, edm::ConsumesCollector && iC) {
@@ -81,8 +101,8 @@ LamC3PFitter::LamC3PFitter(const edm::ParameterSet& theParameters,  edm::Consume
   token_MTDtrack["pathLength"] = iC.consumes<edm::ValueMap<float> >(theParameters.getParameter<edm::InputTag>("trackPathLength"));
 
   // Second, initialize post-fit cuts
-  mKPCutMin = theParameters.getParameter<double>(string("mKPCutMin"));
-  mKPCutMax = theParameters.getParameter<double>(string("mKPCutMax"));
+  mPiPCutMin = theParameters.getParameter<double>(string("mPiPCutMin"));
+  mPiPCutMax = theParameters.getParameter<double>(string("mPiPCutMax"));
   mPiKPCutMin = theParameters.getParameter<double>(string("mPiKPCutMin"));
   mPiKPCutMax = theParameters.getParameter<double>(string("mPiKPCutMax"));
   tkDCACut = theParameters.getParameter<double>(string("tkDCACut"));
@@ -115,7 +135,8 @@ LamC3PFitter::LamC3PFitter(const edm::ParameterSet& theParameters,  edm::Consume
   alphaCut = theParameters.getParameter<double>(string("alphaCut"));
   alpha2DCut = theParameters.getParameter<double>(string("alpha2DCut"));
   isWrongSign = theParameters.getParameter<bool>(string("isWrongSign"));
-
+  isTOFPID = theParameters.getParameter<bool>(string("isTOFPID"));
+  nSigmaTOFPID = theParameters.getParameter<double>(string("nSigmaTOFPID"));
 
   useAnyMVA_ = false;
   forestLabel_ = "LamC3PInpPb";
@@ -149,6 +170,10 @@ LamC3PFitter::LamC3PFitter(const edm::ParameterSet& theParameters,  edm::Consume
   for (unsigned int ndx = 0; ndx < qual.size(); ndx++) {
     qualities.push_back(reco::TrackBase::qualityByName(qual[ndx]));
   }
+
+//  fExpPion = new TF1("fExpPion_dInvBetaRMS","0.005 + 0.017*exp(-x/2.8)", 0.7, 1000);
+//  fExpKaon = new TF1("fExpKaon_dInvBetaRMS","0.005 + 0.017*exp(-x/2.8)", 0.7, 1000);
+//  fExpProton = new TF1("fExpProton_dInvBetaRMS","0.005 + 0.017*exp(-x/2.8)", 0.7, 1000);
 }
 
 LamC3PFitter::~LamC3PFitter() {
@@ -284,6 +309,26 @@ std::cout<<"Total number of tracks: "<<theTrackHandle->size()<<std::endl;
       MTDtrackInfo["beta_PV"] = beta_PV;
       MTDtrackInfo["sigmabeta_PV"] = sigmabeta_PV;
 
+      bool isPion=true;
+      bool isKaon=true;
+      bool isProton=true;      
+      bool isMtd = sigma_tmtd >= 0;
+
+      if(isTOFPID && !isMtd) continue;
+  
+      if(isTOFPID && isMtd) 
+      {
+         isPion = fabs(tmpRef->eta())<1.5 ? std::fabs(1./beta_PV - invBetaPion(tmpRef->p())) < nSigmaTOFPID*fExpPionBTL->Eval(tmpRef->p()) : std::fabs(1./beta_PV - invBetaPion(tmpRef->p())) < nSigmaTOFPID*fExpPionETL->Eval(tmpRef->p());
+         isKaon = fabs(tmpRef->eta())<1.5 ? std::fabs(1./beta_PV - invBetaKaon(tmpRef->p())) < nSigmaTOFPID*fExpKaonBTL->Eval(tmpRef->p()) : std::fabs(1./beta_PV - invBetaKaon(tmpRef->p())) < nSigmaTOFPID*fExpKaonETL->Eval(tmpRef->p());
+         isProton = fabs(tmpRef->eta())<1.5 ? std::fabs(1./beta_PV - invBetaProton(tmpRef->p())) < nSigmaTOFPID*fExpProtonBTL->Eval(tmpRef->p()) : std::fabs(1./beta_PV - invBetaProton(tmpRef->p())) < nSigmaTOFPID*fExpProtonETL->Eval(tmpRef->p()); 
+      }
+
+//cout<<isPion<<" "<<isKaon<<" "<<isProton<<" "<<isMtd<<endl;
+
+      MTDtrackInfo["isPion"] = isPion;
+      MTDtrackInfo["isKaon"] = isKaon;
+      MTDtrackInfo["isProton"] = isProton;
+
       if( fabs(dauTransImpactSig) > dauTransImpactSigCut && fabs(dauLongImpactSig) > dauLongImpactSigCut ) {
         if(tmpRef->charge()>0.0)
         {
@@ -309,7 +354,7 @@ std::cout<<"Total number of negative tracks: "<<theTrackRefs_neg.size()<<std::en
     fitLamCCandidates(theTrackRefs_pos,theTrackRefs_neg,theTransTracks_pos,theTransTracks_neg,theMTDtrackInfo_pos,theMTDtrackInfo_neg,isVtxPV,vtxPrimary,theBeamSpotHandle,bestvtx,bestvtxError,4122);
 std::cout<<"total number of LambdaC+:"<<theLamC3Ps.size()<<std::endl;
     fitLamCCandidates(theTrackRefs_neg,theTrackRefs_pos,theTransTracks_neg,theTransTracks_pos,theMTDtrackInfo_neg,theMTDtrackInfo_pos,isVtxPV,vtxPrimary,theBeamSpotHandle,bestvtx,bestvtxError,-4122);
-std::cout<<"total number of LambdaC-:"<<theLamC3Ps.size()<<std::endl;
+std::cout<<"total number of LambdaC+ and LambdaC-:"<<theLamC3Ps.size()<<std::endl;
   }
   else 
   {
@@ -350,6 +395,15 @@ void LamC3PFitter::fitLamCCandidates(
 //      if( (theTrackRefs[trdx1]->pt() + theTrackRefs[trdx2]->pt()) < tkPtSumCut) continue;
 //      if( abs(theTrackRefs[trdx1]->eta() - theTrackRefs[trdx2]->eta()) > tkEtaDiffCut) continue;
 
+      std::map<std::string, float> theMTDtrackInfo1 = theMTDtrackInfo_sgn1[trdx1]; // mtd
+      std::map<std::string, float> theMTDtrackInfo2 = theMTDtrackInfo_sgn1[trdx2]; // mtd
+      bool isPion1 = theMTDtrackInfo1["isPion"];
+      bool isProton1 = theMTDtrackInfo1["isProton"];
+      bool isPion2 = theMTDtrackInfo2["isPion"];
+      bool isProton2 = theMTDtrackInfo2["isProton"];
+
+      if(!((isPion1&&isProton2) || (isPion2&&isProton1))) continue;
+
       //This vector holds the pair of oppositely-charged tracks to be vertexed
       std::vector<TransientTrack> transTracks;
 
@@ -357,17 +411,15 @@ void LamC3PFitter::fitLamCCandidates(
       TrackRef trackRef2 = theTrackRefs_sgn1[trdx2];
       TransientTrack* transTkPtr1 = &theTransTracks_sgn1[trdx1];
       TransientTrack* transTkPtr2 = &theTransTracks_sgn1[trdx2];
-      std::map<std::string, float> theMTDtrackInfo1 = theMTDtrackInfo_sgn1[trdx1]; // mtd
-      std::map<std::string, float> theMTDtrackInfo2 = theMTDtrackInfo_sgn1[trdx2]; // mtd
 
       TLorentzVector track1Mom, track2Mom;
       track1Mom.SetPtEtaPhiM(trackRef1->pt(), trackRef1->eta(), trackRef1->phi(), protonMassLamC3PSquared);
-      track2Mom.SetPtEtaPhiM(trackRef2->pt(), trackRef2->eta(), trackRef2->phi(), kaonMassLamC3PSquared);
+      track2Mom.SetPtEtaPhiM(trackRef2->pt(), trackRef2->eta(), trackRef2->phi(), piMassLamC3PSquared);
       const double preMass1 = (track1Mom + track2Mom).M();
-      track1Mom.SetPtEtaPhiM(trackRef1->pt(), trackRef1->eta(), trackRef1->phi(), kaonMassLamC3PSquared);
+      track1Mom.SetPtEtaPhiM(trackRef1->pt(), trackRef1->eta(), trackRef1->phi(), piMassLamC3PSquared);
       track2Mom.SetPtEtaPhiM(trackRef2->pt(), trackRef2->eta(), trackRef2->phi(), protonMassLamC3PSquared);
       const double preMass2 = (track1Mom + track2Mom).M();
-      if( (preMass1 > mKPCutMax+0.1 || preMass1 < mKPCutMin-0.1) && (preMass2 > mKPCutMax+0.1 || preMass2 < mKPCutMin-0.1)) continue;
+      if( (preMass1 > mPiPCutMax+0.1 || preMass1 < mPiPCutMin-0.1) && (preMass2 > mPiPCutMax+0.1 || preMass2 < mPiPCutMin-0.1)) continue;
 
 //      double dzvtx1 = trackRef1->dz(bestvtx);
 //      double dxyvtx1 = trackRef1->dxy(bestvtx);
@@ -390,9 +442,10 @@ void LamC3PFitter::fitLamCCandidates(
 //      double ptErr2 = trackRef2->ptError();
 
       // Fill the vector of TransientTracks to send to KVF
+
       transTracks.push_back(*transTkPtr1);
       transTracks.push_back(*transTkPtr2);
-
+/*
       // Trajectory states to calculate DCA for the 2 tracks
       FreeTrajectoryState trkState1 = transTkPtr1->impactPointTSCP().theState();
       FreeTrajectoryState trkState2 = transTkPtr2->impactPointTSCP().theState();
@@ -404,11 +457,12 @@ void LamC3PFitter::fitLamCCandidates(
       cApp.calculate(trkState1, trkState2);
       if( !cApp.status() ) continue;
       float dca = fabs( cApp.distance() );
-      GlobalPoint cxPt = cApp.crossingPoint();
+//      GlobalPoint cxPt = cApp.crossingPoint();
 
       if (dca < 0. || dca > tkDCACut) continue;
-
+*/
       // Get trajectory states for the tracks at POCA for later cuts
+/*
       TrajectoryStateClosestToPoint trkTSCP1 =
         transTkPtr1->trajectoryStateClosestToPoint( cxPt );
       TrajectoryStateClosestToPoint trkTSCP2 =
@@ -417,43 +471,49 @@ void LamC3PFitter::fitLamCCandidates(
       if( !trkTSCP1.isValid() || !trkTSCP2.isValid() ) continue;
 
       double totalE1 = sqrt( trkTSCP1.momentum().mag2() + protonMassLamC3PSquared ) +
-                      sqrt( trkTSCP2.momentum().mag2() + kaonMassLamC3PSquared );
+                      sqrt( trkTSCP2.momentum().mag2() + piMassLamC3PSquared );
       double totalE1Sq = totalE1*totalE1;
 
-      double totalE2 = sqrt( trkTSCP1.momentum().mag2() + kaonMassLamC3PSquared ) +
+      double totalE2 = sqrt( trkTSCP1.momentum().mag2() + piMassLamC3PSquared ) +
                       sqrt( trkTSCP2.momentum().mag2() + protonMassLamC3PSquared );
       double totalE2Sq = totalE2*totalE2;
 
       double totalPSq =
         ( trkTSCP1.momentum() + trkTSCP2.momentum() ).mag2();
 
-//      double totalPt =
-//        ( trkTSCP1.momentum() + trkTSCP2.momentum() ).perp();
-
       double mass1 = sqrt( totalE1Sq - totalPSq);
       double mass2 = sqrt( totalE2Sq - totalPSq);
 
-      if( (mass1 > mKPCutMax || mass1 < mKPCutMin) && (mass2 > mKPCutMax || mass2 < mKPCutMin)) continue;
-//      if( totalPt < dPtCut ) continue;
+      if( (mass1 > mPiPCutMax || mass1 < mPiPCutMin) && (mass2 > mPiPCutMax || mass2 < mPiPCutMin)) continue;
+*/
 
       for(unsigned int trdx3 = 0; trdx3 < theTrackRefs_sgn2.size(); trdx3++) {
 
+        std::map<std::string, float> theMTDtrackInfo3 = theMTDtrackInfo_sgn2[trdx3]; // mtd
+        bool isKaon3 = theMTDtrackInfo3["isKaon"];
+        if(!isKaon3) continue;
+
         TrackRef trackRef3 = theTrackRefs_sgn2[trdx3];
         TransientTrack* transTkPtr3 = &theTransTracks_sgn2[trdx3];
-        std::map<std::string, float> theMTDtrackInfo3 = theMTDtrackInfo_sgn2[trdx3]; // mtd
 
         TLorentzVector track1Mom, track2Mom, track3Mom;
         track1Mom.SetPtEtaPhiM(trackRef1->pt(), trackRef1->eta(), trackRef1->phi(), protonMassLamC3PSquared);
         track2Mom.SetPtEtaPhiM(trackRef2->pt(), trackRef2->eta(), trackRef2->phi(), piMassLamC3PSquared);
         track3Mom.SetPtEtaPhiM(trackRef3->pt(), trackRef3->eta(), trackRef3->phi(), kaonMassLamC3PSquared);
         const double preMass31 = (track1Mom + track2Mom + track3Mom).M();
+        const double rapidity31 = (track1Mom + track2Mom + track3Mom).Rapidity();
         track1Mom.SetPtEtaPhiM(trackRef1->pt(), trackRef1->eta(), trackRef1->phi(), piMassLamC3PSquared);
         track2Mom.SetPtEtaPhiM(trackRef2->pt(), trackRef2->eta(), trackRef2->phi(), protonMassLamC3PSquared);
         track3Mom.SetPtEtaPhiM(trackRef3->pt(), trackRef3->eta(), trackRef3->phi(), kaonMassLamC3PSquared);
         const double preMass32 = (track1Mom + track2Mom + track3Mom).M();
+        const double rapidity32 = (track1Mom + track2Mom + track3Mom).Rapidity();
+
+        const double totalPt3 = (track1Mom + track2Mom + track3Mom).Pt();
 
         if((preMass31 > mPiKPCutMax+0.1 || preMass31 < mPiKPCutMin-0.1) && (preMass32 > mPiKPCutMax+0.1 || preMass32 < mPiKPCutMin-0.1)) continue;
-  
+        if((rapidity31 > dY3CutMax || rapidity31 < dY3CutMin) && (rapidity32 > dY3CutMax || rapidity32 < dY3CutMin)) continue;
+        if(totalPt3 < dPt3CutMin || totalPt3 > dPt3CutMax) continue;
+ 
 //        double dzvtx3 = trackRef3->dz(bestvtx);
 //        double dxyvtx3 = trackRef3->dxy(bestvtx);
 //        double dzerror3 = sqrt(trackRef3->dzError()*trackRef3->dzError()+bestvtxError.z()*bestvtxError.z());
@@ -465,6 +525,8 @@ void LamC3PFitter::fitLamCCandidates(
 //        double ptErr3 = trackRef3->ptError();
 
         transTracks.push_back(*transTkPtr3);
+
+/*
         FreeTrajectoryState trkState3 = transTkPtr3->impactPointTSCP().theState();
         if( !transTkPtr3->impactPointTSCP().isValid() ) continue;
 
@@ -473,10 +535,12 @@ void LamC3PFitter::fitLamCCandidates(
         cApp13.calculate(trkState1, trkState3);
         if( !cApp13.status() ) continue;
         float dca13 = fabs( cApp13.distance() );
-        GlobalPoint cxPt13 = cApp13.crossingPoint();
+//        GlobalPoint cxPt13 = cApp13.crossingPoint();
         if (dca13 < 0. || dca13 > tkDCACut) continue;
+*/
 
         // Get trajectory states for the tracks at POCA for later cuts
+/*
         TrajectoryStateClosestToPoint trkTSCP31 =
           transTkPtr3->trajectoryStateClosestToPoint( cxPt13 );
 
@@ -510,7 +574,7 @@ void LamC3PFitter::fitLamCCandidates(
         if((mass31 > mPiKPCutMax || mass31 < mPiKPCutMin) && (mass32 > mPiKPCutMax || mass32 < mPiKPCutMin)) continue;
         if((rapidity31 > dY3CutMax || rapidity31 < dY3CutMin) && (rapidity32 > dY3CutMax || rapidity32 < dY3CutMin)) continue;
         if(totalPt3 < dPt3CutMin || totalPt3 > dPt3CutMax) continue;
-
+*/
         // Create the vertex fitter object and vertex the tracks
         float cand1TotalE[2]={0.0};
         float cand2TotalE[2]={0.0};
@@ -518,6 +582,9 @@ void LamC3PFitter::fitLamCCandidates(
 
         for(int i=0;i<2;i++)
         {
+          if(i==0 && (!isPion1 || !isProton2)) continue;
+          if(i==1 && (!isPion2 || !isProton1)) continue;
+
           //Creating a KinematicParticleFactory
           KinematicParticleFactoryFromTransientTrack pFactory;
         

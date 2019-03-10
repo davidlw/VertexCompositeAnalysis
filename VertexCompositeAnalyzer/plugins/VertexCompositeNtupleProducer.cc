@@ -464,8 +464,8 @@ VertexCompositeNtupleProducer::VertexCompositeNtupleProducer(const edm::Paramete
     patCompositeCandidateCollection_Token_ = consumes<pat::CompositeCandidateCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCompositeCollection"));
     MVAValues_Token_ = consumes<MVACollection>(iConfig.getParameter<edm::InputTag>("MVACollection"));
     tok_muon_ = consumes<reco::MuonCollection>(iConfig.getUntrackedParameter<edm::InputTag>("MuonCollection"));
-    Dedx_Token1_ = consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxHarmonic2"));
-    Dedx_Token2_ = consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxTruncated40"));
+    Dedx_Token1_ = consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxPixelHarmonic2"));
+    Dedx_Token2_ = consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxHarmonic2"));
     tok_genParticle_ = consumes<reco::GenParticleCollection>(edm::InputTag(iConfig.getUntrackedParameter<edm::InputTag>("GenParticleCollection")));
 
     isCentrality_ = false;
@@ -915,7 +915,7 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             isMtdDau2 = sigmatmtd2>=0;
 
             isGoodMtdDau1 = (isMtdDau1 && (fabs(trk.userFloat("posCand_t0") - t0_PV)<3.0*trk.userFloat("posCand_sigmat0")));
-            isGoodMtdDau2 = (isMtdDau2 && (fabs(trk.userFloat("negCand_t0") - t0_PV)<3.0*trk.userFloat("negCand_sigmat0")));
+	    isGoodMtdDau2 = (isMtdDau2 && (fabs(trk.userFloat("negCand_t0") - t0_PV)<3.0*trk.userFloat("negCand_sigmat0")));
 
             beta1_PV = -99.;
             beta2_PV = -99.;
@@ -936,7 +936,7 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
                sigmatmtd3 = trk.userFloat("cand3_sigmatmtd");
                pathLength3 = trk.userFloat("cand3_pathLength");
                isMtdDau3 = sigmatmtd3>=0;
-               isGoodMtdDau3 = (isMtdDau3 && (fabs(trk.userFloat("cand3Cand_t0") - t0_PV)<3.0*trk.userFloat("cand3_sigmat0")));
+               isGoodMtdDau3 = (isMtdDau3 && (fabs(trk.userFloat("cand3_t0") - t0_PV)<3.0*trk.userFloat("cand3_sigmat0")));
                if(isMtdDau3){
                   beta3_PV = trk.userFloat("cand3_beta_PV");
                   beta3_PVerr = trk.userFloat("cand3_sigmabeta_PV");

@@ -43,7 +43,7 @@ analysisSkimContent = cms.PSet(
 #      'keep recoTracks_allTracks*_*_*',
 #      'keep recoTracks_allVertices*_*_*',
 #      'keep recoRecoChargedCandidates_allTracks*_*_*',
-#      'keep *_dedx*_*_*',
+      'keep *_dedx*_*_*',
 #      'keep *DeDx*_*_*_*',
 #      'keep *_pACentrality_*_*',
       # clusters

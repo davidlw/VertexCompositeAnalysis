@@ -20,10 +20,10 @@ generalD0Candidates = cms.EDProducer("D0Producer",
     tkNhitsCut = cms.int32(5), #trk Nhits >=
     tkPtErrCut = cms.double(9999.0), #trk pT err <
     tkPtMidCut = cms.double(0.3), #trk pT >
-    tkPMidCut = cms.double(0.0), #trk p >
-    tkPtFwdCut = cms.double(0.0), #trk pT >
-    tkPFwdCut = cms.double(0.0), #trk p >
-    tkEtaBound = cms.double(1.5),
+    tkPMidCut = cms.double(0.), #trk p >
+    tkPtFwdCut = cms.double(0.), #trk pT >
+    tkPFwdCut = cms.double(0.), #trk p >
+    tkEtaBound = cms.double(1.5), 
     tkEtaCut = cms.double(999.0), #trk abs(eta) <
     tkPtSumCut = cms.double(0.0), 
     tkEtaDiffCut = cms.double(999.0), 
