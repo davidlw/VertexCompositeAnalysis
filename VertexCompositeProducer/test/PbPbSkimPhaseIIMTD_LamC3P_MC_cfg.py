@@ -59,7 +59,6 @@ process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalLamC3PCandi
 process.generalLamC3PCandidatesNew = process.generalLamC3PCandidates.clone()
 process.generalLamC3PCandidatesNew.tkNhitsCut = cms.int32(11)
 process.generalLamC3PCandidatesNew.tkPtErrCut = cms.double(0.1)
-process.generalLamC3PCandidatesNew.tkPCut = cms.double(0.7)
 process.generalLamC3PCandidatesNew.tkEtaCut = cms.double(3.0)
 process.generalLamC3PCandidatesNew.tkPtMidCut = cms.double(0.7)
 process.generalLamC3PCandidatesNew.tkPFwdCut = cms.double(0.7)

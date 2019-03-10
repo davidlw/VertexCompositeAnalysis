@@ -92,6 +92,9 @@ process.generalLamC3PCandidatesNew.dPt3CutMax = cms.double(options.pTMax)
 process.generalLamC3PCandidatesNew.dY3CutMin = cms.double(options.yMin)
 process.generalLamC3PCandidatesNew.dY3CutMax = cms.double(options.yMax)
 
+process.generalLamC3PCandidatesNew.isTOFPID = cms.bool(True)
+process.generalLamC3PCandidatesNew.nSigmaTOFPID = cms.double(1.4)
+
 process.SimpleMemoryCheck = cms.Service("SimpleMemoryCheck",
     ignoreTotal = cms.untracked.int32(1)
 )

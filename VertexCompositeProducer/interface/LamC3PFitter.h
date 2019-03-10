@@ -100,6 +100,10 @@ class LamC3PFitter {
 //  auto_ptr<edm::ValueMap<float> > getMVAMap() const;
   void resetAll();
 
+  inline float invBetaPion(const float& p);
+  inline float invBetaKaon(const float& p);
+  inline float invBetaProton(const float& p);
+
  private:
   // STL vector of VertexCompositeCandidate that will be filled with VertexCompositeCandidates by fitAll()
   pat::CompositeCandidateCollection theLamC3Ps;
@@ -118,8 +122,8 @@ class LamC3PFitter {
   std::map<std::string, edm::EDGetTokenT<edm::ValueMap<float> > > token_MTDtrack;
 
   // Cuts
-  double mKPCutMin;
-  double mKPCutMax;
+  double mPiPCutMin;
+  double mPiPCutMax;
   double mPiKPCutMin;
   double mPiKPCutMax;
   double tkDCACut;
@@ -155,6 +159,10 @@ class LamC3PFitter {
   double alphaCut;
   double alpha2DCut;
   bool   isWrongSign;
+  bool   isTOFPID;
+  double nSigmaTOFPID;
+
+//  TF1 *fExpPion, *fExpKaon, *fExpProton;
 
   std::vector<reco::TrackBase::TrackQuality> qualities;
 

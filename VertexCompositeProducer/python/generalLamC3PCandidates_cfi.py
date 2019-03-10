@@ -28,8 +28,8 @@ generalLamC3PCandidates = cms.EDProducer("LamC3PProducer",
 
     mPiKPCutMin = cms.double(2.13),
     mPiKPCutMax = cms.double(2.45),
-    mKPCutMin = cms.double(0.938+0.140),
-    mKPCutMax = cms.double(2.45),
+    mPiPCutMin = cms.double(0.938+0.140),
+    mPiPCutMax = cms.double(2.45),
 
     #   Track impact parameter significance >
     dauTransImpactSigCut = cms.double(0.),
@@ -55,7 +55,8 @@ generalLamC3PCandidates = cms.EDProducer("LamC3PProducer",
     dY3CutMax = cms.double(10000.0),
 
     isWrongSign = cms.bool(False),
-
+    isTOFPID = cms.bool(False),
+    nSigmaTOFPID = cms.double(2.0),
 # MVA 
 
     useAnyMVA = cms.bool(False),

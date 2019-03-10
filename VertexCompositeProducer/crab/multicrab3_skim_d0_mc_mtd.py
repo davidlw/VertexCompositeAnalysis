@@ -11,7 +11,7 @@ config.General.workArea = 'VertexCompositePromptD0Ana_mtd'
 config.General.transferOutputs = True
 config.General.transferLogs = False
 config.JobType.pluginName = 'Analysis'
-config.JobType.maxMemoryMB = 10000
+config.JobType.maxMemoryMB = 5000
 config.JobType.maxJobRuntimeMin = 2750
 config.Data.unitsPerJob = 1
 config.Data.splitting = 'FileBased'
@@ -37,8 +37,8 @@ def submit(config):
 ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
 #############################################################################################
 
-config.General.requestName = 'LambdaC_mc_mtd_v10'
-config.JobType.psetName = '../test/LamC3P_SkimAndTreePhaseIIMTD_mc_cfg.py'
-config.Data.outputDatasetTag = 'lambdac_mc_mtd_SkimAndTree_v10'
-config.Data.inputDataset = '/LambdaC_PiKP_prompt_pt1_y4_5p5TeV_TuneCP5_Pythia8/PhaseIIMTDTDRAutumn18DR-NoPU_103X_upgrade2023_realistic_v2-v1/FEVT'
+config.General.requestName = 'PromptD0_mc_mtd_v9'
+config.JobType.psetName = '../test/PromptD0_SkimAndTreePhaseIIMTD_mc_cfg.py'
+config.Data.outputDatasetTag = 'promptd0_mc_mtd_SkimAndTree_v9'
+config.Data.inputDataset = '/D0_PiK_prompt_pt0_y4_5p5TeV_TuneCP5_Pythia8/PhaseIIMTDTDRAutumn18DR-NoPU_103X_upgrade2023_realistic_v2-v1/FEVT'
 submit(config)
