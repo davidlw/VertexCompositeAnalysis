@@ -1,17 +1,8 @@
 import FWCore.ParameterSet.Config as cms
-import FWCore.ParameterSet.VarParsing as VarParsing
 
 from Configuration.StandardSequences.Eras import eras
 
 process = cms.Process('ANASKIM',eras.Phase2C4_timing_layer_bar)
-
-# setup 'standard'  options
-#paras = VarParsing.VarParsing ('test')
-#paras.pTMin = 1.95
-#paras.pTMax = 3.0
-
-# get and parse the command line arguments
-#options.parseArguments()
 
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
@@ -30,7 +21,7 @@ process.source = cms.Source("PoolSource",
 )
 
 # =============== Other Statements =====================
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.GlobalTag.globaltag = '103X_upgrade2023_realistic_v2'
 
@@ -52,28 +43,14 @@ process.eventFilter_HM = cms.Sequence(
 
 process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 
-#process.dEdx_step = cms.Path( process.eventFilter_HM * process.produceEnergyLoss )
-
-########## LamC3P candidate rereco ###############################################################
-process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalLamC3PCandidates_cff")
-process.generalLamC3PCandidatesNew = process.generalLamC3PCandidates.clone()
-process.generalLamC3PCandidatesNew.tkNhitsCut = cms.int32(11)
-process.generalLamC3PCandidatesNew.tkPtErrCut = cms.double(0.1)
-process.generalLamC3PCandidatesNew.tkEtaCut = cms.double(3.0)
-process.generalLamC3PCandidatesNew.tkPtMidCut = cms.double(0.7)
-process.generalLamC3PCandidatesNew.tkPFwdCut = cms.double(0.7)
-process.generalLamC3PCandidatesNew.tkPtFwdCut = cms.double(0.0)
-process.generalLamC3PCandidatesNew.VtxChiProbCut = cms.double(0.15)
-
-process.generalLamC3PCandidatesNew.tkDCACut = cms.double(0.5)
-process.generalLamC3PCandidatesNew.dPt3CutMin = cms.double(1.95)
-#process.generalLamC3PCandidatesNew.dPt3CutMax = cms.double(1000)
-process.generalLamC3PCandidatesNew.dY3CutMin = cms.double(-3.1)
-process.generalLamC3PCandidatesNew.dY3CutMax = cms.double(3.1)
-
-process.SimpleMemoryCheck = cms.Service("SimpleMemoryCheck",
-    ignoreTotal = cms.untracked.int32(1)
-)
+########## D0 candidate rereco ###############################################################
+process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalD0Candidates_cff")
+process.generalD0CandidatesNew = process.generalD0Candidates.clone()
+process.generalD0CandidatesNew.tkNhitsCut = cms.int32(11)
+process.generalD0CandidatesNew.tkPtErrCut = cms.double(0.1)
+process.generalD0CandidatesNew.tkPtMidCut = cms.double(0.7)
+process.generalD0CandidatesNew.tkPFwdCut = cms.double(0.7)
+process.generalD0CandidatesNew.tkPtFwdCut = cms.double(0.0)
 
 # centrality setup
 process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
@@ -107,36 +84,13 @@ process.hiCentrality.srcEEhits = cms.InputTag("HGCalRecHit","HGCEERecHits")
 process.cent_seq = cms.Sequence(process.hiCentrality * process.centralityBin)
 process.cent_step = cms.Path( process.eventFilter_HM * process.cent_seq )
 
-process.lamc3prereco_step = cms.Path( process.eventFilter_HM * process.generalLamC3PCandidatesNew )
-###############################################################################################
-
-# MTD RE-RECO
-process.reconstruction_step = cms.Path(process.eventFilter_HM)
-process.load("Configuration.StandardSequences.Reconstruction_cff")
-process.pfPileUpIso.PFCandidates = cms.InputTag("particleFlowPtrs")
-process.pfNoPileUpIso.bottomCollection = cms.InputTag("particleFlowPtrs")
-process.reconstruction_step += process.mtdClusters
-process.reconstruction_step += process.mtdTrackingRecHits
-process.trackExtenderWithMTD.UseVertex = cms.bool(True) #run trackExtender using vertex constrain
-process.trackExtenderWithMTD.DZCut = 0.3
-process.reconstruction_step += process.trackExtenderWithMTD
-process.tofPID.vtxsSrc = cms.InputTag('offlinePrimaryVertices4D')
-process.tofPID.fixedT0Error = cms.double(0.035) #put a constant 0.035 [ns] error for each track (cannot
-process.reconstruction_step += process.tofPID
-
-process.generalLamC3PCandidatesNew.trackBeta = cms.InputTag("trackExtenderWithMTD:generalTrackBeta:ANASKIM")
-process.generalLamC3PCandidatesNew.trackt0 = cms.InputTag("tofPID:t0:ANASKIM")
-process.generalLamC3PCandidatesNew.trackSigmat0 = cms.InputTag("tofPID:sigmat0:ANASKIM")
-process.generalLamC3PCandidatesNew.tracktmtd = cms.InputTag("trackExtenderWithMTD:generalTracktmtd:ANASKIM")
-process.generalLamC3PCandidatesNew.trackSigmatmtd = cms.InputTag("trackExtenderWithMTD:generalTracksigmatmtd:ANASKIM")
-process.generalLamC3PCandidatesNew.trackp = cms.InputTag("trackExtenderWithMTD:generalTrackp:ANASKIM")
-process.generalLamC3PCandidatesNew.trackPathLength = cms.InputTag("trackExtenderWithMTD:generalTrackPathLength:ANASKIM")
+process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew )
 ###############################################################################################
 
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.mtdanalysisSkimContentD0_cff")
 process.output_HM = cms.OutputModule("PoolOutputModule",
     outputCommands = process.analysisSkimContent.outputCommands,
-    fileName = cms.untracked.string('hyjets_lambdac.root'),
+    fileName = cms.untracked.string('hyjets_d0.root'),
     SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eventFilter_HM_step')),
     dataset = cms.untracked.PSet(
       dataTier = cms.untracked.string('AOD')
@@ -147,8 +101,7 @@ process.output_HM_step = cms.EndPath(process.output_HM)
 
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
-    process.reconstruction_step,
     process.cent_step,
-    process.lamc3prereco_step,
+    process.d0rereco_step,
     process.output_HM_step
 )

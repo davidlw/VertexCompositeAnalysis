@@ -1,11 +1,11 @@
 import FWCore.ParameterSet.Config as cms
 
 generalD0Candidates = cms.EDProducer("D0Producer",
-                                     
+
     # InputTag that tells which TrackCollection to use for vertexing
     trackRecoAlgorithm = cms.InputTag('generalTracks'),
     vertexRecoAlgorithm = cms.InputTag('offlinePrimaryVertices4D'),
-                                     
+
     trackBeta = cms.InputTag("trackExtenderWithMTD:generalTrackBeta"),
     trackt0 = cms.InputTag("tofPID:t0"),
     trackSigmat0 = cms.InputTag("tofPID:sigmat0"),
@@ -15,18 +15,18 @@ generalD0Candidates = cms.EDProducer("D0Producer",
     trackPathLength = cms.InputTag("trackExtenderWithMTD:generalTrackPathLength"),
 
     trackQualities = cms.vstring('highPurity'),
-                                     
+
     tkChi2Cut = cms.double(7), #trk Chi2 <
     tkNhitsCut = cms.int32(5), #trk Nhits >=
     tkPtErrCut = cms.double(9999.0), #trk pT err <
     tkPtMidCut = cms.double(0.3), #trk pT >
-    tkPMidCut = cms.double(0.), #trk p >
-    tkPtFwdCut = cms.double(0.), #trk pT >
-    tkPFwdCut = cms.double(0.), #trk p >
-    tkEtaBound = cms.double(1.5), 
+    tkPMidCut = cms.double(0.0), #trk p >
+    tkPtFwdCut = cms.double(0.0), #trk pT >
+    tkPFwdCut = cms.double(0.0), #trk p >
+    tkEtaBound = cms.double(1.4),
     tkEtaCut = cms.double(999.0), #trk abs(eta) <
-    tkPtSumCut = cms.double(0.0), 
-    tkEtaDiffCut = cms.double(999.0), 
+    tkPtSumCut = cms.double(0.0),
+    tkEtaDiffCut = cms.double(999.0),
 
     mPiKCutMin = cms.double(1.72),
     mPiKCutMax = cms.double(2.01),
@@ -52,10 +52,10 @@ generalD0Candidates = cms.EDProducer("D0Producer",
 
     isWrongSign = cms.bool(False),
 
-# MVA 
+# MVA
 
     useAnyMVA = cms.bool(False),
-    mvaType = cms.string('BDT'), 
+    mvaType = cms.string('BDT'),
     GBRForestLabel = cms.string('D0InpPb'),
     GBRForestFileName = cms.string('GBRForestfile.root'),
 )

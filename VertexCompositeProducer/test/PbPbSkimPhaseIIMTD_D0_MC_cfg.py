@@ -21,7 +21,7 @@ process.source = cms.Source("PoolSource",
 )
 
 # =============== Other Statements =====================
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.GlobalTag.globaltag = '103X_upgrade2023_realistic_v2'
 
@@ -88,7 +88,7 @@ process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0Cand
 ###############################################################################################
 
 # MTD RE-RECO
-process.reconstruction_step = cms.Path()
+process.reconstruction_step = cms.Path(process.eventFilter_HM)
 process.load("Configuration.StandardSequences.Reconstruction_cff")
 process.pfPileUpIso.PFCandidates = cms.InputTag("particleFlowPtrs")
 process.pfNoPileUpIso.bottomCollection = cms.InputTag("particleFlowPtrs")
@@ -100,7 +100,7 @@ process.reconstruction_step += process.trackExtenderWithMTD
 process.tofPID.vtxsSrc = cms.InputTag('offlinePrimaryVertices4D')
 process.tofPID.fixedT0Error = cms.double(0.035) #put a constant 0.035 [ns] error for each track (cannot
 process.reconstruction_step += process.tofPID
-                                     
+
 process.generalD0CandidatesNew.trackBeta = cms.InputTag("trackExtenderWithMTD:generalTrackBeta:ANASKIM")
 process.generalD0CandidatesNew.trackt0 = cms.InputTag("tofPID:t0:ANASKIM")
 process.generalD0CandidatesNew.trackSigmat0 = cms.InputTag("tofPID:sigmat0:ANASKIM")
