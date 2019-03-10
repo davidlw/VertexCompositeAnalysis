@@ -74,12 +74,12 @@ inline float LamC3PFitter::invBetaProton(const float& p){
     return std::sqrt(1 + std::pow(protonMassLamC3P/p,2));
 }
 
-TF1* fExpPionBTL = new TF1("fExpPionBTL_dInvBetaRMS","0.005 + 0.016*exp(-x/4.4)", 0.7, 1000);
-TF1* fExpKaonBTL = new TF1("fExpKaonBTL_dInvBetaRMS","0.005 + 0.016*exp(-x/4.4)", 0.7, 1000);
-TF1* fExpProtonBTL = new TF1("fExpProtonBTL_dInvBetaRMS","0.005 + 0.016*exp(-x/4.4)", 0.7, 1000);
-TF1* fExpPionETL = new TF1("fExpPionETL_dInvBetaRMS","0.003 + 0.006*exp(-x/7.6)", 0.7, 1000);
-TF1* fExpKaonETL = new TF1("fExpKaonETL_dInvBetaRMS","0.003 + 0.006*exp(-x/7.6)", 0.7, 1000);
-TF1* fExpProtonETL = new TF1("fExpProtonETL_dInvBetaRMS","0.003 + 0.017*exp(-x/7.6)", 0.7, 1000);
+TF1 fExpPionBTL("fExpPionBTL_dInvBetaRMS","0.005 + 0.016*exp(-x/4.4)", 0.7, 1000.);
+TF1 fExpKaonBTL("fExpKaonBTL_dInvBetaRMS","0.005 + 0.016*exp(-x/4.4)", 0.7, 1000.);
+TF1 fExpProtonBTL("fExpProtonBTL_dInvBetaRMS","0.005 + 0.016*exp(-x/4.4)", 0.7, 1000.);
+TF1 fExpPionETL("fExpPionETL_dInvBetaRMS","0.003 + 0.006*exp(-x/7.6)", 0.7, 1000.);
+TF1 fExpKaonETL("fExpKaonETL_dInvBetaRMS","0.003 + 0.006*exp(-x/7.6)", 0.7, 1000.);
+TF1 fExpProtonETL("fExpProtonETL_dInvBetaRMS","0.003 + 0.017*exp(-x/7.6)", 0.7, 1000.);
 
 // Constructor and (empty) destructor
 LamC3PFitter::LamC3PFitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollector && iC) {
@@ -170,10 +170,6 @@ LamC3PFitter::LamC3PFitter(const edm::ParameterSet& theParameters,  edm::Consume
   for (unsigned int ndx = 0; ndx < qual.size(); ndx++) {
     qualities.push_back(reco::TrackBase::qualityByName(qual[ndx]));
   }
-
-//  fExpPion = new TF1("fExpPion_dInvBetaRMS","0.005 + 0.017*exp(-x/2.8)", 0.7, 1000);
-//  fExpKaon = new TF1("fExpKaon_dInvBetaRMS","0.005 + 0.017*exp(-x/2.8)", 0.7, 1000);
-//  fExpProton = new TF1("fExpProton_dInvBetaRMS","0.005 + 0.017*exp(-x/2.8)", 0.7, 1000);
 }
 
 LamC3PFitter::~LamC3PFitter() {
@@ -318,12 +314,10 @@ std::cout<<"Total number of tracks: "<<theTrackHandle->size()<<std::endl;
   
       if(isTOFPID && isMtd) 
       {
-         isPion = fabs(tmpRef->eta())<1.5 ? std::fabs(1./beta_PV - invBetaPion(tmpRef->p())) < nSigmaTOFPID*fExpPionBTL->Eval(tmpRef->p()) : std::fabs(1./beta_PV - invBetaPion(tmpRef->p())) < nSigmaTOFPID*fExpPionETL->Eval(tmpRef->p());
-         isKaon = fabs(tmpRef->eta())<1.5 ? std::fabs(1./beta_PV - invBetaKaon(tmpRef->p())) < nSigmaTOFPID*fExpKaonBTL->Eval(tmpRef->p()) : std::fabs(1./beta_PV - invBetaKaon(tmpRef->p())) < nSigmaTOFPID*fExpKaonETL->Eval(tmpRef->p());
-         isProton = fabs(tmpRef->eta())<1.5 ? std::fabs(1./beta_PV - invBetaProton(tmpRef->p())) < nSigmaTOFPID*fExpProtonBTL->Eval(tmpRef->p()) : std::fabs(1./beta_PV - invBetaProton(tmpRef->p())) < nSigmaTOFPID*fExpProtonETL->Eval(tmpRef->p()); 
+         isPion = fabs(tmpRef->eta())<1.5 ? std::fabs(1./beta_PV - invBetaPion(tmpRef->p())) < nSigmaTOFPID*fExpPionBTL.Eval(tmpRef->p()) : std::fabs(1./beta_PV - invBetaPion(tmpRef->p())) < nSigmaTOFPID*fExpPionETL.Eval(tmpRef->p());
+         isKaon = fabs(tmpRef->eta())<1.5 ? std::fabs(1./beta_PV - invBetaKaon(tmpRef->p())) < nSigmaTOFPID*fExpKaonBTL.Eval(tmpRef->p()) : std::fabs(1./beta_PV - invBetaKaon(tmpRef->p())) < nSigmaTOFPID*fExpKaonETL.Eval(tmpRef->p());
+         isProton = fabs(tmpRef->eta())<1.5 ? std::fabs(1./beta_PV - invBetaProton(tmpRef->p())) < nSigmaTOFPID*fExpProtonBTL.Eval(tmpRef->p()) : std::fabs(1./beta_PV - invBetaProton(tmpRef->p())) < nSigmaTOFPID*fExpProtonETL.Eval(tmpRef->p()); 
       }
-
-//cout<<isPion<<" "<<isKaon<<" "<<isProton<<" "<<isMtd<<endl;
 
       MTDtrackInfo["isPion"] = isPion;
       MTDtrackInfo["isKaon"] = isKaon;
@@ -395,12 +389,12 @@ void LamC3PFitter::fitLamCCandidates(
 //      if( (theTrackRefs[trdx1]->pt() + theTrackRefs[trdx2]->pt()) < tkPtSumCut) continue;
 //      if( abs(theTrackRefs[trdx1]->eta() - theTrackRefs[trdx2]->eta()) > tkEtaDiffCut) continue;
 
-      std::map<std::string, float> theMTDtrackInfo1 = theMTDtrackInfo_sgn1[trdx1]; // mtd
-      std::map<std::string, float> theMTDtrackInfo2 = theMTDtrackInfo_sgn1[trdx2]; // mtd
-      bool isPion1 = theMTDtrackInfo1["isPion"];
-      bool isProton1 = theMTDtrackInfo1["isProton"];
-      bool isPion2 = theMTDtrackInfo2["isPion"];
-      bool isProton2 = theMTDtrackInfo2["isProton"];
+      const auto& theMTDtrackInfo1 = theMTDtrackInfo_sgn1[trdx1]; // mtd
+      const auto& theMTDtrackInfo2 = theMTDtrackInfo_sgn1[trdx2]; // mtd
+      const bool isPion1   = (theMTDtrackInfo1.at("isPion")!=0.);
+      const bool isProton1 = (theMTDtrackInfo1.at("isProton")!=0.);
+      const bool isPion2   = (theMTDtrackInfo2.at("isPion")!=0.);
+      const bool isProton2 = (theMTDtrackInfo2.at("isProton")!=0.);
 
       if(!((isPion1&&isProton2) || (isPion2&&isProton1))) continue;
 
@@ -413,11 +407,11 @@ void LamC3PFitter::fitLamCCandidates(
       TransientTrack* transTkPtr2 = &theTransTracks_sgn1[trdx2];
 
       TLorentzVector track1Mom, track2Mom;
-      track1Mom.SetPtEtaPhiM(trackRef1->pt(), trackRef1->eta(), trackRef1->phi(), protonMassLamC3PSquared);
-      track2Mom.SetPtEtaPhiM(trackRef2->pt(), trackRef2->eta(), trackRef2->phi(), piMassLamC3PSquared);
+      track1Mom.SetPtEtaPhiM(trackRef1->pt(), trackRef1->eta(), trackRef1->phi(), protonMassLamC3P);
+      track2Mom.SetPtEtaPhiM(trackRef2->pt(), trackRef2->eta(), trackRef2->phi(), piMassLamC3P);
       const double preMass1 = (track1Mom + track2Mom).M();
-      track1Mom.SetPtEtaPhiM(trackRef1->pt(), trackRef1->eta(), trackRef1->phi(), piMassLamC3PSquared);
-      track2Mom.SetPtEtaPhiM(trackRef2->pt(), trackRef2->eta(), trackRef2->phi(), protonMassLamC3PSquared);
+      track1Mom.SetPtEtaPhiM(trackRef1->pt(), trackRef1->eta(), trackRef1->phi(), piMassLamC3P);
+      track2Mom.SetPtEtaPhiM(trackRef2->pt(), trackRef2->eta(), trackRef2->phi(), protonMassLamC3P);
       const double preMass2 = (track1Mom + track2Mom).M();
       if( (preMass1 > mPiPCutMax+0.1 || preMass1 < mPiPCutMin-0.1) && (preMass2 > mPiPCutMax+0.1 || preMass2 < mPiPCutMin-0.1)) continue;
 
@@ -489,22 +483,21 @@ void LamC3PFitter::fitLamCCandidates(
 
       for(unsigned int trdx3 = 0; trdx3 < theTrackRefs_sgn2.size(); trdx3++) {
 
-        std::map<std::string, float> theMTDtrackInfo3 = theMTDtrackInfo_sgn2[trdx3]; // mtd
-        bool isKaon3 = theMTDtrackInfo3["isKaon"];
-        if(!isKaon3) continue;
+        const auto& theMTDtrackInfo3 = theMTDtrackInfo_sgn2[trdx3]; // mtd
+        if (theMTDtrackInfo3.at("isKaon")==0.) continue;
 
         TrackRef trackRef3 = theTrackRefs_sgn2[trdx3];
         TransientTrack* transTkPtr3 = &theTransTracks_sgn2[trdx3];
 
         TLorentzVector track1Mom, track2Mom, track3Mom;
-        track1Mom.SetPtEtaPhiM(trackRef1->pt(), trackRef1->eta(), trackRef1->phi(), protonMassLamC3PSquared);
-        track2Mom.SetPtEtaPhiM(trackRef2->pt(), trackRef2->eta(), trackRef2->phi(), piMassLamC3PSquared);
-        track3Mom.SetPtEtaPhiM(trackRef3->pt(), trackRef3->eta(), trackRef3->phi(), kaonMassLamC3PSquared);
+        track1Mom.SetPtEtaPhiM(trackRef1->pt(), trackRef1->eta(), trackRef1->phi(), protonMassLamC3P);
+        track2Mom.SetPtEtaPhiM(trackRef2->pt(), trackRef2->eta(), trackRef2->phi(), piMassLamC3P);
+        track3Mom.SetPtEtaPhiM(trackRef3->pt(), trackRef3->eta(), trackRef3->phi(), kaonMassLamC3P);
         const double preMass31 = (track1Mom + track2Mom + track3Mom).M();
         const double rapidity31 = (track1Mom + track2Mom + track3Mom).Rapidity();
-        track1Mom.SetPtEtaPhiM(trackRef1->pt(), trackRef1->eta(), trackRef1->phi(), piMassLamC3PSquared);
-        track2Mom.SetPtEtaPhiM(trackRef2->pt(), trackRef2->eta(), trackRef2->phi(), protonMassLamC3PSquared);
-        track3Mom.SetPtEtaPhiM(trackRef3->pt(), trackRef3->eta(), trackRef3->phi(), kaonMassLamC3PSquared);
+        track1Mom.SetPtEtaPhiM(trackRef1->pt(), trackRef1->eta(), trackRef1->phi(), piMassLamC3P);
+        track2Mom.SetPtEtaPhiM(trackRef2->pt(), trackRef2->eta(), trackRef2->phi(), protonMassLamC3P);
+        track3Mom.SetPtEtaPhiM(trackRef3->pt(), trackRef3->eta(), trackRef3->phi(), kaonMassLamC3P);
         const double preMass32 = (track1Mom + track2Mom + track3Mom).M();
         const double rapidity32 = (track1Mom + track2Mom + track3Mom).Rapidity();
 

@@ -1,11 +1,11 @@
 import FWCore.ParameterSet.Config as cms
 
 generalLamC3PCandidates = cms.EDProducer("LamC3PProducer",
-                                     
+
     # InputTag that tells which TrackCollection to use for vertexing
     trackRecoAlgorithm = cms.InputTag('generalTracks'),
     vertexRecoAlgorithm = cms.InputTag('offlinePrimaryVertices4D'),
-                                     
+
     trackBeta = cms.InputTag("trackExtenderWithMTD:generalTrackBeta"),
     trackt0 = cms.InputTag("tofPID:t0"),
     trackSigmat0 = cms.InputTag("tofPID:sigmat0"),
@@ -15,7 +15,7 @@ generalLamC3PCandidates = cms.EDProducer("LamC3PProducer",
     trackPathLength = cms.InputTag("trackExtenderWithMTD:generalTrackPathLength"),
 
     trackQualities = cms.vstring('highPurity'),
-                                     
+
     tkChi2Cut = cms.double(7), #trk Chi2 <
     tkNhitsCut = cms.int32(5), #trk Nhits >=
     tkPtErrCut = cms.double(9999.0), #trk pT err <
@@ -23,7 +23,7 @@ generalLamC3PCandidates = cms.EDProducer("LamC3PProducer",
     tkPMidCut = cms.double(0.0), #trk p >
     tkPtFwdCut = cms.double(0.0), #trk pT >
     tkPFwdCut = cms.double(0.0), #trk p >
-    tkEtaBound = cms.double(1.5),
+    tkEtaBound = cms.double(1.4),
     tkEtaCut = cms.double(999.0), #trk abs(eta) <
 
     mPiKPCutMin = cms.double(2.13),
@@ -57,10 +57,10 @@ generalLamC3PCandidates = cms.EDProducer("LamC3PProducer",
     isWrongSign = cms.bool(False),
     isTOFPID = cms.bool(False),
     nSigmaTOFPID = cms.double(2.0),
-# MVA 
+# MVA
 
     useAnyMVA = cms.bool(False),
-    mvaType = cms.string('BDT'), 
+    mvaType = cms.string('BDT'),
     GBRForestLabel = cms.string('D0InpPb'),
     GBRForestFileName = cms.string('GBRForestfile.root'),
 )
