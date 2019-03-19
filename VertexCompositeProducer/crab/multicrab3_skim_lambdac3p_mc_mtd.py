@@ -37,8 +37,8 @@ def submit(config):
 ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
 #############################################################################################
 
-config.General.requestName = 'LambdaC_mc_mtd_v10'
+config.General.requestName = 'LambdaC_mc_mtd_v11'
 config.JobType.psetName = '../test/LamC3P_SkimAndTreePhaseIIMTD_mc_cfg.py'
-config.Data.outputDatasetTag = 'lambdac_mc_mtd_SkimAndTree_v10'
+config.Data.outputDatasetTag = 'lambdac_mc_mtd_SkimAndTree_v11'
 config.Data.inputDataset = '/LambdaC_PiKP_prompt_pt1_y4_5p5TeV_TuneCP5_Pythia8/PhaseIIMTDTDRAutumn18DR-NoPU_103X_upgrade2023_realistic_v2-v1/FEVT'
 submit(config)

@@ -14,7 +14,7 @@ config.JobType.pluginName = 'Analysis'
 config.JobType.maxMemoryMB = 27000
 config.JobType.maxJobRuntimeMin = 2750
 config.Data.unitsPerJob = 5
-config.Data.totalUnits = 200
+config.Data.totalUnits = 5000
 #config.Data.splitting = 'LumiBased'
 config.Data.splitting = 'EventAwareLumiBased'
 #config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
@@ -39,37 +39,37 @@ def submit(config):
 ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
 #############################################################################################
 
-config.General.requestName = 'HyJets_mc_lamc3p_mtd_wPID_pt1to1p5_v4'
+config.General.requestName = 'HyJets_mc_lamc3p_mtd_wPID_1p5RMS_pt1to1p5_v6'
 config.JobType.psetName = '../test/PbPbSkimAndTreePhaseIIMTD_LamC3P_MC_wPID_cfg.py'
-config.JobType.pyCfgParams=["pTMin=1","pTMax=1.5","yMin=-3","yMax=3"]
-config.Data.inputDataset = '/MinBias_Hydjet_Drume5_5p5TeV_TuneCP5_Pythia8/PhaseIIMTDTDRAutumn18DR-NoPU_103X_upgrade2023_realistic_v4-v2/FEVT'
+config.JobType.pyCfgParams=["pTMin=0.97","pTMax=1.5","yMin=-3.1","yMax=3.1"]
+config.Data.inputDataset = '/MinBias_Hydjet_Drume5_5p5TeV_TuneCP5_Pythia8/PhaseIIMTDTDRAutumn18DR-NoPU_103X_upgrade2023_realistic_v2-v2/FEVT'
 config.Data.allowNonValidInputDataset = True
 submit(config)
 
-config.General.requestName = 'HyJets_mc_lamc3p_mtd_wPID_pt1p5to2_v4'
-config.JobType.pyCfgParams=["pTMin=1.5","pTMax=2.0","yMin=-3","yMax=3"]
+config.General.requestName = 'HyJets_mc_lamc3p_mtd_wPID_1p5RMS_pt1p5to2_v6'
+config.JobType.pyCfgParams=["pTMin=1.5","pTMax=2.0","yMin=-3.1","yMax=3.1"]
 submit(config)
 
-config.General.requestName = 'HyJets_mc_lamc3p_mtd_wPID_pt2to2p5_v4'
-config.JobType.pyCfgParams=["pTMin=2.0","pTMax=2.5","yMin=-3","yMax=3"]
+config.General.requestName = 'HyJets_mc_lamc3p_mtd_wPID_1p5RMS_pt2to2p5_v6'
+config.JobType.pyCfgParams=["pTMin=2.0","pTMax=2.5","yMin=-3.1","yMax=3.1"]
 submit(config)
 
-config.General.requestName = 'HyJets_mc_lamc3p_mtd_wPID_pt2p5to3_v4'
-config.JobType.pyCfgParams=["pTMin=2.5","pTMax=3.0","yMin=-3","yMax=3"]
+config.General.requestName = 'HyJets_mc_lamc3p_mtd_wPID_1p5RMS_pt2p5to3_v6'
+config.JobType.pyCfgParams=["pTMin=2.5","pTMax=3.0","yMin=-3.1","yMax=3.1"]
 submit(config)
 
-config.General.requestName = 'HyJets_mc_lamc3p_mtd_wPID_pt3to3p5_v4'
-config.JobType.pyCfgParams=["pTMin=3","pTMax=3.5","yMin=-3","yMax=3"]
+config.General.requestName = 'HyJets_mc_lamc3p_mtd_wPID_1p5RMS_pt3to3p5_v6'
+config.JobType.pyCfgParams=["pTMin=3","pTMax=3.5","yMin=-3.1","yMax=3.1"]
 submit(config)
 
-config.General.requestName = 'HyJets_mc_lamc3p_mtd_wPID_pt3p5to4_v4'
-config.JobType.pyCfgParams=["pTMin=3.5","pTMax=4.0","yMin=-3","yMax=3"]
+config.General.requestName = 'HyJets_mc_lamc3p_mtd_wPID_1p5RMS_pt3p5to4_v6'
+config.JobType.pyCfgParams=["pTMin=3.5","pTMax=4.0","yMin=-3.1","yMax=3.1"]
 submit(config)
 
-config.General.requestName = 'HyJets_mc_lamc3p_mtd_wPID_pt4to6_v4'
-config.JobType.pyCfgParams=["pTMin=4","pTMax=6","yMin=-3","yMax=3"]
+config.General.requestName = 'HyJets_mc_lamc3p_mtd_wPID_1p5RMS_pt4to6_v6'
+config.JobType.pyCfgParams=["pTMin=4","pTMax=6","yMin=-3.1","yMax=3.1"]
 submit(config)
 
-config.General.requestName = 'HyJets_mc_lamc3p_mtd_wPID_pt6toinf_v4'
-config.JobType.pyCfgParams=["pTMin=6","pTMax=100000.0","yMin=-3","yMax=3"]
+config.General.requestName = 'HyJets_mc_lamc3p_mtd_wPID_1p5RMS_pt6toinf_v6'
+config.JobType.pyCfgParams=["pTMin=6","pTMax=100000.0","yMin=-3.1","yMax=3.1"]
 submit(config)
