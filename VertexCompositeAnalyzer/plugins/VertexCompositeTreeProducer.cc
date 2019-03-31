@@ -314,6 +314,8 @@ private:
     bool  trkmuon2[MAXCAN];
     bool  calomuon1[MAXCAN];
     bool  calomuon2[MAXCAN];
+    bool  softmuon1[MAXCAN];
+    bool  softmuon2[MAXCAN];
     float nmatchedst1[MAXCAN];
     float nmatchedch1[MAXCAN];
     float ntrackerlayer1[MAXCAN];
@@ -1172,11 +1174,13 @@ VertexCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::Event
           glbmuon1[it] = false;
           trkmuon1[it] = false;
           calomuon1[it] = false; 
+          softmuon1[it] = false;
           onestmuon2[it] = false;
           pfmuon2[it] = false;
           glbmuon2[it] = false;
           trkmuon2[it] = false;
           calomuon2[it] = false;
+          softmuon2[it] = false;
 
           const int muId1 = muAssocToTrack( dau1, theMuonHandle );
           const int muId2 = muAssocToTrack( dau2, theMuonHandle );
@@ -1190,6 +1194,14 @@ VertexCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::Event
             glbmuon1[it] =  cand.isGlobalMuon();
             trkmuon1[it] =  cand.isTrackerMuon();
             calomuon1[it] =  cand.isCaloMuon();
+
+            if( 
+                glbmuon1[it] && trkmuon1[it] &&
+                cand.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 && 
+                cand.innerTrack()->hitPattern().pixelLayersWithMeasurement() > 0 && 
+                fabs(cand.innerTrack()->dxy(vtx.position())) < 0.3 &&
+                fabs(cand.innerTrack()->dz(vtx.position())) < 20.
+              ) softmuon1[it] = true;
           }
 
           if( muId2 != -1 )
@@ -1201,6 +1213,14 @@ VertexCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::Event
             glbmuon2[it] =  cand.isGlobalMuon();
             trkmuon2[it] =  cand.isTrackerMuon();
             calomuon2[it] =  cand.isCaloMuon();
+
+            if(
+                glbmuon2[it] && trkmuon2[it] &&
+                cand.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 &&
+                cand.innerTrack()->hitPattern().pixelLayersWithMeasurement() > 0 &&
+                fabs(cand.innerTrack()->dxy(vtx.position())) < 0.3 &&
+                fabs(cand.innerTrack()->dz(vtx.position())) < 20.
+              ) softmuon2[it] = true;
           }
 
           if(doMuonFull_)
@@ -1837,6 +1857,9 @@ VertexCompositeTreeProducer::initTree()
             VertexCompositeNtuple->Branch("trkMuon2",&trkmuon2,"trkMuon2[candSize]/O");
             VertexCompositeNtuple->Branch("caloMuon1",&calomuon1,"caloMuon1[candSize]/O");
             VertexCompositeNtuple->Branch("caloMuon2",&calomuon2,"caloMuon2[candSize]/O");
+            VertexCompositeNtuple->Branch("SoftMuon1",&softmuon1,"SoftMuon1[candSize]/O");
+            VertexCompositeNtuple->Branch("SoftMuon2",&softmuon2,"SoftMuon2[candSize]/O");
+
             if(doMuonFull_)
             {
               VertexCompositeNtuple->Branch("nMatchedChamberD1",&nmatchedch1,"nMatchedChamberD1[candSize]/F");
