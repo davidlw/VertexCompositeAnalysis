@@ -10,7 +10,8 @@ generalDiMuCandidates = cms.EDProducer("DiMuProducer",
     muonRecoAlgorithm = cms.InputTag('muons'),
     pfCandAlgorithm = cms.InputTag('particleFlow'),
 
-    trackQualities = cms.vstring('loose'),
+#    trackQualities = cms.vstring('loose'),
+    trackQualities = cms.vstring(''),
                                      
     tkChi2Cut = cms.double(9999.0), #trk Chi2 <
     tkNhitsCut = cms.int32(0), #trk Nhits >=
