@@ -180,7 +180,10 @@ private:
     int centrality;
     int Ntrkoffline;
     int Npixel;
-    float HFsumET;
+    float HFsumETPlus;
+    float HFsumETMinus;
+    float ZDCPlus;
+    float ZDCMinus;
     float bestvx;
     float bestvy;
     float bestvz;
@@ -530,9 +533,11 @@ VertexCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::Event
       iEvent.getByToken(tok_centBinLabel_,cbin_);
       centrality = *cbin_;  
 
-      HFsumET = cent->EtHFtowerSum();
+      HFsumETPlus = cent->EtHFtowerSumPlus();
+      HFsumETMinus = cent->EtHFtowerSumMinus();
       Npixel = cent->multiplicityPixel();
-//      int ntrk = cent->Ntracks();
+      ZDCPlus = cent->zdcSumPlus();
+      ZDCMinus = cent->zdcSumMinus();
     }
 
     if(isEventPlane_)
@@ -1692,7 +1697,10 @@ VertexCompositeTreeProducer::initTree()
     // Event info
     VertexCompositeNtuple->Branch("Ntrkoffline",&Ntrkoffline,"Ntrkoffline/I");
     VertexCompositeNtuple->Branch("Npixel",&Npixel,"Npixel/I");
-    VertexCompositeNtuple->Branch("HFsumET",&HFsumET,"HFsumET/F");
+    VertexCompositeNtuple->Branch("HFsumETPlus",&HFsumETPlus,"HFsumETPlus/F");
+    VertexCompositeNtuple->Branch("HFsumETMinus",&HFsumETMinus,"HFsumETMinus/F");
+    VertexCompositeNtuple->Branch("ZDCPlus",&ZDCPlus,"ZDCPlus/F");
+    VertexCompositeNtuple->Branch("ZDCMinus",&ZDCMinus,"ZDCMinus/F");
     VertexCompositeNtuple->Branch("bestvtxX",&bestvx,"bestvtxX/F");
     VertexCompositeNtuple->Branch("bestvtxY",&bestvy,"bestvtxY/F");
     VertexCompositeNtuple->Branch("bestvtxZ",&bestvz,"bestvtxZ/F");
