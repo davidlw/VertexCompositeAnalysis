@@ -1201,7 +1201,8 @@ VertexCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::Event
             calomuon1[it] =  cand.isCaloMuon();
 
             if( 
-                glbmuon1[it] && trkmuon1[it] &&
+                //glbmuon1[it] && 
+                trkmuon1[it] &&
                 cand.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 && 
                 cand.innerTrack()->hitPattern().pixelLayersWithMeasurement() > 0 && 
                 fabs(cand.innerTrack()->dxy(vtx.position())) < 0.3 &&
@@ -1220,7 +1221,8 @@ VertexCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::Event
             calomuon2[it] =  cand.isCaloMuon();
 
             if(
-                glbmuon2[it] && trkmuon2[it] &&
+                //glbmuon2[it] && 
+                trkmuon2[it] &&
                 cand.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 &&
                 cand.innerTrack()->hitPattern().pixelLayersWithMeasurement() > 0 &&
                 fabs(cand.innerTrack()->dxy(vtx.position())) < 0.3 &&

@@ -1145,7 +1145,8 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             calomuon1 =  cand.isCaloMuon();
 
             if(
-                glbmuon1 && trkmuon1 &&
+                //glbmuon1 && 
+                trkmuon1 &&
                 cand.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 &&
                 cand.innerTrack()->hitPattern().pixelLayersWithMeasurement() > 0 &&
                 fabs(cand.innerTrack()->dxy(vtx.position())) < 0.3 &&
@@ -1164,7 +1165,8 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             calomuon2 =  cand.isCaloMuon();
 
             if(
-                glbmuon2 && trkmuon2 &&
+                //glbmuon2 && 
+                trkmuon2 &&
                 cand.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 &&
                 cand.innerTrack()->hitPattern().pixelLayersWithMeasurement() > 0 &&
                 fabs(cand.innerTrack()->dxy(vtx.position())) < 0.3 &&
