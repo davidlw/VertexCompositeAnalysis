@@ -23,14 +23,14 @@
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/Framework/interface/ConsumesCollector.h"
 
-#include "DataFormats/Common/interface/Ref.h"
-
+#include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
-#include <DataFormats/MuonReco/interface/Muon.h>
-#include <DataFormats/MuonReco/interface/MuonFwd.h>
+#include "DataFormats/MuonReco/interface/Muon.h"
+#include "DataFormats/MuonReco/interface/MuonFwd.h"
+#include "DataFormats/PatCandidates/interface/Muon.h"
 #include "RecoVertex/VertexPrimitives/interface/TransientVertex.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 #include "RecoVertex/KalmanVertexFit/interface/KalmanVertexFitter.h"
@@ -48,22 +48,13 @@
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 #include "MagneticField/VolumeBasedEngine/interface/VolumeBasedMagneticField.h"
 
-#include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"
+#include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
 #include "DataFormats/RecoCandidate/interface/RecoChargedCandidate.h"
-#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "DataFormats/Math/interface/angle.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-#include "Geometry/CommonDetUnit/interface/TrackingGeometry.h"
-//#include "Geometry/CommonDetUnit/interface/GeomDetUnit.h"
-#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
-#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
-#include "Geometry/CommonDetUnit/interface/GeomDet.h"
-//include "Geometry/TrackerGeometryBuilder/interface/GluedGeomDet.h"
-
-#include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
-
+#include "CommonTools/UtilAlgos/interface/StringCutObjectSelector.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include <string>
@@ -73,58 +64,41 @@ class DiMuFitter {
  public:
   DiMuFitter(const edm::ParameterSet& theParams, edm::ConsumesCollector && iC);
   ~DiMuFitter();
-
   void fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup);
 
-  const reco::VertexCompositeCandidateCollection& getDiMu() const;
+  const pat::CompositeCandidateCollection& getDiMu() const;
   void resetAll();
 
  private:
   // STL vector of VertexCompositeCandidate that will be filled with VertexCompositeCandidates by fitAll()
-  reco::VertexCompositeCandidateCollection theDiMus;
+  pat::CompositeCandidateCollection theDiMus;
 
   // Tracker geometry for discerning hit positions
-  const TrackerGeometry* trackerGeom;
-
   const MagneticField* magField;
 
-  edm::InputTag recoAlg;
-  edm::InputTag vtxAlg;
-  edm::EDGetTokenT<reco::TrackCollection> token_tracks;
   edm::EDGetTokenT<reco::VertexCollection> token_vertices;
-  edm::EDGetTokenT<reco::PFCandidateCollection> token_pfcands;
-  edm::EDGetTokenT<reco::MuonCollection> token_muons;
+  edm::EDGetTokenT<pat::MuonCollection> token_muons;
   edm::EDGetTokenT<reco::BeamSpot> token_beamSpot;
 
   // Cuts
   double mllCutMin;
   double mllCutMax;
+  double tkdXYCut;
+  double tkdZCut;
   double tkDCACut;
-  double tkChi2Cut;
-  int    tkNhitsCut;
-  double tkPtCut;
-  double tkEtaCut;
   double chi2Cut;
   double rVtxCut;
   double rVtxSigCut;
   double lVtxCut;
   double lVtxSigCut;
   double collinCut;
-  double DiMuMassCut;
   double dauTransImpactSigCut;
   double dauLongImpactSigCut;
   double VtxChiProbCut;
-  double dPtCut;
   double alphaCut;
-  bool   isEE;
-  bool   isMuMu;
-  std::string muonId;
-  bool   isMuonId;
-  bool   isPFMuon;
-  bool   isGlobalMuon;
   bool   isWrongSign;
-
-  std::vector<reco::TrackBase::TrackQuality> qualities;
+  StringCutObjectSelector<pat::Muon> muonSelection;
+  StringCutObjectSelector<reco::Candidate, true> candidateSelection;
 };
 
 #endif

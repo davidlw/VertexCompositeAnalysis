@@ -29,6 +29,7 @@ analysisSkimContent = cms.PSet(
       'keep *_hiEvtPlane_*_*',
       'keep *_hiEvtPlaneFlat_*_*',
       'keep *_centralityBin_*_*',
+      'keep *_hiCentrality_*_*',
 
       # V0
       'keep *_generalJPsi*_*_*',
