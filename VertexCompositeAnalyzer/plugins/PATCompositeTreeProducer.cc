@@ -164,7 +164,10 @@ private:
   ushort candSize;
   bool  trigHLT[MAXTRG];
   bool  evtSel[MAXSEL];
-  float HFsumET;
+  float HFsumETPlus;
+  float HFsumETMinus;
+  float ZDCPlus;
+  float ZDCMinus;
   float bestvx;
   float bestvy;
   float bestvz;
@@ -510,9 +513,12 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
   {
     edm::Handle<reco::Centrality> cent;
     iEvent.getByToken(tok_centSrc_, cent);
-    HFsumET = (cent.isValid() ? cent->EtHFtowerSum() : -1.);
+    HFsumETPlus = (cent.isValid() ? cent->EtHFtowerSumPlus() : -1.);
+    HFsumETMinus = (cent.isValid() ? cent->EtHFtowerSumMinus() : -1.);
     Npixel = (cent.isValid() ? cent->multiplicityPixel() : -1);
-    Ntrkoffline = (cent.isValid() ? cent->Ntracks() : 0);
+    ZDCPlus = (cent.isValid() ? cent->zdcSumPlus() : -1.);
+    ZDCMinus = (cent.isValid() ? cent->zdcSumMinus() : -1.);
+    Ntrkoffline = (cent.isValid() ? cent->Ntracks() : -1);
       
     edm::Handle<int> cbin;
     iEvent.getByToken(tok_centBinLabel_, cbin);
@@ -1174,7 +1180,10 @@ PATCompositeTreeProducer::initTree()
     {
       PATCompositeNtuple->Branch("centrality",&centrality,"centrality/S");
       PATCompositeNtuple->Branch("Npixel",&Npixel,"Npixel/I");
-      PATCompositeNtuple->Branch("HFsumET",&HFsumET,"HFsumET/F");
+      PATCompositeNtuple->Branch("HFsumETPlus",&HFsumETPlus,"HFsumETPlus/F");
+      PATCompositeNtuple->Branch("HFsumETMinus",&HFsumETMinus,"HFsumETMinus/F");
+      PATCompositeNtuple->Branch("ZDCPlus",&ZDCPlus,"ZDCPlus/F");
+      PATCompositeNtuple->Branch("ZDCMinus",&ZDCMinus,"ZDCMinus/F");
       PATCompositeNtuple->Branch("Ntrkoffline",&Ntrkoffline,"Ntrkoffline/I");
     }
     if(isEventPlane_) {
