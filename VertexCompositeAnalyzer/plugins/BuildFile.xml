@@ -24,5 +24,7 @@
 <use name="DataFormats/HeavyIonEvent"/>
 <use name="CondFormats/DataRecord"/>
 <use name="CondFormats/EgammaObjects"/>
+<use name="DataFormats/HLTReco"/>
+<use name="HLTrigger/HLTcore"/>
 
 <flags EDM_PLUGIN="1"/>

@@ -28,7 +28,7 @@ DiMuProducer::DiMuProducer(const edm::ParameterSet& iConfig) :
 //  theParams(iConfig) {
 {
   // Trying this with Candidates instead of the simple reco::Vertex
-  produces< reco::VertexCompositeCandidateCollection >("DiMu");
+  produces< pat::CompositeCandidateCollection >("DiMu");
 }
 
 // (Empty) Destructor
@@ -48,9 +48,7 @@ void DiMuProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
    theVees.fitAll(iEvent, iSetup);
 
    // Create auto_ptr for each collection to be stored in the Event
-//   std::auto_ptr< reco::VertexCompositeCandidateCollection >
-//     dimuCandidates( new reco::VertexCompositeCandidateCollection );
-   auto dimuCandidates = std::make_unique<reco::VertexCompositeCandidateCollection>();
+   auto dimuCandidates = std::make_unique<pat::CompositeCandidateCollection>();
 
    dimuCandidates->reserve( theVees.getDiMu().size() );
 

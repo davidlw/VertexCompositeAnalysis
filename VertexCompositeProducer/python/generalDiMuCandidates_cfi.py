@@ -1,32 +1,24 @@
 import FWCore.ParameterSet.Config as cms
 
 generalDiMuCandidates = cms.EDProducer("DiMuProducer",
-                                     
+
     # InputTag that tells which TrackCollection to use for vertexing
-    trackRecoAlgorithm = cms.InputTag('generalTracks'),
     vertexRecoAlgorithm = cms.InputTag('offlinePrimaryVertices'),
-#    trackRecoAlgorithm = cms.InputTag('hiGeneralTracks'),
-#    vertexRecoAlgorithm = cms.InputTag('hiSelectedVertex'),
-    muonRecoAlgorithm = cms.InputTag('muons'),
-    pfCandAlgorithm = cms.InputTag('particleFlow'),
+    muonRecoAlgorithm = cms.InputTag('patMuonsWithTrigger'),
 
-#    trackQualities = cms.vstring('highPurity'),
-    trackQualities = cms.vstring('loose'),
-#    trackQualities = cms.vstring(''),
-                                     
-    tkChi2Cut = cms.double(9999.0), #trk Chi2 <
-    tkNhitsCut = cms.int32(0), #trk Nhits >=
-    tkPtCut = cms.double(0.0), #trk pT >
-    tkEtaCut = cms.double(999.0), #trk abs(eta) <
+    # Muon selection
+    muonSelection = cms.string(""),
+    tkdXYCut = cms.double(9999.), #|dXY| <
+    tkdZCut = cms.double(9999.), #|dZ| <
 
-    #   Track impact parameter significance >
+    # Track impact parameter significance >
     dauTransImpactSigCut = cms.double(0.),
     dauLongImpactSigCut = cms.double(0.),
 
-    mllCutMin = cms.double(2.0),
-    mllCutMax = cms.double(5.0),
+    mllCutMin = cms.double(0.0),
+    mllCutMax = cms.double(10000.0),
 
-    #   PCA distance between tracks <
+    # PCA distance between tracks <
     tkDCACut = cms.double(9999.),
     vtxChi2Cut = cms.double(9999.0), #vtxChi2 <
     VtxChiProbCut = cms.double(0.0000001), #vtx prob >
@@ -36,13 +28,7 @@ generalDiMuCandidates = cms.EDProducer("DiMuProducer",
     lVtxCut = cms.double(0.0),
     vtxSignificance2DCut = cms.double(0.0),
     vtxSignificance3DCut = cms.double(0.0),
-    DiMuMassCut = cms.double(1.4),
-    dPtCut = cms.double(0.0),
+    candidateSelection = cms.string(""),
 
-    muonId = cms.string('TMOneStationTight'),
-
-    isMuonId = cms.bool(False), 
-    isPFMuon = cms.bool(False),
-    isGlobalMuon = cms.bool(False),
     isWrongSign = cms.bool(False)
 )
