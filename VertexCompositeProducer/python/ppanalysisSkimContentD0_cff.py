@@ -29,6 +29,9 @@ analysisSkimContent = cms.PSet(
       'keep *_hiEvtPlane_*_*',
       'keep *_hiEvtPlaneFlat_*_*',
       'keep *_centralityBin_*_*',
+
+      'keep *_QWzdcreco_*_*',
+
       # V0
       'keep *_generalD0Candidates*_D0_*',
       'keep *_generalD0Candidates*_MVAValues*_*',

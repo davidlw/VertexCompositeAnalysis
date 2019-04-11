@@ -175,7 +175,10 @@ private:
     int centrality;
     int Ntrkoffline;
     int Npixel;
-    float HFsumET;
+    float HFsumETPlus;
+    float HFsumETMinus;
+    float ZDCPlus;
+    float ZDCMinus;
     float bestvx;
     float bestvy;
     float bestvz;
@@ -301,6 +304,8 @@ private:
     bool  trkmuon2;
     bool  calomuon1;
     bool  calomuon2;
+    bool  softmuon1;
+    bool  softmuon2;
     float nmatchedst1;
     float nmatchedch1;
     float ntrackerlayer1;
@@ -502,7 +507,10 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
       iEvent.getByToken(tok_centBinLabel_,cbin_);
       centrality = *cbin_;  
 
-      HFsumET = cent->EtHFtowerSum();
+      HFsumETPlus = cent->EtHFtowerSumPlus();
+      HFsumETMinus = cent->EtHFtowerSumMinus();
+      ZDCPlus = cent->zdcSumPlus();
+      ZDCMinus = cent->zdcSumMinus();
       Npixel = cent->multiplicityPixel();
 //      int ntrk = cent->Ntracks();
     }
@@ -1115,11 +1123,13 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
           glbmuon1 = false;
           trkmuon1 = false;
           calomuon1 = false; 
+          softmuon1 = false;
           onestmuon2 = false;
           pfmuon2 = false;
           glbmuon2 = false;
           trkmuon2 = false;
           calomuon2 = false;
+          softmuon2 = false;
 
           const int muId1 = muAssocToTrack( dau1, theMuonHandle );
           const int muId2 = muAssocToTrack( dau2, theMuonHandle );
@@ -1133,6 +1143,15 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             glbmuon1 =  cand.isGlobalMuon();
             trkmuon1 =  cand.isTrackerMuon();
             calomuon1 =  cand.isCaloMuon();
+
+            if(
+                //glbmuon1 && 
+                trkmuon1 &&
+                cand.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 &&
+                cand.innerTrack()->hitPattern().pixelLayersWithMeasurement() > 0 &&
+                fabs(cand.innerTrack()->dxy(vtx.position())) < 0.3 &&
+                fabs(cand.innerTrack()->dz(vtx.position())) < 20.
+              ) softmuon1 = true;
           }
 
           if( muId2 != -1 )
@@ -1144,6 +1163,15 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             glbmuon2 =  cand.isGlobalMuon();
             trkmuon2 =  cand.isTrackerMuon();
             calomuon2 =  cand.isCaloMuon();
+
+            if(
+                //glbmuon2 && 
+                trkmuon2 &&
+                cand.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 &&
+                cand.innerTrack()->hitPattern().pixelLayersWithMeasurement() > 0 &&
+                fabs(cand.innerTrack()->dxy(vtx.position())) < 0.3 &&
+                fabs(cand.innerTrack()->dz(vtx.position())) < 20.
+              ) softmuon2 = true;
           }
 
           if(doMuonFull_)
@@ -1620,7 +1648,10 @@ VertexCompositeNtupleProducer::initTree()
         //Event info
         VertexCompositeNtuple->Branch("Ntrkoffline",&Ntrkoffline,"Ntrkoffline/I");
         VertexCompositeNtuple->Branch("Npixel",&Npixel,"Npixel/I");
-        VertexCompositeNtuple->Branch("HFsumET",&HFsumET,"HFsumET/F");
+        VertexCompositeNtuple->Branch("HFsumETPlus",&HFsumETPlus,"HFsumETPlus/F");
+        VertexCompositeNtuple->Branch("HFsumETMinus",&HFsumETMinus,"HFsumETMinus/F");
+        VertexCompositeNtuple->Branch("ZDCPlus",&ZDCPlus,"ZDCPlus/F");
+        VertexCompositeNtuple->Branch("ZDCMinus",&ZDCMinus,"ZDCMinus/F");
         VertexCompositeNtuple->Branch("bestvtxX",&bestvx,"bestvtxX/F");
         VertexCompositeNtuple->Branch("bestvtxY",&bestvy,"bestvtxY/F");
         VertexCompositeNtuple->Branch("bestvtxZ",&bestvz,"bestvtxZ/F");
@@ -1765,6 +1796,8 @@ VertexCompositeNtupleProducer::initTree()
             VertexCompositeNtuple->Branch("trkMuon2",&trkmuon2,"trkMuon2/O");
             VertexCompositeNtuple->Branch("caloMuon1",&calomuon1,"caloMuon1/O");
             VertexCompositeNtuple->Branch("caloMuon2",&calomuon2,"caloMuon2/O");
+            VertexCompositeNtuple->Branch("SoftMuon1",&softmuon1,"SoftMuon1/O");
+            VertexCompositeNtuple->Branch("SoftMuon2",&softmuon2,"SoftMuon2/O");
             if(doMuonFull_)
             {
               VertexCompositeNtuple->Branch("nMatchedChamberD1",&nmatchedch1,"nMatchedChamberD1/F");
