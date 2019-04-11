@@ -29,13 +29,13 @@ process.load('RecoHI.HiCentralityAlgos.HiCentrality_cfi')
 process.hiCentrality.produceHFhits = False
 process.hiCentrality.produceHFtowers = False
 process.hiCentrality.produceEcalhits = False
-process.hiCentrality.produceZDChits = False
+process.hiCentrality.produceZDChits = True
 process.hiCentrality.produceETmidRapidity = False
 process.hiCentrality.producePixelhits = False
 process.hiCentrality.produceTracks = False
 process.hiCentrality.producePixelTracks = False
 process.hiCentrality.reUseCentrality = True
-#process.hiCentrality.srcZDChits = cms.InputTag("QWzdcreco")
+process.hiCentrality.srcZDChits = cms.InputTag("QWzdcreco")
 process.hiCentrality.srcReUse = cms.InputTag("hiCentrality","","RECO")
 process.centralityBin.Centrality = cms.InputTag("hiCentrality")
 process.centralityBin.centralityVariable = cms.string("HFtowers")
