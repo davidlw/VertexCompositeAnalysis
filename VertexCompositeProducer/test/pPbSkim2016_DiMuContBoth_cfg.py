@@ -64,7 +64,7 @@ process.hltFilter.HLTPaths = [
 
 # Add PbPb collision event selection
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.collisionEventSelection_cff')
-process.colEvtSel = cms.Sequence(process.hfCoincFilter * process.primaryVertexFilterPA * process.NoScraping * process.pileupVertexFilterCutGplus)
+process.colEvtSel = cms.Sequence(process.hfCoincFilter * process.primaryVertexFilterPA * process.NoScraping * process.olvFilter_pPb8TeV_dz1p0)
 
 # Define the event selection sequence
 process.eventFilter_HM = cms.Sequence(
@@ -99,7 +99,8 @@ process.Flag_colEvtSel = cms.Path(process.eventFilter_HM * process.colEvtSel)
 process.Flag_hfCoincFilter = cms.Path(process.eventFilter_HM * process.hfCoincFilter)
 process.Flag_primaryVertexFilterPA = cms.Path(process.eventFilter_HM * process.primaryVertexFilterPA)
 process.Flag_NoScraping = cms.Path(process.eventFilter_HM * process.NoScraping)
-process.Flag_pileupVertexFilterCutGplus = cms.Path(process.eventFilter_HM * process.pileupVertexFilterCutGplus)
-eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter , process.Flag_primaryVertexFilterPA , process.Flag_NoScraping , process.Flag_pileupVertexFilterCutGplus ]
+process.Flag_pileupVertexFilterCut = cms.Path(process.eventFilter_HM * process.olvFilter_pPb8TeV_dz1p0)
+process.Flag_pileupVertexFilterCutGplus = cms.Path(process.eventFilter_HM * process.pileUpFilter_pPb8TeV_Gplus)
+eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter , process.Flag_primaryVertexFilterPA , process.Flag_NoScraping , process.Flag_pileupVertexFilterCut , process.Flag_pileupVertexFilterCutGplus ]
 for P in eventFilterPaths:
     process.schedule.insert(0, P)
