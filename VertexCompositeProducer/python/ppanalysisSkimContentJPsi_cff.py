@@ -3,14 +3,14 @@ import FWCore.ParameterSet.Config as cms
 analysisSkimContent = cms.PSet(
     outputCommands = cms.untracked.vstring('drop *',
       # event
-      'keep *_offlinePrimaryVerticesRecovery_*_*',
+      'keep recoVertexs_offlinePrimaryVertices_*_*',
 #      'keep *_offlinePrimaryVerticesLowPt_*_*',
 #      'keep *_allVertices*_*_*',
 #      'keep *_pixelVertices_*_*',
-#      'keep *_pixel3Vertices_*_*',                                     
+#      'keep *_pixel3Vertices_*_*',
 #      'keep *_sortedGoodVertices_*_*',
 #      'keep *_bestVertex_*_*',
-#      'keep *_offlineBeamSpot_*_*',
+      'keep *_offlineBeamSpot_*_*',
       'keep *_TriggerResults_*_*',
 #      'keep L1GlobalTriggerReadoutRecord_gtDigis_*_*',
 #      'keep *_l1extraParticles_*_*',
@@ -24,18 +24,19 @@ analysisSkimContent = cms.PSet(
 #      'keep *_photons*_*_*',
 #      'keep *_conversions*_*_*',
       # muon
-#      'keep recoMuons_muons_*_*',      
-#      'keep *_hiCentrality_*_*',
+#      'keep recoMuons_muons_*_*',
+      'keep *_pACentrality_*_*',
       'keep *_hiEvtPlane_*_*',
       'keep *_hiEvtPlaneFlat_*_*',
       'keep *_centralityBin_*_*',
 
       # V0
-      'keep *_generalJPsi*_*_*',
-      'keep *_generalMuMu*_*_*',
-      'keep *_generalUpsilon*_*_*',
+      'keep patCompositeCandidates_*_*_*',
+
+      # L1 Trigger Prescales
+      'keep *_gtStage2Digis__*',
       # tracks
-#      'keep recoTracks_generalTracks*_*_*',  
+#      'keep recoTracks_generalTracks*_*_*',
 #      'keep recoTracks_pixelTracks_*_*',
 #      'keep recoTracks_refitterForDeDx_*_*',
 #      'keep recoTracks_selectTracks*_*_*',
@@ -44,16 +45,14 @@ analysisSkimContent = cms.PSet(
 #      'keep recoRecoChargedCandidates_allTracks*_*_*',
 #      'keep *_dedx*_*_*',
 #      'keep *DeDx*_*_*_*',
-#      'keep *_pACentrality_*_*',
       # clusters
-#      'keep *_siPixelClusters_*_*',       
+#      'keep *_siPixelClusters_*_*',
       # PFCandidate
 #      'keep *_particleFlow_*_*',
       # mc (if present)
-#      'keep GenEventInfoProduct_*_*_*',
 #      'keep *_*GenJet*_*_*',
-#      'keep reco*_genParticles_*_*',
-#      'keep *_generator_*_*',
+      'keep *_genParticles_*_*',
+      'keep *_generator_*_*',
 #      'keep *SimVertex*_*_*_*',
       # missing ET
 #      'keep *_pfMet*_*_*',

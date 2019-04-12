@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-dimuana = cms.EDAnalyzer('VertexCompositeTreeProducer',
+dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
   doRecoNtuple = cms.untracked.bool(True),
   doGenNtuple = cms.untracked.bool(False),
   doGenMatching = cms.untracked.bool(False),
@@ -12,22 +12,53 @@ dimuana = cms.EDAnalyzer('VertexCompositeTreeProducer',
 
   #PID used only for GEN and/or GEN match
   PID = cms.untracked.int32(443),
-  PID_dau1 = cms.untracked.int32(13),
-  PID_dau2 = cms.untracked.int32(13),
+  PID_dau = cms.untracked.vint32(13, 13),
   VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices"),
-  TrackCollection = cms.untracked.InputTag("generalTracks"),
-  VertexCompositeCollection = cms.untracked.InputTag("generalJPsiMuMuOneStTightPFCandidates:DiMu"),
+  VertexCompositeCollection = cms.untracked.InputTag("generalMuMuCandidatese:DiMu"),
   GenParticleCollection = cms.untracked.InputTag("genParticles"),
-  MuonCollection = cms.untracked.InputTag("muons"),
   doMuon = cms.untracked.bool(True),
   doMuonFull = cms.untracked.bool(True),
 
-  isCentrality = cms.bool(False),
-  centralityBinLabel = cms.InputTag("centralityBin","HFtowers"),
-  centralitySrc = cms.InputTag("hiCentrality"),
+  #Trigger info
+  TriggerResultCollection = cms.untracked.InputTag("TriggerResults::HLT"),
+  triggerPathNames = cms.untracked.vstring(
+      #  Double muon triggers
+      'HLT_PAL1DoubleMuOpen_v', # Dimuons
+      # Single muon triggers
+      'HLT_PAL3Mu12_v', # Electroweak boson
+      # Other triggers
+      'HLT_PAFullTracks_Multiplicity120_v', # High multiplicity
+      'HLT_PAFullTracks_Multiplicity150_v', # High multiplicity
+      'HLT_PAFullTracks_Multiplicity185_part', # High multiplicity
+      'HLT_PAFullTracks_Multiplicity250_v', # High multiplicity
+      'HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part', # Minimum bias
+  ),
+  triggerFilterNames = cms.untracked.vstring(
+      'hltL1fL1sDoubleMuOpenBptxANDL1Filtered0',
+      'hltL3fL1sSingleMu7BptxANDL1f0L2f0L3Filtered12',
+      '',
+      '',
+      '',
+      '',
+      ''
+  ),
+
+  #Filter info
+  FilterResultCollection = cms.untracked.InputTag("TriggerResults::ANASKIM"),
+  eventFilterNames = cms.untracked.vstring(
+      'Flag_colEvtSel',
+      'Flag_hfCoincFilter',
+      'Flag_primaryVertexFilterPA',
+      'Flag_NoScraping',
+      'Flag_pileupVertexFilterCutGplus'
+  ),
+
+  isCentrality = cms.bool(True),
+  centralityBinLabel = cms.InputTag("",""),
+  centralitySrc = cms.InputTag("pACentrality"),
 
   isEventPlane = cms.bool(False),
-  eventplaneSrc = cms.InputTag("hiEvtPlaneFlat"),
+  eventplaneSrc = cms.InputTag(""),
 
   saveTree = cms.untracked.bool(True),
   saveHistogram = cms.untracked.bool(False),
@@ -41,45 +72,14 @@ dimuana = cms.EDAnalyzer('VertexCompositeTreeProducer',
 
   useAnyMVA = cms.bool(False),
   isSkimMVA = cms.untracked.bool(False),
-  MVACollection = cms.InputTag("generalJPsiMuMuOneStTightPFCandidates:MVAValues")
+  MVACollection = cms.InputTag("generalMuMuCandidates:MVAValues")
+)
 
-                              )
-
-dimuana_mc = cms.EDAnalyzer('VertexCompositeTreeProducer',
-  doRecoNtuple = cms.untracked.bool(True),
+dimuana_mc = dimuana.clone(
   doGenNtuple = cms.untracked.bool(True),
   doGenMatching = cms.untracked.bool(True),
   doGenMatchingTOF = cms.untracked.bool(False),
   hasSwap = cms.untracked.bool(False),
   decayInGen = cms.untracked.bool(True),
-  twoLayerDecay = cms.untracked.bool(False),
-  #PID used only for GEN and/or GEN match
-  PID = cms.untracked.int32(443),
-  PID_dau1 = cms.untracked.int32(13),
-  PID_dau2 = cms.untracked.int32(13),
-  VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices"),
-  TrackCollection = cms.untracked.InputTag("generalTracks"),
-  VertexCompositeCollection = cms.untracked.InputTag("generalJPsiMuMuOneStTightPFCandidates:DiMu"),
-  GenParticleCollection = cms.untracked.InputTag("genParticles"),
-  MuonCollection = cms.untracked.InputTag("muons"),
-  doMuon = cms.untracked.bool(True),
-  doMuonFull = cms.untracked.bool(True),
-
-  isCentrality = cms.bool(False),
-  centralityBinLabel = cms.InputTag("centralityBin","HFtowers"),
-  centralitySrc = cms.InputTag("hiCentrality"),
-
-  saveTree = cms.untracked.bool(True),
-  saveHistogram = cms.untracked.bool(False),
-  saveAllHistogram = cms.untracked.bool(True),
-  massHistPeak = cms.untracked.double(5.0),
-  massHistWidth = cms.untracked.double(5.0),
-  massHistBins = cms.untracked.int32(1000),
-
-  pTBins = cms.untracked.vdouble(0.0,0.2,1.8,3.0,4.5,6.0,8.0,10.,20.),
-  yBins = cms.untracked.vdouble(-2.4,-1.4,0,1.4,2.4),
-
-  useAnyMVA = cms.bool(False),
-  isSkimMVA = cms.untracked.bool(False),
-  MVACollection = cms.InputTag("generalJPsiMuMuOneStTightPFCandidates:MVAValues")
-                              )
+  saveAllHistogram = cms.untracked.bool(True)
+)
