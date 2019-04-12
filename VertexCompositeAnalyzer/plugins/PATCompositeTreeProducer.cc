@@ -256,7 +256,7 @@ private:
   bool  softmuon[MAXDAU][MAXCAN];
   bool  hybridmuon[MAXDAU][MAXCAN];
   bool  hpmuon[MAXDAU][MAXCAN];
-  bool  trgmuon[MAXDAU][MAXTRG][MAXCAN];
+  std::vector<std::vector<UChar_t> > trgmuon[MAXDAU];
   short nmatchedst[MAXDAU][MAXCAN];
   short ntrackerlayer[MAXDAU][MAXCAN];
   short npixellayer[MAXDAU][MAXCAN];
@@ -475,7 +475,7 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
   if(triggerNames_.size()>0)
   {
     const edm::TriggerNames& triggerNames = iEvent.triggerNames(*triggerResults);
-    for (ushort iTr=0; iTr<triggerNames_.size(); iTr++) {
+    for (ushort iTr=0; iTr<NTRG_; iTr++) {
       trigHLT[iTr] = false;
       const auto& triggerIndex = triggerNames.triggerIndex(triggerNames_.at(iTr));
       if(triggerIndex>=triggerNames.size()) continue;
@@ -637,7 +637,7 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
     phi[it] = trk.phi();
     mass[it] = trk.mass();
     y[it] = trk.rapidity();
-    flavor[it] = trk.pdgId()/fabs(trk.pdgId());
+    flavor[it] = (trk.pdgId()!=0 ? trk.pdgId()/fabs(trk.pdgId()) : 0.);
 
     mva[it] = 0.0;
     if(useAnyMVA_) mva[it] = (*mvavalues)[it];
@@ -844,13 +844,17 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
                                 );
 
         // Muon Trigger Matching
+        if(it==0)
+        {
+          trgmuon[iDau].clear();
+          trgmuon[iDau] = std::vector<std::vector<UChar_t>>(filterNames_.size(), std::vector<UChar_t>(candSize, 0));
+        }
         if(dau.isMuon())
         {
           for(ushort iTr=0; iTr<filterNames_.size(); iTr++)
           {
-            trgmuon[iDau][iTr][it] = false;
             const auto& muHLTMatchesFilter = muon.triggerObjectMatchesByFilter(filterNames_.at(iTr));
-            if(muHLTMatchesFilter.size()>0) trgmuon[iDau][iTr][it] = true;
+            if(muHLTMatchesFilter.size()>0) trgmuon[iDau][iTr][it] = 1;
           }
         }
 
@@ -1187,100 +1191,100 @@ PATCompositeTreeProducer::initTree()
       PATCompositeNtuple->Branch("Ntrkoffline",&Ntrkoffline,"Ntrkoffline/I");
     }
     if(isEventPlane_) {
-      PATCompositeNtuple->Branch("ephfpAngle",&ephfpAngle,"ephfpAngle[3]/F");
-      PATCompositeNtuple->Branch("ephfmAngle",&ephfmAngle,"ephfmAngle[3]/F");
-      PATCompositeNtuple->Branch("ephfpQ",&ephfpQ,"ephfpQ[3]/F");
-      PATCompositeNtuple->Branch("ephfmQ",&ephfmQ,"ephfmQ[3]/F");
+      PATCompositeNtuple->Branch("ephfpAngle",ephfpAngle,"ephfpAngle[3]/F");
+      PATCompositeNtuple->Branch("ephfmAngle",ephfmAngle,"ephfmAngle[3]/F");
+      PATCompositeNtuple->Branch("ephfpQ",ephfpQ,"ephfpQ[3]/F");
+      PATCompositeNtuple->Branch("ephfmQ",ephfmQ,"ephfmQ[3]/F");
       PATCompositeNtuple->Branch("ephfpSumW",&ephfpSumW,"ephfpSumW/F");
       PATCompositeNtuple->Branch("ephfmSumW",&ephfmSumW,"ephfmSumW/F");
     }
-    PATCompositeNtuple->Branch("trigPrescale",&trigPrescale,Form("trigPrescale[%d]/S",NTRG_));
-    PATCompositeNtuple->Branch("trigHLT",&trigHLT,Form("trigHLT[%d]/O",NTRG_));
-    PATCompositeNtuple->Branch("evtSel",&evtSel,Form("evtSel[%d]/O",NSEL_));
+    PATCompositeNtuple->Branch("trigPrescale",trigPrescale,Form("trigPrescale[%d]/S",NTRG_));
+    PATCompositeNtuple->Branch("trigHLT",trigHLT,Form("trigHLT[%d]/O",NTRG_));
+    PATCompositeNtuple->Branch("evtSel",evtSel,Form("evtSel[%d]/O",NSEL_));
 
     // particle info
-    PATCompositeNtuple->Branch("pT",&pt,"pT[candSize]/F");
-    PATCompositeNtuple->Branch("eta",&eta,"eta[candSize]/F");
-    PATCompositeNtuple->Branch("phi",&phi,"phi[candSize]/F");
-    PATCompositeNtuple->Branch("mass",&mass,"mass[candSize]/F");
-    PATCompositeNtuple->Branch("y",&y,"y[candSize]/F");
-    if(useAnyMVA_) PATCompositeNtuple->Branch("mva",&mva,"mva[candSize]/F");
+    PATCompositeNtuple->Branch("pT",pt,"pT[candSize]/F");
+    PATCompositeNtuple->Branch("eta",eta,"eta[candSize]/F");
+    PATCompositeNtuple->Branch("phi",phi,"phi[candSize]/F");
+    PATCompositeNtuple->Branch("mass",mass,"mass[candSize]/F");
+    PATCompositeNtuple->Branch("y",y,"y[candSize]/F");
+    if(useAnyMVA_) PATCompositeNtuple->Branch("mva",mva,"mva[candSize]/F");
 
     if(!isSkimMVA_)
     {
       //Composite candidate info RECO
-      PATCompositeNtuple->Branch("flavor",&flavor,"flavor[candSize]/F");
-      PATCompositeNtuple->Branch("VtxProb",&VtxProb,"VtxProb[candSize]/F");
-      PATCompositeNtuple->Branch("3DCosPointingAngle",&agl,"3DCosPointingAngle[candSize]/F");
-      PATCompositeNtuple->Branch("3DPointingAngle",&agl_abs,"3DPointingAngle[candSize]/F");
-      PATCompositeNtuple->Branch("2DCosPointingAngle",&agl2D,"2DCosPointingAngle[candSize]/F");
-      PATCompositeNtuple->Branch("2DPointingAngle",&agl2D_abs,"2DPointingAngle[candSize]/F");
-      PATCompositeNtuple->Branch("3DDecayLengthSignificance",&dlos,"3DDecayLengthSignificance[candSize]/F");
-      PATCompositeNtuple->Branch("3DDecayLength",&dl,"3DDecayLength[candSize]/F");
-      PATCompositeNtuple->Branch("3DDecayLengthError",&dlerror,"3DDecayLengthError[candSize]/F");
-      PATCompositeNtuple->Branch("2DDecayLengthSignificance",&dlos2D,"2DDecayLengthSignificance[candSize]/F");
-      PATCompositeNtuple->Branch("2DDecayLength",&dl2D,"2DDecayLength[candSize]/F");
+      PATCompositeNtuple->Branch("flavor",flavor,"flavor[candSize]/F");
+      PATCompositeNtuple->Branch("VtxProb",VtxProb,"VtxProb[candSize]/F");
+      PATCompositeNtuple->Branch("3DCosPointingAngle",agl,"3DCosPointingAngle[candSize]/F");
+      PATCompositeNtuple->Branch("3DPointingAngle",agl_abs,"3DPointingAngle[candSize]/F");
+      PATCompositeNtuple->Branch("2DCosPointingAngle",agl2D,"2DCosPointingAngle[candSize]/F");
+      PATCompositeNtuple->Branch("2DPointingAngle",agl2D_abs,"2DPointingAngle[candSize]/F");
+      PATCompositeNtuple->Branch("3DDecayLengthSignificance",dlos,"3DDecayLengthSignificance[candSize]/F");
+      PATCompositeNtuple->Branch("3DDecayLength",dl,"3DDecayLength[candSize]/F");
+      PATCompositeNtuple->Branch("3DDecayLengthError",dlerror,"3DDecayLengthError[candSize]/F");
+      PATCompositeNtuple->Branch("2DDecayLengthSignificance",dlos2D,"2DDecayLengthSignificance[candSize]/F");
+      PATCompositeNtuple->Branch("2DDecayLength",dl2D,"2DDecayLength[candSize]/F");
 
       if(doGenMatching_)
       {
-        PATCompositeNtuple->Branch("isSwap",&isSwap,"isSwap[candSize]/O");
-        PATCompositeNtuple->Branch("idmom_reco",&idmom_reco,"idmom_reco[candSize]/I");
-        PATCompositeNtuple->Branch("matchGEN",&matchGEN,"matchGEN[candSize]/O");
+        PATCompositeNtuple->Branch("isSwap",isSwap,"isSwap[candSize]/O");
+        PATCompositeNtuple->Branch("idmom_reco",idmom_reco,"idmom_reco[candSize]/I");
+        PATCompositeNtuple->Branch("matchGEN",matchGEN,"matchGEN[candSize]/O");
       }
  
       if(doGenMatchingTOF_)
       {
         for(ushort iDau=1; iDau<=NDAU_; iDau++)
         {
-          PATCompositeNtuple->Branch(Form("PIDD%d",iDau),&pid[iDau-1],Form("PIDD%d[candSize]/I",iDau));
-          PATCompositeNtuple->Branch(Form("TOFD%d",iDau),&tof[iDau-1],Form("TOFD%d[candSize]/F",iDau));
+          PATCompositeNtuple->Branch(Form("PIDD%d",iDau),pid[iDau-1],Form("PIDD%d[candSize]/I",iDau));
+          PATCompositeNtuple->Branch(Form("TOFD%d",iDau),tof[iDau-1],Form("TOFD%d[candSize]/F",iDau));
         }
       }
 
       //daugther & grand daugther info
       if(twoLayerDecay_)
       {
-        PATCompositeNtuple->Branch("massDaugther1",&grand_mass,"massDaugther1[candSize]/F");
-        PATCompositeNtuple->Branch("VtxProbDaugther1",&grand_VtxProb,"VtxProbDaugther1[candSize]/F");
-        PATCompositeNtuple->Branch("3DCosPointingAngleDaugther1",&grand_agl,"3DCosPointingAngleDaugther1[candSize]/F");
-        PATCompositeNtuple->Branch("3DPointingAngleDaugther1",&grand_agl_abs,"3DPointingAngleDaugther1[candSize]/F");
-        PATCompositeNtuple->Branch("2DCosPointingAngleDaugther1",&grand_agl2D,"2DCosPointingAngleDaugther1[candSize]/F");
-        PATCompositeNtuple->Branch("2DPointingAngleDaugther1",&grand_agl2D_abs,"2DPointingAngleDaugther1[candSize]/F");
-        PATCompositeNtuple->Branch("3DDecayLengthSignificanceDaugther1",&grand_dlos,"3DDecayLengthSignificanceDaugther1[candSize]/F");
-        PATCompositeNtuple->Branch("3DDecayLengthDaugther1",&grand_dl,"3DDecayLengthDaugther1[candSize]/F");
-        PATCompositeNtuple->Branch("3DDecayLengthErrorDaugther1",&grand_dlerror,"3DDecayLengthErrorDaugther1[candSize]/F");
-        PATCompositeNtuple->Branch("2DDecayLengthSignificanceDaugther1",&grand_dlos2D,"2DDecayLengthSignificanceDaugther1[candSize]/F");
+        PATCompositeNtuple->Branch("massDaugther1",grand_mass,"massDaugther1[candSize]/F");
+        PATCompositeNtuple->Branch("VtxProbDaugther1",grand_VtxProb,"VtxProbDaugther1[candSize]/F");
+        PATCompositeNtuple->Branch("3DCosPointingAngleDaugther1",grand_agl,"3DCosPointingAngleDaugther1[candSize]/F");
+        PATCompositeNtuple->Branch("3DPointingAngleDaugther1",grand_agl_abs,"3DPointingAngleDaugther1[candSize]/F");
+        PATCompositeNtuple->Branch("2DCosPointingAngleDaugther1",grand_agl2D,"2DCosPointingAngleDaugther1[candSize]/F");
+        PATCompositeNtuple->Branch("2DPointingAngleDaugther1",grand_agl2D_abs,"2DPointingAngleDaugther1[candSize]/F");
+        PATCompositeNtuple->Branch("3DDecayLengthSignificanceDaugther1",grand_dlos,"3DDecayLengthSignificanceDaugther1[candSize]/F");
+        PATCompositeNtuple->Branch("3DDecayLengthDaugther1",grand_dl,"3DDecayLengthDaugther1[candSize]/F");
+        PATCompositeNtuple->Branch("3DDecayLengthErrorDaugther1",grand_dlerror,"3DDecayLengthErrorDaugther1[candSize]/F");
+        PATCompositeNtuple->Branch("2DDecayLengthSignificanceDaugther1",grand_dlos2D,"2DDecayLengthSignificanceDaugther1[candSize]/F");
         for(ushort iGDau=1; iGDau<=NGDAU_; iGDau++)
         {
-          PATCompositeNtuple->Branch(Form("zDCASignificanceGrandDaugther%d",iGDau),&grand_dzos[iGDau-1],Form("zDCASignificanceGrandDaugther%d[candSize]/F",iGDau));
-          PATCompositeNtuple->Branch(Form("xyDCASignificanceGrandDaugther%d",iGDau),&grand_dxyos[iGDau-1],Form("xyDCASignificanceGrandDaugther%d[candSize]/F",iGDau));
-          PATCompositeNtuple->Branch(Form("NHitGrandD%d",iGDau),&grand_nhit[iGDau-1],Form("NHitGrandD%d[candSize]/F",iGDau));
-          PATCompositeNtuple->Branch(Form("HighPurityGrandDaugther%d",iGDau),&grand_trkquality[iGDau-1],Form("HighPurityGrandDaugther%d[candSize]/O",iGDau));
-          PATCompositeNtuple->Branch(Form("pTGrandD%d",iGDau),&grand_pt[iGDau-1],Form("pTGrandD%d[candSize]/F",iGDau));
-          PATCompositeNtuple->Branch(Form("pTerrGrandD%d",iGDau),&grand_ptErr[iGDau-1],Form("pTerrGrandD%d[candSize]/F",iGDau));
-          PATCompositeNtuple->Branch(Form("EtaGrandD%d",iGDau),&grand_eta[iGDau-1],Form("EtaGrandD%d[candSize]/F",iGDau));
+          PATCompositeNtuple->Branch(Form("zDCASignificanceGrandDaugther%d",iGDau),grand_dzos[iGDau-1],Form("zDCASignificanceGrandDaugther%d[candSize]/F",iGDau));
+          PATCompositeNtuple->Branch(Form("xyDCASignificanceGrandDaugther%d",iGDau),grand_dxyos[iGDau-1],Form("xyDCASignificanceGrandDaugther%d[candSize]/F",iGDau));
+          PATCompositeNtuple->Branch(Form("NHitGrandD%d",iGDau),grand_nhit[iGDau-1],Form("NHitGrandD%d[candSize]/F",iGDau));
+          PATCompositeNtuple->Branch(Form("HighPurityGrandDaugther%d",iGDau),grand_trkquality[iGDau-1],Form("HighPurityGrandDaugther%d[candSize]/O",iGDau));
+          PATCompositeNtuple->Branch(Form("pTGrandD%d",iGDau),grand_pt[iGDau-1],Form("pTGrandD%d[candSize]/F",iGDau));
+          PATCompositeNtuple->Branch(Form("pTerrGrandD%d",iGDau),grand_ptErr[iGDau-1],Form("pTerrGrandD%d[candSize]/F",iGDau));
+          PATCompositeNtuple->Branch(Form("EtaGrandD%d",iGDau),grand_eta[iGDau-1],Form("EtaGrandD%d[candSize]/F",iGDau));
           if(useDeDxData_)
           {
-            PATCompositeNtuple->Branch(Form("dedxPixelHarmonic2GrandD%d",iGDau),&grand_T4dedx[iGDau-1],Form("dedxPixelHarmonic2GrandD%d[candSize]/F",iGDau));
-            PATCompositeNtuple->Branch(Form("dedxHarmonic2GrandD%d",iGDau),&grand_H2dedx[iGDau-1],Form("dedxHarmonic2GrandD%d[candSize]/F",iGDau));
+            PATCompositeNtuple->Branch(Form("dedxPixelHarmonic2GrandD%d",iGDau),grand_T4dedx[iGDau-1],Form("dedxPixelHarmonic2GrandD%d[candSize]/F",iGDau));
+            PATCompositeNtuple->Branch(Form("dedxHarmonic2GrandD%d",iGDau),grand_H2dedx[iGDau-1],Form("dedxHarmonic2GrandD%d[candSize]/F",iGDau));
           }
         }
       }
       for(ushort iDau=1; iDau<=NDAU_; iDau++)
       {
-        PATCompositeNtuple->Branch(Form("zDCASignificanceDaugther%d",iDau),&dzos[iDau-1],Form("zDCASignificanceDaugther%d[candSize]/F",iDau));
-        PATCompositeNtuple->Branch(Form("xyDCASignificanceDaugther%d",iDau),&dxyos[iDau-1],Form("xyDCASignificanceDaugther%d[candSize]/F",iDau));
-        PATCompositeNtuple->Branch(Form("NHitD%d",iDau),&nhit[iDau-1],Form("NHitD%d[candSize]/F",iDau));
-        PATCompositeNtuple->Branch(Form("HighPurityDaugther%d",iDau),&trkquality[iDau-1],Form("HighPurityDaugther%d[candSize]/O",iDau));
-        PATCompositeNtuple->Branch(Form("pTD%d",iDau),&ptDau[iDau-1],Form("pTD%d[candSize]/F",iDau));
-        PATCompositeNtuple->Branch(Form("pTerrD%d",iDau),&ptErr[iDau-1],Form("pTerrD%d[candSize]/F",iDau));
-        PATCompositeNtuple->Branch(Form("EtaD%d",iDau),&etaDau[iDau-1],Form("EtaD%d[candSize]/F",iDau));
-        PATCompositeNtuple->Branch(Form("PhiD%d",iDau),&phiDau[iDau-1],Form("PhiD%d[candSize]/F",iDau));
-        PATCompositeNtuple->Branch(Form("chargeD%d",iDau),&chargeDau[iDau-1],Form("chargeD%d[candSize]/S",iDau));
+        PATCompositeNtuple->Branch(Form("zDCASignificanceDaugther%d",iDau),dzos[iDau-1],Form("zDCASignificanceDaugther%d[candSize]/F",iDau));
+        PATCompositeNtuple->Branch(Form("xyDCASignificanceDaugther%d",iDau),dxyos[iDau-1],Form("xyDCASignificanceDaugther%d[candSize]/F",iDau));
+        PATCompositeNtuple->Branch(Form("NHitD%d",iDau),nhit[iDau-1],Form("NHitD%d[candSize]/F",iDau));
+        PATCompositeNtuple->Branch(Form("HighPurityDaugther%d",iDau),trkquality[iDau-1],Form("HighPurityDaugther%d[candSize]/O",iDau));
+        PATCompositeNtuple->Branch(Form("pTD%d",iDau),ptDau[iDau-1],Form("pTD%d[candSize]/F",iDau));
+        PATCompositeNtuple->Branch(Form("pTerrD%d",iDau),ptErr[iDau-1],Form("pTerrD%d[candSize]/F",iDau));
+        PATCompositeNtuple->Branch(Form("EtaD%d",iDau),etaDau[iDau-1],Form("EtaD%d[candSize]/F",iDau));
+        PATCompositeNtuple->Branch(Form("PhiD%d",iDau),phiDau[iDau-1],Form("PhiD%d[candSize]/F",iDau));
+        PATCompositeNtuple->Branch(Form("chargeD%d",iDau),chargeDau[iDau-1],Form("chargeD%d[candSize]/S",iDau));
         if(useDeDxData_)
         {
-          PATCompositeNtuple->Branch(Form("dedxPixelHarmonic2D%d",iDau),&T4dedx[iDau-1],Form("dedxPixelHarmonic2D%d[candSize]/F",iDau));
-          PATCompositeNtuple->Branch(Form("dedxHarmonic2D%d",iDau),&H2dedx[iDau-1],Form("dedxHarmonic2D%d[candSize]/F",iDau));
+          PATCompositeNtuple->Branch(Form("dedxPixelHarmonic2D%d",iDau),T4dedx[iDau-1],Form("dedxPixelHarmonic2D%d[candSize]/F",iDau));
+          PATCompositeNtuple->Branch(Form("dedxHarmonic2D%d",iDau),H2dedx[iDau-1],Form("dedxHarmonic2D%d[candSize]/F",iDau));
         }
       }
  
@@ -1289,37 +1293,37 @@ PATCompositeTreeProducer::initTree()
         for(ushort iDau=1; iDau<=NDAU_; iDau++)
         {
           if(fabs(PID_dau_[iDau-1])!=13) continue;
-          PATCompositeNtuple->Branch(Form("OneStMuon%d",iDau),&onestmuon[iDau-1],Form("OneStMuon%d[candSize]/O",iDau));
-          PATCompositeNtuple->Branch(Form("PFMuon%d",iDau),&pfmuon[iDau-1],Form("PFMuon%d[candSize]/O",iDau));
-          PATCompositeNtuple->Branch(Form("GlbMuon%d",iDau),&glbmuon[iDau-1],Form("GlbMuon%d[candSize]/O",iDau));
-          PATCompositeNtuple->Branch(Form("trkMuon%d",iDau),&trkmuon[iDau-1],Form("trkMuon%d[candSize]/O",iDau));
-          PATCompositeNtuple->Branch(Form("tightMuon%d",iDau),&tightmuon[iDau-1],Form("tightMuon%d[candSize]/O",iDau));
-          PATCompositeNtuple->Branch(Form("softMuon%d",iDau),&softmuon[iDau-1],Form("softMuon%d[candSize]/O",iDau));
-          PATCompositeNtuple->Branch(Form("hybridMuon%d",iDau),&hybridmuon[iDau-1],Form("hybridMuon%d[candSize]/O",iDau));
-          PATCompositeNtuple->Branch(Form("HPMuon%d",iDau),&hpmuon[iDau-1],Form("hybridMuon%d[candSize]/O",iDau));
-          PATCompositeNtuple->Branch(Form("trigMuon%d",iDau),trgmuon[iDau-1],Form("trigMuon%d[%d][candSize]/O",iDau,NTRG_));
-          PATCompositeNtuple->Branch(Form("nMatchedStationD%d",iDau),&nmatchedst[iDau-1],Form("nMatchedStationD%d[candSize]/S",iDau));
-          PATCompositeNtuple->Branch(Form("nTrackerLayerD%d",iDau),&ntrackerlayer[iDau-1],Form("nTrackerLayerD%d[candSize]/S",iDau));
-          PATCompositeNtuple->Branch(Form("nPixelLayerD%d",iDau),&npixellayer[iDau-1],Form("nPixelLayerD%d[candSize]/S",iDau));
-          PATCompositeNtuple->Branch(Form("nPixelHitD%d",iDau),&npixelhit[iDau-1],Form("nPixelHitD%d[candSize]/S",iDau));
-          PATCompositeNtuple->Branch(Form("nMuonHitD%d",iDau),&nmuonhit[iDau-1],Form("nMuonHitD%d[candSize]/S",iDau));
-          PATCompositeNtuple->Branch(Form("GlbTrkChiD%d",iDau),&glbtrkchi[iDau-1],Form("GlbTrkChiD%d[candSize]/F",iDau));
-          PATCompositeNtuple->Branch(Form("muondXYD%d",iDau),&muonbestdxy[iDau-1],Form("muondXYD%d[candSize]/F",iDau));
-          PATCompositeNtuple->Branch(Form("muondZD%d",iDau),&muonbestdz[iDau-1],Form("muondZD%d[candSize]/F",iDau));
-          PATCompositeNtuple->Branch(Form("dXYD%d",iDau),&muondxy[iDau-1],Form("dXYD%d[candSize]/F",iDau));
-          PATCompositeNtuple->Branch(Form("dZD%d",iDau),&muondz[iDau-1],Form("dZD%d[candSize]/F",iDau));
+          PATCompositeNtuple->Branch(Form("OneStMuon%d",iDau),onestmuon[iDau-1],Form("OneStMuon%d[candSize]/O",iDau));
+          PATCompositeNtuple->Branch(Form("PFMuon%d",iDau),pfmuon[iDau-1],Form("PFMuon%d[candSize]/O",iDau));
+          PATCompositeNtuple->Branch(Form("GlbMuon%d",iDau),glbmuon[iDau-1],Form("GlbMuon%d[candSize]/O",iDau));
+          PATCompositeNtuple->Branch(Form("trkMuon%d",iDau),trkmuon[iDau-1],Form("trkMuon%d[candSize]/O",iDau));
+          PATCompositeNtuple->Branch(Form("tightMuon%d",iDau),tightmuon[iDau-1],Form("tightMuon%d[candSize]/O",iDau));
+          PATCompositeNtuple->Branch(Form("softMuon%d",iDau),softmuon[iDau-1],Form("softMuon%d[candSize]/O",iDau));
+          PATCompositeNtuple->Branch(Form("hybridMuon%d",iDau),hybridmuon[iDau-1],Form("hybridMuon%d[candSize]/O",iDau));
+          PATCompositeNtuple->Branch(Form("HPMuon%d",iDau),hpmuon[iDau-1],Form("hybridMuon%d[candSize]/O",iDau));
+          PATCompositeNtuple->Branch(Form("trigMuon%d",iDau),&(trgmuon[iDau-1]));
+          PATCompositeNtuple->Branch(Form("nMatchedStationD%d",iDau),nmatchedst[iDau-1],Form("nMatchedStationD%d[candSize]/S",iDau));
+          PATCompositeNtuple->Branch(Form("nTrackerLayerD%d",iDau),ntrackerlayer[iDau-1],Form("nTrackerLayerD%d[candSize]/S",iDau));
+          PATCompositeNtuple->Branch(Form("nPixelLayerD%d",iDau),npixellayer[iDau-1],Form("nPixelLayerD%d[candSize]/S",iDau));
+          PATCompositeNtuple->Branch(Form("nPixelHitD%d",iDau),npixelhit[iDau-1],Form("nPixelHitD%d[candSize]/S",iDau));
+          PATCompositeNtuple->Branch(Form("nMuonHitD%d",iDau),nmuonhit[iDau-1],Form("nMuonHitD%d[candSize]/S",iDau));
+          PATCompositeNtuple->Branch(Form("GlbTrkChiD%d",iDau),glbtrkchi[iDau-1],Form("GlbTrkChiD%d[candSize]/F",iDau));
+          PATCompositeNtuple->Branch(Form("muondXYD%d",iDau),muonbestdxy[iDau-1],Form("muondXYD%d[candSize]/F",iDau));
+          PATCompositeNtuple->Branch(Form("muondZD%d",iDau),muonbestdz[iDau-1],Form("muondZD%d[candSize]/F",iDau));
+          PATCompositeNtuple->Branch(Form("dXYD%d",iDau),muondxy[iDau-1],Form("dXYD%d[candSize]/F",iDau));
+          PATCompositeNtuple->Branch(Form("dZD%d",iDau),muondz[iDau-1],Form("dZD%d[candSize]/F",iDau));
           if(doMuonFull_)
           {
-            PATCompositeNtuple->Branch(Form("nMatchedChamberD%d",iDau),&nmatchedch[iDau-1],Form("nMatchedChamberD%d[candSize]/S",iDau));
-            PATCompositeNtuple->Branch(Form("EnergyDepositionD%d",iDau),&matchedenergy[iDau-1],Form("EnergyDepositionD%d[candSize]/F",iDau));
-            PATCompositeNtuple->Branch(Form("dx%d_seg",iDau),        &dx_seg[iDau-1], Form("dx%d_seg[candSize]/F",iDau));
-            PATCompositeNtuple->Branch(Form("dy%d_seg",iDau),        &dy_seg[iDau-1], Form("dy%d_seg[candSize]/F",iDau));
-            PATCompositeNtuple->Branch(Form("dxSig%d_seg",iDau),     &dxSig_seg[iDau-1], Form("dxSig%d_seg[candSize]/F",iDau));
-            PATCompositeNtuple->Branch(Form("dySig%d_seg",iDau),     &dySig_seg[iDau-1], Form("dySig%d_seg[candSize]/F",iDau));
-            PATCompositeNtuple->Branch(Form("ddxdz%d_seg",iDau),     &ddxdz_seg[iDau-1], Form("ddxdz%d_seg[candSize]/F",iDau));
-            PATCompositeNtuple->Branch(Form("ddydz%d_seg",iDau),     &ddydz_seg[iDau-1], Form("ddydz%d_seg[candSize]/F",iDau));
-            PATCompositeNtuple->Branch(Form("ddxdzSig%d_seg",iDau),  &ddxdzSig_seg[iDau-1], Form("ddxdzSig%d_seg[candSize]/F",iDau));
-            PATCompositeNtuple->Branch(Form("ddydzSig%d_seg",iDau),  &ddydzSig_seg[iDau-1], Form("ddydzSig%d_seg[candSize]/F",iDau));
+            PATCompositeNtuple->Branch(Form("nMatchedChamberD%d",iDau),nmatchedch[iDau-1],Form("nMatchedChamberD%d[candSize]/S",iDau));
+            PATCompositeNtuple->Branch(Form("EnergyDepositionD%d",iDau),matchedenergy[iDau-1],Form("EnergyDepositionD%d[candSize]/F",iDau));
+            PATCompositeNtuple->Branch(Form("dx%d_seg",iDau),        dx_seg[iDau-1], Form("dx%d_seg[candSize]/F",iDau));
+            PATCompositeNtuple->Branch(Form("dy%d_seg",iDau),        dy_seg[iDau-1], Form("dy%d_seg[candSize]/F",iDau));
+            PATCompositeNtuple->Branch(Form("dxSig%d_seg",iDau),     dxSig_seg[iDau-1], Form("dxSig%d_seg[candSize]/F",iDau));
+            PATCompositeNtuple->Branch(Form("dySig%d_seg",iDau),     dySig_seg[iDau-1], Form("dySig%d_seg[candSize]/F",iDau));
+            PATCompositeNtuple->Branch(Form("ddxdz%d_seg",iDau),     ddxdz_seg[iDau-1], Form("ddxdz%d_seg[candSize]/F",iDau));
+            PATCompositeNtuple->Branch(Form("ddydz%d_seg",iDau),     ddydz_seg[iDau-1], Form("ddydz%d_seg[candSize]/F",iDau));
+            PATCompositeNtuple->Branch(Form("ddxdzSig%d_seg",iDau),  ddxdzSig_seg[iDau-1], Form("ddxdzSig%d_seg[candSize]/F",iDau));
+            PATCompositeNtuple->Branch(Form("ddydzSig%d_seg",iDau),  ddydzSig_seg[iDau-1], Form("ddydzSig%d_seg[candSize]/F",iDau));
           }
         }
       }
@@ -1330,22 +1334,22 @@ PATCompositeTreeProducer::initTree()
   {
     PATCompositeNtuple->Branch("weight_gen",&weight_gen,"weight_gen/F");
     PATCompositeNtuple->Branch("candSize_gen",&candSize_gen,"candSize_gen/I");
-    PATCompositeNtuple->Branch("pT_gen",&pt_gen,"pT_gen[candSize_gen]/F");
-    PATCompositeNtuple->Branch("eta_gen",&eta_gen,"eta_gen[candSize_gen]/F");
-    PATCompositeNtuple->Branch("y_gen",&y_gen,"y_gen[candSize_gen]/F");
-    PATCompositeNtuple->Branch("status_gen",&status_gen,"status_gen[candSize_gen]/I");
-    PATCompositeNtuple->Branch("MotherID_gen",&idmom,"MotherID_gen[candSize_gen]/I");
+    PATCompositeNtuple->Branch("pT_gen",pt_gen,"pT_gen[candSize_gen]/F");
+    PATCompositeNtuple->Branch("eta_gen",eta_gen,"eta_gen[candSize_gen]/F");
+    PATCompositeNtuple->Branch("y_gen",y_gen,"y_gen[candSize_gen]/F");
+    PATCompositeNtuple->Branch("status_gen",status_gen,"status_gen[candSize_gen]/I");
+    PATCompositeNtuple->Branch("MotherID_gen",idmom,"MotherID_gen[candSize_gen]/I");
 
     if(decayInGen_)
     {
       for(ushort iDau=0; iDau<NDAU_; iDau++)
       {
-        PATCompositeNtuple->Branch(Form("DauID%d_gen",iDau),&iddau[iDau],Form("DauID%d_gen[candSize_gen]/I",iDau));
-        PATCompositeNtuple->Branch(Form("chargeD%d_gen",iDau),&chargedau[iDau],Form("chargeD%d_gen[candSize_gen]/I",iDau));
-        PATCompositeNtuple->Branch(Form("pTD%d_gen",iDau),&ptdau[iDau],Form("pTD%d_gen[candSize_gen]/F",iDau));
-        PATCompositeNtuple->Branch(Form("EtaD%d_gen",iDau),&etadau[iDau],Form("EtaD%d_gen[candSize_gen]/F",iDau));
-        PATCompositeNtuple->Branch(Form("PhiD%d_gen",iDau),&phidau[iDau],Form("PhiD%d_gen[candSize_gen]/F",iDau));
-        PATCompositeNtuple->Branch(Form("massDaugther%d_gen",iDau),&massdau[iDau],Form("massDaugther%d_gen[candSize_gen]/F",iDau));
+        PATCompositeNtuple->Branch(Form("DauID%d_gen",iDau),iddau[iDau],Form("DauID%d_gen[candSize_gen]/I",iDau));
+        PATCompositeNtuple->Branch(Form("chargeD%d_gen",iDau),chargedau[iDau],Form("chargeD%d_gen[candSize_gen]/I",iDau));
+        PATCompositeNtuple->Branch(Form("pTD%d_gen",iDau),ptdau[iDau],Form("pTD%d_gen[candSize_gen]/F",iDau));
+        PATCompositeNtuple->Branch(Form("EtaD%d_gen",iDau),etadau[iDau],Form("EtaD%d_gen[candSize_gen]/F",iDau));
+        PATCompositeNtuple->Branch(Form("PhiD%d_gen",iDau),phidau[iDau],Form("PhiD%d_gen[candSize_gen]/F",iDau));
+        PATCompositeNtuple->Branch(Form("massDaugther%d_gen",iDau),massdau[iDau],Form("massDaugther%d_gen[candSize_gen]/F",iDau));
       }
     }
   }
@@ -1367,7 +1371,7 @@ PATCompositeTreeProducer::beginRun(const edm::Run& iRun, const edm::EventSetup& 
 //loop  ------------
 void 
 PATCompositeTreeProducer::endJob()
-{    
+{
 }
 
 reco::GenParticleRef

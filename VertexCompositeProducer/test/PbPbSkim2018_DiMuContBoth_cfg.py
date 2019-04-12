@@ -102,13 +102,13 @@ process.load('VertexCompositeAnalysis.VertexCompositeProducer.collisionEventSele
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.clusterCompatibilityFilter_cfi')
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.hfCoincFilter_cff')
 process.load("RecoVertex.PrimaryVertexProducer.OfflinePrimaryVerticesRecovery_cfi")
-process.colEvtSel = cms.Sequence(process.offlinePrimaryVerticesRecovery * process.hfCoincFilter2Th4 * process.primaryVertexFilter * process.clusterCompatibilityFilter)
+process.colEvtSel = cms.Sequence(process.hfCoincFilter2Th4 * process.primaryVertexFilter * process.clusterCompatibilityFilter)
 
 # Define the event selection sequence
 process.eventFilter_HM = cms.Sequence(
     process.hltFilter *
     process.dimuonEvtSel *
-    process.colEvtSel
+    process.offlinePrimaryVerticesRecovery
 )
 process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 
@@ -136,10 +136,10 @@ process.schedule = cms.Schedule(
 )
 
 # Add the event selection filters
-process.Flag_colEvtSel = cms.Path(process.colEvtSel)
-process.Flag_hfCoincFilter2Th4 = cms.Path(process.hfCoincFilter2Th4)
-process.Flag_primaryVertexFilter = cms.Path(process.primaryVertexFilter)
-process.Flag_clusterCompatibilityFilter = cms.Path(process.clusterCompatibilityFilter)
+process.Flag_colEvtSel = cms.Path(process.eventFilter_HM * process.colEvtSel)
+process.Flag_hfCoincFilter2Th4 = cms.Path(process.eventFilter_HM * process.hfCoincFilter2Th4)
+process.Flag_primaryVertexFilter = cms.Path(process.eventFilter_HM * process.primaryVertexFilter)
+process.Flag_clusterCompatibilityFilter = cms.Path(process.eventFilter_HM * process.clusterCompatibilityFilter)
 eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter2Th4 , process.Flag_primaryVertexFilter , process.Flag_clusterCompatibilityFilter ]
 for P in eventFilterPaths:
     process.schedule.insert(0, P)

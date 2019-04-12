@@ -75,7 +75,6 @@ void DiMuFitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   typedef ROOT::Math::SVector<double, 3> SVector3;
 
   const double& dauMass = muonMass;
-  const double& dauMassSquared = dauMass * dauMass;
   float dauMass_sigma = dauMass * 1.e-6;
 
   // Handles for tracks, B-field, and tracker geometry
@@ -146,15 +145,14 @@ void DiMuFitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     const reco::TrackRef& trackRef1 = cand1.track();
     const reco::TransientTrack tmpTk1( *trackRef1, magField );
 
-    for( uint fc = ic+1; fc < muonColl.size(); fc++ ) {
+    for(uint fc = ic+1; fc < muonColl.size(); fc++) {
 
        const pat::Muon& cand2 = muonColl[fc];
 
-       const double& totalE = std::sqrt( cand1.p() + dauMassSquared ) + std::sqrt( cand2.p() + dauMassSquared );
-       const double& totalESq = totalE*totalE;
-       const double& totalPSq = ( cand1.momentum() + cand2.momentum() ).mag2();
-       const double& mass = std::sqrt( totalESq - totalPSq);
-       if( (mass > mllCutMax || mass < mllCutMin) && (mass > mllCutMax || mass < mllCutMin)) continue;
+       auto cand1P4 = cand1.polarP4(); cand1P4.SetM(dauMass);
+       auto cand2P4 = cand2.polarP4(); cand2P4.SetM(dauMass);
+       const double& mass = (cand1P4 + cand2P4).mass();
+       if(mass > mllCutMax || mass < mllCutMin) continue;
 
        const reco::TrackRef& trackRef2 = cand2.track();
        const reco::TransientTrack tmpTk2( *trackRef2, magField );
@@ -177,7 +175,7 @@ void DiMuFitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        if( !cApp.status() ) continue;
 
        const double& dca = fabs( cApp.distance() );
-       if (dca < 0. || dca > tkDCACut) continue;
+       if (dca > tkDCACut) continue;
        const GlobalPoint& cxPt = cApp.crossingPoint();
 
        // Get trajectory states for the tracks at POCA for later cuts
@@ -211,16 +209,11 @@ void DiMuFitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        const double& DiMuNormalizedChi2 = DiMuVtxChi2/DiMuVtxNdof;
        if(DiMuNormalizedChi2 > chi2Cut) continue;
 
-       const auto candMom = posCand.momentum() + negCand.momentum();
-       const GlobalVector& DiMuTotalP    = GlobalVector(candMom.x(), candMom.y(), candMom.z());
-       const GlobalVector& posCandTotalP = GlobalVector(posCand.momentum().x(), posCand.momentum().y(),posCand.momentum().z());
-       const GlobalVector& negCandTotalP = GlobalVector(negCand.momentum().x(), negCand.momentum().y(),negCand.momentum().z());
-
-       const float posCandTotalE = std::sqrt( posCandTotalP.mag2() + dauMassSquared );
-       const float negCandTotalE = std::sqrt( negCandTotalP.mag2() + dauMassSquared );
-       const float DiMuTotalE = posCandTotalE + negCandTotalE;
-
-       const reco::Particle::LorentzVector DiMuP4(DiMuTotalP.x(), DiMuTotalP.y(), DiMuTotalP.z(), DiMuTotalE);
+       const auto& candP = posCand.momentum() + negCand.momentum();
+       const auto& DiMuTotalP = GlobalVector(candP.x(), candP.y(), candP.z());
+       auto posCandP4 = posCand.polarP4(); posCandP4.SetM(dauMass);
+       auto negCandP4 = negCand.polarP4(); negCandP4.SetM(dauMass);
+       const auto& DiMuP4 = posCandP4 + negCandP4;
 
        const reco::Particle::Point DiMuVtx(DiMuDecayVertex->position().x(), DiMuDecayVertex->position().y(), DiMuDecayVertex->position().z());
        std::vector<double> DiMuVtxEVec;
@@ -249,7 +242,7 @@ void DiMuFitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
        const double& sigmaLvtxMag = std::sqrt(ROOT::Math::Similarity(DiMuTotalCov, distanceVector3D)) / lVtxMag;
        const double& sigmaRvtxMag = std::sqrt(ROOT::Math::Similarity(DiMuTotalCov, distanceVector2D)) / rVtxMag;
-       if ((rVtxMag / sigmaRvtxMag < rVtxSigCut) || (lVtxMag / sigmaLvtxMag < lVtxSigCut)) continue;
+       if ( ((rVtxMag/sigmaRvtxMag) < rVtxSigCut) || ((lVtxMag/sigmaLvtxMag) < lVtxSigCut) ) continue;
 
        const TVector3 svpvVec(DiMuVtx.x() - xVtx, DiMuVtx.y() - yVtx, DiMuVtx.z() - zVtx);
        const TVector3 dVec(DiMuTotalP.x(), DiMuTotalP.y(), DiMuTotalP.z());

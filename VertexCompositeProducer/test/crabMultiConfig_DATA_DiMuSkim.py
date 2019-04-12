@@ -28,7 +28,7 @@ config.JobType.allowUndistributedCMSSW = True
 config.section_('Site')
 config.Data.ignoreLocality = True
 config.Site.whitelist = ['T1_US_*','T2_US_*','T2_CH_CERN','T2_BE_IIHE']
-config.Site.storageSite = 'T2_FR_GRIF_LLR'
+config.Site.storageSite = 'T2_CH_CERN'
 
 def submit(config):
     try:
@@ -43,20 +43,20 @@ def submit(config):
 #############################################################################################
 
 dataMap = {
-            "HIDoubleMuon_v1": { "PD": "/HIDoubleMuon/HIRun2018A-PromptReco-v1/AOD", "Units": 5, "Memory": 2400, "RunTime": 720 },
-            "HIDoubleMuon_v2": { "PD": "/HIDoubleMuon/HIRun2018A-PromptReco-v2/AOD", "Units": 7, "Memory": 2400, "RunTime": 720 },
-            "HISingleMuon_v1": { "PD": "/HISingleMuon/HIRun2018A-PromptReco-v1/AOD", "Units": 5, "Memory": 2400, "RunTime": 720 },
-            "HISingleMuon_v2": { "PD": "/HISingleMuon/HIRun2018A-PromptReco-v2/AOD", "Units": 7, "Memory": 2400, "RunTime": 720 },
-            "HIDoubleMuonPsiPeri_v2": { "PD": "/HIDoubleMuonPsiPeri/HIRun2018A-PromptReco-v2/AOD", "Units": 7, "Memory": 2400, "RunTime": 720 }
+            "HIDoubleMuon_v1": { "PD": "/HIDoubleMuon/HIRun2018A-PromptReco-v1/AOD", "Units": 5, "Memory": 2400, "RunTime": 820 },
+            "HIDoubleMuon_v2": { "PD": "/HIDoubleMuon/HIRun2018A-PromptReco-v2/AOD", "Units": 7, "Memory": 2600, "RunTime": 450 },
+            "HISingleMuon_v1": { "PD": "/HISingleMuon/HIRun2018A-PromptReco-v1/AOD", "Units": 5, "Memory": 2400, "RunTime": 820 },
+            "HISingleMuon_v2": { "PD": "/HISingleMuon/HIRun2018A-PromptReco-v2/AOD", "Units": 7, "Memory": 2400, "RunTime": 450 },
+            "HIDoubleMuonPsiPeri_v2": { "PD": "/HIDoubleMuonPsiPeri/HIRun2018A-PromptReco-v2/AOD", "Units": 7, "Memory": 2400, "RunTime": 580 }
             }
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeSkim_'+key+'_HIRun2018_DiMuMassMin7_20190407'
+    config.General.requestName = 'VertexCompositeSkim_'+key+'_HIRun2018_DiMuMassMin7_20190411'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]
     config.JobType.maxJobRuntimeMin = val["RunTime"]
     config.Data.outputDatasetTag = config.General.requestName
-    config.Data.outLFNDirBase = '/store/user/%s/RiceHIN/PbPb2018/SKIM/%s' % (getUsernameFromSiteDB(), config.General.requestName)
+    config.Data.outLFNDirBase = '/store/group/phys_heavyions/%s/RiceHIN/PbPb2018/SKIM/%s' % (getUsernameFromSiteDB(), config.General.requestName)
     submit(config)

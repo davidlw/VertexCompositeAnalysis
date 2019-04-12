@@ -17,7 +17,7 @@ process.source = cms.Source("PoolSource",
    fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/hidata/HIRun2018A/HIDoubleMuon/AOD/PromptReco-v2/000/327/148/00000/37F475FE-F3F1-0749-8455-C9DB3177598B.root'),
    inputCommands=cms.untracked.vstring('keep *', 'drop *_hiEvtPlane_*_*')
 )
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(200))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
 # Set the global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
@@ -115,43 +115,22 @@ process.load('VertexCompositeAnalysis.VertexCompositeProducer.collisionEventSele
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.clusterCompatibilityFilter_cfi')
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.hfCoincFilter_cff')
 process.load("RecoVertex.PrimaryVertexProducer.OfflinePrimaryVerticesRecovery_cfi")
-process.colEvtSel = cms.Sequence(process.offlinePrimaryVerticesRecovery * process.hfCoincFilter2Th4 * process.primaryVertexFilter * process.clusterCompatibilityFilter)
+process.colEvtSel = cms.Sequence(process.hfCoincFilter2Th4 * process.primaryVertexFilter * process.clusterCompatibilityFilter)
 
 # Define the event selection sequence
 process.eventFilter_HM = cms.Sequence(
     process.hltFilter *
     process.dimuonEvtSel *
-    process.colEvtSel
+    process.offlinePrimaryVerticesRecovery
 )
 process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
-
-#-----------------------------------------
-# CMSSW/Hcal Related Module import
-#-----------------------------------------
-process.load("EventFilter.HcalRawToDigi.HcalRawToDigi_cfi")
-
-#set digi and analyzer
-rawTag = ''
-process.hcalDigis.InputLabel = rawTag
-
-if rawTag == '':
-    process.digis = cms.Sequence()
-else:
-    process.digis = cms.Sequence(process.hcalDigis)
 
 # ZDC info
 process.load('QWAna.QWZDC2018RecHit.QWZDC2018Producer_cfi')
 process.load('QWAna.QWZDC2018RecHit.QWZDC2018RecHit_cfi')
 
-process.zdc_step = cms.Path(
-    process.eventFilter_HM *
-    process.digis *
-    process.zdcdigi *
-    process.QWzdcreco
-)
-
 # Define the analysis steps
-process.pcentandep_step = cms.Path(process.eventFilter_HM * process.cent_seq * process.evtplane_seq)
+process.pcentandep_step = cms.Path(process.eventFilter_HM * process.zdcdigi * process.QWzdcreco * process.cent_seq * process.evtplane_seq)
 process.dimurereco_step = cms.Path(process.eventFilter_HM * process.patMuonSequence * process.generalMuMuMassMin7Candidates)
 process.dimurerecowrongsign_step = cms.Path(process.eventFilter_HM * process.patMuonSequence * process.generalMuMuMassMin7CandidatesWrongSign)
 
@@ -167,7 +146,6 @@ process.output_HM_step = cms.EndPath(process.output_HM)
 # Define the process schedule
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
-    process.zdc_step,
     process.pcentandep_step,
     process.dimurereco_step,
     process.dimurerecowrongsign_step,
@@ -175,10 +153,10 @@ process.schedule = cms.Schedule(
 )
 
 # Add the event selection filters
-process.Flag_colEvtSel = cms.Path(process.colEvtSel)
-process.Flag_hfCoincFilter2Th4 = cms.Path(process.hfCoincFilter2Th4)
-process.Flag_primaryVertexFilter = cms.Path(process.primaryVertexFilter)
-process.Flag_clusterCompatibilityFilter = cms.Path(process.clusterCompatibilityFilter)
+process.Flag_colEvtSel = cms.Path(process.eventFilter_HM * process.colEvtSel)
+process.Flag_hfCoincFilter2Th4 = cms.Path(process.eventFilter_HM * process.hfCoincFilter2Th4)
+process.Flag_primaryVertexFilter = cms.Path(process.eventFilter_HM * process.primaryVertexFilter)
+process.Flag_clusterCompatibilityFilter = cms.Path(process.eventFilter_HM * process.clusterCompatibilityFilter)
 eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter2Th4 , process.Flag_primaryVertexFilter , process.Flag_clusterCompatibilityFilter ]
 for P in eventFilterPaths:
     process.schedule.insert(0, P)

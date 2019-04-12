@@ -8,22 +8,22 @@ generalDiMuCandidates = cms.EDProducer("DiMuProducer",
 
     # Muon selection
     muonSelection = cms.string(""),
-    tkdXYCut = cms.double(9999.), #|dXY| <
-    tkdZCut = cms.double(9999.), #|dZ| <
+    tkdXYCut = cms.double(99999.), #|dXY| <
+    tkdZCut = cms.double(99999.), #|dZ| <
 
     # Track impact parameter significance >
-    dauTransImpactSigCut = cms.double(0.),
-    dauLongImpactSigCut = cms.double(0.),
+    dauTransImpactSigCut = cms.double(0.0),
+    dauLongImpactSigCut = cms.double(0.0),
 
     mllCutMin = cms.double(0.0),
     mllCutMax = cms.double(10000.0),
 
     # PCA distance between tracks <
-    tkDCACut = cms.double(9999.),
-    vtxChi2Cut = cms.double(9999.0), #vtxChi2 <
-    VtxChiProbCut = cms.double(0.0000001), #vtx prob >
+    tkDCACut = cms.double(99999.),
+    vtxChi2Cut = cms.double(99999.), #vtxChi2 <
+    VtxChiProbCut = cms.double(0.0), #vtx prob >
     collinearityCut = cms.double(-2.0), #cos(pointAngle) >
-    alphaCut = cms.double(999.0), #pointAngle <
+    alphaCut = cms.double(99999.), #pointAngle <
     rVtxCut = cms.double(0.0),
     lVtxCut = cms.double(0.0),
     vtxSignificance2DCut = cms.double(0.0),
