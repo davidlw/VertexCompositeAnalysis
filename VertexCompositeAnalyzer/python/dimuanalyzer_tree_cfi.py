@@ -58,7 +58,7 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
   centralityBinLabel = cms.InputTag("centralityBin", "HFtowers"),
   centralitySrc = cms.InputTag("hiCentrality"),
 
-  isEventPlane = cms.bool(False),
+  isEventPlane = cms.bool(True),
   eventplaneSrc = cms.InputTag("hiEvtPlaneFlat"),
 
   saveTree = cms.untracked.bool(True),
