@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-# Coincidence of HF towers above threshold
-from VertexCompositeAnalysis.VertexCompositeProducer.hfCoincFilter_cff import *
+#Reject events with pile-up, optionally
+from VertexCompositeAnalysis.VertexCompositeProducer.pileUpFilter_cff import *
 
 # Selection of at least a two-track fitted vertex
 primaryVertexFilter = cms.EDFilter("VertexSelector",
@@ -10,39 +10,18 @@ primaryVertexFilter = cms.EDFilter("VertexSelector",
     filter = cms.bool(True), # otherwise it won't filter the events
 )
 
-beamScrapingFilter = cms.EDFilter("FilterOutScraping",
-    applyfilter = cms.untracked.bool(True),
-    debugOn = cms.untracked.bool(False),
-    numtrack = cms.untracked.uint32(10),
-    thresh = cms.untracked.double(0.25)
+#Reject beam scraping events standard pp and pA configuration
+NoScraping = cms.EDFilter("FilterOutScraping",
+ applyfilter = cms.untracked.bool(True),
+ debugOn = cms.untracked.bool(False),
+ numtrack = cms.untracked.uint32(10),
+ thresh = cms.untracked.double(0.25)
 )
 
-# Cluster-shape filter re-run offline
-from RecoLocalTracker.SiPixelRecHits.SiPixelRecHits_cfi import *
-from HLTrigger.special.hltPixelClusterShapeFilter_cfi import *
-hltPixelClusterShapeFilter.inputTag = "siPixelRecHits"
+collisionEventSelection = cms.Sequence(primaryVertexFilter *
+                                       NoScraping
+                                      )
 
-# Cluster-shape filter re-run offline from ClusterCompatibility object
-from VertexCompositeAnalysis.VertexCompositeProducer.clusterCompatibilityFilter_cfi import *
+collisionEventSelection_rejectPU = cms.Sequence(collisionEventSelection *
+                                                olvFilter_pPb8TeV_dz1p0)
 
-collisionEventSelection = cms.Sequence(
-    hfCoincFilter3Th3 *
-    primaryVertexFilter *
-    siPixelRecHits *
-    hltPixelClusterShapeFilter)
-
-collisionEventSelectionAOD = cms.Sequence(
-    hfCoincFilter3Th3 *
-    primaryVertexFilter *
-    clusterCompatibilityFilter)
-
-collisionEventSelectionV2 = cms.Sequence(
-    hfCoincFilter2Th4 *
-    primaryVertexFilter *
-    siPixelRecHits *
-    hltPixelClusterShapeFilter)
-
-collisionEventSelectionAODv2 = cms.Sequence(
-    hfCoincFilter2Th4 *
-    primaryVertexFilter *
-    clusterCompatibilityFilter)

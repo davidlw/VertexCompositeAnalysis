@@ -13,7 +13,8 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
   #PID used only for GEN and/or GEN match
   PID = cms.untracked.int32(443),
   PID_dau = cms.untracked.vint32(13, 13),
-  VertexCollection = cms.untracked.InputTag("offlinePrimaryVerticesRecovery"),
+  beamSpotSrc = cms.untracked.InputTag("offlineBeamSpot"),
+  VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices"),
   VertexCompositeCollection = cms.untracked.InputTag("generalMuMuCandidatese:DiMu"),
   GenParticleCollection = cms.untracked.InputTag("genParticles"),
   doMuon = cms.untracked.bool(True),
@@ -22,38 +23,32 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
   #Trigger info
   TriggerResultCollection = cms.untracked.InputTag("TriggerResults::HLT"),
   triggerPathNames = cms.untracked.vstring(
-      'HLT_HIL1DoubleMuOpen_OS_Centrality_40_100_v1', # Peripheral OS dimuons
-      'HLT_HIL1DoubleMuOpen_Centrality_50_100_v1', # Peripheral dimuons
-      'HLT_HIL3Mu2p5NHitQ10_L2Mu2_M7toinf_v1', # Bottomonia
-      'HLT_HIL1DoubleMu10_v1', # Z bosons
+      #  Double muon triggers
+      'HLT_HIL1DoubleMu0_v', # Dimuons
       # Single muon triggers
-      'HLT_HIL1MuOpen_Centrality_80_100_v1', # Peripheral muons
-      'HLT_HIL3Mu12_v1', # Electroweak bosons
+      'HLT_HIL3Mu12_v', # Electroweak boson
   ),
   triggerFilterNames = cms.untracked.vstring(
-      'hltL1fL1sL1DoubleMuOpenOSCentrality40100L1Filtered0',
-      'hltL1fL1sL1DoubleMuOpenCentrality50100L1Filtered0',
-      'hltL3f0L3Mu2p5NHitQ10L2Mu2FilteredM7toinf',
-      'hltL1fL1sL1DoubleMu10L1Filtered0',
-      'hltL1fL1sL1MuOpenCentrality80100L1Filtered0',
-      'hltL3fL1sL1SingleMu*OpenL1f*L2f0L3Filtered12'
+      'hltL1fL1sDoubleMu0L1Filtered0',
+      'hltL3fL1sSingleMu7L1f0L2f0L3Filtered12',
   ),
 
   #Filter info
   FilterResultCollection = cms.untracked.InputTag("TriggerResults::ANASKIM"),
   eventFilterNames = cms.untracked.vstring(
       'Flag_colEvtSel',
-      'Flag_hfCoincFilter2Th4',
       'Flag_primaryVertexFilter',
-      'Flag_clusterCompatibilityFilter'
+      'Flag_NoScraping',
+      'Flag_pileupVertexFilterCut'
+      'Flag_pileupVertexFilterCutGplus'
   ),
 
   isCentrality = cms.bool(True),
-  centralityBinLabel = cms.InputTag("centralityBin","HFtowers"),
-  centralitySrc = cms.InputTag("hiCentrality"),
+  centralityBinLabel = cms.InputTag("",""),
+  centralitySrc = cms.InputTag("pACentrality"),
 
-  isEventPlane = cms.bool(True),
-  eventplaneSrc = cms.InputTag("hiEvtPlaneFlat"),
+  isEventPlane = cms.bool(False),
+  eventplaneSrc = cms.InputTag(""),
 
   saveTree = cms.untracked.bool(True),
   saveHistogram = cms.untracked.bool(False),
