@@ -11,7 +11,7 @@ dimucontana_mc = dimuana_mc.clone(
     massHistPeak = cms.untracked.double(67.),
     massHistWidth = cms.untracked.double(60.),
     VertexCompositeCollection = cms.untracked.InputTag("generalMuMuMassMin7Candidates:DiMu")
-) 
+)
 
 dimucontana_wrongsign = dimuana.clone(
     massHistPeak = cms.untracked.double(67.),
