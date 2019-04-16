@@ -40,16 +40,16 @@ def submit(config):
 #############################################################################################
 
 dataMap = {
-            "HIDoubleMuon_v1": { "PD": "/HIDoubleMuon/anstahll-VertexCompositeSkim_HIDoubleMuon_v1_HIRun2018_DiMuMassMin7_20190407-8dffbb2a8af2f5459b9d5372c4d663d4/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
-            "HIDoubleMuon_v2": { "PD": "/HIDoubleMuon/anstahll-VertexCompositeSkim_HIDoubleMuon_v2_HIRun2018_DiMuMassMin7_20190407-55d361e3d9d962f43df350573521e4b8/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
-            "HISingleMuon_v1": { "PD": "/HISingleMuon/anstahll-VertexCompositeSkim_HISingleMuon_v1_HIRun2018_DiMuMassMin7_20190407-45a176356f19ad0a998bb56b3d7a9378/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
-            "HISingleMuon_v2": { "PD": "/HISingleMuon/anstahll-VertexCompositeSkim_HISingleMuon_v2_HIRun2018_DiMuMassMin7_20190407-36e20e421e0bb52590a9be90ae1d4a55/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
-            "HIDoubleMuonPsiPeri_v2": { "PD": "/HIDoubleMuonPsiPeri/anstahll-VertexCompositeSkim_HIDoubleMuonPsiPeri_v2_HIRun2018_DiMuMassMin7_20190407-be05d5a642b598e2fcfa6d8a82ace42d/USER", "Units": 10, "Memory": 2400, "RunTime": 720 }
+            "HIDoubleMuon_v1": { "PD": "/HIDoubleMuon/anstahll-VertexCompositeSkim_HIDoubleMuon_v1_HIRun2018_DiMuMassMin7_20190412-8814e9757927b70b7a2a41b8684a900d/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
+            "HIDoubleMuon_v2": { "PD": "/HIDoubleMuon/anstahll-VertexCompositeSkim_HIDoubleMuon_v2_HIRun2018_DiMuMassMin7_20190412-4d5a32383ad642c1b3ccbb603818f94f/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
+            "HISingleMuon_v1": { "PD": "/HISingleMuon/anstahll-VertexCompositeSkim_HISingleMuon_v1_HIRun2018_DiMuMassMin7_20190412-7e2b6ec6e8df433328b3d7f08ea622ec/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
+            "HISingleMuon_v2": { "PD": "/HISingleMuon/anstahll-VertexCompositeSkim_HISingleMuon_v2_HIRun2018_DiMuMassMin7_20190412-5057dee7bdc499f8cfd24e062bbe1180/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
+            "HIDoubleMuonPsiPeri_v2": { "PD": "/HIDoubleMuonPsiPeri/anstahll-VertexCompositeSkim_HIDoubleMuonPsiPeri_v2_HIRun2018_DiMuMassMin7_20190412-b9b00062ed0736801c215e5f3b5ec90c/USER", "Units": 10, "Memory": 2400, "RunTime": 720 }
             }
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeTree_'+key+'_HIRun2018_DiMuMassMin7_20190410'
+    config.General.requestName = 'VertexCompositeTree_'+key+'_HIRun2018_DiMuMassMin7_20190414'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]

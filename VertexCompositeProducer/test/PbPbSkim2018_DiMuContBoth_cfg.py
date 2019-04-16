@@ -68,6 +68,7 @@ from VertexCompositeAnalysis.VertexCompositeProducer.PATAlgos_cff import doPATMu
 doPATMuons(process, False)
 
 # Add muon event selection
+process.twoMuons = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("muons"), minNumber = cms.uint32(2))
 process.goodMuon = cms.EDFilter("MuonSelector",
             src = cms.InputTag("muons"),
             cut = process.generalMuMuMassMin7Candidates.muonSelection,
@@ -79,7 +80,7 @@ process.goodDimuon = cms.EDProducer("CandViewShallowCloneCombiner",
             decay = cms.string('goodMuon@+ goodMuon@-')
             )
 process.oneGoodDimuon = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("goodDimuon"), minNumber = cms.uint32(1))
-process.dimuonEvtSel = cms.Sequence(process.goodMuon * process.twoGoodMuons * process.goodDimuon * process.oneGoodDimuon)
+process.dimuonEvtSel = cms.Sequence(process.twoMuons * process.goodMuon * process.twoGoodMuons * process.goodDimuon * process.oneGoodDimuon)
 
 # Add trigger selection
 import HLTrigger.HLTfilters.hltHighLevel_cfi
