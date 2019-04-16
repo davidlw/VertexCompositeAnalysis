@@ -14,13 +14,13 @@ config.General.transferLogs = False
 
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'ppSkim2016_DiMuContBoth_cfg.py'
+config.JobType.psetName = 'ppRefSkim2016_DiMuContBoth_cfg.py'
 
 config.section_('Data')
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'LumiBased'
-config.Data.lumiMask = 'Cert_285479-286496_HI8TeV_PromptReco_pPb_Pbp_Collisions16_JSON_NoL1T_MuonPhys.txt'
-config.Data.runRange = '285479-286496'
+config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/5TeV/ReReco/Cert_306546-306826_5TeV_EOY2017ReReco_Collisions17_JSON_MuonPhys.txt'
+config.Data.runRange = '306546-306826'
 config.Data.publication = True
 config.JobType.allowUndistributedCMSSW = True
 
@@ -45,11 +45,6 @@ dataMap = {
             "SingleMuon": { "PD": "/SingleMuon/Run2017G-17Nov2017-v1/AOD", "Units": 7, "Memory": 2400, "RunTime": 620 },
             "DoubleMuon": { "PD": "/DoubleMuon/Run2017G-17Nov2017-v1/AOD", "Units": 7, "Memory": 2500, "RunTime": 820 }
           }
-for i in range(1,11):
-    dataMap[("MinimumBias"+str(i))] = { "PD": ("/ParkingL1MinimumBias"+str(i)+"/Run2017G-17Nov2017-v1/AOD"), "Units": 9, "Memory": 2500, "RunTime": 720 }
-
-#for i in range(1,13):
-#    dataMap[("ZeroBias"+str(i))] = { "PD": ("/HIZeroBias"+str(i)+"/Run2017G-17Nov2017-v1/AOD"), "Units": 7, "Memory": 2500, "RunTime": 820 }
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
