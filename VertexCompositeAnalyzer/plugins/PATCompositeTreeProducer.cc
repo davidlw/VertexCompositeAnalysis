@@ -35,6 +35,7 @@
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
+#include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/RecoCandidate/interface/RecoCandidate.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
@@ -299,7 +300,8 @@ private:
   bool isEventPlane_;
   bool useDeDxData_;
 
-  //tokens
+  //token
+  edm::EDGetTokenT<reco::BeamSpot> tok_offlineBS_;
   edm::EDGetTokenT<reco::VertexCollection> tok_offlinePV_;
   edm::EDGetTokenT<pat::CompositeCandidateCollection> patCompositeCandidateCollection_Token_;
   edm::EDGetTokenT<MVACollection> MVAValues_Token_;
@@ -377,6 +379,7 @@ PATCompositeTreeProducer::PATCompositeTreeProducer(const edm::ParameterSet& iCon
   yBins_  = iConfig.getUntrackedParameter<std::vector<double> >("yBins");
 
   //input tokens
+  tok_offlineBS_ = consumes<reco::BeamSpot>(iConfig.getUntrackedParameter<edm::InputTag>("beamSpotSrc"));
   tok_offlinePV_ = consumes<reco::VertexCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCollection"));
   MVAValues_Token_ = consumes<MVACollection>(iConfig.getParameter<edm::InputTag>("MVACollection"));
   tok_genParticle_ = consumes<reco::GenParticleCollection>(edm::InputTag(iConfig.getUntrackedParameter<edm::InputTag>("GenParticleCollection")));
@@ -437,24 +440,25 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
   // Check inputs
   if((!threeProngDecay_ && NDAU_!=2) || (threeProngDecay_ && NDAU_!=3))
   {
-    edm::LogError("PATCompositeAnalyzer") << "Want threeProngDecay but PID daughter vector size is: " << NDAU_ << " !" << std::endl;
-    return;
+    throw cms::Exception("PATCompositeAnalyzer") << "Want threeProngDecay but PID daughter vector size is: " << NDAU_ << " !" << std::endl;
   }
 
-  //get collections
+  //get collection
+  edm::Handle<reco::BeamSpot> beamspot;
+  iEvent.getByToken(tok_offlineBS_, beamspot);
   edm::Handle<reco::VertexCollection> vertices;
   iEvent.getByToken(tok_offlinePV_, vertices);
-  if(!vertices.isValid()) { edm::LogError("PATCompositeAnalyzer") << "Primary vertices  collection not found!" << std::endl; return; }
+  if(!vertices.isValid()) { throw cms::Exception("PATCompositeAnalyzer") << "Primary vertices  collection not found!" << std::endl; }
 
   edm::Handle<pat::CompositeCandidateCollection> v0candidates;
   iEvent.getByToken(patCompositeCandidateCollection_Token_, v0candidates);
-  if(!v0candidates.isValid()) { edm::LogError("PATCompositeAnalyzer") << "V0 candidate collection not found!" << std::endl; return; }
+  if(!v0candidates.isValid()) { throw cms::Exception("PATCompositeAnalyzer") << "V0 candidate collection not found!" << std::endl; }
 
   edm::Handle<MVACollection> mvavalues;
   if(useAnyMVA_)
   {
     iEvent.getByToken(MVAValues_Token_, mvavalues);
-    if(!mvavalues.isValid()) { edm::LogError("PATCompositeAnalyzer") << "MVA collection not found!" << std::endl; return; }
+    if(!mvavalues.isValid()) { throw cms::Exception("PATCompositeAnalyzer") << "MVA collection not found!" << std::endl; }
     assert( (*mvavalues).size() == v0candidates->size() );
   }
 
@@ -540,38 +544,33 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
   {
     edm::Handle<reco::EvtPlaneCollection> eventplanes;
     iEvent.getByToken(tok_eventplaneSrc_, eventplanes);
-    if(!eventplanes.isValid()) { edm::LogError("PATCompositeAnalyzer") << "Event plane collection not valid!" << std::endl; return; }
 
-    const reco::EvtPlane& ephfp1 = (*eventplanes)[0];
-    const reco::EvtPlane& ephfm1 = (*eventplanes)[1];
-    const reco::EvtPlane& ephfp2 = (*eventplanes)[6];
-    const reco::EvtPlane& ephfm2 = (*eventplanes)[7];
-    const reco::EvtPlane& ephfp3 = (*eventplanes)[13];
-    const reco::EvtPlane& ephfm3 = (*eventplanes)[14];
+    ephfpAngle[0] = (eventplanes.isValid() ? (*eventplanes)[0].angle(2) : -99.);
+    ephfpAngle[1] = (eventplanes.isValid() ? (*eventplanes)[6].angle(2) : -99.);
+    ephfpAngle[2] = (eventplanes.isValid() ? (*eventplanes)[13].angle(2) : -99.);
 
-    ephfpAngle[0] = ephfp1.angle(2);
-    ephfpAngle[1] = ephfp2.angle(2);
-    ephfpAngle[2] = ephfp3.angle(2);
+    ephfmAngle[0] = (eventplanes.isValid() ? (*eventplanes)[1].angle(2) : -99.);
+    ephfmAngle[1] = (eventplanes.isValid() ? (*eventplanes)[7].angle(2) : -99.);
+    ephfmAngle[2] = (eventplanes.isValid() ? (*eventplanes)[14].angle(2) : -99.);
 
-    ephfmAngle[0] = ephfm1.angle(2);
-    ephfmAngle[1] = ephfm2.angle(2);
-    ephfmAngle[2] = ephfm3.angle(2);
+    ephfpQ[0] = (eventplanes.isValid() ? (*eventplanes)[0].q(2) : -99.);
+    ephfpQ[1] = (eventplanes.isValid() ? (*eventplanes)[6].q(2) : -99.);
+    ephfpQ[2] = (eventplanes.isValid() ? (*eventplanes)[13].q(2) : -99.);
 
-    ephfpQ[0] = ephfp1.q(2);
-    ephfpQ[1] = ephfp2.q(2);
-    ephfpQ[2] = ephfp3.q(2);
+    ephfmQ[0] = (eventplanes.isValid() ? (*eventplanes)[1].q(2) : -99.);
+    ephfmQ[1] = (eventplanes.isValid() ? (*eventplanes)[7].q(2) : -99.);
+    ephfmQ[2] = (eventplanes.isValid() ? (*eventplanes)[14].q(2) : -99.);
 
-    ephfmQ[0] = ephfm1.q(2);
-    ephfmQ[1] = ephfm2.q(2);
-    ephfmQ[2] = ephfm3.q(2);
-
-    ephfpSumW = ephfp2.sumw();
-    ephfmSumW = ephfm2.sumw();
+    ephfpSumW = (eventplanes.isValid() ? (*eventplanes)[6].sumw() : -99.);
+    ephfmSumW = (eventplanes.isValid() ? (*eventplanes)[7].sumw() : -99.);
   }
 
   nPV = vertices->size();
   //best vertex
-  const reco::Vertex& vtx = (*vertices)[0];
+  const auto& vtxPrimary = (vertices->size()>0 ? (*vertices)[0] : reco::Vertex());
+  const bool& isPV = (!vtxPrimary.isFake() && vtxPrimary.tracksSize()>=2);
+  const auto& bs = (!isPV ? reco::Vertex(beamspot->position(), beamspot->covariance3D()) : reco::Vertex());
+  const reco::Vertex& vtx = (isPV ? vtxPrimary : bs);
   bestvz = vtx.z(); bestvx = vtx.x(); bestvy = vtx.y();
   const math::XYZPoint bestvtx(bestvx, bestvy, bestvz);
   const double& bestvzError = vtx.zError(), bestvxError = vtx.xError(), bestvyError = vtx.yError();
@@ -584,7 +583,7 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
   {
     edm::Handle<reco::GenParticleCollection> genpars;
     iEvent.getByToken(tok_genParticle_, genpars);
-    if(!genpars.isValid()) { edm::LogError("PATCompositeAnalyzer") << "Gen matching cannot be done without Gen collection!" << std::endl; return; }
+    if(!genpars.isValid()) { throw cms::Exception("PATCompositeAnalyzer") << "Gen matching cannot be done without Gen collection!" << std::endl; }
 
     for(uint idx=0; idx<genpars->size(); ++idx)
     {
@@ -691,7 +690,7 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
     dlos2D[it] = dl2D[it]/dl2Derror;
 
     const ushort& nDau = trk.numberOfDaughters();
-    if(nDau!=NDAU_) { edm::LogError("PATCompositeAnalyzer") << "Expected " << NDAU_ << " daughters but V0 candidate has " << nDau << " daughters!" << std::endl; return; }
+    if(nDau!=NDAU_) { throw cms::Exception("PATCompositeAnalyzer") << "Expected " << NDAU_ << " daughters but V0 candidate has " << nDau << " daughters!" << std::endl; }
 
     //Gen match
     if(doGenMatching_)
@@ -1079,7 +1078,7 @@ PATCompositeTreeProducer::fillGEN(const edm::Event& iEvent, const edm::EventSetu
 
   edm::Handle<reco::GenParticleCollection> genpars;
   iEvent.getByToken(tok_genParticle_, genpars);
-  if(!genpars.isValid()) { edm::LogError("PATCompositeAnalyzer") << "Gen matching cannot be done without Gen collection!" << std::endl; return; }
+  if(!genpars.isValid()) { throw cms::Exception("PATCompositeAnalyzer") << "Gen matching cannot be done without Gen collection!" << std::endl; }
 
   candSize_gen = 0;
   for(uint idx=0; idx<genpars->size(); ++idx)
@@ -1123,8 +1122,8 @@ PATCompositeTreeProducer::beginJob()
 {
   TH1D::SetDefaultSumw2();
 
-  if(!doRecoNtuple_ && !doGenNtuple_) { edm::LogError("PATCompositeAnalyzer") << "No output for either RECO or GEN!! Fix config!!" << std::endl; return; }
-  if(twoLayerDecay_ && doMuon_) { edm::LogError("PATCompositeAnalyzer") << "Muons cannot be coming from two layer decay!! Fix config!!" << std::endl; return; }
+  if(!doRecoNtuple_ && !doGenNtuple_) { throw cms::Exception("PATCompositeAnalyzer") << "No output for either RECO or GEN!! Fix config!!" << std::endl; }
+  if(twoLayerDecay_ && doMuon_) { throw cms::Exception("PATCompositeAnalyzer") << "Muons cannot be coming from two layer decay!! Fix config!!" << std::endl; }
 
   if(saveHistogram_) initHistogram();
   if(saveTree_) initTree();

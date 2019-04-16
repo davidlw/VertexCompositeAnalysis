@@ -27,11 +27,11 @@ config.JobType.allowUndistributedCMSSW = True
 config.section_('Site')
 config.Data.ignoreLocality = True
 config.Site.whitelist = ['T1_US_*','T2_US_*','T2_CH_CERN','T2_BE_IIHE']
-config.Site.storageSite = 'T2_CH_CERN'
+config.Site.storageSite = 'T2_FR_GRIF_LLR'
 
 def submit(config):
     try:
-        crabCommand('submit', config = config, dryrun=True)
+        crabCommand('submit', config = config, dryrun=False)
     except HTTPException as hte:
         print "Failed submitting task: %s" % (hte.headers)
     except ClientException as cle:
@@ -42,14 +42,14 @@ def submit(config):
 #############################################################################################
 
 dataMap = {
-            "PASingleMuon": { "PD": "/PASingleMuon/PARun2016C-PromptReco-v1/AOD", "Units": 7, "Memory": 2400, "RunTime": 720 },
-            "PADoubleMuon": { "PD": "/PADoubleMuon/PARun2016C-PromptReco-v1/AOD", "Units": 7, "Memory": 2400, "RunTime": 720 }
+            "PASingleMuon": { "PD": "/PASingleMuon/PARun2016C-PromptReco-v1/AOD", "Units": 7, "Memory": 2400, "RunTime": 620 },
+            "PADoubleMuon": { "PD": "/PADoubleMuon/PARun2016C-PromptReco-v1/AOD", "Units": 7, "Memory": 2500, "RunTime": 820 }
           }
-for i in range(1,20):
-    dataMap[("PAMinimumBias"+str(i))] = { "PD": ("/PAMinimumBias"+str(i)+"/PARun2016C-PromptReco-v1/AOD"), "Units": 7, "Memory": 2400, "RunTime": 720 }
+for i in range(1,21):
+    dataMap[("PAMinimumBias"+str(i))] = { "PD": ("/PAMinimumBias"+str(i)+"/PARun2016C-PromptReco-v1/AOD"), "Units": 9, "Memory": 2500, "RunTime": 720 }
 
-for i in range(0,7):
-    dataMap[("PAHighMultiplicity"+str(i))] = { "PD": ("/PAHighMultiplicity"+str(i)+"/PARun2016C-PromptReco-v1/AOD"), "Units": 7, "Memory": 2400, "RunTime": 720 }
+for i in range(0,8):
+    dataMap[("PAHighMultiplicity"+str(i))] = { "PD": ("/PAHighMultiplicity"+str(i)+"/PARun2016C-PromptReco-v1/AOD"), "Units": 7, "Memory": 2500, "RunTime": 820 }
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
@@ -59,5 +59,6 @@ for key, val in dataMap.items():
     config.JobType.maxMemoryMB = val["Memory"]
     config.JobType.maxJobRuntimeMin = val["RunTime"]
     config.Data.outputDatasetTag = config.General.requestName
-    config.Data.outLFNDirBase = '/store/group/phys_heavyions/%s/RiceHIN/pPb2016/SKIM/%s' % (getUsernameFromSiteDB(), config.General.requestName)
+    #config.Data.outLFNDirBase = '/store/group/phys_heavyions/%s/RiceHIN/pPb2016/SKIM/%s' % (getUsernameFromSiteDB(), config.General.requestName)
+    config.Data.outLFNDirBase = '/store/user/%s/RiceHIN/pPb2016/SKIM/%s' % (getUsernameFromSiteDB(), config.General.requestName)
     submit(config)

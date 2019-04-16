@@ -1,6 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 
 def doPATMuons(process, MC=False):
+    # Check if sequence already ran
+    if hasattr(process, 'patMuonsWithTrigger'): return
+
     # Make PAT Muons
     process.load("MuonAnalysis.MuonAssociators.patMuonsWithTrigger_cff")
 

@@ -13,6 +13,7 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
   #PID used only for GEN and/or GEN match
   PID = cms.untracked.int32(443),
   PID_dau = cms.untracked.vint32(13, 13),
+  beamSpotSrc = cms.untracked.InputTag("offlineBeamSpot"),
   VertexCollection = cms.untracked.InputTag("offlinePrimaryVertices"),
   VertexCompositeCollection = cms.untracked.InputTag("generalMuMuCandidatese:DiMu"),
   GenParticleCollection = cms.untracked.InputTag("genParticles"),
@@ -50,6 +51,7 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
       'Flag_hfCoincFilter',
       'Flag_primaryVertexFilterPA',
       'Flag_NoScraping',
+      'Flag_pileupVertexFilterCut',
       'Flag_pileupVertexFilterCutGplus'
   ),
 
