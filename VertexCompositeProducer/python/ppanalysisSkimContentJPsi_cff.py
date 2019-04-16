@@ -25,9 +25,7 @@ analysisSkimContent = cms.PSet(
 #      'keep *_conversions*_*_*',
       # muon
 #      'keep recoMuons_muons_*_*',
-      'keep *_pACentrality_*_*',
       'keep *_hiCentrality_*_*',
-      'drop *_hiCentrality_*_RECO',
       'keep *_hiEvtPlane_*_*',
       'keep *_hiEvtPlaneFlat_*_*',
       'keep *_centralityBin_*_*',

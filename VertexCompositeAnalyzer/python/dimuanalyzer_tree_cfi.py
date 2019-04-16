@@ -13,8 +13,9 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
   #PID used only for GEN and/or GEN match
   PID = cms.untracked.int32(443),
   PID_dau = cms.untracked.vint32(13, 13),
+  beamSpotSrc = cms.untracked.InputTag("offlineBeamSpot"),
   VertexCollection = cms.untracked.InputTag("offlinePrimaryVerticesRecovery"),
-  VertexCompositeCollection = cms.untracked.InputTag("generalMuMuCandidatese:DiMu"),
+  VertexCompositeCollection = cms.untracked.InputTag("generalMuMuCandidates:DiMu"),
   GenParticleCollection = cms.untracked.InputTag("genParticles"),
   doMuon = cms.untracked.bool(True),
   doMuonFull = cms.untracked.bool(True),
@@ -22,13 +23,13 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
   #Trigger info
   TriggerResultCollection = cms.untracked.InputTag("TriggerResults::HLT"),
   triggerPathNames = cms.untracked.vstring(
-      'HLT_HIL1DoubleMuOpen_OS_Centrality_40_100_v1', # Peripheral OS dimuons
-      'HLT_HIL1DoubleMuOpen_Centrality_50_100_v1', # Peripheral dimuons
-      'HLT_HIL3Mu2p5NHitQ10_L2Mu2_M7toinf_v1', # Bottomonia
-      'HLT_HIL1DoubleMu10_v1', # Z bosons
+      'HLT_HIL1DoubleMuOpen_OS_Centrality_40_100_v', # Peripheral OS dimuons
+      'HLT_HIL1DoubleMuOpen_Centrality_50_100_v', # Peripheral dimuons
+      'HLT_HIL3Mu2p5NHitQ10_L2Mu2_M7toinf_v', # Bottomonia
+      'HLT_HIL1DoubleMu10_v', # Z bosons
       # Single muon triggers
-      'HLT_HIL1MuOpen_Centrality_80_100_v1', # Peripheral muons
-      'HLT_HIL3Mu12_v1', # Electroweak bosons
+      'HLT_HIL1MuOpen_Centrality_80_100_v', # Peripheral muons
+      'HLT_HIL3Mu12_v', # Electroweak bosons
   ),
   triggerFilterNames = cms.untracked.vstring(
       'hltL1fL1sL1DoubleMuOpenOSCentrality40100L1Filtered0',

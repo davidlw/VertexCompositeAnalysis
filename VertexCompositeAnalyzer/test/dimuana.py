@@ -10,8 +10,7 @@ cms.untracked.bool(True) )
 
 # Define the input source
 process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring(
-#'root://cms-xrd-global.cern.ch//store/user/anstahll/RiceHIN/PbPb2018/SKIM/VertexCompositeSkim_HIDoubleMuonPsiPeri_v2_HIRun2018_DiMuMassMin7_20190407/HIDoubleMuonPsiPeri/VertexCompositeSkim_HIDoubleMuonPsiPeri_v2_HIRun2018_DiMuMassMin7_20190407/190407_181439/0001/PbPb_DiMuCont_1249.root'
-'file:/afs/cern.ch/user/a/anstahll/work/Analysis/GITHUB/CMSSW_10_3_3_patch1/src/VertexCompositeAnalysis/VertexCompositeProducer/test/PbPb_DiMuCont.root')
+'root://cms-xrd-global.cern.ch//store/group/phys_heavyions/anstahll/RiceHIN/PbPb2018/SKIM/VertexCompositeSkim_HIDoubleMuon_v2_HIRun2018_DiMuMassMin7_20190412/HIDoubleMuon/VertexCompositeSkim_HIDoubleMuon_v2_HIRun2018_DiMuMassMin7_20190412/190412_213307/0003/PbPb_DiMuCont_3619.root')
 )
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
