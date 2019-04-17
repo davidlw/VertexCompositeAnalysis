@@ -29,5 +29,4 @@
 <use   name="TrackingTools/Records"/>
 <use   name="CondFormats/DataRecord"/>
 <use   name="CondFormats/EgammaObjects"/>
-<use   name="DataFormats/HeavyIonEvent"/>
 <use   name="RecoHI/HiCentralityAlgos"/>
