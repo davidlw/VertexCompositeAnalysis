@@ -1,5 +1,6 @@
 import FWCore.ParameterSet.Config as cms
-process = cms.Process('ANASKIM')
+from Configuration.StandardSequences.Eras import eras
+process = cms.Process('ANASKIM',eras.Run2_HI)
 
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
