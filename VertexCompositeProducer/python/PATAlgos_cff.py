@@ -59,7 +59,7 @@ def doPATMuons(process, MC=False):
         # since we match inner tracks, keep the matching tight and make it one-to-one
         process.muonMatch.maxDeltaR = cms.double(0.05)
         process.muonMatch.resolveByMatchQuality = cms.bool(True)
-        process.muonMatch.matched = cms.string("genMuons")
+        process.muonMatch.matched = cms.InputTag("genMuons")
 
     # Make a sequence
     if MC:

@@ -17,11 +17,6 @@ beamScrapingFilter = cms.EDFilter("FilterOutScraping",
     thresh = cms.untracked.double(0.25)
 )
 
-# Cluster-shape filter re-run offline
-from RecoLocalTracker.SiPixelRecHits.SiPixelRecHits_cfi import *
-from HLTrigger.special.hltPixelClusterShapeFilter_cfi import *
-hltPixelClusterShapeFilter.inputTag = "siPixelRecHits"
-
 # Cluster-shape filter re-run offline from ClusterCompatibility object
 from VertexCompositeAnalysis.VertexCompositeProducer.clusterCompatibilityFilter_cfi import *
 
