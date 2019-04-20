@@ -90,7 +90,9 @@ private:
   virtual void endJob() ;
   virtual void initHistogram();
   virtual void initTree();
+  reco::GenParticleRef findLastPar(const reco::GenParticleRef&);
   reco::GenParticleRef findMother(const reco::GenParticleRef&);
+  bool hasDaughters(const reco::GenParticleRef&, const std::vector<int>&);
 
   // ----------member data ---------------------------
 
@@ -133,13 +135,11 @@ private:
   bool doGenNtuple_;   
   bool doGenMatching_;
   bool doGenMatchingTOF_;
-  bool hasSwap_;
   bool decayInGen_;
   bool twoLayerDecay_;
   bool threeProngDecay_;
   bool doMuon_;
   bool doMuonFull_;
-  int PID_;
   const std::vector<int> PID_dau_;
   const ushort NDAU_;
   const ushort NGDAU_ = MAXGDAU;
@@ -280,20 +280,22 @@ private:
   float ddydzSig_seg[MAXDAU][MAXCAN];
 
   // gen info
+  std::vector<reco::GenParticleRef> genVec_;
   float weight_gen;
   ushort candSize_gen;
   float pt_gen[MAXCAN];
   float eta_gen[MAXCAN];
-  short status_gen[MAXCAN];
-  int idmom[MAXCAN];
   float y_gen[MAXCAN];
-  int iddau[MAXDAU][MAXCAN];
-  short chargedau[MAXDAU][MAXCAN];
-  float ptdau[MAXDAU][MAXCAN];
-  float etadau[MAXDAU][MAXCAN];
-  float phidau[MAXDAU][MAXCAN];
-  float massdau[MAXDAU][MAXCAN];
-    
+  short status_gen[MAXCAN];
+  int pid_gen[MAXCAN];
+  int idmom_gen[MAXCAN];
+  short idxrec_gen[MAXCAN];
+  int idDau_gen[MAXDAU][MAXCAN];
+  short chargeDau_gen[MAXDAU][MAXCAN];
+  float ptDau_gen[MAXDAU][MAXCAN];
+  float etaDau_gen[MAXDAU][MAXCAN];
+  float phiDau_gen[MAXDAU][MAXCAN];
+
   bool useAnyMVA_;
   bool isSkimMVA_;
   bool isCentrality_;
@@ -326,6 +328,7 @@ private:
   const std::vector<std::string> eventFilters_;
   edm::EDGetTokenT<edm::TriggerResults> tok_filterResults_;
   const ushort NSEL_;
+  const std::string selectEvents_;
 
   //prescale provider
   HLTPrescaleProvider hltPrescaleProvider_;
@@ -348,6 +351,7 @@ PATCompositeTreeProducer::PATCompositeTreeProducer(const edm::ParameterSet& iCon
   NTRG_(triggerNames_.size()>MAXTRG ? MAXTRG : triggerNames_.size()),
   eventFilters_(iConfig.getUntrackedParameter<std::vector<std::string> >("eventFilterNames")),
   NSEL_(eventFilters_.size()>MAXSEL ? MAXSEL : eventFilters_.size()),
+  selectEvents_(iConfig.getUntrackedParameter<std::string>("selectEvents")),
   hltPrescaleProvider_(iConfig, consumesCollector(), *this)
 {
   //options
@@ -357,11 +361,9 @@ PATCompositeTreeProducer::PATCompositeTreeProducer(const edm::ParameterSet& iCon
   threeProngDecay_ = iConfig.getUntrackedParameter<bool>("threeProngDecay");
   doGenMatching_ = iConfig.getUntrackedParameter<bool>("doGenMatching");
   doGenMatchingTOF_ = iConfig.getUntrackedParameter<bool>("doGenMatchingTOF");
-  hasSwap_ = iConfig.getUntrackedParameter<bool>("hasSwap");
   decayInGen_ = iConfig.getUntrackedParameter<bool>("decayInGen");
   doMuon_ = iConfig.getUntrackedParameter<bool>("doMuon");
   doMuonFull_ = iConfig.getUntrackedParameter<bool>("doMuonFull");
-  PID_ = iConfig.getUntrackedParameter<int>("PID");
 
   saveTree_ = iConfig.getUntrackedParameter<bool>("saveTree");
   saveHistogram_ = iConfig.getUntrackedParameter<bool>("saveHistogram");
@@ -428,8 +430,18 @@ PATCompositeTreeProducer::~PATCompositeTreeProducer()
 void
 PATCompositeTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  if(doGenNtuple_) fillGEN(iEvent,iSetup);
+  //check event
+  if(selectEvents_!="")
+  {
+    edm::Handle<edm::TriggerResults> filterResults;
+    iEvent.getByToken(tok_filterResults_, filterResults);
+    const auto& filterNames = iEvent.triggerNames(*filterResults);
+    const auto& index = filterNames.triggerIndex(selectEvents_);
+    if(index<filterNames.size() && filterResults->wasrun(index) && !filterResults->accept(index)) return;
+  }
+  genVec_.clear();
   if(doRecoNtuple_) fillRECO(iEvent,iSetup);
+  if(doGenNtuple_) fillGEN(iEvent,iSetup);
   if(saveTree_) PATCompositeNtuple->Fill();
 }
 
@@ -437,12 +449,6 @@ PATCompositeTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetu
 void
 PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  // Check inputs
-  if((!threeProngDecay_ && NDAU_!=2) || (threeProngDecay_ && NDAU_!=3))
-  {
-    throw cms::Exception("PATCompositeAnalyzer") << "Want threeProngDecay but PID daughter vector size is: " << NDAU_ << " !" << std::endl;
-  }
-
   //get collection
   edm::Handle<reco::BeamSpot> beamspot;
   iEvent.getByToken(tok_offlineBS_, beamspot);
@@ -486,15 +492,22 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
       trigPrescale[iTr] = -9;
       //Find the trigger index
       const auto& trigName = triggerNames_.at(iTr);
-      ushort triggerIndex = triggerNames.size()+1;
+      std::vector<ushort> trgIdxFound;
       for(ushort trgIdx=0; trgIdx<triggerNames.size(); trgIdx++)
       {
-        if(triggerNames.triggerName(trgIdx).find(trigName)!=std::string::npos) { triggerIndex = trgIdx; break; }
+        if(triggerNames.triggerName(trgIdx).find(trigName)!=std::string::npos && triggerResults->wasrun(trgIdx)) { trgIdxFound.push_back(trgIdx); }
       }
-      if(triggerIndex>=triggerNames.size()) continue;
+      short triggerIndex = -1;
+      if(trgIdxFound.size()>1)
+      {
+        for(const auto& trgIdx : trgIdxFound) { if(triggerResults->accept(trgIdx)) { triggerIndex = trgIdx; break; } }
+        if(triggerIndex<0) triggerIndex = trgIdxFound[0];
+      }
+      else if(trgIdxFound.size()==1) triggerIndex = trgIdxFound[0];
+      else continue;
       //Check if trigger fired
       bool isTriggerFired = false;
-      if(triggerResults->wasrun(triggerIndex) && triggerResults->accept(triggerIndex)) isTriggerFired = true;
+      if(triggerResults->accept(triggerIndex)) isTriggerFired = true;
       //Get the trigger prescale
       int prescaleValue = -1;
       if(hltPrescaleProvider_.hltConfigProvider().inited() && hltPrescaleProvider_.prescaleSet(iEvent,iSetup)>=0)
@@ -519,7 +532,7 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
     {
       evtSel[iFr] = false;
       const auto& index = filterNames.triggerIndex(eventFilters_.at(iFr));
-      if(index < filterNames.size()) evtSel[iFr] = filterResults->accept(index);
+      if(index < filterNames.size()) evtSel[iFr] = (filterResults->wasrun(index) && filterResults->accept(index));
     }
   }
 
@@ -575,66 +588,6 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
   const math::XYZPoint bestvtx(bestvx, bestvy, bestvz);
   const double& bestvzError = vtx.zError(), bestvxError = vtx.xError(), bestvyError = vtx.yError();
 
-  //Gen info for matching
-  std::vector< std::vector< std::vector<double> > > pVectDau;
-  std::vector<int> pVectIDmom;
-
-  if(doGenMatching_)
-  {
-    edm::Handle<reco::GenParticleCollection> genpars;
-    iEvent.getByToken(tok_genParticle_, genpars);
-    if(!genpars.isValid()) { throw cms::Exception("PATCompositeAnalyzer") << "Gen matching cannot be done without Gen collection!" << std::endl; }
-
-    for(uint idx=0; idx<genpars->size(); ++idx)
-    {
-      const auto& trk = reco::GenParticleRef(genpars, idx);
-
-      if (trk.isNull()) continue; //check gen particle ref
-      if(fabs(trk->pdgId())!=PID_) continue; //check is target
-      if(trk->status()!=2) continue; //check status
-
-      const ushort& nDau = trk->numberOfDaughters();
-      if (nDau!=NDAU_) continue;
-
-      bool skipGen = false;
-      std::vector<int> PIDvec = PID_dau_;
-      for(ushort iDau=0; iDau<nDau; iDau++)
-      {
-        const auto& Dd = *(trk->daughter(iDau));
-        bool found = false;
-        for(ushort iPID=0; iPID<PIDvec.size(); iPID++)
-        {
-          if(fabs(Dd.pdgId())==PIDvec[iPID])
-          {
-            PIDvec.erase(PIDvec.begin()+iPID);
-            found=true;
-            break;
-          }
-        }
-        if(!found) { skipGen = (PIDvec.size()>0); break; }
-      }
-      if(skipGen) continue;
-
-      const auto& mom = findMother(trk);
-      const int& idmom_tmp = (mom->pdgId()!=trk->pdgId() ? mom->pdgId() : -77);
-
-      std::vector< std::vector<double> > pVect;
-      for(ushort iDau=0; iDau<nDau; iDau++)
-      {
-        const auto& Dd = *(trk->daughter(iDau));
-        std::vector<double> Dvector;
-        Dvector.push_back(Dd.pt());
-        Dvector.push_back(Dd.eta());
-        Dvector.push_back(Dd.phi());
-        Dvector.push_back(Dd.charge());
-        Dvector.push_back(Dd.mass());
-        pVect.push_back(Dvector);
-      }
-      pVectDau.push_back(pVect);
-      pVectIDmom.push_back(idmom_tmp);
-    }
-  }
-
   //RECO Candidate info
   candSize = v0candidates->size();
   for(ushort it=0; it<candSize; ++it)
@@ -648,8 +601,7 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
     y[it] = trk.rapidity();
     flavor[it] = (trk.pdgId()!=0 ? trk.pdgId()/fabs(trk.pdgId()) : 0.);
 
-    mva[it] = 0.0;
-    if(useAnyMVA_) mva[it] = (*mvavalues)[it];
+    mva[it] = (useAnyMVA_ ? (*mvavalues)[it] : 0.0);
 
     //vtxChi2
     vtxChi2[it] = trk.userFloat("vertexChi2");
@@ -695,47 +647,23 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
     //Gen match
     if(doGenMatching_)
     {
-      matchGEN[it] = false;
       isSwap[it] = false;
-      idmom_reco[it] = -77;
-      for(ushort iGen=0; iGen<pVectDau.size(); iGen++)
+      bool foundMom = true;
+      reco::GenParticleRef genMom;
+      for(ushort iDau=0; iDau<nDau; iDau++)
       {
-        bool foundGen = false;
-        std::vector<double> dmassGEN;
-        auto pVect = pVectDau[iGen];
-        for(ushort iDau=0; iDau<nDau; iDau++)
-        {
-          const auto& Dd = *(trk.daughter(iDau));
-          bool found = false;
-          for(ushort iDG=0; iDG<pVect.size(); iDG++)
-          {
-            const auto& Dvector = pVect[iDG];
-            if(Dd.charge()!=Dvector.at(3)) continue;
-            if(fabs((Dd.pt()-Dvector.at(0))/Dd.pt()) > 0.5) continue; //check deltaPt matching
-            const double& deltaR = reco::deltaR(Dd.eta(), Dd.phi(), Dvector.at(1), Dvector.at(2));
-            if(deltaR <= deltaR_)
-            {
-              dmassGEN.push_back(Dvector.at(4));
-              pVect.erase(pVect.begin()+iDG);
-              found=true;
-              break;
-            }
-          }
-          if(found) { foundGen = true; break; }
-        }
-        if(foundGen)
-        {
-          matchGEN[it] = true; //matched gen
-          //check swap
-          for(ushort iDau=0; iDau<nDau; iDau++)
-          {
-            if(fabs(dmassGEN[iDau] - trk.daughter(iDau)->mass())>0.01) { isSwap[it] = true; break; }
-          }
-          //check prompt & record mom id
-          idmom_reco[it] = pVectIDmom[iGen];
-          break;
-        }
+        const auto& recDau = dynamic_cast<const pat::Muon*>(trk.daughter(iDau));
+        const auto& genDau = (recDau ? recDau->genParticleRef() : reco::GenParticleRef());
+        const auto& mom = findMother(genDau);
+        if(!recDau || genDau.isNull() || mom.isNull()) { foundMom = false; break; }
+        if(iDau==0) genMom = mom;
+        else if(genMom!=mom) { foundMom = false; break; }
+        if(fabs(recDau->mass() - genDau->mass())>0.01) { isSwap[it] = true; }
       }
+      matchGEN[it] = foundMom;
+      isSwap[it] = (foundMom ? isSwap[it] : false);
+      idmom_reco[it] = (foundMom ? genMom->pdgId() : -77);
+      genVec_.push_back(foundMom ? genMom : reco::GenParticleRef());
     }
 
     for(ushort iDau=0; iDau<nDau; iDau++)
@@ -748,12 +676,12 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
       phiDau[iDau][it] = dau.phi();
       chargeDau[iDau][it] = dau.charge();
 
-      pid[iDau][it] = -99999;
+      pid[iDau][it] = -77;
       if(doGenMatchingTOF_)
       {
-        const auto& ppDau = dynamic_cast<const pat::PATObject<reco::Candidate>*>(trk.daughter(iDau));
-        const auto& trk = (ppDau ? ppDau->genParticleRef() : reco::GenParticleRef());
-        if(trk.isNonnull()) { pid[iDau][it] = trk->pdgId(); }
+        const auto& recDau = dynamic_cast<const pat::Muon*>(trk.daughter(iDau));
+        const auto& genDau = (recDau ? recDau->genParticleRef() : reco::GenParticleRef());
+        if(genDau.isNonnull()) { pid[iDau][it] = genDau->pdgId(); }
       }
 
       //trk info
@@ -1086,27 +1014,30 @@ PATCompositeTreeProducer::fillGEN(const edm::Event& iEvent, const edm::EventSetu
     const auto& trk = reco::GenParticleRef(genpars, idx);
 
     if (trk.isNull()) continue; //check gen particle ref
-    if(fabs(trk->pdgId())!=PID_) continue; //check is target
+    if(!hasDaughters(trk, PID_dau_)) continue; //check if has the daughters
 
-    pt_gen[idx] = trk->pt();
-    eta_gen[idx] = trk->eta();
-    status_gen[idx] = trk->status();
-    y_gen[idx] = trk->rapidity();
-    
+    pt_gen[candSize_gen] = trk->pt();
+    eta_gen[candSize_gen] = trk->eta();
+    y_gen[candSize_gen] = trk->rapidity();
+    pid_gen[candSize_gen] = trk->pdgId();
+    status_gen[candSize_gen] = trk->status();
+
+    const auto& recIt = std::find(genVec_.begin(), genVec_.end(), trk);
+    idxrec_gen[candSize_gen] = (recIt!=genVec_.end() ? std::distance(genVec_.begin(), recIt) : -1);
+
     const auto& mom = findMother(trk);
-    idmom[idx] = (mom->pdgId()!=trk->pdgId() ? mom->pdgId() : -77);
+    idmom_gen[candSize_gen] = (mom.isNonnull() ? mom->pdgId() : -77);
 
     if(decayInGen_)
     {
       for(ushort iDau=0; iDau<NDAU_; iDau++)
       {
-        const auto& Dd = trk->daughter(iDau);
-        iddau[iDau][candSize_gen] = (Dd ? Dd->pdgId() : 99999);
-        chargedau[iDau][candSize_gen] = (Dd ? Dd->charge() : 9);
-        ptdau[iDau][candSize_gen] = (Dd ? Dd->pt() : -1.);
-        etadau[iDau][candSize_gen] = (Dd ? Dd->eta() : 9.);
-        phidau[iDau][candSize_gen] = (Dd ? Dd->phi() : 9.);
-        massdau[iDau][candSize_gen] = (Dd ? Dd->mass() : -1.);
+        const auto& Dd = findLastPar(trk->daughterRef(iDau));
+        idDau_gen[iDau][candSize_gen] = (Dd.isNonnull() ? Dd->pdgId() : 99999);
+        chargeDau_gen[iDau][candSize_gen] = (Dd.isNonnull() ? Dd->charge() : 9);
+        ptDau_gen[iDau][candSize_gen] = (Dd.isNonnull() ? Dd->pt() : -1.);
+        etaDau_gen[iDau][candSize_gen] = (Dd.isNonnull() ? Dd->eta() : 9.);
+        phiDau_gen[iDau][candSize_gen] = (Dd.isNonnull() ? Dd->phi() : 9.);
       }
     }
 
@@ -1122,6 +1053,11 @@ PATCompositeTreeProducer::beginJob()
 {
   TH1D::SetDefaultSumw2();
 
+  // Check inputs
+  if((!threeProngDecay_ && NDAU_!=2) || (threeProngDecay_ && NDAU_!=3))
+  {
+    throw cms::Exception("PATCompositeAnalyzer") << "Want threeProngDecay but PID daughter vector size is: " << NDAU_ << " !" << std::endl;
+  }
   if(!doRecoNtuple_ && !doGenNtuple_) { throw cms::Exception("PATCompositeAnalyzer") << "No output for either RECO or GEN!! Fix config!!" << std::endl; }
   if(twoLayerDecay_ && doMuon_) { throw cms::Exception("PATCompositeAnalyzer") << "Muons cannot be coming from two layer decay!! Fix config!!" << std::endl; }
 
@@ -1246,7 +1182,6 @@ PATCompositeTreeProducer::initTree()
         for(ushort iDau=1; iDau<=NDAU_; iDau++)
         {
           PATCompositeNtuple->Branch(Form("PIDD%d",iDau),pid[iDau-1],Form("PIDD%d[candSize]/I",iDau));
-          PATCompositeNtuple->Branch(Form("TOFD%d",iDau),tof[iDau-1],Form("TOFD%d[candSize]/F",iDau));
         }
       }
 
@@ -1342,23 +1277,24 @@ PATCompositeTreeProducer::initTree()
   if(doGenNtuple_)
   {
     PATCompositeNtuple->Branch("weight_gen",&weight_gen,"weight_gen/F");
-    PATCompositeNtuple->Branch("candSize_gen",&candSize_gen,"candSize_gen/I");
+    PATCompositeNtuple->Branch("candSize_gen",&candSize_gen,"candSize_gen/s");
     PATCompositeNtuple->Branch("pT_gen",pt_gen,"pT_gen[candSize_gen]/F");
     PATCompositeNtuple->Branch("eta_gen",eta_gen,"eta_gen[candSize_gen]/F");
     PATCompositeNtuple->Branch("y_gen",y_gen,"y_gen[candSize_gen]/F");
-    PATCompositeNtuple->Branch("status_gen",status_gen,"status_gen[candSize_gen]/I");
-    PATCompositeNtuple->Branch("MotherID_gen",idmom,"MotherID_gen[candSize_gen]/I");
+    PATCompositeNtuple->Branch("status_gen",status_gen,"status_gen[candSize_gen]/S");
+    PATCompositeNtuple->Branch("PID_gen",pid_gen,"PID_gen[candSize_gen]/I");
+    PATCompositeNtuple->Branch("MotherID_gen",idmom_gen,"MotherID_gen[candSize_gen]/I");
+    PATCompositeNtuple->Branch("RecIdx_gen",idxrec_gen,"RecIdx_gen[candSize_gen]/S");
 
     if(decayInGen_)
     {
-      for(ushort iDau=0; iDau<NDAU_; iDau++)
+      for(ushort iDau=1; iDau<=NDAU_; iDau++)
       {
-        PATCompositeNtuple->Branch(Form("DauID%d_gen",iDau),iddau[iDau],Form("DauID%d_gen[candSize_gen]/I",iDau));
-        PATCompositeNtuple->Branch(Form("chargeD%d_gen",iDau),chargedau[iDau],Form("chargeD%d_gen[candSize_gen]/I",iDau));
-        PATCompositeNtuple->Branch(Form("pTD%d_gen",iDau),ptdau[iDau],Form("pTD%d_gen[candSize_gen]/F",iDau));
-        PATCompositeNtuple->Branch(Form("EtaD%d_gen",iDau),etadau[iDau],Form("EtaD%d_gen[candSize_gen]/F",iDau));
-        PATCompositeNtuple->Branch(Form("PhiD%d_gen",iDau),phidau[iDau],Form("PhiD%d_gen[candSize_gen]/F",iDau));
-        PATCompositeNtuple->Branch(Form("massDaugther%d_gen",iDau),massdau[iDau],Form("massDaugther%d_gen[candSize_gen]/F",iDau));
+        PATCompositeNtuple->Branch(Form("PIDD%d_gen",iDau),idDau_gen[iDau-1],Form("PIDD%d_gen[candSize_gen]/I",iDau));
+        PATCompositeNtuple->Branch(Form("chargeD%d_gen",iDau),chargeDau_gen[iDau-1],Form("chargeD%d_gen[candSize_gen]/S",iDau));
+        PATCompositeNtuple->Branch(Form("pTD%d_gen",iDau),ptDau_gen[iDau-1],Form("pTD%d_gen[candSize_gen]/F",iDau));
+        PATCompositeNtuple->Branch(Form("EtaD%d_gen",iDau),etaDau_gen[iDau-1],Form("EtaD%d_gen[candSize_gen]/F",iDau));
+        PATCompositeNtuple->Branch(Form("PhiD%d_gen",iDau),phiDau_gen[iDau-1],Form("PhiD%d_gen[candSize_gen]/F",iDau));
       }
     }
   }
@@ -1383,16 +1319,62 @@ PATCompositeTreeProducer::endJob()
 {
 }
 
+
+reco::GenParticleRef
+PATCompositeTreeProducer::findLastPar(const reco::GenParticleRef& genParRef)
+{
+  if(genParRef.isNull()) return genParRef;
+  reco::GenParticleRef genLastParRef = genParRef;
+  const int& pdg_OLD = genParRef->pdgId();
+  while(genLastParRef->numberOfDaughters()>0 && genLastParRef->daughterRef(0)->pdgId()==pdg_OLD)
+  {
+    genLastParRef = genLastParRef->daughterRef(0);
+  }
+  return genLastParRef;
+}
+
+
 reco::GenParticleRef
 PATCompositeTreeProducer::findMother(const reco::GenParticleRef& genParRef)
 {
+  if(genParRef.isNull()) return genParRef;
   reco::GenParticleRef genMomRef = genParRef;
   int pdg = genParRef->pdgId(); const int pdg_OLD = pdg;
-  while(pdg==pdg_OLD && genMomRef->numberOfMothers()>0) {
+  while(pdg==pdg_OLD && genMomRef->numberOfMothers()>0)
+  {
     genMomRef = genMomRef->motherRef(0);
     pdg = genMomRef->pdgId();
   }
-  return ( (pdg_OLD==pdg) ? genParRef : genMomRef );
+  if(pdg==pdg_OLD) genMomRef = reco::GenParticleRef();
+  return genMomRef;
+}
+
+
+bool
+PATCompositeTreeProducer::hasDaughters(const reco::GenParticleRef& genParRef, const std::vector<int>& PID_dau)
+{
+  bool hasDau = false;
+  if(genParRef->numberOfDaughters()==PID_dau.size())
+  {
+    std::vector<int> PIDvec = PID_dau;
+    for(ushort iDau=0; iDau<genParRef->numberOfDaughters(); iDau++)
+    {
+      const auto& dau = *(genParRef->daughter(iDau));
+      bool found = false;
+      for(ushort iPID=0; iPID<PIDvec.size(); iPID++)
+      {
+        if(fabs(dau.pdgId())==PIDvec[iPID])
+        {
+          PIDvec.erase(PIDvec.begin()+iPID);
+          found=true;
+          break;
+        }
+      }
+      if(!found) break;
+    }
+    hasDau = (PIDvec.size()==0);
+  }
+  return hasDau;
 }
 
 
