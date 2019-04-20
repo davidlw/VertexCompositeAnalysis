@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 generalDiMuCandidates = cms.EDProducer("DiMuProducer",
 
     # InputTag that tells which TrackCollection to use for vertexing
-    vertexRecoAlgorithm = cms.InputTag('offlinePrimaryVertices'),
+    vertexRecoAlgorithm = cms.InputTag('hiSelectedVertex'),
     muonRecoAlgorithm = cms.InputTag('patMuonsWithTrigger'),
 
     # Muon selection

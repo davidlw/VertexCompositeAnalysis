@@ -13,7 +13,8 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
   #PID used only for GEN and/or GEN match
   PID = cms.untracked.int32(443),
   PID_dau = cms.untracked.vint32(13, 13),
-  VertexCollection = cms.untracked.InputTag("offlinePrimaryVerticesRecovery"),
+  beamSpotSrc = cms.untracked.InputTag("offlineBeamSpot"),
+  VertexCollection = cms.untracked.InputTag("hiSelectedVertex"),
   VertexCompositeCollection = cms.untracked.InputTag("generalMuMuCandidatese:DiMu"),
   GenParticleCollection = cms.untracked.InputTag("genParticles"),
   doMuon = cms.untracked.bool(True),
@@ -22,34 +23,39 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
   #Trigger info
   TriggerResultCollection = cms.untracked.InputTag("TriggerResults::HLT"),
   triggerPathNames = cms.untracked.vstring(
-      'HLT_HIL1DoubleMuOpen_OS_Centrality_40_100_v1', # Peripheral OS dimuons
-      'HLT_HIL1DoubleMuOpen_Centrality_50_100_v1', # Peripheral dimuons
-      'HLT_HIL3Mu2p5NHitQ10_L2Mu2_M7toinf_v1', # Bottomonia
-      'HLT_HIL1DoubleMu10_v1', # Z bosons
+      #  Double muon triggers
+      'HLT_HIL1DoubleMu0_v', # Dimuons
+      'HLT_HIL1DoubleMu0_part', # Dimuons
+      'HLT_HIL1DoubleMu0_2HF_v', # Dimuons
+      'HLT_HIL1DoubleMu0_2HF0_v', # Dimuons
+      'HLT_HIL1DoubleMu0_2HF_Cent30100_v', # Peripheral dimuons
+      'HLT_HIL1DoubleMu0_2HF0_Cent30100_v', # Peripheral dimuons
+      'HLT_HIL1DoubleMu10_v', # Z boson
       # Single muon triggers
-      'HLT_HIL1MuOpen_Centrality_80_100_v1', # Peripheral muons
-      'HLT_HIL3Mu12_v1', # Electroweak bosons
+      'HLT_HIL3Mu15_v', # Electroweak boson
   ),
   triggerFilterNames = cms.untracked.vstring(
-      'hltL1fL1sL1DoubleMuOpenOSCentrality40100L1Filtered0',
-      'hltL1fL1sL1DoubleMuOpenCentrality50100L1Filtered0',
-      'hltL3f0L3Mu2p5NHitQ10L2Mu2FilteredM7toinf',
-      'hltL1fL1sL1DoubleMu10L1Filtered0',
-      'hltL1fL1sL1MuOpenCentrality80100L1Filtered0',
-      'hltL3fL1sL1SingleMu*OpenL1f*L2f0L3Filtered12'
+      'hltHIDoubleMu0L1Filtered',
+      'hltHIDoubleMu0L1Filtered',
+      'hltHIDoubleMu0MinBiasL1Filtered',
+      'hltHIDoubleMu0HFTower0Filtered',
+      'hltHIDoubleMu0MinBiasCent30to100L1Filtered',
+      'hltHIDoubleMu0HFTower0Cent30to100L1Filtered'
+      'hltHIDoubleMu10L1Filtered',
+      'hltHISingleMu15L3Filtered',
   ),
 
   #Filter info
   FilterResultCollection = cms.untracked.InputTag("TriggerResults::ANASKIM"),
   eventFilterNames = cms.untracked.vstring(
       'Flag_colEvtSel',
-      'Flag_hfCoincFilter2Th4',
+      'Flag_hfCoincFilter3',
       'Flag_primaryVertexFilter',
       'Flag_clusterCompatibilityFilter'
   ),
 
   isCentrality = cms.bool(True),
-  centralityBinLabel = cms.InputTag("centralityBin","HFtowers"),
+  centralityBinLabel = cms.InputTag("centralityBin", "HFtowers"),
   centralitySrc = cms.InputTag("hiCentrality"),
 
   isEventPlane = cms.bool(True),
