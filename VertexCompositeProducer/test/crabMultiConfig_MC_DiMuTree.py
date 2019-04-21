@@ -14,15 +14,14 @@ config.General.transferLogs = False
 
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'PbPbSkim2018_DiMuContBoth_ZDC_cfg.py'
+config.JobType.psetName = 'PbPbSkimAndTree2018_DiMuContBoth_mc_cfg.py'
 config.JobType.inputFiles = ['HeavyIonRPRcd_PbPb2018_offline.db']
 
 config.section_('Data')
-config.Data.inputDBS = 'global'
-config.Data.splitting = 'LumiBased'
-config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/HI/PromptReco/Cert_326381-327564_HI_PromptReco_Collisions18_JSON_HF_and_MuonPhys.txt'
-config.Data.runRange = '326381-327564'
-config.Data.publication = True
+#config.Data.inputDBS = 'global'
+config.Data.inputDBS = 'phys03'
+config.Data.splitting = 'FileBased'
+config.Data.publication = False
 config.JobType.allowUndistributedCMSSW = True
 
 config.section_('Site')
@@ -32,7 +31,7 @@ config.Site.storageSite = 'T2_CH_CERN'
 
 def submit(config):
     try:
-        crabCommand('submit', config = config, dryrun=False)
+        crabCommand('submit', config = config, dryrun=True)
     except HTTPException as hte:
         print "Failed submitting task: %s" % (hte.headers)
     except ClientException as cle:
@@ -43,23 +42,22 @@ def submit(config):
 #############################################################################################
 
 dataMap = {
-            "HIDoubleMuon_v1": { "PD": "/HIDoubleMuon/HIRun2018A-PromptReco-v1/AOD", "Units": 7, "Memory": 2700, "RunTime": 720 },
-            "HIDoubleMuon_v2": { "PD": "/HIDoubleMuon/HIRun2018A-PromptReco-v2/AOD", "Units": 10, "Memory": 2800, "RunTime": 820 },
-            "HISingleMuon_v1": { "PD": "/HISingleMuon/HIRun2018A-PromptReco-v1/AOD", "Units": 7, "Memory": 2700, "RunTime": 720 },
-            "HISingleMuon_v2": { "PD": "/HISingleMuon/HIRun2018A-PromptReco-v2/AOD", "Units": 10, "Memory": 2800, "RunTime": 820 },
-            "HIDoubleMuonPsiPeri_v2": { "PD": "/HIDoubleMuonPsiPeri/HIRun2018A-PromptReco-v2/AOD", "Units": 10, "Memory": 2800, "RunTime": 820 },
-            "HIForward_v1": { "PD": "/HIForward/HIRun2018A-PromptReco-v1/AOD", "Units": 14, "Memory": 1800, "RunTime": 420 },
-            "HIForward_v2": { "PD": "/HIForward/HIRun2018A-PromptReco-v2/AOD", "Units": 20, "Memory": 1800, "RunTime": 420 },
+            "Ups1S_TuneCP5_HydjetDrumMB_Pythia8": { "PD": "/Ups1SMM_5p02TeV_TuneCP5_Embd/anstahll-Ups1SMM_5p02TeV_TuneCP5_Embd_RECO_20190401-5db5dfa073297cb96791f14c622e83e2/USER", "Units": 40, "Memory": 1800, "RunTime": 720 },
+            "Zmu10mu10_TuneCP5_HydjetDrumMB_Pythia8": { "PD": "/ZMM_5p02TeV_TuneCP5_Embd/anstahll-ZMM_5p02TeV_TuneCP5_Embd_RECO_22032019-5db5dfa073297cb96791f14c622e83e2/USER", "Units": 40, "Memory": 1800, "RunTime": 720 },
+            #"Ups1S_TuneCP5_HydjetDrumMB_Pythia8": { "PD": "/Upsilon1S_pThat-2_TuneCP5_HydjetDrumMB_5p02TeV_Pythia8/HINPbPbAutumn18DR-mva98_103X_upgrade2018_realistic_HI_v11-v1/AODSIM", "Units": 1, "Memory": 1800, "RunTime": 720 },
+            #"Zmu10mu10_TuneCP5_HydjetDrumMB_Pythia8": { "PD": "/Zmu10mu10_pThat-0_TuneCP5_HydjetDrumMB_5p02TeV_Pythia8/HINPbPbAutumn18DR-mva98_103X_upgrade2018_realistic_HI_v11-v1/AODSIM", "Units": 1, "Memory": 1800, "RunTime": 720 },
+            #"Zmu10mu10_TuneCP5_pythia8": { "PD": "/Zmu10mu10_TuneCP5_PbPb_5p02TeV_pythia8/HINPbPbAutumn18DR-NoPUmva98_103X_upgrade2018_realistic_HI_v11-v1/AODSIM", "Units": 1, "Memory": 1800, "RunTime": 720 },
+            #"DYJetsToLL_TuneCP5_aMCatNLOFXFX-pythia8": { "PD": "/DYJetsToLL_TuneCP5_PbPb_aMCatNLOFXFX-pythia8/HINPbPbAutumn18DR-NoPUmva98_103X_upgrade2018_realistic_HI_v11-v1/AODSIM", "Units": 1, "Memory": 1800, "RunTime": 720 },
             }
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeSkim_'+key+'_HIRun2018_DiMuMassMin7_20190421'
+    config.General.requestName = 'VertexCompositeTree_'+key+'_HINPbPbAutumn18_DiMuMC_20190421'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]
     config.JobType.maxJobRuntimeMin = val["RunTime"]
     config.Data.outputDatasetTag = config.General.requestName
-    config.Data.outLFNDirBase = '/store/group/phys_heavyions/%s/RiceHIN/PbPb2018/SKIM/%s' % (getUsernameFromSiteDB(), config.General.requestName)
+    config.Data.outLFNDirBase = '/store/group/phys_heavyions/%s/RiceHIN/PbPb2018/TREE/%s' % (getUsernameFromSiteDB(), config.General.requestName)
     print("Submitting CRAB job for: "+val["PD"])
     submit(config)

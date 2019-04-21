@@ -162,7 +162,7 @@ private:
   int   Ntrkoffline;
   int   Npixel;
   short nPV;
-  ushort candSize;
+  uint candSize;
   bool  trigHLT[MAXTRG];
   bool  evtSel[MAXSEL];
   float HFsumETPlus;
@@ -282,7 +282,7 @@ private:
   // gen info
   std::vector<reco::GenParticleRef> genVec_;
   float weight_gen;
-  ushort candSize_gen;
+  uint candSize_gen;
   float pt_gen[MAXCAN];
   float eta_gen[MAXCAN];
   float y_gen[MAXCAN];
@@ -454,17 +454,17 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
   iEvent.getByToken(tok_offlineBS_, beamspot);
   edm::Handle<reco::VertexCollection> vertices;
   iEvent.getByToken(tok_offlinePV_, vertices);
-  if(!vertices.isValid()) { throw cms::Exception("PATCompositeAnalyzer") << "Primary vertices  collection not found!" << std::endl; }
+  if(!vertices.isValid()) throw cms::Exception("PATCompositeAnalyzer") << "Primary vertices  collection not found!" << std::endl;
 
   edm::Handle<pat::CompositeCandidateCollection> v0candidates;
   iEvent.getByToken(patCompositeCandidateCollection_Token_, v0candidates);
-  if(!v0candidates.isValid()) { throw cms::Exception("PATCompositeAnalyzer") << "V0 candidate collection not found!" << std::endl; }
+  if(!v0candidates.isValid()) throw cms::Exception("PATCompositeAnalyzer") << "V0 candidate collection not found!" << std::endl;
 
   edm::Handle<MVACollection> mvavalues;
   if(useAnyMVA_)
   {
     iEvent.getByToken(MVAValues_Token_, mvavalues);
-    if(!mvavalues.isValid()) { throw cms::Exception("PATCompositeAnalyzer") << "MVA collection not found!" << std::endl; }
+    if(!mvavalues.isValid()) throw cms::Exception("PATCompositeAnalyzer") << "MVA collection not found!" << std::endl;
     assert( (*mvavalues).size() == v0candidates->size() );
   }
 
@@ -590,7 +590,8 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
 
   //RECO Candidate info
   candSize = v0candidates->size();
-  for(ushort it=0; it<candSize; ++it)
+  if(candSize>MAXCAN) throw cms::Exception("PATCompositeAnalyzer") << "Number of candidates (" << candSize << ") exceeds limit!" << std::endl; 
+  for(uint it=0; it<candSize; ++it)
   { 
     const auto& trk = (*v0candidates)[it];
 
@@ -642,7 +643,7 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
     dlos2D[it] = dl2D[it]/dl2Derror;
 
     const ushort& nDau = trk.numberOfDaughters();
-    if(nDau!=NDAU_) { throw cms::Exception("PATCompositeAnalyzer") << "Expected " << NDAU_ << " daughters but V0 candidate has " << nDau << " daughters!" << std::endl; }
+    if(nDau!=NDAU_) throw cms::Exception("PATCompositeAnalyzer") << "Expected " << NDAU_ << " daughters but V0 candidate has " << nDau << " daughters!" << std::endl;
 
     //Gen match
     if(doGenMatching_)
@@ -1006,7 +1007,7 @@ PATCompositeTreeProducer::fillGEN(const edm::Event& iEvent, const edm::EventSetu
 
   edm::Handle<reco::GenParticleCollection> genpars;
   iEvent.getByToken(tok_genParticle_, genpars);
-  if(!genpars.isValid()) { throw cms::Exception("PATCompositeAnalyzer") << "Gen matching cannot be done without Gen collection!" << std::endl; }
+  if(!genpars.isValid()) throw cms::Exception("PATCompositeAnalyzer") << "Gen matching cannot be done without Gen collection!" << std::endl;
 
   candSize_gen = 0;
   for(uint idx=0; idx<genpars->size(); ++idx)
@@ -1058,8 +1059,8 @@ PATCompositeTreeProducer::beginJob()
   {
     throw cms::Exception("PATCompositeAnalyzer") << "Want threeProngDecay but PID daughter vector size is: " << NDAU_ << " !" << std::endl;
   }
-  if(!doRecoNtuple_ && !doGenNtuple_) { throw cms::Exception("PATCompositeAnalyzer") << "No output for either RECO or GEN!! Fix config!!" << std::endl; }
-  if(twoLayerDecay_ && doMuon_) { throw cms::Exception("PATCompositeAnalyzer") << "Muons cannot be coming from two layer decay!! Fix config!!" << std::endl; }
+  if(!doRecoNtuple_ && !doGenNtuple_) throw cms::Exception("PATCompositeAnalyzer") << "No output for either RECO or GEN!! Fix config!!" << std::endl;
+  if(twoLayerDecay_ && doMuon_) throw cms::Exception("PATCompositeAnalyzer") << "Muons cannot be coming from two layer decay!! Fix config!!" << std::endl;
 
   if(saveHistogram_) initHistogram();
   if(saveTree_) initTree();
@@ -1124,7 +1125,7 @@ PATCompositeTreeProducer::initTree()
     PATCompositeNtuple->Branch("bestvtxX",&bestvx,"bestvtxX/F");
     PATCompositeNtuple->Branch("bestvtxY",&bestvy,"bestvtxY/F");
     PATCompositeNtuple->Branch("bestvtxZ",&bestvz,"bestvtxZ/F");
-    PATCompositeNtuple->Branch("candSize",&candSize,"candSize/s");
+    PATCompositeNtuple->Branch("candSize",&candSize,"candSize/i");
     if(isCentrality_) 
     {
       PATCompositeNtuple->Branch("centrality",&centrality,"centrality/S");
@@ -1277,7 +1278,7 @@ PATCompositeTreeProducer::initTree()
   if(doGenNtuple_)
   {
     PATCompositeNtuple->Branch("weight_gen",&weight_gen,"weight_gen/F");
-    PATCompositeNtuple->Branch("candSize_gen",&candSize_gen,"candSize_gen/s");
+    PATCompositeNtuple->Branch("candSize_gen",&candSize_gen,"candSize_gen/i");
     PATCompositeNtuple->Branch("pT_gen",pt_gen,"pT_gen[candSize_gen]/F");
     PATCompositeNtuple->Branch("eta_gen",eta_gen,"eta_gen[candSize_gen]/F");
     PATCompositeNtuple->Branch("y_gen",y_gen,"y_gen[candSize_gen]/F");
