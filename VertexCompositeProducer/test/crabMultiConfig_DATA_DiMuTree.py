@@ -14,14 +14,14 @@ config.General.transferLogs = False
 
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'pPbSkim2016_DiMuContBoth_cfg.py'
+config.JobType.psetName = 'pPbSkimAndTree2016_DiMuContBoth_cfg.py'
 
 config.section_('Data')
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'LumiBased'
 config.Data.lumiMask = 'Cert_285479-286496_HI8TeV_PromptReco_pPb_Pbp_Collisions16_JSON_NoL1T_MuonPhys.txt'
 config.Data.runRange = '285479-286496'
-config.Data.publication = True
+config.Data.publication = False
 config.JobType.allowUndistributedCMSSW = True
 
 config.section_('Site')
@@ -53,11 +53,11 @@ for i in range(0,8):
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeSkim_'+key+'_PARun2016C_DiMuMassMin2_20190421'
+    config.General.requestName = 'VertexCompositeTree_'+key+'_PARun2016C_DiMuMassMin2_20190421'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]
     config.JobType.maxJobRuntimeMin = val["RunTime"]
     config.Data.outputDatasetTag = config.General.requestName
-    config.Data.outLFNDirBase = '/store/group/phys_heavyions/%s/RiceHIN/pPb2016/SKIM/%s' % (getUsernameFromSiteDB(), config.General.requestName)
+    config.Data.outLFNDirBase = '/store/group/phys_heavyions/%s/RiceHIN/pPb2016/TREE/%s' % (getUsernameFromSiteDB(), config.General.requestName)
     submit(config)

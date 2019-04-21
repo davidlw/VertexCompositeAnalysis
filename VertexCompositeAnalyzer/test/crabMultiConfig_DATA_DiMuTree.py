@@ -54,20 +54,13 @@ dataMap = {
             "PAHighMultiplicity6_v2": { "PD": "/PAHighMultiplicity6/anstahll-VertexCompositeSkim_PAHighMultiplicity6_PARun2016C_DiMuMassMin2_20190412-f7399c2a174ee6ef7ee6469827d7114f/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
             "PAHighMultiplicity7": { "PD": "/PAHighMultiplicity7/anstahll-VertexCompositeSkim_PAHighMultiplicity7_PARun2016C_DiMuMassMin2_20190412-3154688b915ffca6b9b5da6e522b4370/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
             "PAMinimumBias1": { "PD": "/PAMinimumBias1/anstahll-VertexCompositeSkim_PAMinimumBias1_PARun2016C_DiMuMassMin2_20190412-a251e958057ac5ccc6a704c4082074fe/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
-            "PAMinimumBias1_v2": { "PD": "/PAMinimumBias1/anstahll-VertexCompositeSkim_PAMinimumBias1_PARun2016C_DiMuMassMin2_20190412-a251e958057ac5ccc6a704c4082074fe/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
             "PAMinimumBias2": { "PD": "/PAMinimumBias2/anstahll-VertexCompositeSkim_PAMinimumBias2_PARun2016C_DiMuMassMin2_20190412-c689f38ddce83af2d258d8a701777b95/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
-            "PAMinimumBias2_v2": { "PD": "/PAMinimumBias2/anstahll-VertexCompositeSkim_PAMinimumBias2_PARun2016C_DiMuMassMin2_20190412-c689f38ddce83af2d258d8a701777b95/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
             "PAMinimumBias3": { "PD": "/PAMinimumBias3/anstahll-VertexCompositeSkim_PAMinimumBias3_PARun2016C_DiMuMassMin2_20190412-f60e46c534b612dd96502a40c2880a55/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
-            "PAMinimumBias3_v2": { "PD": "/PAMinimumBias3/anstahll-VertexCompositeSkim_PAMinimumBias3_PARun2016C_DiMuMassMin2_20190412-f60e46c534b612dd96502a40c2880a55/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
             "PAMinimumBias4": { "PD": "/PAMinimumBias4/anstahll-VertexCompositeSkim_PAMinimumBias4_PARun2016C_DiMuMassMin2_20190412-b13bc4d247420a20265ffad758782fe9/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
-            "PAMinimumBias4_v2": { "PD": "/PAMinimumBias4/anstahll-VertexCompositeSkim_PAMinimumBias4_PARun2016C_DiMuMassMin2_20190412-b13bc4d247420a20265ffad758782fe9/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
             "PAMinimumBias5": { "PD": "/PAMinimumBias5/anstahll-VertexCompositeSkim_PAMinimumBias5_PARun2016C_DiMuMassMin2_20190412-90798ba6dbe76e655d7f90d1967f1349/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
             "PAMinimumBias6": { "PD": "/PAMinimumBias6/anstahll-VertexCompositeSkim_PAMinimumBias6_PARun2016C_DiMuMassMin2_20190412-3908184e90249a470d4b4a16b02b7b1c/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
-            "PAMinimumBias6_v2": { "PD": "/PAMinimumBias6/anstahll-VertexCompositeSkim_PAMinimumBias6_PARun2016C_DiMuMassMin2_20190412-3908184e90249a470d4b4a16b02b7b1c/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
             "PAMinimumBias7": { "PD": "/PAMinimumBias7/anstahll-VertexCompositeSkim_PAMinimumBias7_PARun2016C_DiMuMassMin2_20190412-a3087abefccbeb021b7391ec9d0db759/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
-            "PAMinimumBias7_v2": { "PD": "/PAMinimumBias7/anstahll-VertexCompositeSkim_PAMinimumBias7_PARun2016C_DiMuMassMin2_20190412-a3087abefccbeb021b7391ec9d0db759/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
             "PAMinimumBias8": { "PD": "/PAMinimumBias8/anstahll-VertexCompositeSkim_PAMinimumBias8_PARun2016C_DiMuMassMin2_20190412-3154688b915ffca6b9b5da6e522b4370/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
-            "PAMinimumBias8_v2": { "PD": "/PAMinimumBias8/anstahll-VertexCompositeSkim_PAMinimumBias8_PARun2016C_DiMuMassMin2_20190412-3154688b915ffca6b9b5da6e522b4370/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
             "PAMinimumBias9": { "PD": "/PAMinimumBias9/anstahll-VertexCompositeSkim_PAMinimumBias9_PARun2016C_DiMuMassMin2_20190412-5fed557a66354841b445cd850c5c8d97/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
             "PAMinimumBias9_v2": { "PD": "/PAMinimumBias9/anstahll-VertexCompositeSkim_PAMinimumBias9_PARun2016C_DiMuMassMin2_20190412-4a47d065114b374d5497b4cb35cf53a2/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
             "PAMinimumBias10": { "PD": "/PAMinimumBias10/anstahll-VertexCompositeSkim_PAMinimumBias10_PARun2016C_DiMuMassMin2_20190412-d4771bc870adfcd441bf0c06583eba83/USER", "Units": 10, "Memory": 2400, "RunTime": 720 },
@@ -100,5 +93,5 @@ for key, val in dataMap.items():
     config.JobType.maxMemoryMB = val["Memory"]
     config.JobType.maxJobRuntimeMin = val["RunTime"]
     config.Data.outputDatasetTag = config.General.requestName
-    config.Data.outLFNDirBase = '/store/group/phys_heavyions/%s/RiceHIN/PbPb2018/TREE/%s' % (getUsernameFromSiteDB(), config.General.requestName)
+    config.Data.outLFNDirBase = '/store/group/phys_heavyions/%s/RiceHIN/pPb2016/TREE/%s' % (getUsernameFromSiteDB(), config.General.requestName)
     submit(config)

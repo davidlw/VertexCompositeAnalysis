@@ -10,7 +10,7 @@ cms.untracked.bool(True) )
 
 # Define the input source
 process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring(
-'file:/afs/cern.ch/user/a/anstahll/work/Analysis/Production/CMSSW_8_0_32/src/VertexCompositeAnalysis/VertexCompositeProducer/test/pPb_DiMuCont_TMP.root')
+'file:/afs/cern.ch/user/a/anstahll/work/Analysis/Production/CMSSW_8_0_32/src/VertexCompositeAnalysis/VertexCompositeProducer/test/pPb_DiMuCont.root')
 )
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
