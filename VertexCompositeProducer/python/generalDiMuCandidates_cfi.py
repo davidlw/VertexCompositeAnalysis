@@ -7,7 +7,7 @@ generalDiMuCandidates = cms.EDProducer("DiMuProducer",
     muonRecoAlgorithm = cms.InputTag('patMuonsWithTrigger'),
 
     # Muon selection
-    muonSelection = cms.string(""),
+    muonSelection = cms.string("isGlobalMuon || muonID('TMOneStationTight')"),
     tkdXYCut = cms.double(99999.), #|dXY| <
     tkdZCut = cms.double(99999.), #|dZ| <
 
