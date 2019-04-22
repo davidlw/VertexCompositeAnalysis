@@ -77,21 +77,21 @@ process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 process.dimurereco_step = cms.Path(process.eventFilter_HM * process.patMuonSequence * process.generalMuMuMassMin2Candidates)
 process.dimurerecowrongsign_step = cms.Path(process.eventFilter_HM * process.patMuonSequence * process.generalMuMuMassMin2CandidatesWrongSign)
 
+# Add the VertexComposite tree
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.dimuanalyzer_tree_cff")
+process.dimucontana.selectEvents = cms.untracked.string("eventFilter_HM_step")
+process.dimucontana_wrongsign.selectEvents = cms.untracked.string("eventFilter_HM_step")
+
 # Define the output
-process.load("VertexCompositeAnalysis.VertexCompositeProducer.ppanalysisSkimContentJPsi_cff")
-process.output_HM = cms.OutputModule("PoolOutputModule",
-    outputCommands = process.analysisSkimContent.outputCommands,
-    fileName = cms.untracked.string('pPb_DiMuCont.root'),
-    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eventFilter_HM_step')),
-)
-process.output_HM_step = cms.EndPath(process.output_HM)
+process.TFileService = cms.Service("TFileService", fileName = cms.string('dimuana.root'))
+process.p = cms.EndPath(process.dimucontana * process.dimucontana_wrongsign)
 
 # Define the process schedule
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
     process.dimurereco_step,
     process.dimurerecowrongsign_step,
-    process.output_HM_step
+    process.p
 )
 
 # Add the event selection filters
