@@ -20,22 +20,10 @@ beamScrapingFilter = cms.EDFilter("FilterOutScraping",
 # Cluster-shape filter re-run offline from ClusterCompatibility object
 from VertexCompositeAnalysis.VertexCompositeProducer.clusterCompatibilityFilter_cfi import *
 
-collisionEventSelection = cms.Sequence(
-    hfCoincFilter3Th3 *
-    primaryVertexFilter *
-    siPixelRecHits *
-    hltPixelClusterShapeFilter)
-
 collisionEventSelectionAOD = cms.Sequence(
     hfCoincFilter3Th3 *
     primaryVertexFilter *
     clusterCompatibilityFilter)
-
-collisionEventSelectionV2 = cms.Sequence(
-    hfCoincFilter2Th4 *
-    primaryVertexFilter *
-    siPixelRecHits *
-    hltPixelClusterShapeFilter)
 
 collisionEventSelectionAODv2 = cms.Sequence(
     hfCoincFilter2Th4 *

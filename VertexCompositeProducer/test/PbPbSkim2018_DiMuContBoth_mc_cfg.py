@@ -81,10 +81,9 @@ process.dimurerecowrongsign_step = cms.Path(process.offlinePrimaryVerticesRecove
 
 # Define the output
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.ppanalysisSkimContentJPsi_cff")
-process.analysisSkimContent.outputCommands.append(['drop *_genParticles_*_*'])
 process.output_HM = cms.OutputModule("PoolOutputModule",
     outputCommands = process.analysisSkimContent.outputCommands,
-    fileName = cms.untracked.string('PbPb_MC_DiMuCont.root'),
+    fileName = cms.untracked.string('PbPb_DiMuCont_MC.root'),
 )
 process.output_HM_step = cms.EndPath(process.output_HM)
 

@@ -14,7 +14,7 @@ config.General.transferLogs = False
 
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'PbPbSkim2018_DiMuContBoth_ZDC_cfg.py'
+config.JobType.psetName = 'PbPbSkimAndTree2018_DiMuContBoth_ZDC_cfg.py'
 config.JobType.inputFiles = ['HeavyIonRPRcd_PbPb2018_offline.db']
 
 config.section_('Data')
@@ -22,7 +22,7 @@ config.Data.inputDBS = 'global'
 config.Data.splitting = 'LumiBased'
 config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/HI/PromptReco/Cert_326381-327564_HI_PromptReco_Collisions18_JSON_HF_and_MuonPhys.txt'
 config.Data.runRange = '326381-327564'
-config.Data.publication = True
+config.Data.publication = False
 config.JobType.allowUndistributedCMSSW = True
 
 config.section_('Site')
@@ -54,12 +54,12 @@ dataMap = {
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeSkim_'+key+'_HIRun2018_DiMuMassMin7_20190421'
+    config.General.requestName = 'VertexCompositeTree_'+key+'_HIRun2018_DiMuMassMin7_20190421'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]
     config.JobType.maxJobRuntimeMin = val["RunTime"]
     config.Data.outputDatasetTag = config.General.requestName
-    config.Data.outLFNDirBase = '/store/group/phys_heavyions/%s/RiceHIN/PbPb2018/SKIM/%s' % (getUsernameFromSiteDB(), config.General.requestName)
+    config.Data.outLFNDirBase = '/store/group/phys_heavyions/%s/RiceHIN/PbPb2018/TREE/%s' % (getUsernameFromSiteDB(), config.General.requestName)
     print("Submitting CRAB job for: "+val["PD"])
     submit(config)

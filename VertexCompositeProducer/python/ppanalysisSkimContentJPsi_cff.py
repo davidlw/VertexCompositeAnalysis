@@ -53,8 +53,7 @@ analysisSkimContent = cms.PSet(
 #      'keep *_particleFlow_*_*',
       # mc (if present)
 #      'keep *_*GenJet*_*_*',
-      'keep recoGenParticles_genParticles_*_*',
-      'keep *_genMuons_*_*',
+      'keep recoGenParticles_genMuons_*_*',
       'keep *_generator_*_*',
 #      'keep *SimVertex*_*_*_*',
       # missing ET

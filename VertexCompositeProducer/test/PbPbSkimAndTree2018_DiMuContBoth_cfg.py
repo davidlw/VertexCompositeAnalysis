@@ -25,21 +25,8 @@ process.GlobalTag.globaltag = cms.string('103X_dataRun2_v6')
 
 # Add PbPb centrality
 process.load("RecoHI.HiCentralityAlgos.CentralityBin_cfi")
-process.load('RecoHI.HiCentralityAlgos.HiCentrality_cfi')
-process.hiCentrality.produceHFhits = False
-process.hiCentrality.produceHFtowers = False
-process.hiCentrality.produceEcalhits = False
-process.hiCentrality.produceZDChits = True
-process.hiCentrality.produceETmidRapidity = False
-process.hiCentrality.producePixelhits = False
-process.hiCentrality.produceTracks = False
-process.hiCentrality.producePixelTracks = False
-process.hiCentrality.reUseCentrality = True
-process.hiCentrality.srcZDChits = cms.InputTag("QWzdcreco")
-process.hiCentrality.srcReUse = cms.InputTag("hiCentrality","","RECO")
 process.centralityBin.Centrality = cms.InputTag("hiCentrality")
 process.centralityBin.centralityVariable = cms.string("HFtowers")
-process.centralityBin.nonDefaultGlauberModel = cms.string("")
 process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
 process.GlobalTag.toGet.extend([
     cms.PSet(record = cms.string("HeavyIonRcd"),
@@ -48,7 +35,7 @@ process.GlobalTag.toGet.extend([
         label = cms.untracked.string("HFtowers")
         ),
     ])
-process.cent_seq = cms.Sequence(process.hiCentrality * process.centralityBin)
+process.cent_seq = cms.Sequence(process.centralityBin)
 
 # Add PbPb event plane
 process.load("RecoHI.HiEvtPlaneAlgos.HiEvtPlane_cfi")
@@ -128,24 +115,19 @@ process.eventFilter_HM = cms.Sequence(
 )
 process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 
-# ZDC info
-process.load('QWAna.QWZDC2018RecHit.QWZDC2018Producer_cfi')
-process.load('QWAna.QWZDC2018RecHit.QWZDC2018RecHit_cfi')
-
 # Define the analysis steps
-process.pcentandep_step = cms.Path(process.eventFilter_HM * process.zdcdigi * process.QWzdcreco * process.cent_seq * process.evtplane_seq)
+process.pcentandep_step = cms.Path(process.eventFilter_HM * process.cent_seq * process.evtplane_seq)
 process.dimurereco_step = cms.Path(process.eventFilter_HM * process.patMuonSequence * process.generalMuMuMassMin7Candidates)
 process.dimurerecowrongsign_step = cms.Path(process.eventFilter_HM * process.patMuonSequence * process.generalMuMuMassMin7CandidatesWrongSign)
 
+# Add the VertexComposite tree
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.dimuanalyzer_tree_cff")
+process.dimucontana.selectEvents = cms.untracked.string("eventFilter_HM_step")
+process.dimucontana_wrongsign.selectEvents = cms.untracked.string("eventFilter_HM_step")
+
 # Define the output
-process.load("VertexCompositeAnalysis.VertexCompositeProducer.ppanalysisSkimContentJPsi_cff")
-process.analysisSkimContent.outputCommands.append("drop *_hiCentrality_*_RECO")
-process.output_HM = cms.OutputModule("PoolOutputModule",
-    outputCommands = process.analysisSkimContent.outputCommands,
-    fileName = cms.untracked.string('PbPb_DiMuCont.root'),
-    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eventFilter_HM_step')),
-)
-process.output_HM_step = cms.EndPath(process.output_HM)
+process.TFileService = cms.Service("TFileService", fileName = cms.string('dimuana.root'))
+process.p = cms.EndPath(process.dimucontana * process.dimucontana_wrongsign)
 
 # Define the process schedule
 process.schedule = cms.Schedule(
@@ -153,7 +135,7 @@ process.schedule = cms.Schedule(
     process.pcentandep_step,
     process.dimurereco_step,
     process.dimurerecowrongsign_step,
-    process.output_HM_step
+    process.p
 )
 
 # Add the event selection filters
