@@ -60,4 +60,5 @@ for key, val in dataMap.items():
     config.JobType.maxJobRuntimeMin = val["RunTime"]
     config.Data.outputDatasetTag = config.General.requestName
     config.Data.outLFNDirBase = '/store/group/phys_heavyions/%s/RiceHIN/pPb2016/TREE/%s' % (getUsernameFromSiteDB(), config.General.requestName)
+    print("Submitting CRAB job for: "+val["PD"])
     submit(config)
