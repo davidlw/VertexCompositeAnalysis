@@ -31,7 +31,7 @@ config.Site.storageSite = 'T2_CH_CERN'
 
 def submit(config):
     try:
-        crabCommand('submit', config = config, dryrun=False)
+        crabCommand('submit', config = config, dryrun=True)
     except HTTPException as hte:
         print "Failed submitting task: %s" % (hte.headers)
     except ClientException as cle:
@@ -48,7 +48,7 @@ dataMap = {
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeTree_'+key+'_Run2017G_DiMuMassMin7_20190421'
+    config.General.requestName = 'VertexCompositeTree_'+key+'_Run2017G_DiMuMassMin7_20190423'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]
