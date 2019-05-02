@@ -40,14 +40,14 @@ def submit(config):
 #############################################################################################
 
 dataMap = {
-            "Pythia8_Zmu10mu10_Hydjet_MB": { "PD": "/Pythia8_Zmu10mu10_Hydjet_MB/HINPbPbWinter16DR-75X_mcRun2_HeavyIon_v13_ext1-v1/AODSIM", "Units": 1, "Memory": 1400, "RunTime": 800 },
-            "Pythia8_Ups1SMM_ptUps_00_03_Hydjet_MB": { "PD": "/Pythia8_Ups1SMM_ptUps_00_03_Hydjet_MB/HINPbPbWinter16DR-75X_mcRun2_HeavyIon_v13-v1/AODSIM", "Units": 1, "Memory": 1400, "RunTime": 800 },
-            "Pythia8_Ups1SMM_ptUps_03_06_Hydjet_MB": { "PD": "/Pythia8_Ups1SMM_ptUps_03_06_Hydjet_MB/HINPbPbWinter16DR-75X_mcRun2_HeavyIon_v13-v1/AODSIM", "Units": 1, "Memory": 1400, "RunTime": 800 },
-            "Pythia8_Ups1SMM_ptUps_06_09_Hydjet_MB": { "PD": "/Pythia8_Ups1SMM_ptUps_06_09_Hydjet_MB/HINPbPbWinter16DR-75X_mcRun2_HeavyIon_v13-v1/AODSIM", "Units": 1, "Memory": 1400, "RunTime": 800 },
-            "Pythia8_Ups1SMM_ptUps_09_12_Hydjet_MB": { "PD": "/Pythia8_Ups1SMM_ptUps_09_12_Hydjet_MB/HINPbPbWinter16DR-75X_mcRun2_HeavyIon_v13-v1/AODSIM", "Units": 1, "Memory": 1400, "RunTime": 800 },
-            "Pythia8_Ups1SMM_ptUps_12_15_Hydjet_MB": { "PD": "/Pythia8_Ups1SMM_ptUps_12_15_Hydjet_MB/HINPbPbWinter16DR-75X_mcRun2_HeavyIon_v13-v1/AODSIM", "Units": 1, "Memory": 1400, "RunTime": 800 },
-            "Pythia8_Ups1SMM_ptUps_15_30_Hydjet_MB": { "PD": "/Pythia8_Ups1SMM_ptUps_15_30_Hydjet_MB/HINPbPbWinter16DR-75X_mcRun2_HeavyIon_v13-v1/AODSIM", "Units": 1, "Memory": 1400, "RunTime": 800 },
-            "Pythia8_Ups1SMM_ptUps_30_inf_Hydjet_MB": { "PD": "/Pythia8_Ups1SMM_ptUps_30_inf_Hydjet_MB/HINPbPbWinter16DR-75X_mcRun2_HeavyIon_v13-v1/AODSIM", "Units": 1, "Memory": 1400, "RunTime": 800 },
+            "Pythia8_Zmu10mu10_Hydjet_MB": { "PD": "/Pythia8_Zmu10mu10_Hydjet_MB/HINPbPbWinter16DR-75X_mcRun2_HeavyIon_v13_ext1-v1/AODSIM", "Units": 1, "Memory": 1100, "RunTime": 180 },
+            "Pythia8_Ups1SMM_ptUps_00_03_Hydjet_MB": { "PD": "/Pythia8_Ups1SMM_ptUps_00_03_Hydjet_MB/HINPbPbWinter16DR-75X_mcRun2_HeavyIon_v13-v1/AODSIM", "Units": 1, "Memory": 1100, "RunTime": 180 },
+            "Pythia8_Ups1SMM_ptUps_03_06_Hydjet_MB": { "PD": "/Pythia8_Ups1SMM_ptUps_03_06_Hydjet_MB/HINPbPbWinter16DR-75X_mcRun2_HeavyIon_v13-v1/AODSIM", "Units": 1, "Memory": 1100, "RunTime": 180 },
+            "Pythia8_Ups1SMM_ptUps_06_09_Hydjet_MB": { "PD": "/Pythia8_Ups1SMM_ptUps_06_09_Hydjet_MB/HINPbPbWinter16DR-75X_mcRun2_HeavyIon_v13-v1/AODSIM", "Units": 1, "Memory": 1100, "RunTime": 180 },
+            "Pythia8_Ups1SMM_ptUps_09_12_Hydjet_MB": { "PD": "/Pythia8_Ups1SMM_ptUps_09_12_Hydjet_MB/HINPbPbWinter16DR-75X_mcRun2_HeavyIon_v13-v1/AODSIM", "Units": 1, "Memory": 1100, "RunTime": 180 },
+            "Pythia8_Ups1SMM_ptUps_12_15_Hydjet_MB": { "PD": "/Pythia8_Ups1SMM_ptUps_12_15_Hydjet_MB/HINPbPbWinter16DR-75X_mcRun2_HeavyIon_v13-v1/AODSIM", "Units": 1, "Memory": 1100, "RunTime": 180 },
+            "Pythia8_Ups1SMM_ptUps_15_30_Hydjet_MB": { "PD": "/Pythia8_Ups1SMM_ptUps_15_30_Hydjet_MB/HINPbPbWinter16DR-75X_mcRun2_HeavyIon_v13-v1/AODSIM", "Units": 1, "Memory": 1100, "RunTime": 180 },
+            "Pythia8_Ups1SMM_ptUps_30_inf_Hydjet_MB": { "PD": "/Pythia8_Ups1SMM_ptUps_30_inf_Hydjet_MB/HINPbPbWinter16DR-75X_mcRun2_HeavyIon_v13-v1/AODSIM", "Units": 1, "Memory": 1100, "RunTime": 180 },
           }
 
 ## Submit the muon PDs

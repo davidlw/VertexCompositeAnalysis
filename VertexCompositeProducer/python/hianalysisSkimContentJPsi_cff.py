@@ -23,8 +23,7 @@ analysisSkimContent = cms.PSet(
         'keep *_hiSelectedVertex_*_*',
 
         # mc (if present)
-        'keep recoGenParticles_genParticles_*_*',
-        'keep *_genMuons_*_*',
+        'keep recoGenParticles_genMuons_*_*',
         'keep *_generator_*_*',
         )
 )
