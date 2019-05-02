@@ -47,7 +47,7 @@ dataMap = {
             "BToJPsiToMuMu_pPb-Bst": { "PD": "/NonPrPsi1_2SToMuMu_pTMu-2p5_pPb-Bst_8p16-Pythia8/pPb816Summer16DR-pPbBst_80X_mcRun2_pA_v4-v1/AODSIM", "Units": 1, "Memory": 1600, "RunTime": 820 },
             "BToJPsiToMuMu_PbP-Bst": { "PD": "/NonPrPsi1_2SToMuMu_pTMu-2p5_PbP-Bst_8p16-Pythia8/pPb816Summer16DR-PbPBst_80X_mcRun2_pA_v4-v1/AODSIM", "Units": 1, "Memory": 1600, "RunTime": 820 },
             "DYToMuMu_pPb-Bst": { "PD": "/DYtoMuMu_M-30_pPb-EmbEPOS_8p16_Powheg/pPb816Summer16DR-pPbEmb_80X_mcRun2_pA_v4-v2/AODSIM", "Units": 1, "Memory": 1600, "RunTime": 820 },
-            "DYToMuMu_PbP-Bst": { "PD": "DYtoMuMu_M-30_PbP-EmbEPOS_8p16_Powheg/pPb816Summer16DR-PbPEmb_80X_mcRun2_pA_v4-v1/AODSIM", "Units": 1, "Memory": 1600, "RunTime": 820 },
+            "DYToMuMu_PbP-Bst": { "PD": "/DYtoMuMu_M-30_PbP-EmbEPOS_8p16_Powheg/pPb816Summer16DR-PbPEmb_80X_mcRun2_pA_v4-v1/AODSIM", "Units": 1, "Memory": 1600, "RunTime": 820 },
           }
 
 ## Submit the muon PDs
