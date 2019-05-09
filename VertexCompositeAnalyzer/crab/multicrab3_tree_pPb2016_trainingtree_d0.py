@@ -13,9 +13,9 @@ if __name__ == '__main__':
     config.General.transferOutputs = True
     config.General.transferLogs = False
     config.JobType.pluginName = 'Analysis'
-    config.JobType.maxMemoryMB = 5000
+    config.JobType.maxMemoryMB = 3000
 #    config.JobType.maxJobRuntimeMin = 2750
-    config.Data.unitsPerJob = 2
+    config.Data.unitsPerJob = 1
 #    config.Data.totalUnits = -1
     config.Data.splitting = 'FileBased'
 #    config.Data.runRange = '285505-285505'
@@ -24,6 +24,10 @@ if __name__ == '__main__':
     config.Data.publication = False
     config.Data.useParent = True
     config.Data.inputDBS = 'phys03'
+
+    config.section_('Site')
+    config.Data.ignoreLocality = True
+    config.Site.whitelist = ['T1_US_*','T2_US_*','T2_CH_CERN','T2_BE_IIHE']
     config.Site.storageSite = 'T2_CH_CERN'
 
     def submit(config):
@@ -38,19 +42,53 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-#    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_NoBDTCutScale07_run285505_b1_v1'
-#    config.JobType.psetName = '../test/D0/d0ana_trainingtree.py'
-#    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
-#    config.Data.outputDatasetTag = 'pPb_Tree_D0_default_NoBDTCutScale07_run285505_v1'
-#    submit(config)
-
-    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCut03_b1_v1'
+    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNew_b1_v2'
     config.JobType.psetName = '../test/D0/d0ana_trainingtree_bdtcut.py'
     config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
-    config.Data.outputDatasetTag = 'pPb_Tree_D0_default_BDTCut03_v1'
+    config.Data.outputDatasetTag = 'pPb_Tree_D0_default_BDTCutNew_v2'
     submit(config)
 
-    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCut03_b1_v1'
+    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNew_b2_v2'
+    config.Data.inputDataset = '/PAHighMultiplicity2/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNew_b3_v2'
+    config.Data.inputDataset = '/PAHighMultiplicity3/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNew_b4_v2'
+    config.Data.inputDataset = '/PAHighMultiplicity4/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNew_b5_v2'
+    config.Data.inputDataset = '/PAHighMultiplicity5/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNew_b6_v2'
+    config.Data.inputDataset = '/PAHighMultiplicity6/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNew_b1_v2'
     config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
-    config.Data.outputDatasetTag = 'Pbp_Tree_D0_default_BDTCut03_v1'
+    config.Data.outputDatasetTag = 'Pbp_Tree_D0_default_BDTCutNew_v2'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNew_b2_v2'
+    config.Data.inputDataset = '/PAHighMultiplicity2/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNew_b3_v2'
+    config.Data.inputDataset = '/PAHighMultiplicity3/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNew_b4_v2'
+    config.Data.inputDataset = '/PAHighMultiplicity4/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNew_b5_v2'
+    config.Data.inputDataset = '/PAHighMultiplicity5/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNew_b6_v2'
+    config.Data.inputDataset = '/PAHighMultiplicity6/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
     submit(config)

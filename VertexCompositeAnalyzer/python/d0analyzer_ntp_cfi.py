@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
 d0ana = cms.EDAnalyzer('VertexCompositeNtupleProducer',
+  doRecoNtuple = cms.untracked.bool(True),
+  doGenNtuple = cms.untracked.bool(False),
   doGenMatching = cms.untracked.bool(False),
   doGenMatchingTOF = cms.untracked.bool(False),
   hasSwap = cms.untracked.bool(True),
@@ -27,7 +29,7 @@ d0ana = cms.EDAnalyzer('VertexCompositeNtupleProducer',
   massHistWidth = cms.untracked.double(0.2),
   massHistBins = cms.untracked.int32(100),
 
-  pTBins = cms.untracked.vdouble(0,1.2,1.5,2.4,3.0,3.5,4.2,5.0,6.0,7.0,8.0),
+  pTBins = cms.untracked.vdouble(1.2,1.5,2.0,2.5,3.0,4.0,6.0,8.0,10.,20),
   yBins = cms.untracked.vdouble(-2.4,-1.0,0.0,1.0,2.4),
 
   useAnyMVA = cms.bool(False),
@@ -40,6 +42,8 @@ d0ana = cms.EDAnalyzer('VertexCompositeNtupleProducer',
                               )
 
 d0ana_mc = cms.EDAnalyzer('VertexCompositeNtupleProducer',
+  doRecoNtuple = cms.untracked.bool(True),
+  doGenNtuple = cms.untracked.bool(True),
   doGenMatching = cms.untracked.bool(True),
   doGenMatchingTOF = cms.untracked.bool(False),
   hasSwap = cms.untracked.bool(True),

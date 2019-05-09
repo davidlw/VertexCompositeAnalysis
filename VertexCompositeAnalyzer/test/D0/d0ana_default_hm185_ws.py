@@ -19,7 +19,7 @@ cms.untracked.bool(True) )
 #process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 #process.GlobalTag.globaltag = "80X_dataRun2_Prompt_v15"
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) 
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) 
 )
 
 process.source = cms.Source("PoolSource",
@@ -55,16 +55,20 @@ process.d0ana.MVACollection = cms.InputTag("d0selector:MVAValuesNewD0")
 #process.d0ana.isSkimMVA = cms.untracked.bool(True)
 process.d0ana.saveHistogram = cms.untracked.bool(True)
 process.d0ana.saveTree = cms.untracked.bool(False)
-process.d0ana.yBins = cms.untracked.vdouble(-2.4,-1.6,-0.8,0.0,0.8,1.6,2.4)
+process.d0ana.yBins = cms.untracked.vdouble(-2.4,-1.2,-0.6,0.0,0.6,1.2,2.4)
 
 process.d0selector = process.d0selectorBDTPreCut.clone()
 process.d0selector.useAnyMVA = cms.bool(True)
-process.d0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_default_HLT185_WS.root')
+#process.d0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_default_HLT185_WS.root')
+process.d0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_default_HLT185_WS_zVtxPt1p5_v1.root')
+#process.d0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_default_HLT185_WS_zVtxPt1p5Step3_v1.root')
 process.d0selector.multMin = cms.untracked.double(185)
 process.d0selector.multMax = cms.untracked.double(250)
 
 process.npd0selector = process.d0selector.clone()
-process.npd0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_WS.root')
+#process.npd0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_WS.root')
+process.npd0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_RS_zVtxPt1p5_v1.root')
+#process.npd0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_WS_zVtxPt1p5Step3_v1.root')
 process.npd0ana = process.d0ana.clone()
 process.npd0ana.VertexCompositeCollection = cms.untracked.InputTag("npd0selector:D0")
 process.npd0ana.MVACollection = cms.InputTag("npd0selector:MVAValuesNewD0")

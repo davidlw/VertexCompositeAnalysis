@@ -1470,7 +1470,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         }
         else if(useAnyMVA_ && !useExistingMVA_)
         {
-          float gbrVals_[50];
+          float gbrVals_[50]={0};
           if(forestLabel_ == "D0InpPb" || forestLabel_ == "D0Inpp" || forestLabel_ == "D0InPbPb")
           { 
             gbrVals_[0] = pt;
@@ -1493,7 +1493,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
             gbrVals_[17] = nhit2;
             gbrVals_[18] = ptErr1;
             gbrVals_[19] = ptErr2;
-//            gbrVals_[20] = H2dedx1;
+//            gbrVals_[20] = bestvz;
 //            gbrVals_[21] = H2dedx2;
           }
 
@@ -1574,7 +1574,14 @@ double
 VertexCompositeSelector::GetMVACut(double y, double pt)
 {
   double mvacut = -1.0;
-  if(fabs(y)>2.4) return mvacut;
+  if(fabs(y)>2.4) return 1.0;
+
+  //temporary
+  if(pt<4) return 0.4;
+  else if(pt>4 && pt<6) return 0.1;
+  else if(pt>6 && pt<8) return -0.2;
+  else return -1.0;
+
   if(!hist_bdtcut) return mvacut;
 
   mvacut = hist_bdtcut->GetBinContent(hist_bdtcut->GetXaxis()->FindBin(y),hist_bdtcut->GetYaxis()->FindBin(pt));
