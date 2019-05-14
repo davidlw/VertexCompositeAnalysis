@@ -744,17 +744,7 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
         ntrackerlayer[iDau][it] = (muon.innerTrack().isNonnull() ? muon.innerTrack()->hitPattern().trackerLayersWithMeasurement() : -1);
         muonbestdxy[iDau][it] = (muon.muonBestTrack().isNonnull() ? muon.muonBestTrack()->dxy(bestvtx) : 99.);
         muonbestdz[iDau][it] = (muon.muonBestTrack().isNonnull() ? muon.muonBestTrack()->dz(bestvtx) : 99.);
-        tightmuon[iDau][it] = (
-                               glbmuon[iDau][it] &&
-                               pfmuon[iDau][it] &&
-                               (glbtrkchi[iDau][it] < 10.) &&
-                               (nmuonhit[iDau][it] > 0) &&
-                               (nmatchedst[iDau][it] > 1) &&
-                               (npixelhit[iDau][it] > 0) &&
-                               (ntrackerlayer[iDau][it] > 5) &&
-                               (fabs(muonbestdxy[iDau][it]) < 0.2) &&
-                               (fabs(muonbestdz[iDau][it]) < 0.5)
-                               );
+        tightmuon[iDau][it] = muon.passed(reco::Muon::CutBasedIdTight);
 
         // Soft ID Muon POG Run 2
         onestmuon[iDau][it] = (dau.isMuon() ? muon::isGoodMuon(muon, muon::SelectionType::TMOneStationTight) : false);
@@ -762,14 +752,7 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
         hpmuon[iDau][it] = (muon.innerTrack().isNonnull() ? muon.innerTrack()->quality(reco::TrackBase::highPurity) : false);
         muondxy[iDau][it] = (muon.innerTrack().isNonnull() ? muon.innerTrack()->dxy(bestvtx) : 99.);
         muondz[iDau][it] = (muon.innerTrack().isNonnull() ? muon.innerTrack()->dz(bestvtx) : 99.);
-        softmuon[iDau][it] = (
-                              onestmuon[iDau][it] &&
-                              (ntrackerlayer[iDau][it] > 5) &&
-                              (npixellayer[iDau][it] > 0) &&
-                              hpmuon[iDau][it] &&
-                              (fabs(muondxy[iDau][it]) < 0.3) &&
-                              (fabs(muondz[iDau][it]) < 20.)
-                              );
+        softmuon[iDau][it] = muon.passed(reco::Muon::SoftCutBasedId);
 
         // Hybrid Soft ID HIN PAG Run 2 PbPb
         trkmuon[iDau][it] = (dau.isMuon() ? muon.isTrackerMuon() : false);

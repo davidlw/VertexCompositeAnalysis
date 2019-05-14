@@ -37,8 +37,8 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
       'Flag_colEvtSel',
       'Flag_primaryVertexFilter',
       'Flag_NoScraping',
-      'Flag_pileupVertexFilterCut'
-      'Flag_pileupVertexFilterCutGplus'
+      'Flag_pileupVertexFilterCut',
+      'Flag_pileupVertexFilterCutGplus',
   ),
   selectEvents = cms.untracked.string(""),
 
