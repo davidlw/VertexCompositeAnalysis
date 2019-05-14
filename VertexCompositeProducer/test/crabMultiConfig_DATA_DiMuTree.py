@@ -47,12 +47,12 @@ for i in range(1,6):
     dataMap["HighMultiplicity"+str(i)+"_v2"] = { "PD": "/HighMultiplicityEOF"+str(i)+"/Run2017E-17Nov2017-v1/AOD", "Units": 7, "Memory": 2500, "RunTime": 1220 }
     dataMap["HighMultiplicity"+str(i)+"_v1"] = { "PD": "/HighMultiplicityEOF"+str(i)+"/Run2017C-17Nov2017-v1/AOD", "Units": 7, "Memory": 2500, "RunTime": 1220 }
 
-for i in range(1,10):
-    dataMap["MinimumBias"+str(i)+"_v2"] = { "PD": "/L1MinimumBias"+str(i)+"/Run2017E-PromptReco-v1/AOD", "Units": 7, "Memory": 2500, "RunTime": 1220 }
+#for i in range(1,10):
+#    dataMap["MinimumBias"+str(i)+"_v2"] = { "PD": "/L1MinimumBias"+str(i)+"/Run2017E-PromptReco-v1/AOD", "Units": 7, "Memory": 2500, "RunTime": 1220 }
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeTree_'+key+'_Run2017LowPU_DiMuMassMin2_20190421'
+    config.General.requestName = 'VertexCompositeTree_'+key+'_Run2017LowPU_DiMuMassMin2_20190514'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]
