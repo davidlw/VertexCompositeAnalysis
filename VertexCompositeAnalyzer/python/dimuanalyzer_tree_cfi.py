@@ -22,11 +22,11 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
   TriggerResultCollection = cms.untracked.InputTag("TriggerResults::HLT"),
   triggerPathNames = cms.untracked.vstring(
       # Other triggers
-      'HLT_FullTrack_Multiplicity85_part', # High multiplicity
-      'HLT_FullTrack_Multiplicity100_part', # High multiplicity
-      'HLT_FullTrack_Multiplicity130_part', # High multiplicity
-      'HLT_FullTrack_Multiplicity155_part', # High multiplicity
-      'HLT_L1MinimumBiasHF_OR', # Minimum bias
+      'HLT_FullTrack_Multiplicity85_', # High multiplicity
+      'HLT_FullTrack_Multiplicity100_', # High multiplicity
+      'HLT_FullTrack_Multiplicity130_', # High multiplicity
+      'HLT_FullTrack_Multiplicity155_', # High multiplicity
+      'HLT_L1MinimumBiasHF_OR_', # Minimum bias
   ),
   triggerFilterNames = cms.untracked.vstring(),
 

@@ -63,11 +63,11 @@ process.hltFilter.andOr = cms.bool(True)
 process.hltFilter.throw = cms.bool(False)
 process.hltFilter.HLTPaths = [
     # Other triggers
-    'HLT_FullTrack_Multiplicity85_part*', # High multiplicity
-    'HLT_FullTrack_Multiplicity100_part*', # High multiplicity
-    'HLT_FullTrack_Multiplicity130_part*', # High multiplicity
-    'HLT_FullTrack_Multiplicity155_part*', # High multiplicity
-    'HLT_L1MinimumBiasHF_OR*', # Minimum bias
+    'HLT_FullTrack_Multiplicity85_*', # High multiplicity
+    'HLT_FullTrack_Multiplicity100_*', # High multiplicity
+    'HLT_FullTrack_Multiplicity130_*', # High multiplicity
+    'HLT_FullTrack_Multiplicity155_*', # High multiplicity
+    'HLT_L1MinimumBiasHF_OR_*', # Minimum bias
     ]
 
 # Add PbPb collision event selection
@@ -86,14 +86,14 @@ process.pcentandep_step = cms.Path(process.eventFilter_HM * process.cent_seq)
 process.dimurereco_step = cms.Path(process.eventFilter_HM * process.patMuonSequence * process.generalMuMuMassMin2Candidates)
 process.dimurerecowrongsign_step = cms.Path(process.eventFilter_HM * process.patMuonSequence * process.generalMuMuMassMin2CandidatesWrongSign)
 
+# Add the VertexComposite tree
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.dimuanalyzer_tree_cff")
+process.dimucontana.selectEvents = cms.untracked.string("eventFilter_HM_step")
+process.dimucontana_wrongsign.selectEvents = cms.untracked.string("eventFilter_HM_step")
+
 # Define the output
-process.load("VertexCompositeAnalysis.VertexCompositeProducer.ppanalysisSkimContentJPsi_cff")
-process.output_HM = cms.OutputModule("PoolOutputModule",
-    outputCommands = process.analysisSkimContent.outputCommands,
-    fileName = cms.untracked.string('pp_DiMuCont.root'),
-    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eventFilter_HM_step')),
-)
-process.output_HM_step = cms.EndPath(process.output_HM)
+process.TFileService = cms.Service("TFileService", fileName = cms.string('dimuana.root'))
+process.p = cms.EndPath(process.dimucontana * process.dimucontana_wrongsign)
 
 # Define the process schedule
 process.schedule = cms.Schedule(
@@ -101,7 +101,7 @@ process.schedule = cms.Schedule(
     process.pcentandep_step,
     process.dimurereco_step,
     process.dimurerecowrongsign_step,
-    process.output_HM_step
+    process.p
 )
 
 # Add the event selection filters
