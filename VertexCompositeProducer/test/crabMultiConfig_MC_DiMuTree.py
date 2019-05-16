@@ -52,7 +52,7 @@ dataMap = {
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeTree_'+key+'_HIFall15_DiMuMC_20190420'
+    config.General.requestName = 'VertexCompositeTree_'+key+'_HIFall15_DiMuMC_20190514'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]

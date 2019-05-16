@@ -746,7 +746,7 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
         muonbestdz[iDau][it] = (muon.muonBestTrack().isNonnull() ? muon.muonBestTrack()->dz(bestvtx) : 99.);
         tightmuon[iDau][it] = (
                                glbmuon[iDau][it] &&
-                               pfmuon[iDau][it] &&
+                               //pfmuon[iDau][it] && not used in 2015 PbPb
                                (glbtrkchi[iDau][it] < 10.) &&
                                (nmuonhit[iDau][it] > 0) &&
                                (nmatchedst[iDau][it] > 1) &&
@@ -775,6 +775,7 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
         trkmuon[iDau][it] = (dau.isMuon() ? muon.isTrackerMuon() : false);
         hybridmuon[iDau][it] = (
                                 glbmuon[iDau][it] &&
+                                onestmuon[iDau][it] &&
                                 (ntrackerlayer[iDau][it] > 5) &&
                                 (npixellayer[iDau][it] > 0) &&
                                 (fabs(muondxy[iDau][it]) < 0.3) &&

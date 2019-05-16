@@ -42,13 +42,13 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
       'hltHIDoubleMu0MinBiasL1Filtered',
       'hltHIDoubleMu0HFTower0Filtered',
       'hltHIDoubleMu0MinBiasCent30to100L1Filtered',
-      'hltHIDoubleMu0HFTower0Cent30to100L1Filtered'
+      'hltHIDoubleMu0HFTower0Cent30to100L1Filtered',
       'hltHIDoubleMu10L1Filtered',
       'hltL1MuOpenL1Filtered3',
       'hltL1MuOpenNotHF2L1Filtered2',
       'hltHISingleMu15L3Filtered',
       'hltL1MuOpenL1Filtered4',
-      'hltL1MuOpenNotHF2L1Filtered0'
+      'hltL1MuOpenNotHF2L1Filtered0',
   ),
 
   #Filter info
@@ -57,7 +57,7 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
       'Flag_colEvtSel',
       'Flag_hfCoincFilter3',
       'Flag_primaryVertexFilter',
-      'Flag_clusterCompatibilityFilter'
+      'Flag_clusterCompatibilityFilter',
   ),
   selectEvents = cms.untracked.string(""),
 

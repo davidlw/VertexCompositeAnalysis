@@ -14,7 +14,7 @@ config.General.transferLogs = False
 
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'PbPbSkimAndTree2015_DiMuContBoth_cfg.py'
+config.JobType.psetName = 'PbPbSkimAndTree2015_DiMuContBoth_ALLDIMU_cfg.py'
 
 config.section_('Data')
 config.Data.inputDBS = 'global'
@@ -42,17 +42,12 @@ def submit(config):
 #############################################################################################
 
 dataMap = {
-            "HISingleMuon": { "PD": "/HIEWQExo/HIRun2015-PromptReco-v1/AOD", "Units": 8, "Memory": 1600, "RunTime": 1180 },
-            "HIDoubleMuon0": { "PD": "/HIOniaL1DoubleMu0/HIRun2015-PromptReco-v1/AOD", "Units": 4, "Memory": 1200, "RunTime": 1180 },
-            "HIDoubleMuon1": { "PD": "/HIOniaL1DoubleMu0B/HIRun2015-PromptReco-v1/AOD", "Units": 4, "Memory": 1200, "RunTime": 1180 },
-            "HIDoubleMuon2": { "PD": "/HIOniaL1DoubleMu0C/HIRun2015-PromptReco-v1/AOD", "Units": 4, "Memory": 1200, "RunTime": 1180 },
-            "HIDoubleMuon3": { "PD": "/HIOniaL1DoubleMu0D/HIRun2015-PromptReco-v1/AOD", "Units": 4, "Memory": 1200, "RunTime": 1180 },
-            "HIDoubleMuonPeri": { "PD": "/HIOniaPeripheral30100/HIRun2015-PromptReco-v1/AOD", "Units": 8, "Memory": 1400, "RunTime": 1180 },
+            "HIForward": { "PD": "/HIForward/HIRun2015-PromptReco-v1/AOD", "Units": 16, "Memory": 1400, "RunTime": 700 }
           }
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeTree_'+key+'_HIRun2015_DiMuMassMin7_20190514'
+    config.General.requestName = 'VertexCompositeTree_'+key+'_HIRun2015_DiMuMassMin0_20190514'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]
