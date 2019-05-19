@@ -69,17 +69,9 @@ process.hltFilter.andOr = cms.bool(True)
 process.hltFilter.throw = cms.bool(False)
 process.hltFilter.HLTPaths = [
     # Double muon triggers
-    'HLT_HIL1DoubleMu0_v*', # Dimuons
-    'HLT_HIL1DoubleMu0_part*', # Dimuons
-    'HLT_HIL1DoubleMu0_2HF_v*', # Dimuons
-    'HLT_HIL1DoubleMu0_2HF0_v*', # Dimuons
-    'HLT_HIL1DoubleMu0_2HF_Cent30100_v*', # Peripheral dimuons
-    'HLT_HIL1DoubleMu0_2HF0_Cent30100_v*', # Peripheral dimuons
-    'HLT_HIL1DoubleMu10_v*', # Z boson
     'HLT_HIUPCL1DoubleMuOpenNotZDCAND_v*', # UPC dimuons
     'HLT_HIUPCL1DoubleMuOpenNotHF2_v*', # UPC dimuons
     # Single muon triggers
-    'HLT_HIL3Mu15_v*', # Electroweak boson
     'HLT_HIUPCL1MuOpenNotZDCAND_v*', # UPC muons
     'HLT_HIUPCSingleMuNotHF2Pixel_SingleTrack_v*', # UPC muons
     ]

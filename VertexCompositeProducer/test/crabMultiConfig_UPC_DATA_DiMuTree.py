@@ -14,7 +14,7 @@ config.General.transferLogs = False
 
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'PbPbSkimAndTree2015_DiMuContBoth_ALLDIMU_cfg.py'
+config.JobType.psetName = 'PbPbSkimAndTree2015_DiMuContBoth_UPC_cfg.py'
 
 config.section_('Data')
 config.Data.inputDBS = 'global'
@@ -31,7 +31,7 @@ config.Site.storageSite = 'T2_CH_CERN'
 
 def submit(config):
     try:
-        crabCommand('submit', config = config, dryrun=False)
+        crabCommand('submit', config = config, dryrun=True)
     except HTTPException as hte:
         print "Failed submitting task: %s" % (hte.headers)
     except ClientException as cle:
@@ -42,12 +42,12 @@ def submit(config):
 #############################################################################################
 
 dataMap = {
-            "HIForward": { "PD": "/HIForward/HIRun2015-PromptReco-v1/AOD", "Units": 16, "Memory": 1400, "RunTime": 700 }
+            "HIForward": { "PD": "/HIForward/HIRun2015-PromptReco-v1/AOD", "Units": 8, "Memory": 2400, "RunTime": 900 }
           }
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeTree_'+key+'_HIRun2015_DiMuMassMin0_20190514'
+    config.General.requestName = 'VertexCompositeTree_'+key+'_HIRun2015_DiMuMassMin0_20190517'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]
