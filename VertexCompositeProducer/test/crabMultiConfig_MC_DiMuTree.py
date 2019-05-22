@@ -40,14 +40,14 @@ def submit(config):
 #############################################################################################
 
 dataMap = {
-            "Ups1SMM_TuneCUETP8M1_5p02TeV_pythia8": { "PD": "/Ups1SMM_TuneCUETP8M1_5p02TeV_pythia8/RunIIpp5Spring18DR-94X_mc2017_realistic_forppRef5TeV-v2/AODSIM", "Units": 1, "Memory": 1800, "RunTime": 1640 },
-            "Zmu10mu10_TuneCP5_5p02TeV_pythia8": { "PD": "/Zmu10mu10_TuneCP5_5p02TeV_pythia8/RunIIpp5Spring18DR-94X_mc2017_realistic_forppRef5TeV_v1-v1/AODSIM", "Units": 1, "Memory": 1800, "RunTime": 920 },
-            "DYJetsToLL_MLL50_TuneCP5_5p02TeV_amcatnloFXFX": { "PD": "/DYJetsToLL_MLL-50_TuneCP5_5020GeV-amcatnloFXFX-pythia8/RunIIpp5Spring18DR-94X_mc2017_realistic_forppRef5TeV-v2/AODSIM", "Units": 1, "Memory": 1800, "RunTime": 920 },
+            "Ups1SMM_TuneCUETP8M1_5p02TeV_pythia8": { "PD": "/Ups1SMM_TuneCUETP8M1_5p02TeV_pythia8/RunIIpp5Spring18DR-94X_mc2017_realistic_forppRef5TeV-v2/AODSIM", "Units": 1, "Memory": 1500, "RunTime": 240 },
+            "Zmu10mu10_TuneCP5_5p02TeV_pythia8": { "PD": "/Zmu10mu10_TuneCP5_5p02TeV_pythia8/RunIIpp5Spring18DR-94X_mc2017_realistic_forppRef5TeV_v1-v1/AODSIM", "Units": 1, "Memory": 1500, "RunTime": 240 },
+            "DYJetsToLL_MLL50_TuneCP5_5p02TeV_amcatnloFXFX": { "PD": "/DYJetsToLL_MLL-50_TuneCP5_5020GeV-amcatnloFXFX-pythia8/RunIIpp5Spring18DR-94X_mc2017_realistic_forppRef5TeV-v2/AODSIM", "Units": 1, "Memory": 1500, "RunTime": 240 },
           }
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeTree_'+key+'_RunIIpp5Spring18_DiMuMC_20190421'
+    config.General.requestName = 'VertexCompositeTree_'+key+'_RunIIpp5Spring18_DiMuMC_20190513'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]

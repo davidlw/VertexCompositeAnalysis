@@ -42,13 +42,13 @@ def submit(config):
 #############################################################################################
 
 dataMap = {
-            "SingleMuon": { "PD": "/SingleMuon/Run2017G-17Nov2017-v1/AOD", "Units": 6, "Memory": 2500, "RunTime": 920 },
-            "DoubleMuon": { "PD": "/DoubleMuon/Run2017G-17Nov2017-v1/AOD", "Units": 6, "Memory": 2500, "RunTime": 920 }
+            "SingleMuon": { "PD": "/SingleMuon/Run2017G-17Nov2017-v1/AOD", "Units": 12, "Memory": 2500, "RunTime": 920 },
+            "DoubleMuon": { "PD": "/DoubleMuon/Run2017G-17Nov2017-v1/AOD", "Units":  8, "Memory": 2500, "RunTime": 920 }
           }
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeTree_'+key+'_Run2017G_DiMuMassMin7_20190423'
+    config.General.requestName = 'VertexCompositeTree_'+key+'_Run2017G_DiMuMassMin7_20190513'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]
