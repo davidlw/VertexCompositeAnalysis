@@ -43,12 +43,13 @@ def submit(config):
 
 dataMap = {}
 
+dataMap["DoubleMuonLowPU_Run2018C"] = { "PD": "/DoubleMuonLowPU/Run2018C-PromptReco-v2/AOD", "Units": 7, "Memory": 2500, "RunTime": 1220 }
 dataMap["HighMultiplicity_Run2018B"] = { "PD": "/HighMultiplicityEOF/Run2018B-PromptReco-v2/AOD", "Units": 7, "Memory": 2500, "RunTime": 1220 }
 dataMap["HighMultiplicity_Run2018C"] = { "PD": "/HighMultiplicityEOF/Run2018C-PromptReco-v2/AOD", "Units": 7, "Memory": 2500, "RunTime": 1220 }
 for i in range(0,3):
     dataMap["HighMultiplicity"+str(i)+"_Run2018C"] = { "PD": "/HighMultiplicityEOF"+str(i)+"/Run2018C-PromptReco-v2/AOD", "Units": 7, "Memory": 2500, "RunTime": 1220 }
 
-for i in range(0,9):
+for i in range(0,10):
     dataMap["MinimumBias"+str(i)+"_Run2018B"] = { "PD": "/MinimumBias"+str(i)+"/Run2018B-PromptReco-v2/AOD", "Units": 7, "Memory": 2500, "RunTime": 1220 }
     dataMap["MinimumBias"+str(i)+"_Run2018C"] = { "PD": "/MinimumBias"+str(i)+"/Run2018C-PromptReco-v2/AOD", "Units": 7, "Memory": 2500, "RunTime": 1220 }
 

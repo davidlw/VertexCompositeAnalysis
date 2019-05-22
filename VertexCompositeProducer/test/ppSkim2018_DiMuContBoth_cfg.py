@@ -14,7 +14,7 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 
 # Define the input source
 process.source = cms.Source("PoolSource",
-   fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/data/Run2018C/HighMultiplicityEOF/AOD/PromptReco-v2/000/319/464/00000/FE44B7B5-8986-E811-98F2-FA163E1A5A66.root'),
+   fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/data/Run2018C/DoubleMuonLowPU/AOD/PromptReco-v2/000/319/467/00000/F844B34A-9A86-E811-BE71-FA163E6B749C.root'),
    inputCommands=cms.untracked.vstring('keep *')
 )
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
@@ -68,6 +68,8 @@ process.hltFilter.HLTPaths = [
     'HLT_FullTrack_Multiplicity130_*', # High multiplicity
     'HLT_FullTrack_Multiplicity155_*', # High multiplicity
     'HLT_L1MinimumBiasHF_OR_*', # Minimum bias
+    # Dimuon triggers
+    'HLT_L1DoubleMu0_v*',
     ]
 
 # Add PbPb collision event selection

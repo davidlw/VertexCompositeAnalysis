@@ -27,8 +27,19 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
       'HLT_FullTrack_Multiplicity130_', # High multiplicity
       'HLT_FullTrack_Multiplicity155_', # High multiplicity
       'HLT_L1MinimumBiasHF_OR_', # Minimum bias
+      # Dimuon triggers
+      'HLT_L1DoubleMu0_v',
   ),
-  triggerFilterNames = cms.untracked.vstring(),
+  triggerFilterNames = cms.untracked.vstring(
+      # Other triggers
+      '',
+      '',
+      '',
+      '',
+      '',
+      # Dimuon triggers
+      'hltDoubleMu0L1Filtered',
+  ),
 
   #Filter info
   FilterResultCollection = cms.untracked.InputTag("TriggerResults::ANASKIM"),
