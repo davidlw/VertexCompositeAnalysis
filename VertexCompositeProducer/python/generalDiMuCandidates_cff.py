@@ -10,3 +10,9 @@ generalMuMuMassMin7Candidates = generalDiMuCandidates.clone(
     muonSelection = cms.string("(p > 3.5 && abs(eta) < 2.4) && ("+HybridSoftIdReco2015+" || "+TightIdReco2015+")"),
     candidateSelection = cms.string("mass > 7.0")
 )
+
+generalMuMuMassMin0Candidates = generalDiMuCandidates.clone(
+    mllCutMin = cms.double(0.0),
+    muonSelection = cms.string("(p > 3.5 && abs(eta) < 2.4) && (isTrackerMuon || isGlobalMuon)"),
+    candidateSelection = cms.string("mass > 0.0")
+)
