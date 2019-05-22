@@ -96,6 +96,7 @@ private:
   virtual void endJob() ;
   virtual void initHistogram();
   virtual void initTree();
+  void genDecayLength(const uint&, const reco::GenParticle&);
 
   int muAssocToTrack( const reco::TrackRef& trackref, const edm::Handle<reco::MuonCollection>& muonh) const;
 
@@ -218,6 +219,10 @@ private:
     bool isSwap[MAXCAN];
     bool matchGEN[MAXCAN];
     int idmom_reco[MAXCAN];
+    float gen_agl_abs[MAXCAN];
+    float gen_agl2D_abs[MAXCAN];
+    float gen_dl[MAXCAN];
+    float gen_dl2D[MAXCAN];
     
     //dau candidate info
     float grand_mass[MAXCAN];
@@ -665,6 +670,7 @@ VertexCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::Event
             Dvector1->push_back(Dd1->phi());
             Dvector1->push_back(Dd1->charge());
             Dvector1->push_back(Dd1->mass());
+            Dvector1->push_back(it);
             
             Dvector2->push_back(Dd2->pt());
             Dvector2->push_back(Dd2->eta());
@@ -880,6 +886,7 @@ VertexCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::Event
                   //check prompt & record mom id
                   idmom_reco[it] = pVectIDmom->at(i/3);
                 }
+                genDecayLength(it, genpars->at(pVect->at(0).at(5)));
 
             }
         }
@@ -1748,6 +1755,10 @@ VertexCompositeTreeProducer::initTree()
             VertexCompositeNtuple->Branch("isSwap",&isSwap,"isSwap[candSize]/O");
             VertexCompositeNtuple->Branch("idmom_reco",&idmom_reco,"idmom_reco[candSize]/I");
             VertexCompositeNtuple->Branch("matchGEN",&matchGEN,"matchGEN[candSize]/O");
+            VertexCompositeNtuple->Branch("gen3DPointingAngle",&gen_agl_abs,"gen3DPointingAngle[candSize]/F");
+            VertexCompositeNtuple->Branch("gen2DPointingAngle",&gen_agl2D_abs,"gen2DPointingAngle[candSize]/F");
+            VertexCompositeNtuple->Branch("gen3DDecayLength",&gen_dl,"gen3DDecayLength[candSize]/F");
+            VertexCompositeNtuple->Branch("gen2DDecayLength",&gen_dl2D,"gen2DDecayLength[candSize]/F");
         }
         
         if(doGenMatchingTOF_)
@@ -1935,6 +1946,21 @@ muAssocToTrack( const reco::TrackRef& trackref,
 void 
 VertexCompositeTreeProducer::endJob() {
     
+}
+
+void
+VertexCompositeTreeProducer::genDecayLength(const uint& it, const reco::GenParticle& gCand) {
+  gen_dl[it] = -99.; gen_agl_abs[it] = -99.; gen_dl2D[it] = -99.; gen_agl2D_abs[it] = -99.;
+  if(gCand.numberOfDaughters()==0 || !gCand.daughter(0)) return;
+  const auto& dauVtx = gCand.daughter(0)->vertex();
+  TVector3 ptosvec(dauVtx.X(), dauVtx.Y(), dauVtx.Z());
+  TVector3 secvec(gCand.px(), gCand.py(), gCand.pz());
+  gen_agl_abs[it] = secvec.Angle(ptosvec);
+  gen_dl[it]  = ptosvec.Mag();
+  TVector3 ptosvec2D(dauVtx.X(), dauVtx.Y(), 0.0);
+  TVector3 secvec2D(gCand.px(), gCand.py(), 0.0);
+  gen_agl2D_abs[it] = secvec2D.Angle(ptosvec2D);
+  gen_dl2D[it]  = ptosvec2D.Mag();
 }
 
 //define this as a plug-in
