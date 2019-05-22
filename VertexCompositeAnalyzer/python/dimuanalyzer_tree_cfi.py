@@ -22,13 +22,24 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
   TriggerResultCollection = cms.untracked.InputTag("TriggerResults::HLT"),
   triggerPathNames = cms.untracked.vstring(
       # Other triggers
-      'HLT_FullTrack_Multiplicity85_part', # High multiplicity
-      'HLT_FullTrack_Multiplicity100_part', # High multiplicity
-      'HLT_FullTrack_Multiplicity130_part', # High multiplicity
-      'HLT_FullTrack_Multiplicity155_part', # High multiplicity
-      'HLT_L1MinimumBiasHF_OR', # Minimum bias
+      'HLT_FullTrack_Multiplicity85_', # High multiplicity
+      'HLT_FullTrack_Multiplicity100_', # High multiplicity
+      'HLT_FullTrack_Multiplicity130_', # High multiplicity
+      'HLT_FullTrack_Multiplicity155_', # High multiplicity
+      'HLT_L1MinimumBiasHF_OR_', # Minimum bias
+      # Dimuon triggers
+      'HLT_L1DoubleMu0_v',
   ),
-  triggerFilterNames = cms.untracked.vstring(),
+  triggerFilterNames = cms.untracked.vstring(
+      # Other triggers
+      '',
+      '',
+      '',
+      '',
+      '',
+      # Dimuon triggers
+      'hltDoubleMu0L1Filtered',
+  ),
 
   #Filter info
   FilterResultCollection = cms.untracked.InputTag("TriggerResults::ANASKIM"),
@@ -36,8 +47,8 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
       'Flag_colEvtSel',
       'Flag_primaryVertexFilter',
       'Flag_NoScraping',
-      'Flag_pileupVertexFilterCut'
-      'Flag_pileupVertexFilterCutGplus'
+      'Flag_pileupVertexFilterCut',
+      'Flag_pileupVertexFilterCutGplus',
   ),
   selectEvents = cms.untracked.string(""),
 

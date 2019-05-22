@@ -14,7 +14,7 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 
 # Define the input source
 process.source = cms.Source("PoolSource",
-   fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/data/Run2017C/HighMultiplicityEOF1/AOD/12Sep2017-v1/150000/CED96518-90B0-E711-BA06-FA163E51A507.root'),
+   fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/data/Run2018C/DoubleMuonLowPU/AOD/PromptReco-v2/000/319/467/00000/F844B34A-9A86-E811-BE71-FA163E6B749C.root'),
    inputCommands=cms.untracked.vstring('keep *')
 )
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
@@ -63,11 +63,13 @@ process.hltFilter.andOr = cms.bool(True)
 process.hltFilter.throw = cms.bool(False)
 process.hltFilter.HLTPaths = [
     # Other triggers
-    'HLT_FullTrack_Multiplicity85_part*', # High multiplicity
-    'HLT_FullTrack_Multiplicity100_part*', # High multiplicity
-    'HLT_FullTrack_Multiplicity130_part*', # High multiplicity
-    'HLT_FullTrack_Multiplicity155_part*', # High multiplicity
-    'HLT_L1MinimumBiasHF_OR*', # Minimum bias
+    'HLT_FullTrack_Multiplicity85_*', # High multiplicity
+    'HLT_FullTrack_Multiplicity100_*', # High multiplicity
+    'HLT_FullTrack_Multiplicity130_*', # High multiplicity
+    'HLT_FullTrack_Multiplicity155_*', # High multiplicity
+    'HLT_L1MinimumBiasHF_OR_*', # Minimum bias
+    # Dimuon triggers
+    'HLT_L1DoubleMu0_v*',
     ]
 
 # Add PbPb collision event selection
@@ -86,14 +88,14 @@ process.pcentandep_step = cms.Path(process.eventFilter_HM * process.cent_seq)
 process.dimurereco_step = cms.Path(process.eventFilter_HM * process.patMuonSequence * process.generalMuMuMassMin2Candidates)
 process.dimurerecowrongsign_step = cms.Path(process.eventFilter_HM * process.patMuonSequence * process.generalMuMuMassMin2CandidatesWrongSign)
 
+# Add the VertexComposite tree
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.dimuanalyzer_tree_cff")
+process.dimucontana.selectEvents = cms.untracked.string("eventFilter_HM_step")
+process.dimucontana_wrongsign.selectEvents = cms.untracked.string("eventFilter_HM_step")
+
 # Define the output
-process.load("VertexCompositeAnalysis.VertexCompositeProducer.ppanalysisSkimContentJPsi_cff")
-process.output_HM = cms.OutputModule("PoolOutputModule",
-    outputCommands = process.analysisSkimContent.outputCommands,
-    fileName = cms.untracked.string('pp_DiMuCont.root'),
-    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eventFilter_HM_step')),
-)
-process.output_HM_step = cms.EndPath(process.output_HM)
+process.TFileService = cms.Service("TFileService", fileName = cms.string('dimuana.root'))
+process.p = cms.EndPath(process.dimucontana * process.dimucontana_wrongsign)
 
 # Define the process schedule
 process.schedule = cms.Schedule(
@@ -101,7 +103,7 @@ process.schedule = cms.Schedule(
     process.pcentandep_step,
     process.dimurereco_step,
     process.dimurerecowrongsign_step,
-    process.output_HM_step
+    process.p
 )
 
 # Add the event selection filters
