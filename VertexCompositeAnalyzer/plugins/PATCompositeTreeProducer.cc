@@ -561,32 +561,32 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
     edm::Handle<reco::EvtPlaneCollection> eventplanes;
     iEvent.getByToken(tok_eventplaneSrc_, eventplanes);
 
-    ephfpAngle[0] = (eventplanes.isValid() ? (*eventplanes)[0].angle(2) : -99.);
-    ephfpAngle[1] = (eventplanes.isValid() ? (*eventplanes)[6].angle(2) : -99.);
-    ephfpAngle[2] = (eventplanes.isValid() ? (*eventplanes)[13].angle(2) : -99.);
+    ephfmAngle[0] = (eventplanes.isValid() ? (*eventplanes)[0].angle(2) : -99.);
+    ephfmAngle[1] = (eventplanes.isValid() ? (*eventplanes)[6].angle(2) : -99.);
+    ephfmAngle[2] = (eventplanes.isValid() ? (*eventplanes)[13].angle(2) : -99.);
 
-    ephfmAngle[0] = (eventplanes.isValid() ? (*eventplanes)[1].angle(2) : -99.);
-    ephfmAngle[1] = (eventplanes.isValid() ? (*eventplanes)[7].angle(2) : -99.);
-    ephfmAngle[2] = (eventplanes.isValid() ? (*eventplanes)[14].angle(2) : -99.);
+    ephfpAngle[0] = (eventplanes.isValid() ? (*eventplanes)[1].angle(2) : -99.);
+    ephfpAngle[1] = (eventplanes.isValid() ? (*eventplanes)[7].angle(2) : -99.);
+    ephfpAngle[2] = (eventplanes.isValid() ? (*eventplanes)[14].angle(2) : -99.);
     
     eptrackmidAngle[0] = -99.9;
     eptrackmidAngle[1] = (eventplanes.isValid() ? (*eventplanes)[9].angle(2) : -99.);
     eptrackmidAngle[2] = (eventplanes.isValid() ? (*eventplanes)[16].angle(2) : -99.);
 
-    ephfpQ[0] = (eventplanes.isValid() ? (*eventplanes)[0].q(2) : -99.);
-    ephfpQ[1] = (eventplanes.isValid() ? (*eventplanes)[6].q(2) : -99.);
-    ephfpQ[2] = (eventplanes.isValid() ? (*eventplanes)[13].q(2) : -99.);
+    ephfmQ[0] = (eventplanes.isValid() ? (*eventplanes)[0].q(2) : -99.);
+    ephfmQ[1] = (eventplanes.isValid() ? (*eventplanes)[6].q(2) : -99.);
+    ephfmQ[2] = (eventplanes.isValid() ? (*eventplanes)[13].q(2) : -99.);
 
-    ephfmQ[0] = (eventplanes.isValid() ? (*eventplanes)[1].q(2) : -99.);
-    ephfmQ[1] = (eventplanes.isValid() ? (*eventplanes)[7].q(2) : -99.);
-    ephfmQ[2] = (eventplanes.isValid() ? (*eventplanes)[14].q(2) : -99.);
+    ephfpQ[0] = (eventplanes.isValid() ? (*eventplanes)[1].q(2) : -99.);
+    ephfpQ[1] = (eventplanes.isValid() ? (*eventplanes)[7].q(2) : -99.);
+    ephfpQ[2] = (eventplanes.isValid() ? (*eventplanes)[14].q(2) : -99.);
 
     eptrackmidQ[0] = -99.9;
     eptrackmidQ[1] = (eventplanes.isValid() ? (*eventplanes)[9].q(2) : -99.);
     eptrackmidQ[2] = (eventplanes.isValid() ? (*eventplanes)[16].q(2) : -99.);
     
-    ephfpSumW = (eventplanes.isValid() ? (*eventplanes)[6].sumw() : -99.);
-    ephfmSumW = (eventplanes.isValid() ? (*eventplanes)[7].sumw() : -99.);
+    ephfmSumW = (eventplanes.isValid() ? (*eventplanes)[6].sumw() : -99.);
+    ephfpSumW = (eventplanes.isValid() ? (*eventplanes)[7].sumw() : -99.);
     eptrackmidSumW = (eventplanes.isValid() ? (*eventplanes)[9].sumw() : -99.);
   }
 
