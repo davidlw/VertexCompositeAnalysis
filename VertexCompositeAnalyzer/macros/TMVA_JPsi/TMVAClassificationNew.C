@@ -164,7 +164,7 @@ int TMVAClassificationNew( TString myMethodList = "" )
    // --- Here the preparation phase begins
 
    // Create a ROOT output file where TMVA will store ntuples, histograms, etc.
-   TString outfileName( "/export/d00/scratch/davidlw/TMVA_BDT_PromptJPsi_pPb_default2_jpsi.root" );
+   TString outfileName( "/export/d00/scratch/davidlw/TMVA_BDT_PromptJPsi_pPb.root" );
    TFile* outputFile = TFile::Open( outfileName, "RECREATE" );
 
    // Create the factory object. Later you can choose the methods
