@@ -9,14 +9,16 @@ process.load('Configuration/StandardSequences/Services_cff')
 process.gbrForestWriter = cms.EDAnalyzer("GBRForestWriter",
     jobs = cms.VPSet(
         cms.PSet(
-            inputFileName = cms.string('weights_prompt_pPb_default2_jpsi/TMVAClassification_BDT.weights.xml'),
+            inputFileName = cms.string('weights/TMVAClassification_BDT.weights.xml'),
             inputFileType = cms.string("XML"),
-            inputVariables = cms.vstring(['pT','y','VtxProb','3DDecayLengthSignificance','2DDecayLengthSignificance','3DDecayLength','zDCASignificanceDaugther1','zDCASignificanceDaugther2','xyDCASignificanceDaugther1','xyDCASignificanceDaugther2','NHitD1','NHitD2','nMatchedChamberD1','nMatchedStationD1','EnergyDepositionD1','nMatchedChamberD2','nMatchedStationD2','EnergyDepositionD2','dxSig1_seg','dySig1_seg','ddxdzSig1_seg','ddydzSig1_seg','dxSig2_seg','dySig2_seg','ddxdzSig2_seg','ddydzSig2_seg','pTD1','pTD2','EtaD1','EtaD2']),
+            inputVariables = cms.vstring(['pT','y','VtxProb','3DDecayLengthSignificance','2DDecayLengthSignificance','3DDecayLength','3DPointingAngle','2DPointingAngle','zDCASignificanceDaugther1','zDCASignificanceDaugther2','xyDCASignificanceDaugther1','xyDCASignificanceDaugther2','pTD1','pTD2','EtaD1','EtaD2','NHitD1','NHitD2','pTerrD1','pTerrD2']),
+#            inputVariables = cms.vstring(['pT','y','VtxProb','3DDecayLengthSignificance','2DDecayLengthSignificance','3DDecayLength','3DPointingAngle','2DPointingAngle','zDCASignificanceDaugther1','zDCASignificanceDaugther2','xyDCASignificanceDaugther1','xyDCASignificanceDaugther2','pTD1','pTD2','EtaD1','EtaD2','NHitD1','NHitD2','pTerrD1','pTerrD2','bestvtxZ']),
+#            inputVariables = cms.vstring(['pT','y','VtxProb','3DDecayLengthSignificance','2DDecayLengthSignificance','3DDecayLength','3DPointingAngle','2DPointingAngle','zDCASignificanceDaugther1','zDCASignificanceDaugther2','xyDCASignificanceDaugther1','xyDCASignificanceDaugther2','pTD1','pTD2','EtaD1','EtaD2']),
             spectatorVariables = cms.vstring(),
             methodName = cms.string("BDT"),
-            gbrForestName = cms.string("JPsiInpPb"),
+            gbrForestName = cms.string("D0InpPb"),
             outputFileType = cms.string("GBRForest"),
-            outputFileName = cms.string("GBRForestfile_BDT_PromptJPsiInpPb_pPb_default2_jpsi.root")
+            outputFileName = cms.string("GBRForestfile_BDT_PromptD0InpPb_default_HLT185_v1.root")
         )
     )
 )
