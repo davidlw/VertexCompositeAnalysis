@@ -24,6 +24,7 @@ config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Coll
 config.Data.runRange = '326381-327564'
 config.Data.publication = False
 config.JobType.allowUndistributedCMSSW = True
+config.Data.allowNonValidInputDataset = True
 
 config.section_('Site')
 config.Data.ignoreLocality = True
@@ -43,18 +44,15 @@ def submit(config):
 #############################################################################################
 
 dataMap = {
-            "HIDoubleMuon_v1": { "PD": "/HIDoubleMuon/HIRun2018A-PromptReco-v1/AOD", "Units": 7, "Memory": 2700, "RunTime": 720 },
-            "HIDoubleMuon_v2": { "PD": "/HIDoubleMuon/HIRun2018A-PromptReco-v2/AOD", "Units": 10, "Memory": 2800, "RunTime": 820 },
-            "HISingleMuon_v1": { "PD": "/HISingleMuon/HIRun2018A-PromptReco-v1/AOD", "Units": 7, "Memory": 2700, "RunTime": 720 },
-            "HISingleMuon_v2": { "PD": "/HISingleMuon/HIRun2018A-PromptReco-v2/AOD", "Units": 10, "Memory": 2800, "RunTime": 820 },
-            "HIDoubleMuonPsiPeri_v2": { "PD": "/HIDoubleMuonPsiPeri/HIRun2018A-PromptReco-v2/AOD", "Units": 10, "Memory": 2800, "RunTime": 820 },
-            "HIForward_v1": { "PD": "/HIForward/HIRun2018A-PromptReco-v1/AOD", "Units": 14, "Memory": 1800, "RunTime": 420 },
-            "HIForward_v2": { "PD": "/HIForward/HIRun2018A-PromptReco-v2/AOD", "Units": 20, "Memory": 1800, "RunTime": 420 },
+            "HIDoubleMuon": { "PD": "/HIDoubleMuon/HIRun2018A-04Apr2019-v1/AOD", "Units": 5, "Memory": 2500, "RunTime": 1800 },
+            "HISingleMuon": { "PD": "/HISingleMuon/HIRun2018A-04Apr2019-v1/AOD", "Units": 5, "Memory": 2500, "RunTime": 1800 },
+            "HIDoubleMuonPsiPeri": { "PD": "/HIDoubleMuonPsiPeri/HIRun2018A-04Apr2019-v1/AOD", "Units": 5, "Memory": 2500, "RunTime": 1800 },
+            "HIForward": { "PD": "/HIForward/HIRun2018A-04Apr2019-v1/AOD", "Units": 10, "Memory": 1800, "RunTime": 1400 },
             }
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeTree_'+key+'_HIRun2018_DiMuMassMin7_20190421'
+    config.General.requestName = 'VertexCompositeTree_'+key+'_HIRun2018_04Apr2019_DiMuMassMin7_20190527'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]
