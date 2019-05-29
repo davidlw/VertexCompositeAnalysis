@@ -14,14 +14,14 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 
 # Define the input source
 process.source = cms.Source("PoolSource",
-   fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/hidata/HIRun2018A/HIDoubleMuon/AOD/PromptReco-v2/000/327/148/00000/37F475FE-F3F1-0749-8455-C9DB3177598B.root'),
+   fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/hidata/HIRun2018A/HISingleMuon/AOD/04Apr2019-v1/270003/21A8A05E-B3C5-4445-A76E-1433602ED7FF.root'),
    inputCommands=cms.untracked.vstring('keep *', 'drop *_hiEvtPlane_*_*')
 )
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
 # Set the global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-process.GlobalTag.globaltag = cms.string('103X_dataRun2_v6')
+process.GlobalTag.globaltag = cms.string('103X_dataRun2_Prompt_fixEcalADCToGeV_v2')
 
 # Add PbPb centrality
 process.load("RecoHI.HiCentralityAlgos.CentralityBin_cfi")
@@ -36,7 +36,7 @@ process.hiCentrality.produceTracks = False
 process.hiCentrality.producePixelTracks = False
 process.hiCentrality.reUseCentrality = True
 process.hiCentrality.srcZDChits = cms.InputTag("QWzdcreco")
-process.hiCentrality.srcReUse = cms.InputTag("hiCentrality","","RECO")
+process.hiCentrality.srcReUse = cms.InputTag("hiCentrality","","reRECO")
 process.centralityBin.Centrality = cms.InputTag("hiCentrality")
 process.centralityBin.centralityVariable = cms.string("HFtowers")
 process.centralityBin.nonDefaultGlauberModel = cms.string("")
@@ -117,7 +117,7 @@ process.hltFilter.HLTPaths = [
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.collisionEventSelection_cff')
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.clusterCompatibilityFilter_cfi')
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.hfCoincFilter_cff')
-process.load("RecoVertex.PrimaryVertexProducer.OfflinePrimaryVerticesRecovery_cfi")
+process.load("VertexCompositeAnalysis.VertexCompositeProducer.OfflinePrimaryVerticesRecovery_cfi")
 process.colEvtSel = cms.Sequence(process.hfCoincFilter2Th4 * process.primaryVertexFilter * process.clusterCompatibilityFilter)
 
 # Define the event selection sequence
@@ -129,8 +129,8 @@ process.eventFilter_HM = cms.Sequence(
 process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 
 # ZDC info
-process.load('QWAna.QWZDC2018RecHit.QWZDC2018Producer_cfi')
-process.load('QWAna.QWZDC2018RecHit.QWZDC2018RecHit_cfi')
+process.load('VertexCompositeAnalysis.VertexCompositeProducer.QWZDC2018Producer_cfi')
+process.load('VertexCompositeAnalysis.VertexCompositeProducer.QWZDC2018RecHit_cfi')
 
 # Define the analysis steps
 process.pcentandep_step = cms.Path(process.eventFilter_HM * process.zdcdigi * process.QWzdcreco * process.cent_seq * process.evtplane_seq)
