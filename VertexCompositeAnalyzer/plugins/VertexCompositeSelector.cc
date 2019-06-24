@@ -1575,6 +1575,14 @@ VertexCompositeSelector::GetMVACut(double y, double pt)
 {
   double mvacut = -1.0;
   if(fabs(y)>2.4) return mvacut;
+
+  // temporary
+/*
+  if(pt<4) return 0.3;
+  else if(pt>4 && pt<6) return 0.1;
+  else if(pt>6 && pt<8) return -0.2;
+  else return -1.0;
+*/
   if(!hist_bdtcut) return mvacut;
 
   mvacut = hist_bdtcut->GetBinContent(hist_bdtcut->GetXaxis()->FindBin(y),hist_bdtcut->GetYaxis()->FindBin(pt));

@@ -1721,6 +1721,7 @@ VertexCompositeTreeProducer::initTree()
     // particle info
     VertexCompositeNtuple->Branch("pT",&pt,"pT[candSize]/F");
     VertexCompositeNtuple->Branch("y",&y,"y[candSize]/F");
+    VertexCompositeNtuple->Branch("eta",&y,"eta[candSize]/F");
     VertexCompositeNtuple->Branch("phi",&phi,"phi[candSize]/F");
     VertexCompositeNtuple->Branch("mass",&mass,"mass[candSize]/F");
     if(useAnyMVA_) VertexCompositeNtuple->Branch("mva",&mva,"mva[candSize]/F");

@@ -43,14 +43,13 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'pp2018_pPbMC_PromptD0_TrainingTree_signal_combined_b1_v3'
-    config.Data.outputDatasetTag = 'pp2018_prompt_TrainingTree_signal_combined_v3'
+    config.General.requestName = 'pp2018_ppMC_PromptD0_MVATree_BDTCutNew_v3'
+    config.Data.outputDatasetTag = 'pp2018_MVATree_BDTCutNew_v3'
     config.Data.inputDataset = '/PrmtD0_pT-1p2_y-2p4_pp_13TeV_Pythia8/davidlw-pp2018_SkimAndNtuple_D0Both_Prompt_v4-2dcf28a0a3592db40c70c00416240936/USER'
-    config.JobType.psetName = '../test/D0/d0ana_mc_trainingtree_signal.py'
+    config.JobType.psetName = '../test/D0/d0ana_mc_trainingtree_signal_bdt.py'
     submit(config)
 
-    config.General.requestName = 'pp2018_pPbMC_NonPromptD0_TrainingTree_signal_combined_b1_v3'
-    config.Data.outputDatasetTag = 'pp2018_TrainingTree_signal_combined_v3'
-    config.JobType.psetName = '../test/D0/d0ana_mc_trainingtree_signal.py'
-    config.Data.inputDataset = '/NonPrD0_pT-1p2_y-2p4_pp_13TeV_pythia8/davidlw-pp2018_SkimAndNtuple_D0Both_NonPrompt_v4-2dcf28a0a3592db40c70c00416240936/USER'
+    config.General.requestName = 'pp2018_ppMC_NonPromptD0_MVATree_BDTCutNew_v3'
+    config.Data.outputDatasetTag = 'pp2018_MVATree_BDTCutNew_v3'
+    config.Data.inputDataset = '/NonPrD0_pT-1p2_y-2p4_pp_13TeV_pythia8/davidlw-pp2018_SkimAndNtuple_D0Both_NonPrompt_v4-fe849d4090efcd3c73e5729216e7482c/USER'
     submit(config)

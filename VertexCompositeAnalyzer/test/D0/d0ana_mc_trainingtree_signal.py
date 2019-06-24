@@ -50,7 +50,7 @@ process.d0ana_genmatchswap_seq = cms.Sequence(process.d0selectorMCGenMatchSwap *
 process.d0ana_genmatchunswap_seq = cms.Sequence(process.d0selectorMCGenMatchUnSwap * process.d0ana_mc_genmatchunswap)
 process.d0ana_wrongsign_seq = cms.Sequence(process.d0selectorWSMC * process.d0ana_wrongsign)
 
-#process.p1 = cms.Path(process.d0ana_genmatch_seq)
+process.p1 = cms.Path(process.d0ana_genmatch_seq)
 process.p2 = cms.Path(process.d0ana_genmatchswap_seq)
 process.p3 = cms.Path(process.d0ana_genmatchunswap_seq)
-process.p4 = cms.Path(process.d0ana_genunmatch_seq)
+#process.p4 = cms.Path(process.d0ana_genunmatch_seq)

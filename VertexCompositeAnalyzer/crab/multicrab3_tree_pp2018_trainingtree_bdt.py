@@ -13,13 +13,11 @@ if __name__ == '__main__':
     config.General.transferOutputs = True
     config.General.transferLogs = False
     config.JobType.pluginName = 'Analysis'
-#    config.JobType.maxMemoryMB = 3000
+    config.JobType.maxMemoryMB = 5000
 #    config.JobType.maxJobRuntimeMin = 2750
-#    config.JobType.psetName = '../test/d0ana_mc_trainingtree_signal.py'
     config.Data.unitsPerJob = 1
-#    config.Data.totalUnits = 10
+#    config.Data.totalUnits = 100
     config.Data.splitting = 'FileBased'
-#    config.Data.splitting = 'Automatic'
 #    config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
     config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
     config.Data.publication = False
@@ -43,14 +41,20 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'pp2018_pPbMC_PromptD0_TrainingTree_signal_combined_b1_v3'
-    config.Data.outputDatasetTag = 'pp2018_prompt_TrainingTree_signal_combined_v3'
-    config.Data.inputDataset = '/PrmtD0_pT-1p2_y-2p4_pp_13TeV_Pythia8/davidlw-pp2018_SkimAndNtuple_D0Both_Prompt_v4-2dcf28a0a3592db40c70c00416240936/USER'
-    config.JobType.psetName = '../test/D0/d0ana_mc_trainingtree_signal.py'
+    config.General.requestName = 'pp2018_Tree_D0_default_BDTCutNew_b1_v3'
+    config.JobType.psetName = '../test/D0/d0ana_trainingtree_bdtcut.py'
+    config.Data.inputDataset = '/HighMultiplicityEOF/davidlw-pp_Skim_D0Both_default_v1-f9516adb0ab4bcb5c36605171e6520f9/USER'
+    config.Data.outputDatasetTag = 'pp_Tree_D0_default_BDTCutNew_v3'
     submit(config)
 
-    config.General.requestName = 'pp2018_pPbMC_NonPromptD0_TrainingTree_signal_combined_b1_v3'
-    config.Data.outputDatasetTag = 'pp2018_TrainingTree_signal_combined_v3'
-    config.JobType.psetName = '../test/D0/d0ana_mc_trainingtree_signal.py'
-    config.Data.inputDataset = '/NonPrD0_pT-1p2_y-2p4_pp_13TeV_pythia8/davidlw-pp2018_SkimAndNtuple_D0Both_NonPrompt_v4-2dcf28a0a3592db40c70c00416240936/USER'
+    config.General.requestName = 'pp2018_Tree_D0_default_BDTCutNew_b2_v3'
+    config.Data.inputDataset = '/HighMultiplicityEOF0/davidlw-pp_Skim_D0Both_default_v1-f9516adb0ab4bcb5c36605171e6520f9/USER'
+    submit(config)
+
+    config.General.requestName = 'pp2018_Tree_D0_default_BDTCutNew_b3_v3'
+    config.Data.inputDataset = '/HighMultiplicityEOF1/davidlw-pp_Skim_D0Both_default_v1-f9516adb0ab4bcb5c36605171e6520f9/USER'
+    submit(config)
+
+    config.General.requestName = 'pp2018_Tree_D0_default_BDTCutNew_b4_v3'
+    config.Data.inputDataset = '/HighMultiplicityEOF2/davidlw-pp_Skim_D0Both_default_v1-f9516adb0ab4bcb5c36605171e6520f9/USER'
     submit(config)

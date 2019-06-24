@@ -76,10 +76,30 @@ process.TFileService = cms.Service("TFileService",
 cms.string('d0ana_mc.root')
                                    )
 
-process.d0ana_seq = cms.Sequence(process.eventFilter_HM * process.d0ana_mc)
-process.d0ana_wrongsign_seq = cms.Sequence(process.eventFilter_HM * process.d0ana_wrongsign_mc)
+#process.d0ana_seq = cms.Sequence(process.eventFilter_HM * process.d0ana_mc)
+#process.d0ana_wrongsign_seq = cms.Sequence(process.eventFilter_HM * process.d0ana_wrongsign_mc)
 
-process.d0ana_step = cms.Path(process.d0ana_seq * process.d0ana_wrongsign_seq)
+#process.d0ana_step = cms.Path(process.d0ana_seq * process.d0ana_wrongsign_seq)
+
+process.d0ana_mc_genmatch = process.d0ana_mc.clone()
+process.d0ana_mc_genunmatch = process.d0ana_mc.clone()
+process.d0ana_mc_genmatchswap = process.d0ana_mc.clone()
+process.d0ana_mc_genmatchunswap = process.d0ana_mc.clone()
+
+process.d0ana_mc_genmatch.VertexCompositeCollection = cms.untracked.InputTag("d0selectorMCGenMatch:D0")
+process.d0ana_mc_genunmatch.VertexCompositeCollection = cms.untracked.InputTag("d0selectorMCGenUnMatch:D0")
+process.d0ana_mc_genmatchswap.VertexCompositeCollection = cms.untracked.InputTag("d0selectorMCGenMatchSwap:D0")
+process.d0ana_mc_genmatchunswap.VertexCompositeCollection = cms.untracked.InputTag("d0selectorMCGenMatchUnSwap:D0")
+process.d0ana_wrongsign_mc.VertexCompositeCollection = cms.untracked.InputTag("d0selectorWSMC:D0")
+
+process.d0ana_genmatch_seq = cms.Sequence(process.d0selectorMCGenMatch * process.d0ana_mc_genmatch)
+process.d0ana_genunmatch_seq = cms.Sequence(process.d0selectorMCGenUnMatch * process.d0ana_mc_genunmatch)
+process.d0ana_genmatchswap_seq = cms.Sequence(process.d0selectorMCGenMatchSwap * process.d0ana_mc_genmatchswap)
+process.d0ana_genmatchunswap_seq = cms.Sequence(process.d0selectorMCGenMatchUnSwap * process.d0ana_mc_genmatchunswap)
+process.d0ana_wrongsign_seq = cms.Sequence(process.d0selectorWSMC * process.d0ana_wrongsign)
+
+process.d0ana_step = cms.Path(process.eventFilter_HM * process.d0ana_genmatch_seq * process.d0ana_genmatchswap_seq * process.d0ana_genmatchunswap_seq)
+
 ################################################################################################
 
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.ppanalysisSkimContentD0_cff")

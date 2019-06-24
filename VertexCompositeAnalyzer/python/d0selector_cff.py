@@ -41,7 +41,7 @@ d0selectorBDTPromptWS = d0selectorBDTPrompt.clone(
 )
 
 d0selectorMCBDTPreCut = d0selectorMC.clone(
-  useAnyMVA = cms.bool(False),
+  useAnyMVA = cms.bool(True),
 
   trkPtMin = cms.untracked.double(0.7),
   trkPtSumMin = cms.untracked.double(1.6),
