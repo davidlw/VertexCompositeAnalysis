@@ -59,25 +59,8 @@ process.TFileService = cms.Service("TFileService",
 cms.string('dimucontana_training.root')
                                    )
 
-#process.dimucontana_seq = cms.Sequence(process.hltHM * process.dimucontana)
-#process.dimucontana1_seq = cms.Sequence(process.hltHM * process.dimucontana1)
-#process.dimucontana2_seq = cms.Sequence(process.hltHM * process.dimucontana2)
-
-#process.dimucontana_wrongsign_seq = cms.Sequence(process.hltHM * process.dimucontana_wrongsign)
-#process.dimucontana1_wrongsign_seq = cms.Sequence(process.hltHM * process.dimucontana1_wrongsign)
-#process.dimucontana2_wrongsign_seq = cms.Sequence(process.hltHM * process.dimucontana2_wrongsign)
-
 process.dimucontana_seq = cms.Sequence(process.dimucontana)
-process.dimucontana1_seq = cms.Sequence(process.dimucontana1)
-process.dimucontana2_seq = cms.Sequence(process.dimucontana2)
-
 process.dimucontana_wrongsign_seq = cms.Sequence(process.dimucontana_wrongsign)
-process.dimucontana1_wrongsign_seq = cms.Sequence(process.dimucontana1_wrongsign)
-process.dimucontana2_wrongsign_seq = cms.Sequence(process.dimucontana2_wrongsign)
 
 process.p = cms.Path(process.dimucontana_seq)
-process.p1 = cms.Path(process.dimucontana1_seq)
-process.p2 = cms.Path(process.dimucontana2_seq)
-process.p3 = cms.Path(process.dimucontana_wrongsign_seq)
-process.p4 = cms.Path(process.dimucontana1_wrongsign_seq)
-process.p5 = cms.Path(process.dimucontana2_wrongsign_seq)
+process.p1 = cms.Path(process.dimucontana_wrongsign_seq)

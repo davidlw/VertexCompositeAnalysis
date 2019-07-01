@@ -75,6 +75,7 @@ process.generalD0CandidatesNew.tkPtErrCut = cms.double(0.1)
 process.generalD0CandidatesNew.tkPtCut = cms.double(0.7)
 process.generalD0CandidatesNew.alphaCut = cms.double(1.0)
 process.generalD0CandidatesNew.alpha2DCut = cms.double(1.0)
+process.generalD0CandidatesNew.dPtCut = cms.double(1.0)
 
 #process.generalD0CandidatesNew.useAnyMVA = cms.bool(True)
 #process.generalD0CandidatesNew.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_scenario2.root')

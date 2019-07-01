@@ -42,53 +42,89 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNew_b1_v2'
+    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNewMassPeak_b1_v2'
     config.JobType.psetName = '../test/D0/d0ana_trainingtree_bdtcut.py'
     config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
-    config.Data.outputDatasetTag = 'pPb_Tree_D0_default_BDTCutNew_v2'
+    config.Data.outputDatasetTag = 'pPb_Tree_D0_default_BDTCutNewMassPeak_v2'
     submit(config)
 
-    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNew_b2_v2'
+    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNewMassPeak_b2_v2'
     config.Data.inputDataset = '/PAHighMultiplicity2/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
     submit(config)
 
-    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNew_b3_v2'
+    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNewMassPeak_b3_v2'
     config.Data.inputDataset = '/PAHighMultiplicity3/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
     submit(config)
 
-    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNew_b4_v2'
+    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNewMassPeak_b4_v2'
     config.Data.inputDataset = '/PAHighMultiplicity4/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
     submit(config)
 
-    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNew_b5_v2'
+    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNewMassPeak_b5_v2'
     config.Data.inputDataset = '/PAHighMultiplicity5/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
     submit(config)
 
-    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNew_b6_v2'
+    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNewMassPeak_b6_v2'
     config.Data.inputDataset = '/PAHighMultiplicity6/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
     submit(config)
 
-    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNew_b1_v2'
-    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
-    config.Data.outputDatasetTag = 'Pbp_Tree_D0_default_BDTCutNew_v2'
+    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNewMassPeak_b0n120_v2'
+    config.JobType.psetName = '../test/D0/d0ana_trainingtree_hm120_bdtcut.py'
+    config.Data.inputDataset = '/PAHighMultiplicity0/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    config.Data.outputDatasetTag = 'pPb_Tree_D0_default_N120150_BDTCutNewMassPeak_v2'
     submit(config)
 
-    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNew_b2_v2'
+    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNewMassPeak_b0n150_v2'
+    config.JobType.psetName = '../test/D0/d0ana_trainingtree_hm150_bdtcut.py'
+    config.Data.inputDataset = '/PAHighMultiplicity0/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    config.Data.outputDatasetTag = 'pPb_Tree_D0_default_N150185_BDTCutNewMassPeak_v2'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_pPb_Tree_D0_default_BDTCutNewMassPeak_b0n250_v2'
+    config.JobType.psetName = '../test/D0/d0ana_trainingtree_hm250_bdtcut.py'
+    config.Data.inputDataset = '/PAHighMultiplicity7/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    config.Data.outputDatasetTag = 'pPb_Tree_D0_default_N250_BDTCutNewMassPeak_v2'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNewMassPeak_b1_v2'
+    config.Data.inputDataset = '/PAHighMultiplicity1/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    config.Data.outputDatasetTag = 'Pbp_Tree_D0_default_BDTCutNewMassPeak_v2'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNewMassPeak_b2_v2'
     config.Data.inputDataset = '/PAHighMultiplicity2/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
     submit(config)
 
-    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNew_b3_v2'
+    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNewMassPeak_b3_v2'
     config.Data.inputDataset = '/PAHighMultiplicity3/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
     submit(config)
 
-    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNew_b4_v2'
+    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNewMassPeak_b4_v2'
     config.Data.inputDataset = '/PAHighMultiplicity4/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
     submit(config)
 
-    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNew_b5_v2'
+    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNewMassPeak_b5_v2'
     config.Data.inputDataset = '/PAHighMultiplicity5/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
     submit(config)
 
-    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNew_b6_v2'
+    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNewMassPeak_b6_v2'
     config.Data.inputDataset = '/PAHighMultiplicity6/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNewMassPeak_b0n120_v2'
+    config.JobType.psetName = '../test/D0/d0ana_trainingtree_hm120_bdtcut.py'
+    config.Data.inputDataset = '/PAHighMultiplicity0/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    config.Data.outputDatasetTag = 'Pbp_Tree_D0_default_N120150_BDTCutNewMassPeak_v2'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNewMassPeak_b0n150_v2'
+    config.JobType.psetName = '../test/D0/d0ana_trainingtree_hm150_bdtcut.py'
+    config.Data.inputDataset = '/PAHighMultiplicity0/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    config.Data.outputDatasetTag = 'Pbp_Tree_D0_default_N150185_BDTCutNewMassPeak_v2'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Tree_D0_default_BDTCutNewMassPeak_b0n250_v2'
+    config.JobType.psetName = '../test/D0/d0ana_trainingtree_hm250_bdtcut.py'
+    config.Data.inputDataset = '/PAHighMultiplicity7/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER'
+    config.Data.outputDatasetTag = 'Pbp_Tree_D0_default_N250_BDTCutNewMassPeak_v2'
     submit(config)

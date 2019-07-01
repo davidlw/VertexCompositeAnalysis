@@ -63,6 +63,8 @@
 #include "DataFormats/MuonReco/interface/MuonSegmentMatch.h"
 #include "DataFormats/HeavyIonEvent/interface/CentralityBins.h"
 #include "DataFormats/HeavyIonEvent/interface/Centrality.h"
+#include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
 
 #include "CondFormats/DataRecord/interface/GBRWrapperRcd.h"
 #include "CondFormats/EgammaObjects/interface/GBRForest.h"
@@ -70,8 +72,6 @@
 #include <Math/Functions.h>
 #include <Math/SVector.h>
 #include <Math/SMatrix.h>
-
-
 //
 // class decleration
 //
@@ -80,10 +80,10 @@
 
 using namespace std;
 
-class VertexCompositeSelector : public edm::EDProducer {
+class PATCompositeSelector : public edm::EDProducer {
 public:
-  explicit VertexCompositeSelector(const edm::ParameterSet&);
-  ~VertexCompositeSelector();
+  explicit PATCompositeSelector(const edm::ParameterSet&);
+  ~PATCompositeSelector();
 
   using MVACollection = std::vector<float>;
 
@@ -325,7 +325,7 @@ private:
     //tokens
     edm::EDGetTokenT<reco::VertexCollection> tok_offlinePV_;
     edm::EDGetTokenT<reco::TrackCollection> tok_generalTrk_;
-    edm::EDGetTokenT<reco::VertexCompositeCandidateCollection> recoVertexCompositeCandidateCollection_Token_;
+    edm::EDGetTokenT<pat::CompositeCandidateCollection> patCompositeCandidateCollection_Token_;
     edm::EDGetTokenT<MVACollection> MVAValues_Token_;
     edm::EDGetTokenT<edm::ValueMap<reco::DeDxData> > Dedx_Token1_;
     edm::EDGetTokenT<edm::ValueMap<reco::DeDxData> > Dedx_Token2_;
@@ -336,7 +336,7 @@ private:
 
     std::string v0IDName_;
 
-    reco::VertexCompositeCandidateCollection theVertexComps;
+    pat::CompositeCandidateCollection theVertexComps;
     MVACollection theMVANew;
 };
 
@@ -352,7 +352,7 @@ private:
 // constructors and destructor
 //
 
-VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfig)
+PATCompositeSelector::PATCompositeSelector(const edm::ParameterSet& iConfig)
 {
     //options
     twoLayerDecay_ = iConfig.getUntrackedParameter<bool>("twoLayerDecay");
@@ -407,7 +407,7 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
     //input tokens
     tok_offlinePV_ = consumes<reco::VertexCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCollection"));
     tok_generalTrk_ = consumes<reco::TrackCollection>(iConfig.getUntrackedParameter<edm::InputTag>("TrackCollection"));
-    recoVertexCompositeCandidateCollection_Token_ = consumes<reco::VertexCompositeCandidateCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCompositeCollection"));
+    patCompositeCandidateCollection_Token_ = consumes<pat::CompositeCandidateCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCompositeCollection"));
     tok_muon_ = consumes<reco::MuonCollection>(iConfig.getUntrackedParameter<edm::InputTag>("MuonCollection"));
     Dedx_Token1_ = consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxHarmonic2"));
     Dedx_Token2_ = consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxTruncated40"));
@@ -481,7 +481,7 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
 
     v0IDName_ = (iConfig.getUntrackedParameter<edm::InputTag>("VertexCompositeCollection")).instance();
 
-    produces< reco::VertexCompositeCandidateCollection >(v0IDName_);
+    produces< pat::CompositeCandidateCollection >(v0IDName_);
     produces<MVACollection>(Form("MVAValuesNew%s",v0IDName_.c_str()));
 
     isPionD1 = true;
@@ -491,7 +491,7 @@ VertexCompositeSelector::VertexCompositeSelector(const edm::ParameterSet& iConfi
 }
 
 
-VertexCompositeSelector::~VertexCompositeSelector()
+PATCompositeSelector::~PATCompositeSelector()
 {
  
   // do anything here that needs to be done at desctruction time
@@ -506,15 +506,15 @@ VertexCompositeSelector::~VertexCompositeSelector()
 
 // ------------ method called to for each event  ------------
 void
-VertexCompositeSelector::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
+PATCompositeSelector::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
     using std::vector;
     using namespace edm;
 
     fillRECO(iEvent,iSetup);
 
-//    std::make_unique< reco::VertexCompositeCandidateCollection > theNewV0Cands( new reco::VertexCompositeCandidateCollection );
-    auto theNewV0Cands = std::make_unique<reco::VertexCompositeCandidateCollection>();
+//    std::make_unique< pat::CompositeCandidateCollection > theNewV0Cands( new pat::CompositeCandidateCollection );
+    auto theNewV0Cands = std::make_unique<pat::CompositeCandidateCollection>();
 
     theNewV0Cands->reserve( theVertexComps.size() );
 
@@ -534,7 +534,7 @@ VertexCompositeSelector::produce(edm::Event& iEvent, const edm::EventSetup& iSet
 }
 
 void
-VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSetup)
+PATCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
     //get collections
     edm::Handle<reco::VertexCollection> vertices;
@@ -543,10 +543,10 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
     edm::Handle<reco::TrackCollection> tracks;
     iEvent.getByToken(tok_generalTrk_, tracks);
 
-    edm::Handle<reco::VertexCompositeCandidateCollection> v0candidates;
-    iEvent.getByToken(recoVertexCompositeCandidateCollection_Token_,v0candidates);
-    const reco::VertexCompositeCandidateCollection * v0candidates_ = v0candidates.product();
-    
+    edm::Handle<pat::CompositeCandidateCollection> v0candidates;
+    iEvent.getByToken(patCompositeCandidateCollection_Token_,v0candidates);
+    const pat::CompositeCandidateCollection * v0candidates_ = v0candidates.product();
+
     edm::Handle<MVACollection> mvavalues;
     if(useAnyMVA_ && useExistingMVA_)
     {
@@ -704,7 +704,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
     //RECO Candidate info
     for(unsigned it=0; it<v0candidates_->size(); ++it){
         
-        const reco::VertexCompositeCandidate & trk = (*v0candidates_)[it];
+        const pat::CompositeCandidate & trk = (*v0candidates_)[it];
         
         double secvz=-999.9, secvx=-999.9, secvy=-999.9;
         secvz = trk.vz(); secvx = trk.vx(); secvy = trk.vy();
@@ -979,8 +979,9 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
         typedef ROOT::Math::SVector<double, 3> SVector3;
         typedef ROOT::Math::SVector<double, 6> SVector6;
         
-        SMatrixSym3D totalCov = vtx.covariance() + trk.vertexCovariance();
-        SVector3 distanceVector(secvx-bestvx,secvy-bestvy,secvz-bestvz);
+        const SMatrixSym3D& trkCovMat = *trk.userData<reco::Vertex::CovarianceMatrix>("vertexCovariance");
+        const SMatrixSym3D& totalCov = vtx.covariance() + trkCovMat;
+        const SVector3 distanceVector(secvx-bestvx, secvy-bestvy, secvz-bestvz);
         
         dl = ROOT::Math::Mag(distanceVector);
         dlerror = sqrt(ROOT::Math::Similarity(totalCov, distanceVector))/dl;
@@ -990,8 +991,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
  
         //Decay length 2D
         SVector6 v1(vtx.covariance(0,0), vtx.covariance(0,1),vtx.covariance(1,1),0,0,0);
-        SVector6 v2(trk.vertexCovariance(0,0), trk.vertexCovariance(0,1),trk.vertexCovariance(1,1),0,0,0);
-        
+        SVector6 v2(trkCovMat(0,0), trkCovMat(0,1), trkCovMat(1,1), 0, 0, 0);
         SMatrixSym3D sv1(v1);
         SMatrixSym3D sv2(v2);
         
@@ -1431,7 +1431,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
             typedef ROOT::Math::SVector<double, 3> SVector3;
             typedef ROOT::Math::SVector<double, 6> SVector6;
             
-            SMatrixSym3D totalCov = vtx.covariance() + d1->vertexCovariance();
+            const SMatrixSym3D& totalCov = vtx.covariance() + d1->vertexCovariance();
             SVector3 distanceVector(secvx-bestvx,secvy-bestvy,secvz-bestvz);
             
             grand_dl = ROOT::Math::Mag(distanceVector);
@@ -1441,8 +1441,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
             
             //Decay length 2D
             SVector6 v1(vtx.covariance(0,0), vtx.covariance(0,1),vtx.covariance(1,1),0,0,0);
-            SVector6 v2(d1->vertexCovariance(0,0), d1->vertexCovariance(0,1),d1->vertexCovariance(1,1),0,0,0);
-            
+            SVector6 v2(d1->vertexCovariance(0,0), d1->vertexCovariance(0,1), d1->vertexCovariance(1,1), 0, 0, 0);
             SMatrixSym3D sv1(v1);
             SMatrixSym3D sv2(v2);
             
@@ -1496,8 +1495,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
 //            gbrVals_[20] = bestvz;
 //            gbrVals_[21] = H2dedx2;
           }
-
-          if(forestLabel_ == "DsInpPb" || forestLabel_ == "DsInpp" || forestLabel_ == "DsInPbPb")
+          else if(forestLabel_ == "DsInpPb" || forestLabel_ == "DsInpp" || forestLabel_ == "DsInPbPb")
           {
             gbrVals_[0] = pt;
             gbrVals_[1] = y;
@@ -1517,8 +1515,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
             gbrVals_[15] = ptErr2;
             gbrVals_[16] = H2dedx2;
           }
-
-          if(forestLabel_ == "DiMuInpPb" || forestLabel_ == "DiMuInpp" || forestLabel_ == "DiMuInPbPb")
+          else if(forestLabel_ == "DiMuInpPb" || forestLabel_ == "DiMuInpp" || forestLabel_ == "DiMuInPbPb")
           {
             gbrVals_[0] = pt;
             gbrVals_[1] = y;
@@ -1553,6 +1550,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
             gbrVals_[30] = eta1;
             gbrVals_[31] = eta2;
           }
+          else {std::cout<<"not valid forest label!"<<std::endl; continue;}
 
           GBRForest const * forest = forest_;
           if(useForestFromDB_){
@@ -1573,7 +1571,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
 }
 
 double
-VertexCompositeSelector::GetMVACut(double y, double pt)
+PATCompositeSelector::GetMVACut(double y, double pt)
 {
   double mvacut = -1.0;
   if(fabs(y)>2.4) return 1.0;
@@ -1583,7 +1581,7 @@ VertexCompositeSelector::GetMVACut(double y, double pt)
   else if(pt>4 && pt<6) return 0.25;
   else if(pt>6 && pt<8) return -0.2;
   else return -1.0;
-
+  
   if(!hist_bdtcut) return mvacut;
 
   mvacut = hist_bdtcut->GetBinContent(hist_bdtcut->GetXaxis()->FindBin(y),hist_bdtcut->GetYaxis()->FindBin(pt));
@@ -1593,7 +1591,7 @@ VertexCompositeSelector::GetMVACut(double y, double pt)
   return mvacut;
 }
 
-int VertexCompositeSelector::
+int PATCompositeSelector::
 muAssocToTrack( const reco::TrackRef& trackref,
                 const edm::Handle<reco::MuonCollection>& muonh) const {
   auto muon = std::find_if(muonh->cbegin(),muonh->cend(),
@@ -1607,16 +1605,16 @@ muAssocToTrack( const reco::TrackRef& trackref,
 // ------------ method called once each job just before starting event
 //loop  ------------
 void
-VertexCompositeSelector::beginJob()
+PATCompositeSelector::beginJob()
 {
 }
 
 // ------------ method called once each job just after ending the event
 //loop  ------------
 void 
-VertexCompositeSelector::endJob() {
+PATCompositeSelector::endJob() {
 }
 
 //define this as a plug-in
 #include "FWCore/PluginManager/interface/ModuleDef.h"
-DEFINE_FWK_MODULE(VertexCompositeSelector);
+DEFINE_FWK_MODULE(PATCompositeSelector);

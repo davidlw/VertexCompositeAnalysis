@@ -40,7 +40,9 @@ process.d0ana_mc_wrongsign = process.d0ana_mc.clone()
 process.d0ana_mc_wrongsign.VertexCompositeCollection = cms.untracked.InputTag("d0selectorMCWS:D0")
 process.d0ana_mc_wrongsign.MVACollection = cms.InputTag("d0selectorMCWS:MVAValuesNewD0")
 
-process.d0selectorMCBDTPreCut.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_default_HLT185_WS_Pt1p5_v1.root')
+#process.d0selectorMCBDTPreCut.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_default_HLT185_WS_Pt1p5_v1.root')
+#process.d0selectorMCBDTPreCut.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_default_HLT185_WS_Pt1p5MassPeak_v1.root')
+process.d0selectorMCBDTPreCut.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_default_HLT185_SB_Pt1p5_v1.root')
 process.d0selectorMC = process.d0selectorMCBDTPreCut.clone()
 process.d0selectorMCWS = process.d0selectorMC.clone(
   VertexCompositeCollection = cms.untracked.InputTag("generalD0CandidatesNewWrongSign:D0"),
@@ -48,14 +50,17 @@ process.d0selectorMCWS = process.d0selectorMC.clone(
 )
 
 process.npd0selectorMC = process.d0selectorMC.clone()
-process.npd0selectorMC.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_WS_Pt1p5_v1.root')
+#process.npd0selectorMC.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_WS_Pt1p5_v1.root')
+#process.npd0selectorMC.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_WS_Pt1p5MassPeak_v1.root')
+process.npd0selectorMC.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_SB_Pt1p5_v1.root')
 process.npd0selectorMCWS = process.npd0selectorMC.clone(
   VertexCompositeCollection = cms.untracked.InputTag("generalD0CandidatesNewWrongSign:D0"),
   MVACollection = cms.InputTag("generalD0CandidatesNewWrongSign:MVAValues")
 )
 
 process.npd0selectorMC1 = process.d0selectorMC.clone()
-process.npd0selectorMC1.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_RS_Pt1p5_v1.root')
+#process.npd0selectorMC1.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_RS_Pt1p5_v1.root')
+process.npd0selectorMC1.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_RS_Pt1p5MassPeak_v1.root')
 process.npd0selectorMCWS1 = process.npd0selectorMC1.clone(
   VertexCompositeCollection = cms.untracked.InputTag("generalD0CandidatesNewWrongSign:D0"),
   MVACollection = cms.InputTag("generalD0CandidatesNewWrongSign:MVAValues")
@@ -86,5 +91,5 @@ process.p1 = cms.Path(process.d0ana_seq)
 process.p2 = cms.Path(process.d0ana_wrongsign_seq)
 process.p3 = cms.Path(process.npd0ana_seq)
 process.p4 = cms.Path(process.npd0ana_wrongsign_seq)
-process.p5 = cms.Path(process.npd0ana1_seq)
-process.p6 = cms.Path(process.npd0ana1_wrongsign_seq)
+#process.p5 = cms.Path(process.npd0ana1_seq)
+#process.p6 = cms.Path(process.npd0ana1_wrongsign_seq)
