@@ -333,7 +333,7 @@ EventInfoTreeProducer::beginJob()
 void 
 EventInfoTreeProducer::initTree()
 { 
-  EventInfoNtuple = fs->make< TTree>("VertexCompositeNtuple","VertexCompositeNtuple");
+  EventInfoNtuple = fs->make< TTree>("EventInfoNtuple","EventInfoNtuple");
 
   // Event info
   EventInfoNtuple->Branch("RunNb",&runNb,"RunNb/i");

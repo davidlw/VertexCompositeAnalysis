@@ -1,6 +1,14 @@
 import FWCore.ParameterSet.Config as cms
+from Configuration.StandardSequences.Eras import eras
+process = cms.Process('d0ana',eras.Run2_2016_pA)
 
-process = cms.Process("d0ana")
+process.load('Configuration.StandardSequences.Services_cff')
+process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+process.load('Configuration.StandardSequences.MagneticField_cff')
+process.load('Configuration.StandardSequences.Reconstruction_cff')
+# Set the global tag
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
+process.GlobalTag.globaltag = cms.string('80X_dataRun2_v19')
 
 # initialize MessageLogger and output report
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
@@ -18,11 +26,10 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000)
 
 process.source = cms.Source("PoolSource",
                                 fileNames = cms.untracked.vstring(
-'root://cms-xrd-global.cern.ch//store/user/davidlw/PAHighMultiplicity1/Pbp_Skim_D0Both_default_v1/180827_205121/0000/pPb_HM_685.root'
+'/store/user/davidlw/PAHighMultiplicity1/Pbp_Skim_D0Both_default_v1/180827_205121/0000/pPb_HM_685.root',
                 ),
 secondaryFileNames = cms.untracked.vstring(
-'root://cms-xrd-global.cern.ch//store/hidata/PARun2016C/PAHighMultiplicity1/AOD/PromptReco-v1/000/286/301/00000/6A955CD0-7BBA-E611-BB15-02163E011C00.root',
-'root://cms-xrd-global.cern.ch//store/hidata/PARun2016C/PAHighMultiplicity1/AOD/PromptReco-v1/000/286/301/00000/0CACAB77-8BBA-E611-AE09-02163E0144CB.root'
+'/store/hidata/PARun2016C/PAHighMultiplicity1/AOD/PromptReco-v1/000/286/301/00000/6A955CD0-7BBA-E611-BB15-02163E011C00.root',
 )
                             )
 
@@ -127,11 +134,11 @@ process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
     process.pevt,
     process.pa,
-    process.pa1,
-    process.pa4,
-    process.pa5,
+#    process.pa1,
+#    process.pa4,
+#    process.pa5,
     process.pb4,
-    process.pb5,
+#    process.pb5,
     process.ptrk
 )
 
@@ -142,6 +149,7 @@ process.Flag_primaryVertexFilterPA = cms.Path(process.eventFilter_HM * process.p
 process.Flag_NoScraping = cms.Path(process.eventFilter_HM * process.NoScraping)
 process.Flag_pileupVertexFilterCut = cms.Path(process.eventFilter_HM * process.olvFilter_pPb8TeV_dz1p0)
 process.Flag_pileupVertexFilterCutGplus = cms.Path(process.eventFilter_HM * process.pileUpFilter_pPb8TeV_Gplus)
-eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter , process.Flag_primaryVertexFilterPA , process.Flag_NoScraping , process.Flag_pileupVertexFilterCut , process.Flag_pileupVertexFilterCutGplus ]
+#eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter , process.Flag_primaryVertexFilterPA , process.Flag_NoScraping , process.Flag_pileupVertexFilterCut , process.Flag_pileupVertexFilterCutGplus ]
+eventFilterPaths = [ process.Flag_pileupVertexFilterCut , process.Flag_pileupVertexFilterCutGplus ]
 for P in eventFilterPaths:
     process.schedule.insert(0, P)
