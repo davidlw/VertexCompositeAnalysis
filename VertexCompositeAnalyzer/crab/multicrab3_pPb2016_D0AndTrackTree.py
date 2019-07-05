@@ -65,10 +65,10 @@ dataMap = {
 #            "PAHighMultiplicity0_Pbp": { "PD": "/PAHighMultiplicity0/davidlw-Pbp_Skim_D0Both_default_v1-970f442569e397a6dbe2e80979c0eea4/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
           }
 
-for i in range(4,7):
-    dataMap[("PAMinimumBias"+str(i)+"_pPb")] = { "PD": ("/PAMinimumBias"+str(i)+"/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER"), "Units": 1, "Memory": 2800, "RunTime": 4000 }
-#for i in range(1,9):
-#    dataMap[("PAMinimumBias"+str(i)+"_Pbp")] = { "PD": ("/PAMinimumBias"+str(i)+"/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER"), "Units": 1, "Memory": 2800, "RunTime": 4000 }
+#for i in range(4,7):
+#    dataMap[("PAMinimumBias"+str(i)+"_pPb")] = { "PD": ("/PAMinimumBias"+str(i)+"/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER"), "Units": 1, "Memory": 2800, "RunTime": 4000 }
+for i in range(1,9):
+    dataMap[("PAMinimumBias"+str(i)+"_Pbp")] = { "PD": ("/PAMinimumBias"+str(i)+"/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER"), "Units": 1, "Memory": 2800, "RunTime": 4000 }
 #for i in range(9,21):
 #    dataMap[("PAMinimumBias"+str(i)+"_Pbp")] = { "PD": ("/PAMinimumBias"+str(i)+"/davidlw-Pbp_Skim_D0Both_default_v1-970f442569e397a6dbe2e80979c0eea4/USER"), "Units": 1, "Memory": 2800, "RunTime": 4000 }
 

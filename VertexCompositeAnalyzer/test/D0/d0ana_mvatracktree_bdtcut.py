@@ -1,6 +1,5 @@
 import FWCore.ParameterSet.Config as cms
-from Configuration.StandardSequences.Eras import eras
-process = cms.Process('d0ana',eras.Run2_2016_pA)
+process = cms.Process('d0ana')
 
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
@@ -17,18 +16,21 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 #process.MessageLogger.cerr.INFO = cms.untracked.PSet(
 #        limit = cms.untracked.int32(-1)
 #        )
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(100)
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1000)
 process.options   = cms.untracked.PSet( wantSummary = 
 cms.untracked.bool(True) )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) 
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(2000) 
 )
 
 process.source = cms.Source("PoolSource",
                                 fileNames = cms.untracked.vstring(
 '/store/user/davidlw/PAHighMultiplicity1/Pbp_Skim_D0Both_default_v1/180827_205121/0000/pPb_HM_685.root',
+#'root://cmsxrootd.fnal.gov//store/user/davidlw/PAMinimumBias1/pPb_Skim_D0Both_default_v1/181011_170418/0000/pPb_HM_100.root'
                 ),
 secondaryFileNames = cms.untracked.vstring(
+#'root://cmsxrootd.fnal.gov//store/hidata/PARun2016C/PAHighMultiplicity1/AOD/PromptReco-v1/000/286/301/00000/6A955CD0-7BBA-E611-BB15-02163E011C00.root',
+
 '/store/hidata/PARun2016C/PAHighMultiplicity1/AOD/PromptReco-v1/000/286/301/00000/6A955CD0-7BBA-E611-BB15-02163E011C00.root',
 )
                             )
