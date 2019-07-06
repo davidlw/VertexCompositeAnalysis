@@ -1,6 +1,16 @@
 import FWCore.ParameterSet.Config as cms
+from Configuration.StandardSequences.Eras import eras
+process = cms.Process('d0ana',eras.Run2_2018)
 
-process = cms.Process("d0ana")
+process.load('Configuration.StandardSequences.Services_cff')
+process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+process.load('Configuration.StandardSequences.MagneticField_cff')
+process.load('Configuration.StandardSequences.Reconstruction_cff')
+
+# Set the global tag
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+from Configuration.AlCa.GlobalTag import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_v10', '')
 
 # initialize MessageLogger and output report
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
@@ -9,7 +19,7 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 #process.MessageLogger.cerr.INFO = cms.untracked.PSet(
 #        limit = cms.untracked.int32(-1)
 #        )
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(100)
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1000)
 process.options   = cms.untracked.PSet( wantSummary = 
 cms.untracked.bool(True) )
 
@@ -24,25 +34,44 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000)
 
 process.source = cms.Source("PoolSource",
                                 fileNames = cms.untracked.vstring(
-'/store/user/davidlw/HighMultiplicityEOF0/pp_Skim_D0Both_default_v1/180920_103737/0000/pPb_HM_99.root'
+'root://cms-xrd-global.cern.ch//store/user/davidlw/HighMultiplicityEOF0/pp_Skim_D0Both_default_v1/180920_103737/0000/pPb_HM_99.root'
                 ),
 secondaryFileNames = cms.untracked.vstring(
-'/store/data/Run2018C/HighMultiplicityEOF0/AOD/PromptReco-v2/000/319/468/00000/AE4AFC07-2D87-E811-A403-FA163E405ADB.root',
-'/store/data/Run2018C/HighMultiplicityEOF0/AOD/PromptReco-v2/000/319/468/00000/5670AD4D-2787-E811-B599-FA163E296FCB.root',
-'/store/data/Run2018C/HighMultiplicityEOF0/AOD/PromptReco-v2/000/319/468/00000/A49CFA74-2487-E811-8EE2-FA163EAE92EA.root'
+'root://cms-xrd-global.cern.ch//store/data/Run2018C/HighMultiplicityEOF0/AOD/PromptReco-v2/000/319/468/00000/AE4AFC07-2D87-E811-A403-FA163E405ADB.root',
+'root://cms-xrd-global.cern.ch//store/data/Run2018C/HighMultiplicityEOF0/AOD/PromptReco-v2/000/319/468/00000/5670AD4D-2787-E811-B599-FA163E296FCB.root',
+'root://cms-xrd-global.cern.ch//store/data/Run2018C/HighMultiplicityEOF0/AOD/PromptReco-v2/000/319/468/00000/A49CFA74-2487-E811-8EE2-FA163EAE92EA.root'
 )
                             )
 
-#Trigger Selection
-### Comment out for the timing being assuming running on secondary dataset with trigger bit selected already
+# Add trigger selection
 import HLTrigger.HLTfilters.hltHighLevel_cfi
-process.hltHM = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
-process.hltHM.HLTPaths = ['HLT_*']
-process.hltHM.andOr = cms.bool(True)
-process.hltHM.throw = cms.bool(False)
+process.hltFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
+process.hltFilter.andOr = cms.bool(True)
+process.hltFilter.throw = cms.bool(False)
+process.hltFilter.HLTPaths = [
+    # Other triggers
+    'HLT_FullTrack_Multiplicity85_*', # High multiplicity
+    'HLT_FullTrack_Multiplicity100_*', # High multiplicity
+    'HLT_FullTrack_Multiplicity130_*', # High multiplicity
+    'HLT_FullTrack_Multiplicity155_*', # High multiplicity
+    'HLT_L1MinimumBiasHF_OR_*', # Minimum bias
+    # Dimuon triggers
+    'HLT_L1DoubleMu0_v*',
+    ]
+
+# Add PbPb collision event selection
+process.load('VertexCompositeAnalysis.VertexCompositeProducer.collisionEventSelection_cff')
+process.colEvtSel = cms.Sequence(process.primaryVertexFilter * process.NoScraping)
+
+# Define the event selection sequence
+process.eventFilter_HM = cms.Sequence(
+    process.hltFilter
+)
+process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 
 process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0selector_cff")
 process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0analyzer_tree_cff")
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.eventinfotree_cff")
 
 process.TFileService = cms.Service("TFileService",
                                        fileName = 
@@ -97,13 +126,14 @@ process.npd0ana1_wrongsign = process.d0ana_wrongsign.clone()
 process.npd0ana1_wrongsign.VertexCompositeCollection = cms.untracked.InputTag("npd0selectorWS1:D0")
 process.npd0ana1_wrongsign.MVACollection = cms.InputTag("npd0selectorWS1:MVAValuesNewD0")
 
-process.d0ana_seq = cms.Sequence(process.hltHM * process.d0selector * process.d0ana)
-process.npd0ana_seq = cms.Sequence(process.hltHM * process.npd0selector * process.npd0ana)
-process.npd0ana1_seq = cms.Sequence(process.hltHM * process.npd0selector1 * process.npd0ana1)
-process.d0ana_wrongsign_seq = cms.Sequence(process.hltHM * process.d0selectorWS * process.d0ana_wrongsign)
-process.npd0ana_wrongsign_seq = cms.Sequence(process.hltHM * process.npd0selectorWS * process.npd0ana_wrongsign)
-process.npd0ana1_wrongsign_seq = cms.Sequence(process.hltHM * process.npd0selectorWS1 * process.npd0ana1_wrongsign)
+process.d0ana_seq = cms.Sequence(process.eventFilter_HM * process.d0selector * process.d0ana)
+process.npd0ana_seq = cms.Sequence(process.eventFilter_HM * process.npd0selector * process.npd0ana)
+process.npd0ana1_seq = cms.Sequence(process.eventFilter_HM * process.npd0selector1 * process.npd0ana1)
+process.d0ana_wrongsign_seq = cms.Sequence(process.eventFilter_HM * process.d0selectorWS * process.d0ana_wrongsign)
+process.npd0ana_wrongsign_seq = cms.Sequence(process.eventFilter_HM * process.npd0selectorWS * process.npd0ana_wrongsign)
+process.npd0ana1_wrongsign_seq = cms.Sequence(process.eventFilter_HM * process.npd0selectorWS1 * process.npd0ana1_wrongsign)
 
+process.pevt = cms.Path(process.eventFilter_HM * process.eventinfoana)
 process.pa = cms.Path(process.d0ana_seq)
 process.pa1 = cms.Path(process.d0ana_wrongsign_seq)
 process.pa4 = cms.Path(process.npd0ana_seq)
@@ -113,4 +143,27 @@ process.pb5 = cms.Path(process.npd0ana1_wrongsign_seq)
 
 # Add the Conversion tree
 process.load("FlowCorrAna.DiHadronCorrelationAnalyzer.track_cff")
-process.ptrk = cms.Path(process.hltHM * process.track_ana)
+process.ptrk = cms.Path(process.eventFilter_HM * process.track_ana)
+
+# Define the process schedule
+process.schedule = cms.Schedule(
+    process.eventFilter_HM_step,
+    process.pevt,
+    process.pa,
+#    process.pa1,
+#    process.pa4,
+#    process.pa5,
+    process.pb4,
+#    process.pb5,
+    process.ptrk
+)
+
+# Add the event selection filters
+process.Flag_colEvtSel = cms.Path(process.eventFilter_HM * process.colEvtSel)
+process.Flag_primaryVertexFilter = cms.Path(process.eventFilter_HM * process.primaryVertexFilter)
+process.Flag_NoScraping = cms.Path(process.eventFilter_HM * process.NoScraping)
+process.Flag_pileupVertexFilterCut = cms.Path(process.eventFilter_HM * process.olvFilter_pp5TeV_dz1p0)
+process.Flag_pileupVertexFilterCutGplus = cms.Path(process.eventFilter_HM * process.pileUpFilter_pp5TeV_Gplus)
+eventFilterPaths = [ process.Flag_pileupVertexFilterCut , process.Flag_pileupVertexFilterCutGplus ]
+for P in eventFilterPaths:
+    process.schedule.insert(0, P)

@@ -13,10 +13,11 @@ if __name__ == '__main__':
     config.General.transferOutputs = True
     config.General.transferLogs = False
     config.JobType.pluginName = 'Analysis'
-    config.JobType.maxMemoryMB = 5000
+#    config.JobType.maxMemoryMB = 7500
 #    config.JobType.maxJobRuntimeMin = 2750
     config.Data.unitsPerJob = 1
-#    config.Data.totalUnits = 100
+    config.Data.totalUnits = 1
+    config.JobType.priority = 1000
     config.Data.splitting = 'FileBased'
     config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 #    config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
@@ -42,20 +43,20 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'pp2018_Tree_D0_default_BDTCutNewAndTrack_b1_v1'
+    config.General.requestName = 'pp2018_Tree_D0_default_BDTCutNewAndTrack_test_v1'
     config.JobType.psetName = '../test/D0/d0ana_mvatracktree_bdtcut.py'
     config.Data.inputDataset = '/HighMultiplicityEOF/davidlw-pp_Skim_D0Both_default_v1-f9516adb0ab4bcb5c36605171e6520f9/USER'
-    config.Data.outputDatasetTag = 'pp_Tree_D0_default_BDTCutNewAndTrack_v1'
+    config.Data.outputDatasetTag = 'pp_Tree_D0_default_BDTCutNewAndTrack_test'
     submit(config)
 
-#    config.General.requestName = 'pp2018_Tree_D0_default_BDTCutNew_b2_v3'
+#    config.General.requestName = 'pp2018_Tree_D0_default_BDTCutNewAndTrack_b2_v1'
 #    config.Data.inputDataset = '/HighMultiplicityEOF0/davidlw-pp_Skim_D0Both_default_v1-f9516adb0ab4bcb5c36605171e6520f9/USER'
 #    submit(config)
 
-#    config.General.requestName = 'pp2018_Tree_D0_default_BDTCutNew_b3_v3'
+#    config.General.requestName = 'pp2018_Tree_D0_default_BDTCutNewAndTrack_b3_v1'
 #    config.Data.inputDataset = '/HighMultiplicityEOF1/davidlw-pp_Skim_D0Both_default_v1-f9516adb0ab4bcb5c36605171e6520f9/USER'
 #    submit(config)
 
-#    config.General.requestName = 'pp2018_Tree_D0_default_BDTCutNew_b4_v3'
+#    config.General.requestName = 'pp2018_Tree_D0_default_BDTCutNewAndTrack_b4_v2'
 #    config.Data.inputDataset = '/HighMultiplicityEOF2/davidlw-pp_Skim_D0Both_default_v1-f9516adb0ab4bcb5c36605171e6520f9/USER'
 #    submit(config)

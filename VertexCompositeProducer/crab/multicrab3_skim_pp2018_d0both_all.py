@@ -45,26 +45,26 @@ if __name__ == '__main__':
     config.Data.outputDatasetTag = 'pp_Skim_D0Both_default_v1'
     submit(config)
 
-    config.General.requestName = 'pp2018_Skim_D0Both_default_b2_v1'
-    config.Data.inputDataset = '/HighMultiplicityEOF/Run2018C-PromptReco-v2/AOD'
-    submit(config)
+#    config.General.requestName = 'pp2018_Skim_D0Both_default_b2_v1'
+#    config.Data.inputDataset = '/HighMultiplicityEOF/Run2018C-PromptReco-v2/AOD'
+#    submit(config)
 
-    config.General.requestName = 'pp2018_Skim_D0Both_default_b3_v1'
-    config.Data.inputDataset = '/HighMultiplicityEOF0/Run2018C-PromptReco-v2/AOD'
-    submit(config)
+#    config.General.requestName = 'pp2018_Skim_D0Both_default_b3_v1'
+#    config.Data.inputDataset = '/HighMultiplicityEOF0/Run2018C-PromptReco-v2/AOD'
+#    submit(config)
 
-    config.General.requestName = 'pp2018_Skim_D0Both_default_b4_v1'
-    config.Data.inputDataset = '/HighMultiplicityEOF1/Run2018C-PromptReco-v2/AOD'
-    submit(config)
+#    config.General.requestName = 'pp2018_Skim_D0Both_default_b4_v1'
+#    config.Data.inputDataset = '/HighMultiplicityEOF1/Run2018C-PromptReco-v2/AOD'
+#    submit(config)
 
-    config.General.requestName = 'pp2018_Skim_D0Both_default_b5_v1'
-    config.Data.inputDataset = '/HighMultiplicityEOF2/Run2018C-PromptReco-v2/AOD'
-    submit(config)
+#    config.General.requestName = 'pp2018_Skim_D0Both_default_b5_v1'
+#    config.Data.inputDataset = '/HighMultiplicityEOF2/Run2018C-PromptReco-v2/AOD'
+#    submit(config)
 
-    config.General.requestName = 'pp2018_Skim_D0Both_default_b6_v1'
-    config.Data.inputDataset = '/DoubleMuonLowPU/Run2018C-PromptReco-v2/AOD'
-    submit(config)
+#    config.General.requestName = 'pp2018_Skim_D0Both_default_b6_v1'
+#    config.Data.inputDataset = '/DoubleMuonLowPU/Run2018C-PromptReco-v2/AOD'
+#    submit(config)
 
-    config.General.requestName = 'pp2018_Skim_D0Both_default_b7_v1'
-    config.Data.inputDataset = '/DoubleMuon/Run2018B-PromptReco-v2/AOD'
-    submit(config)
+#    config.General.requestName = 'pp2018_Skim_D0Both_default_b7_v1'
+#    config.Data.inputDataset = '/DoubleMuon/Run2018B-PromptReco-v2/AOD'
+#    submit(config)
