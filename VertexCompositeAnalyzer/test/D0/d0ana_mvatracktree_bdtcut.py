@@ -55,6 +55,7 @@ process.hltFilter.HLTPaths = [
     'HLT_FullTrack_Multiplicity130_*', # High multiplicity
     'HLT_FullTrack_Multiplicity155_*', # High multiplicity
     'HLT_L1MinimumBiasHF_OR_*', # Minimum bias
+    'HLT_ZeroBias_*', # Zero bias
     # Dimuon triggers
     'HLT_L1DoubleMu0_v*',
     ]
