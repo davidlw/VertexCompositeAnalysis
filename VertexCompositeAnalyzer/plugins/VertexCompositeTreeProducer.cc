@@ -1711,6 +1711,7 @@ VertexCompositeTreeProducer::initTree()
     // particle info
     VertexCompositeNtuple->Branch("pT",&pt,"pT[candSize]/F");
     VertexCompositeNtuple->Branch("y",&y,"y[candSize]/F");
+    VertexCompositeNtuple->Branch("eta",&eta,"eta[candSize]/F");
     VertexCompositeNtuple->Branch("phi",&phi,"phi[candSize]/F");
     VertexCompositeNtuple->Branch("mass",&mass,"mass[candSize]/F");
     if(useAnyMVA_) VertexCompositeNtuple->Branch("mva",&mva,"mva[candSize]/F");
@@ -1719,7 +1720,6 @@ VertexCompositeTreeProducer::initTree()
     {
         //Composite candidate info RECO
         VertexCompositeNtuple->Branch("flavor",&flavor,"flavor[candSize]/F");
-//        VertexCompositeNtuple->Branch("eta",&eta,"eta[candSize]/F");
         VertexCompositeNtuple->Branch("VtxProb",&VtxProb,"VtxProb[candSize]/F");
 //        VertexCompositeNtuple->Branch("VtxChi2",&vtxChi2,"VtxChi2[candSize]/F");
 //        VertexCompositeNtuple->Branch("VtxNDF",&ndf,"VtxNDF[candSize]/F");
@@ -1729,7 +1729,6 @@ VertexCompositeTreeProducer::initTree()
         VertexCompositeNtuple->Branch("2DPointingAngle",&agl2D_abs,"2DPointingAngle[candSize]/F");
         VertexCompositeNtuple->Branch("3DDecayLengthSignificance",&dlos,"3DDecayLengthSignificance[candSize]/F");
         VertexCompositeNtuple->Branch("3DDecayLength",&dl,"3DDecayLength[candSize]/F");
-//        VertexCompositeNtuple->Branch("3DDecayLengthError",&dlerror,"3DDecayLengthError[candSize]/F");
         VertexCompositeNtuple->Branch("2DDecayLengthSignificance",&dlos2D,"2DDecayLengthSignificance[candSize]/F");
         VertexCompositeNtuple->Branch("2DDecayLength",&dl2D,"2DDecayLength[candSize]/F");
     

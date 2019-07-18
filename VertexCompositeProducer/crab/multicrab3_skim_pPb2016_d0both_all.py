@@ -13,8 +13,8 @@ if __name__ == '__main__':
     config.General.transferOutputs = True
     config.General.transferLogs = False
     config.JobType.pluginName = 'Analysis'
-#    config.JobType.maxMemoryMB = 3000
-#    config.JobType.maxJobRuntimeMin = 2750
+    config.JobType.maxMemoryMB = 4000
+    config.JobType.maxJobRuntimeMin = 2750
     config.JobType.psetName = '../test/pPbSkim2016_D0Both_cfg.py'
     config.Data.unitsPerJob = 10
 #    config.Data.totalUnits = 2000
@@ -38,54 +38,70 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_default_b1_v1'
+    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_default_b1_v2'
     config.Data.inputDataset = '/PAHighMultiplicity1/PARun2016C-PromptReco-v1/AOD'
     config.Data.lumiMask = 'Cert_285479-285832_HI8TeV_PromptReco_pPb_Collisions16_JSON_NoL1T.txt'
-    config.Data.outputDatasetTag = 'pPb_Skim_D0Both_default_v1'
+    config.Data.outputDatasetTag = 'pPb_Skim_D0Both_default_v2'
     submit(config)
 
-    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_default_b2_v1'
+    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_default_b2_v2'
     config.Data.inputDataset = '/PAHighMultiplicity2/PARun2016C-PromptReco-v1/AOD'
     submit(config)
 
-    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_default_b3_v1'
+    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_default_b3_v2'
     config.Data.inputDataset = '/PAHighMultiplicity3/PARun2016C-PromptReco-v1/AOD'
     submit(config)
 
-    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_default_b4_v1'
+    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_default_b4_v2'
     config.Data.inputDataset = '/PAHighMultiplicity4/PARun2016C-PromptReco-v1/AOD'
     submit(config)
 
-    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_default_b5_v1'
+    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_default_b5_v2'
     config.Data.inputDataset = '/PAHighMultiplicity5/PARun2016C-PromptReco-v1/AOD'
     submit(config)
 
-    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_default_b6_v1'
+    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_default_b6_v2'
     config.Data.inputDataset = '/PAHighMultiplicity6/PARun2016C-PromptReco-v1/AOD'
     submit(config)
 
-    config.General.requestName = 'pPb2016_Pbp_Skim_D0Both_default_b1_v1'
+    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_default_b0_v2'
+    config.Data.inputDataset = '/PAHighMultiplicity0/PARun2016C-PromptReco-v1/AOD'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_default_b7_v2'
+    config.Data.inputDataset = '/PAHighMultiplicity7/PARun2016C-PromptReco-v1/AOD'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Skim_D0Both_default_b1_v2'
     config.Data.inputDataset = '/PAHighMultiplicity1/PARun2016C-PromptReco-v1/AOD'
     config.Data.lumiMask = 'Cert_285952-286496_HI8TeV_PromptReco_Pbp_Collisions16_JSON_NoL1T.txt'
-    config.Data.outputDatasetTag = 'Pbp_Skim_D0Both_default_v1'
+    config.Data.outputDatasetTag = 'Pbp_Skim_D0Both_default_v2'
     submit(config)
 
-    config.General.requestName = 'pPb2016_Pbp_Skim_D0Both_default_b2_v1'
+    config.General.requestName = 'pPb2016_Pbp_Skim_D0Both_default_b2_v2'
     config.Data.inputDataset = '/PAHighMultiplicity2/PARun2016C-PromptReco-v1/AOD'
     submit(config)
 
-    config.General.requestName = 'pPb2016_Pbp_Skim_D0Both_default_b3_v1'
+    config.General.requestName = 'pPb2016_Pbp_Skim_D0Both_default_b3_v2'
     config.Data.inputDataset = '/PAHighMultiplicity3/PARun2016C-PromptReco-v1/AOD'
     submit(config)
 
-    config.General.requestName = 'pPb2016_Pbp_Skim_D0Both_default_b4_v1'
+    config.General.requestName = 'pPb2016_Pbp_Skim_D0Both_default_b4_v2'
     config.Data.inputDataset = '/PAHighMultiplicity4/PARun2016C-PromptReco-v1/AOD'
     submit(config)
 
-    config.General.requestName = 'pPb2016_Pbp_Skim_D0Both_default_b5_v1'
+    config.General.requestName = 'pPb2016_Pbp_Skim_D0Both_default_b5_v2'
     config.Data.inputDataset = '/PAHighMultiplicity5/PARun2016C-PromptReco-v1/AOD'
     submit(config)
 
-    config.General.requestName = 'pPb2016_Pbp_Skim_D0Both_default_b6_v1'
+    config.General.requestName = 'pPb2016_Pbp_Skim_D0Both_default_b6_v2'
     config.Data.inputDataset = '/PAHighMultiplicity6/PARun2016C-PromptReco-v1/AOD'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Skim_D0Both_default_b0_v2'
+    config.Data.inputDataset = '/PAHighMultiplicity0/PARun2016C-PromptReco-v1/AOD'
+    submit(config)
+
+    config.General.requestName = 'pPb2016_Pbp_Skim_D0Both_default_b7_v2'
+    config.Data.inputDataset = '/PAHighMultiplicity7/PARun2016C-PromptReco-v1/AOD'
     submit(config)

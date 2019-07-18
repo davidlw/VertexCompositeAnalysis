@@ -1,6 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 
 from VertexCompositeAnalysis.VertexCompositeAnalyzer.dimuselector_cfi import *
+dimuselectorWS = dimuselector.clone()
+dimuselectorWSMC = dimuselectorMC.clone()
+
 jpsiselector = dimuselector.clone()
 jpsiselectorMC = dimuselectorMC.clone()
 

@@ -99,6 +99,7 @@ private:
     edm::Service<TFileService> fs;
 
     TTree* VertexCompositeNtuple;
+    TTree* genCandidateNtuple;
     TH2F*  hMassVsMVA[6][10];
     TH2F*  hpTVsMVA[6][10];
     TH2F*  hetaVsMVA[6][10];
@@ -175,7 +176,10 @@ private:
     int centrality;
     int Ntrkoffline;
     int Npixel;
-    float HFsumET;
+    float HFsumETPlus;
+    float HFsumETMinus;
+    float ZDCPlus;
+    float ZDCMinus;
     float bestvx;
     float bestvy;
     float bestvz;
@@ -504,7 +508,10 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
       iEvent.getByToken(tok_centBinLabel_,cbin_);
       centrality = *cbin_;  
 
-      HFsumET = cent->EtHFtowerSum();
+      HFsumETPlus = cent->EtHFtowerSumPlus();
+      HFsumETMinus = cent->EtHFtowerSumMinus();
+      ZDCPlus = cent->zdcSumPlus();
+      ZDCMinus = cent->zdcSumMinus();
       Npixel = cent->multiplicityPixel();
 //      int ntrk = cent->Ntracks();
     }
@@ -1139,7 +1146,8 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             calomuon1 =  cand.isCaloMuon();
 
             if(
-                glbmuon1 && trkmuon1 &&
+                //glbmuon1 && 
+                trkmuon1 &&
                 cand.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 &&
                 cand.innerTrack()->hitPattern().pixelLayersWithMeasurement() > 0 &&
                 fabs(cand.innerTrack()->dxy(vtx.position())) < 0.3 &&
@@ -1158,7 +1166,8 @@ VertexCompositeNtupleProducer::fillRECO(const edm::Event& iEvent, const edm::Eve
             calomuon2 =  cand.isCaloMuon();
 
             if(
-                glbmuon2 && trkmuon2 &&
+                //glbmuon2 && 
+                trkmuon2 &&
                 cand.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 &&
                 cand.innerTrack()->hitPattern().pixelLayersWithMeasurement() > 0 &&
                 fabs(cand.innerTrack()->dxy(vtx.position())) < 0.3 &&
@@ -1539,6 +1548,8 @@ VertexCompositeNtupleProducer::fillGEN(const edm::Event& iEvent, const edm::Even
         iddau1 = fabs(Dd1->pdgId());
         iddau2 = fabs(Dd2->pdgId());
         if(Dd3) iddau3 = fabs(Dd3->pdgId());
+    
+        genCandidateNtuple->Fill(); 
     }
 }
 
@@ -1626,6 +1637,7 @@ void
 VertexCompositeNtupleProducer::initTree()
 { 
     VertexCompositeNtuple = fs->make< TTree>("VertexCompositeNtuple","VertexCompositeNtuple");
+    genCandidateNtuple = fs->make< TTree>("genCandidateNtuple","genCandidateNtuple");
     
     VertexCompositeNtuple->Branch("pT",&pt,"pT/F");
     VertexCompositeNtuple->Branch("y",&y,"y/F");
@@ -1640,7 +1652,10 @@ VertexCompositeNtupleProducer::initTree()
         //Event info
         VertexCompositeNtuple->Branch("Ntrkoffline",&Ntrkoffline,"Ntrkoffline/I");
         VertexCompositeNtuple->Branch("Npixel",&Npixel,"Npixel/I");
-        VertexCompositeNtuple->Branch("HFsumET",&HFsumET,"HFsumET/F");
+        VertexCompositeNtuple->Branch("HFsumETPlus",&HFsumETPlus,"HFsumETPlus/F");
+        VertexCompositeNtuple->Branch("HFsumETMinus",&HFsumETMinus,"HFsumETMinus/F");
+        VertexCompositeNtuple->Branch("ZDCPlus",&ZDCPlus,"ZDCPlus/F");
+        VertexCompositeNtuple->Branch("ZDCMinus",&ZDCMinus,"ZDCMinus/F");
         VertexCompositeNtuple->Branch("bestvtxX",&bestvx,"bestvtxX/F");
         VertexCompositeNtuple->Branch("bestvtxY",&bestvy,"bestvtxY/F");
         VertexCompositeNtuple->Branch("bestvtxZ",&bestvz,"bestvtxZ/F");
@@ -1817,17 +1832,17 @@ VertexCompositeNtupleProducer::initTree()
 
     if(doGenNtuple_)
     {
-        VertexCompositeNtuple->Branch("pT_gen",&pt_gen,"pT_gen/F");
-        VertexCompositeNtuple->Branch("eta_gen",&eta_gen,"eta_gen/F");
-        VertexCompositeNtuple->Branch("y_gen",&y_gen,"y_gen/F");
-        VertexCompositeNtuple->Branch("status_gen",&status_gen,"status_gen/I");
-        VertexCompositeNtuple->Branch("MotherID_gen",&idmom,"MotherID_gen/I");
+        genCandidateNtuple->Branch("pT_gen",&pt_gen,"pT_gen/F");
+        genCandidateNtuple->Branch("eta_gen",&eta_gen,"eta_gen/F");
+        genCandidateNtuple->Branch("y_gen",&y_gen,"y_gen/F");
+        genCandidateNtuple->Branch("status_gen",&status_gen,"status_gen/I");
+        genCandidateNtuple->Branch("MotherID_gen",&idmom,"MotherID_gen/I");
 
         if(decayInGen_)
         {
-            VertexCompositeNtuple->Branch("DauID1_gen",&iddau1,"DauID1_gen/I");
-            VertexCompositeNtuple->Branch("DauID2_gen",&iddau2,"DauID2_gen/I");
-            VertexCompositeNtuple->Branch("DauID3_gen",&iddau3,"DauID3_gen/I");
+            genCandidateNtuple->Branch("DauID1_gen",&iddau1,"DauID1_gen/I");
+            genCandidateNtuple->Branch("DauID2_gen",&iddau2,"DauID2_gen/I");
+            genCandidateNtuple->Branch("DauID3_gen",&iddau3,"DauID3_gen/I");
         }
     }
 }

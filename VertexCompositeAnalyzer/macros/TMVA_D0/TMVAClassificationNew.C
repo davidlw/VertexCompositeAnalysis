@@ -164,8 +164,13 @@ int TMVAClassificationNew( TString myMethodList = "" )
    // --- Here the preparation phase begins
 
    // Create a ROOT output file where TMVA will store ntuples, histograms, etc.
-   TString outfileName( "/export/d00/scratch/davidlw/TMVA_BDT_PromptJPsi_pPb_default2_jpsi.root" );
+//   TString outfileName( "/export/d00/scratch/davidlw/TMVA_BDT_NonPromptD0_default_pphm100_WS.root" );
+//   TString outfileName( "/export/d00/scratch/davidlw/TMVA_BDT_PromptD0_default_PbPb_WS.root" );
+   TString outfileName( "/export/d00/scratch/davidlw/TMVA_BDT_PromptD0_default_pPb_WS.root" );
+
    TFile* outputFile = TFile::Open( outfileName, "RECREATE" );
+
+//   (TMVA::gConfig().GetVariablePlotting()).fMaxNumOfAllowedVariablesForScatterPlots = 5;
 
    // Create the factory object. Later you can choose the methods
    // whose performance you'd like to investigate. The factory is 
@@ -197,32 +202,25 @@ int TMVAClassificationNew( TString myMethodList = "" )
     factory->AddVariable( "3DDecayLengthSignificance", 'F' );
     factory->AddVariable( "2DDecayLengthSignificance", 'F' );
     factory->AddVariable( "3DDecayLength", 'F' );
-//    factory->AddVariable( "3DPointingAngle", 'F' );
-//    factory->AddVariable( "2DPointingAngle", 'F' );
+    factory->AddVariable( "3DPointingAngle", 'F' );
+    factory->AddVariable( "2DPointingAngle", 'F' );
+
     factory->AddVariable( "zDCASignificanceDaugther1", 'F' );
     factory->AddVariable( "zDCASignificanceDaugther2", 'F' );
     factory->AddVariable( "xyDCASignificanceDaugther1", 'F' );
     factory->AddVariable( "xyDCASignificanceDaugther2", 'F' );
-    factory->AddVariable( "NHitD1", 'F' );
-    factory->AddVariable( "NHitD2", 'F' );
-    factory->AddVariable( "nMatchedChamberD1", 'F' );
-    factory->AddVariable( "nMatchedStationD1", 'F' );
-    factory->AddVariable( "EnergyDepositionD1", 'F' );
-    factory->AddVariable( "nMatchedChamberD2", 'F' );
-    factory->AddVariable( "nMatchedStationD2", 'F' );
-    factory->AddVariable( "EnergyDepositionD2", 'F' );
-    factory->AddVariable( "dxSig1_seg", 'F' );
-    factory->AddVariable( "dySig1_seg", 'F' );
-    factory->AddVariable( "ddxdzSig1_seg", 'F' );
-    factory->AddVariable( "ddydzSig1_seg", 'F' );
-    factory->AddVariable( "dxSig2_seg", 'F' );
-    factory->AddVariable( "dySig2_seg", 'F' );
-    factory->AddVariable( "ddxdzSig2_seg", 'F' );
-    factory->AddVariable( "ddydzSig2_seg", 'F' );
     factory->AddVariable( "pTD1", 'F' );
     factory->AddVariable( "pTD2", 'F' );
     factory->AddVariable( "EtaD1", 'F' );
     factory->AddVariable( "EtaD2", 'F' );
+    factory->AddVariable( "NHitD1", 'F' );
+    factory->AddVariable( "NHitD2", 'F' );
+    factory->AddVariable( "pTerrD1", 'F' );
+    factory->AddVariable( "pTerrD2", 'F' );
+//    factory->AddVariable( "bestvtxZ", 'F' );
+
+//    factory->AddVariable( "dedxHarmonic2D1", 'F' );
+//    factory->AddVariable( "dedxHarmonic2D2", 'F' );
 
 //    factory->AddVariable( "pTD1+pTD2", 'F' );
 //    factory->AddVariable( "abs(EtaD1-EtaD2)", 'F' );
@@ -242,8 +240,21 @@ int TMVAClassificationNew( TString myMethodList = "" )
 
    // Read training and test data
    // (it is also possible to use ASCII format as input -> see TMVA Users Guide)
-   TFile *input_background = TFile::Open("training_samples/Merged_pPbData_JPsi_TrainingTree_WS_HLT185_v3.root");
-   TFile *input_signal = TFile::Open("training_samples/Merged_pPbMC_PromptJPsi_TrainingTree_signal_combined_v2.root");
+
+//   TFile *input_background = TFile::Open("training_samples/Merged_pPbData_D0_TrainingTree_file89_69_v1.root");
+//   TFile *input_background = TFile::Open("training_samples/Merged_pPbData_D0_TrainingTree_run285505_HLT185_v1.root");
+   TFile *input_background = TFile::Open("training_samples/new_pPb/Merged_pPbPbpData_D0_TrainingTree_combined_N185_small_v5.root");
+//   TFile *input_background = TFile::Open("training_samples/new_pPb/Merged_pPbPbpData_D0_TrainingTree_pt1p5to4_N185_small_v5.root");
+//   TFile *input_background = TFile::Open("training_samples/Merged_pPbMC_PromptD0_TrainingTree_signal_combined_v2.root");
+   TFile *input_signal = TFile::Open("training_samples/Merged_pPbMC_PromptD0_TrainingTree_signal_combined_v2.root");
+
+//// pp samples
+//   TFile *input_background = TFile::Open("training_samples/Merged_pp2018Data_D0_TrainingTree_WS_HM100_seq114_v1.root");
+//   TFile *input_signal = TFile::Open("training_samples/Merged_ppMC_NonPromptD0_TrainingTree_signal_combined_v2.root");
+
+//// PbPb samples
+//   TFile *input_background = TFile::Open("training_samples/d0ana_training_ptsum1p6.root");
+//   TFile *input_signal = TFile::Open("training_samples/nonprompt_pt1p2_y2p4_hi1031p1_Tree_v1.root");
 
 //   TFile *input_signal = TFile::Open("training_samples/d0ana_mc_82.root");
 //   TFile *input_background = TFile::Open("training_samples/d0ana_training_57.root");
@@ -252,9 +263,11 @@ int TMVAClassificationNew( TString myMethodList = "" )
    std::cout << "--- TMVAClassification       : Using background input file: " << input_background->GetName() << std::endl;
    
    // --- Register the training and test trees
-   TTree *signal     = (TTree*)input_signal->Get("jpsiana_mc_genmatch/VertexCompositeNtuple");
-//   TTree *background = (TTree*)input_background->Get("jpsiana2_wrongsign/VertexCompositeNtuple");
-   TTree *background = (TTree*)input_background->Get("VertexCompositeNtuple");
+   TTree *signal     = (TTree*)input_signal->Get("d0ana_mc_genmatchunswap/VertexCompositeNtuple");
+//   TTree *background = (TTree*)input_background->Get("d0ana_mc_genmatchunswap/VertexCompositeNtuple");
+   TTree *background = (TTree*)input_background->Get("d0ana_wrongsign/VertexCompositeNtuple");
+//   TTree *background = (TTree*)input_background->Get("d0ana/VertexCompositeNtuple");
+//   TTree *background = (TTree*)input_background->Get("VertexCompositeNtuple");
 
    // global event weights per tree (see below for setting event-wise weights)
    Double_t signalWeight     = 1.0;
@@ -309,11 +322,17 @@ int TMVAClassificationNew( TString myMethodList = "" )
 //   factory->SetBackgroundWeightExpression( "weight" );
 
    // Apply additional cuts on the signal and background samples (can be different)
-//   TCut mycuts = "";
 //   TCut mycuts = "abs(mass)<1.92 && abs(mass)>1.82"; // for example: TCut mycuts = "abs(var1)<0.5 && abs(var2-0.5)<1";
 //   TCut mycutb = "abs(mass)>1.92 || abs(mass)<1.82"; // for example: TCut mycutb = "abs(var1)<0.5";
 //TCut mycuts = "HighPurityDaugther2==1 && HighPurityDaugther1==1 && abs(3DDecayLengthSignificance)<100 && abs(2DDecayLengthSignificance)<100 && (pTD1+pTD2)>1.6 && abs(EtaD1-EtaD2)<1.0 && pTD1>0.7 && pTD2>0.7";
-     TCut mycuts = "VtxProb>0.01 && NHitD1>=6 && NHitD2>=6 && pTD1*cosh(EtaD1)>3.0 && pTD2*cosh(EtaD2)>3.0 && (pTD1*cosh(EtaD1)+pTD2*cosh(EtaD2))>8.0 && abs(3DDecayLengthSignificance)<100 && abs(2DDecayLengthSignificance)<100";
+//     TCut mycuts = "pT>1.2 && HighPurityDaugther2==1 && HighPurityDaugther1==1 && abs(3DDecayLengthSignificance)<100 && abs(2DDecayLengthSignificance)<100";
+//     For PbPb
+//     TCut mycuts = "pT>1.2 && NHitD1>=11 && NHitD2>=11 && HighPurityDaugther2==1 && HighPurityDaugther1==1 && abs(3DDecayLengthSignificance)<100 && abs(2DDecayLengthSignificance)<100 && (pTD1+pTD2)>2.2 && abs(EtaD1-EtaD2)<1.0 && pTD1>1.0 && pTD2>1.0 && 3DPointingAngle<1. && 2DPointingAngle<1.";
+//     pPb
+//     TCut mycuts = "fabs(mass-1.865)<0.06 && pT>4 && pT<6 && y<1 && y>-1 && NHitD1>=11 && NHitD2>=11 && HighPurityDaugther2==1 && HighPurityDaugther1==1 && abs(3DDecayLengthSignificance)<100 && abs(2DDecayLengthSignificance)<100 && (pTD1+pTD2)>1.6 && abs(EtaD1-EtaD2)<1.0 && pTD1>0.7 && pTD2>0.7 && 3DPointingAngle<1. && 2DPointingAngle<1.";
+//     TCut mycuts = "pT>1.5 && fabs(y)<2.4 && NHitD1>=11 && NHitD2>=11 && HighPurityDaugther2==1 && HighPurityDaugther1==1 && abs(3DDecayLengthSignificance)<100 && abs(2DDecayLengthSignificance)<100 && (pTD1+pTD2)>1.6 && abs(EtaD1-EtaD2)<1.0 && pTD1>0.7 && pTD2>0.7 && 3DPointingAngle<1. && 2DPointingAngle<1.";
+     TCut mycuts = "pT>1.5 && fabs(y)<2.4 && NHitD1>=11 && NHitD2>=11 && HighPurityDaugther2==1 && HighPurityDaugther1==1 && abs(3DDecayLengthSignificance)<100 && abs(2DDecayLengthSignificance)<100 && (pTD1+pTD2)>1.6 && abs(EtaD1-EtaD2)<1.0 && pTD1>0.7 && pTD2>0.7 && 3DPointingAngle<1. && 2DPointingAngle<1.";
+
 //     TCut mycuts = "NHitD1>=11 && NHitD2>=11 && pTerrD1<0.1 && pTerrD2<0.1 && HighPurityDaugther2==1 && HighPurityDaugther1==1 && abs(3DDecayLengthSignificance)<100 && abs(2DDecayLengthSignificance)<100 && pTD1>0.7 && pTD2>0.7 && abs(EtaD1-EtaD2)<1.5";
 //     TCut mycuts = "HighPurityDaugther2==1 && HighPurityDaugther1==1 && pT>1.2 && abs(3DDecayLengthSignificance)<100 && abs(2DDecayLengthSignificance)<100";
 
@@ -484,7 +503,7 @@ int TMVAClassificationNew( TString myMethodList = "" )
 
    if (Use["BDT"])  // Adaptive Boost
       factory->BookMethod( TMVA::Types::kBDT, "BDT",
-                           "!H:!V:NTrees=250:MinNodeSize=2.5%:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20" );
+                           "!H:!V:NTrees=400:MinNodeSize=2.5%:MaxDepth=5:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20" );
 
    if (Use["BDTB"]) // Bagging
       factory->BookMethod( TMVA::Types::kBDT, "BDTB",
@@ -492,7 +511,7 @@ int TMVAClassificationNew( TString myMethodList = "" )
 
    if (Use["BDTD"]) // Decorrelation + Adaptive Boost
       factory->BookMethod( TMVA::Types::kBDT, "BDTD",
-                           "!H:!V:NTrees=200:MinNodeSize=5%:MaxDepth=3:BoostType=AdaBoost:SeparationType=GiniIndex:nCuts=20:VarTransform=Decorrelate" );
+                           "!H:!V:NTrees=400:MinNodeSize=5%:MaxDepth=5:BoostType=AdaBoost:SeparationType=GiniIndex:nCuts=20:VarTransform=Decorrelate" );
 
    if (Use["BDTF"])  // Allow Using Fisher discriminant in node splitting for (strong) linearly correlated variables
       factory->BookMethod( TMVA::Types::kBDT, "BDTMitFisher",

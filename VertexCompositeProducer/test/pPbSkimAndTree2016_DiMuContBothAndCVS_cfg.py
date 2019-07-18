@@ -3,7 +3,7 @@ from Configuration.StandardSequences.Eras import eras
 process = cms.Process('ANASKIM',eras.Run2_2016_pA)
 
 process.load('Configuration.StandardSequences.Services_cff')
-process.load('Configuration.Geometry.GeometryExtended2016Reco_cff')
+process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
 
@@ -14,7 +14,7 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 
 # Define the input source
 process.source = cms.Source("PoolSource",
-   fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/hidata/PARun2016C/PADoubleMuon/AOD/PromptReco-v1/000/286/023/00000/E463C762-7AB7-E611-BC21-02163E01411B.root'),
+   fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/hidata/PARun2016C/PAHighMultiplicity2/AOD/PromptReco-v1/000/286/496/00000/EA8B6921-9ABD-E611-96D8-FA163E2EC0D5.root'),
    inputCommands=cms.untracked.vstring('keep *')
 )
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
@@ -77,21 +77,24 @@ process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 process.dimurereco_step = cms.Path(process.eventFilter_HM * process.patMuonSequence * process.generalMuMuMassMin2Candidates)
 process.dimurerecowrongsign_step = cms.Path(process.eventFilter_HM * process.patMuonSequence * process.generalMuMuMassMin2CandidatesWrongSign)
 
+# Add the VertexComposite tree
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.dimuanalyzer_tree_cff")
+process.dimucontana.selectEvents = cms.untracked.string("eventFilter_HM_step")
+process.dimucontana_wrongsign.selectEvents = cms.untracked.string("eventFilter_HM_step")
+
+# Add the Conversion tree
+process.load("FlowCorrAna.DiHadronCorrelationAnalyzer.conversion_cff")
+
 # Define the output
-process.load("VertexCompositeAnalysis.VertexCompositeProducer.ppanalysisSkimContentJPsi_cff")
-process.output_HM = cms.OutputModule("PoolOutputModule",
-    outputCommands = process.analysisSkimContent.outputCommands,
-    fileName = cms.untracked.string('pPb_DiMuCont.root'),
-    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eventFilter_HM_step')),
-)
-process.output_HM_step = cms.EndPath(process.output_HM)
+process.TFileService = cms.Service("TFileService", fileName = cms.string('dimuana.root'))
+process.p = cms.EndPath(process.dimucontana * process.dimucontana_wrongsign * process.conversion_ana)
 
 # Define the process schedule
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
     process.dimurereco_step,
     process.dimurerecowrongsign_step,
-    process.output_HM_step
+    process.p
 )
 
 # Add the event selection filters
