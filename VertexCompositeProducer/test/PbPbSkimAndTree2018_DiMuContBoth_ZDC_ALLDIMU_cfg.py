@@ -43,7 +43,7 @@ process.centralityBin.nonDefaultGlauberModel = cms.string("")
 process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
 process.GlobalTag.toGet.extend([
     cms.PSet(record = cms.string("HeavyIonRcd"),
-        tag = cms.string("CentralityTable_HFtowers200_DataPbPb_periHYDJETshape_run2v1031x02_offline"),
+        tag = cms.string("CentralityTable_HFtowers200_DataPbPb_periHYDJETshape_run2v1033p1x01_offline"),
         connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
         label = cms.untracked.string("HFtowers")
         ),
@@ -117,7 +117,7 @@ process.hltFilter.HLTPaths = [
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.collisionEventSelection_cff')
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.clusterCompatibilityFilter_cfi')
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.hfCoincFilter_cff')
-process.load("RecoVertex.PrimaryVertexProducer.OfflinePrimaryVerticesRecovery_cfi")
+process.load("VertexCompositeAnalysis.VertexCompositeProducer.OfflinePrimaryVerticesRecovery_cfi")
 process.colEvtSel = cms.Sequence(process.hfCoincFilter2Th4 * process.primaryVertexFilter * process.clusterCompatibilityFilter)
 
 # Define the event selection sequence
@@ -129,8 +129,8 @@ process.eventFilter_HM = cms.Sequence(
 process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 
 # ZDC info
-process.load('QWAna.QWZDC2018RecHit.QWZDC2018Producer_cfi')
-process.load('QWAna.QWZDC2018RecHit.QWZDC2018RecHit_cfi')
+process.load('VertexCompositeAnalysis.VertexCompositeProducer.QWZDC2018Producer_cfi')
+process.load('VertexCompositeAnalysis.VertexCompositeProducer.QWZDC2018RecHit_cfi')
 
 # Define the analysis steps
 process.pcentandep_step = cms.Path(process.eventFilter_HM * process.zdcdigi * process.QWzdcreco * process.cent_seq * process.evtplane_seq)

@@ -14,7 +14,6 @@ config.General.transferLogs = False
 
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'PbPbSkimAndTree2018_DiMuContBoth_ZDC_cfg.py'
 config.JobType.inputFiles = ['HeavyIonRPRcd_PbPb2018_offline.db']
 
 config.section_('Data')
@@ -33,7 +32,7 @@ config.Site.storageSite = 'T2_CH_CERN'
 
 def submit(config):
     try:
-        crabCommand('submit', config = config, dryrun=False)
+        crabCommand('submit', config = config, dryrun=True)
     except HTTPException as hte:
         print "Failed submitting task: %s" % (hte.headers)
     except ClientException as cle:
@@ -44,19 +43,20 @@ def submit(config):
 #############################################################################################
 
 dataMap = {
-            "HIDoubleMuon": { "PD": "/HIDoubleMuon/HIRun2018A-04Apr2019-v1/AOD", "Units": 5, "Memory": 2500, "RunTime": 1800 },
-            "HISingleMuon": { "PD": "/HISingleMuon/HIRun2018A-04Apr2019-v1/AOD", "Units": 5, "Memory": 2500, "RunTime": 1800 },
-            "HIDoubleMuonPsiPeri": { "PD": "/HIDoubleMuonPsiPeri/HIRun2018A-04Apr2019-v1/AOD", "Units": 5, "Memory": 2500, "RunTime": 1800 },
-            "HIForward": { "PD": "/HIForward/HIRun2018A-04Apr2019-v1/AOD", "Units": 10, "Memory": 1800, "RunTime": 1400 },
+            "HIDoubleMuon": { "PD": "/HIDoubleMuon/HIRun2018A-04Apr2019-v1/AOD", "Units": 5, "Memory": 2500, "RunTime": 1800, "PSet": "PbPbSkimAndTree2018_DiMuContBoth_ZDC_cfg.py" },
+            "HISingleMuon": { "PD": "/HISingleMuon/HIRun2018A-04Apr2019-v1/AOD", "Units": 5, "Memory": 2500, "RunTime": 1800, "PSet": "PbPbSkimAndTree2018_DiMuContBoth_ZDC_cfg.py" },
+            "HIDoubleMuonPsiPeri": { "PD": "/HIDoubleMuonPsiPeri/HIRun2018A-04Apr2019-v1/AOD", "Units": 5, "Memory": 2500, "RunTime": 1800, "PSet": "PbPbSkimAndTree2018_DiMuContBoth_ZDC_cfg.py" },
+            "HIForward": { "PD": "/HIForward/HIRun2018A-04Apr2019-v1/AOD", "Units": 10, "Memory": 1800, "RunTime": 1400, "PSet": "PbPbSkimAndTree2018_DiMuContBoth_ZDC_ALLDIMU_cfg.py" },
             }
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeTree_'+key+'_HIRun2018_04Apr2019_DiMuMassMin7_20190527'
+    config.General.requestName = 'VertexCompositeTree_'+key+'_HIRun2018_04Apr2019_DiMuMassMin7_20190808'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]
     config.JobType.maxJobRuntimeMin = val["RunTime"]
+    config.JobType.psetName = val["PSet"]
     config.Data.outputDatasetTag = config.General.requestName
     config.Data.outLFNDirBase = '/store/group/phys_heavyions/%s/RiceHIN/PbPb2018/TREE/%s' % (getUsernameFromSiteDB(), config.General.requestName)
     print("Submitting CRAB job for: "+val["PD"])
