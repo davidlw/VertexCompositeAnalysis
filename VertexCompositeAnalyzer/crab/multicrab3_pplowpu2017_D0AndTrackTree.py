@@ -49,12 +49,12 @@ dataMap = {
 #            "HighMultiplicityEOF": { "PD": "/HighMultiplicityEOF/davidlw-pp_Skim_D0Both_default_v1-f9516adb0ab4bcb5c36605171e6520f9/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
           }
 
-for i in range(1,6):
-    dataMap[("HighMultiplicityEOF"+str(i)+"_pp2017E")] = { "PD": ("/HighMultiplicityEOF"+str(i)+"/davidlw-pp2017E_Skim_D0Both_default_v1-8add6431583b23b33c0d28f50a0f22f7/USER"), "Units": 1, "Memory": 2800, "RunTime": 4000 }
-for i in range(1,6):
-    dataMap[("HighMultiplicityEOF"+str(i)+"_pp2017C")] = { "PD": ("/HighMultiplicityEOF"+str(i)+"/davidlw-pp2017C_Skim_D0Both_default_v1-8add6431583b23b33c0d28f50a0f22f7/USER"), "Units": 1, "Memory": 2800, "RunTime": 4000 }
-for i in range(1,6):
-    dataMap[("HighMultiplicityEOF"+str(i)+"_pp2017B")] = { "PD": ("/HighMultiplicityEOF"+str(i)+"/davidlw-pp2017B_Skim_D0Both_default_v1-8add6431583b23b33c0d28f50a0f22f7/USER"), "Units": 1, "Memory": 2800, "RunTime": 4000 }
+#for i in range(1,6):
+#    dataMap[("HighMultiplicityEOF"+str(i)+"_pp2017E")] = { "PD": ("/HighMultiplicityEOF"+str(i)+"/davidlw-pp2017E_Skim_D0Both_default_v1-8add6431583b23b33c0d28f50a0f22f7/USER"), "Units": 1, "Memory": 2800, "RunTime": 4000 }
+for i in range(3,4):
+    dataMap[("HighMultiplicityEOF"+str(i)+"_pp2017C")] = { "PD": ("/HighMultiplicityEOF"+str(i)+"/davidlw-pp2017C_Skim_D0Both_default_v1-8add6431583b23b33c0d28f50a0f22f7/USER"), "Units": 1, "Memory": 2000, "RunTime": 2000 }
+#for i in range(1,2):
+#    dataMap[("HighMultiplicityEOF"+str(i)+"_pp2017B")] = { "PD": ("/HighMultiplicityEOF"+str(i)+"/davidlw-pp2017B_Skim_D0Both_default_v1-8add6431583b23b33c0d28f50a0f22f7/USER"), "Units": 1, "Memory": 2800, "RunTime": 4000 }
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
