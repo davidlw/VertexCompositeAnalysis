@@ -21,14 +21,14 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
   #Trigger info
   TriggerResultCollection = cms.untracked.InputTag("TriggerResults::HLT"),
   triggerPathNames = cms.untracked.vstring(
-      #  Double muon triggers
-      'HLT_HIL1DoubleMu0_v', # Dimuons
-      # Single muon triggers
-      'HLT_HIL3Mu12_v', # Electroweak boson
+      # MinBias triggers
+      'HLT_HIL1MinimumBiasHF_AND_v',
+      'HLT_HIL1MinimumBiasHF_AND_part',
+      'HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part',
+      'HLT_HIL1MinimumBiasHF_OR_v',
+      'HLT_HIZeroBias_v',
   ),
   triggerFilterNames = cms.untracked.vstring(
-      'hltL1fL1sDoubleMu0L1Filtered0',
-      'hltL3fL1sSingleMu7L1f0L2f0L3Filtered12',
   ),
 
   #Filter info
@@ -37,14 +37,13 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
       'Flag_colEvtSel',
       'Flag_primaryVertexFilter',
       'Flag_NoScraping',
-      'Flag_pileupVertexFilterCut',
-      'Flag_pileupVertexFilterCutGplus',
+      'Flag_phfCoincFilter3Th3',
   ),
   selectEvents = cms.untracked.string(""),
 
   isCentrality = cms.bool(True),
-  centralityBinLabel = cms.InputTag("",""),
-  centralitySrc = cms.InputTag("pACentrality"),
+  centralityBinLabel = cms.InputTag("centralityBin","HFtowers"),
+  centralitySrc = cms.InputTag("hiCentrality"),
 
   isEventPlane = cms.bool(False),
   eventplaneSrc = cms.InputTag(""),
