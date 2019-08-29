@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 from Configuration.StandardSequences.Eras import eras
-process = cms.Process('ANASKIM',eras.Run2_2017)
+process = cms.Process('ANASKIM',eras.Run2_2017_pp_on_XeXe)
 
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
@@ -17,7 +17,7 @@ process.source = cms.Source("PoolSource",
    fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/hidata/XeXeRun2017/HIMinimumBias9/AOD/13Dec2017-v1/70000/F817EFCC-06F3-E711-90E5-FA163EA07C2C.root'),
    inputCommands=cms.untracked.vstring('keep *')
 )
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#-1
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
 # Set the global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
