@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 from Configuration.StandardSequences.Eras import eras
-process = cms.Process("ANATREE",eras.Run2_2017)
+process = cms.Process("ANATREE",eras.Run2_2017_pp_on_XeXe)
 
 # Limit the output messages
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
