@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 from Configuration.StandardSequences.Eras import eras
-process = cms.Process("ANATREE",eras.Run2_2017_ppRef)
+process = cms.Process("ANATREE",eras.Run2_2017)
 
 # Limit the output messages
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
@@ -17,7 +17,7 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 # Set the global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '94X_dataRun2_v11', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '94X_dataRun2_ReReco_EOY17_v6', '')
 
 # Add the VertexComposite tree
 process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.dimuanalyzer_tree_cff")
