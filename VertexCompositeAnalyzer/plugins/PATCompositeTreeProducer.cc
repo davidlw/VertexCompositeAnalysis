@@ -45,6 +45,7 @@
 #include "DataFormats/HeavyIonEvent/interface/EvtPlane.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/Math/interface/deltaR.h"
 
@@ -92,7 +93,7 @@ private:
   virtual void initTree();
   reco::GenParticleRef findLastPar(const reco::GenParticleRef&);
   reco::GenParticleRef findMother(const reco::GenParticleRef&);
-  bool hasDaughters(const reco::GenParticleRef&, const std::vector<int>&);
+  bool findDaughters(std::vector<reco::GenParticleRef>&, const reco::GenParticleRef&);
 
   // ----------member data ---------------------------
 
@@ -285,6 +286,7 @@ private:
   // gen info
   std::vector<reco::GenParticleRef> genVec_;
   float weight_gen;
+  std::vector<float> weightLHE_gen;
   uint candSize_gen;
   float pt_gen[MAXCAN];
   float eta_gen[MAXCAN];
@@ -292,6 +294,7 @@ private:
   short status_gen[MAXCAN];
   int pid_gen[MAXCAN];
   int idmom_gen[MAXCAN];
+  int iddecay_gen[MAXCAN];
   short idxrec_gen[MAXCAN];
   int idDau_gen[MAXDAU][MAXCAN];
   short chargeDau_gen[MAXDAU][MAXCAN];
@@ -315,6 +318,7 @@ private:
   edm::EDGetTokenT<edm::ValueMap<reco::DeDxData> > Dedx_Token2_;
   edm::EDGetTokenT<reco::GenParticleCollection> tok_genParticle_;
   edm::EDGetTokenT<GenEventInfoProduct> tok_genInfo_;
+  edm::EDGetTokenT<LHEEventProduct> tok_genLHE_;
 
   edm::EDGetTokenT<int> tok_centBinLabel_;
   edm::EDGetTokenT<reco::Centrality> tok_centSrc_;
@@ -389,6 +393,7 @@ PATCompositeTreeProducer::PATCompositeTreeProducer(const edm::ParameterSet& iCon
   MVAValues_Token_ = consumes<MVACollection>(iConfig.getParameter<edm::InputTag>("MVACollection"));
   tok_genParticle_ = consumes<reco::GenParticleCollection>(edm::InputTag(iConfig.getUntrackedParameter<edm::InputTag>("GenParticleCollection")));
   tok_genInfo_ = consumes<GenEventInfoProduct>(edm::InputTag("generator"));
+  tok_genLHE_ = consumes<LHEEventProduct>(edm::InputTag("externalLHEProducer",""));
 
   useDeDxData_ = (iConfig.exists("useDeDxData") ? iConfig.getParameter<bool>("useDeDxData") : false);
   if(useDeDxData_)
@@ -1017,6 +1022,19 @@ PATCompositeTreeProducer::fillGEN(const edm::Event& iEvent, const edm::EventSetu
   iEvent.getByToken(tok_genInfo_, geninfo);
   weight_gen = (geninfo.isValid() ? geninfo->weight() : -1.0);
 
+  edm::Handle<LHEEventProduct> lhe;
+  iEvent.getByToken(tok_genLHE_, lhe);
+  weightLHE_gen.clear();
+  if(lhe.isValid() && geninfo.isValid())
+  {
+    const auto&  asdd = lhe->originalXWGTUP();
+    for(uint idx=0; idx<lhe->weights().size(); ++idx)
+    {
+      const auto&  asdde = lhe->weights()[idx].wgt;
+      weightLHE_gen.push_back(geninfo->weight()*asdde/asdd);
+    }
+  }
+
   edm::Handle<reco::GenParticleCollection> genpars;
   iEvent.getByToken(tok_genParticle_, genpars);
   if(!genpars.isValid()) throw cms::Exception("PATCompositeAnalyzer") << "Gen matching cannot be done without Gen collection!" << std::endl;
@@ -1025,15 +1043,18 @@ PATCompositeTreeProducer::fillGEN(const edm::Event& iEvent, const edm::EventSetu
   for(uint idx=0; idx<genpars->size(); ++idx)
   {
     const auto& trk = reco::GenParticleRef(genpars, idx);
+    std::vector<reco::GenParticleRef> dauVec;
 
     if (trk.isNull()) continue; //check gen particle ref
-    if(!hasDaughters(trk, PID_dau_)) continue; //check if has the daughters
+    if (trk->status()!=2 && trk->status()!=62) continue; //check gen particle status
+    if(!findDaughters(dauVec, trk)) continue; //check if has the daughters
 
     pt_gen[candSize_gen] = trk->pt();
     eta_gen[candSize_gen] = trk->eta();
     y_gen[candSize_gen] = trk->rapidity();
     pid_gen[candSize_gen] = trk->pdgId();
     status_gen[candSize_gen] = trk->status();
+    iddecay_gen[candSize_gen] = fabs(findMother(dauVec[0])->pdgId());
 
     const auto& recIt = std::find(genVec_.begin(), genVec_.end(), trk);
     idxrec_gen[candSize_gen] = (recIt!=genVec_.end() ? std::distance(genVec_.begin(), recIt) : -1);
@@ -1045,7 +1066,7 @@ PATCompositeTreeProducer::fillGEN(const edm::Event& iEvent, const edm::EventSetu
     {
       for(ushort iDau=0; iDau<NDAU_; iDau++)
       {
-        const auto& Dd = findLastPar(trk->daughterRef(iDau));
+        const auto& Dd = dauVec[iDau];
         idDau_gen[iDau][candSize_gen] = (Dd.isNonnull() ? Dd->pdgId() : 99999);
         chargeDau_gen[iDau][candSize_gen] = (Dd.isNonnull() ? Dd->charge() : 9);
         ptDau_gen[iDau][candSize_gen] = (Dd.isNonnull() ? Dd->pt() : -1.);
@@ -1293,6 +1314,7 @@ PATCompositeTreeProducer::initTree()
   if(doGenNtuple_)
   {
     PATCompositeNtuple->Branch("weight_gen",&weight_gen,"weight_gen/F");
+    PATCompositeNtuple->Branch("weightLHE_gen",&weightLHE_gen);
     PATCompositeNtuple->Branch("candSize_gen",&candSize_gen,"candSize_gen/i");
     PATCompositeNtuple->Branch("pT_gen",pt_gen,"pT_gen[candSize_gen]/F");
     PATCompositeNtuple->Branch("eta_gen",eta_gen,"eta_gen[candSize_gen]/F");
@@ -1300,6 +1322,7 @@ PATCompositeTreeProducer::initTree()
     PATCompositeNtuple->Branch("status_gen",status_gen,"status_gen[candSize_gen]/S");
     PATCompositeNtuple->Branch("PID_gen",pid_gen,"PID_gen[candSize_gen]/I");
     PATCompositeNtuple->Branch("MotherID_gen",idmom_gen,"MotherID_gen[candSize_gen]/I");
+    PATCompositeNtuple->Branch("DecayID_gen",iddecay_gen,"DecayID_gen[candSize_gen]/S");
     PATCompositeNtuple->Branch("RecIdx_gen",idxrec_gen,"RecIdx_gen[candSize_gen]/S");
 
     if(decayInGen_)
@@ -1367,30 +1390,39 @@ PATCompositeTreeProducer::findMother(const reco::GenParticleRef& genParRef)
 
 
 bool
-PATCompositeTreeProducer::hasDaughters(const reco::GenParticleRef& genParRef, const std::vector<int>& PID_dau)
+PATCompositeTreeProducer::findDaughters(std::vector<reco::GenParticleRef>& dauVec, const reco::GenParticleRef& genParRef)
 {
-  bool hasDau = false;
-  if(genParRef->numberOfDaughters()==PID_dau.size())
+  if(genParRef.isNull()) return false;
+  auto PIDvec = PID_dau_;
+  for(ushort iDau=0; iDau<genParRef->numberOfDaughters(); iDau++)
   {
-    std::vector<int> PIDvec = PID_dau;
-    for(ushort iDau=0; iDau<genParRef->numberOfDaughters(); iDau++)
+    const auto& dau = findLastPar(genParRef->daughterRef(iDau));
+    auto pos = std::find(PIDvec.begin(), PIDvec.end(), fabs(dau->pdgId()));
+    // Case: Candidate -> Daughters
+    if(pos!=PIDvec.end())
     {
-      const auto& dau = *(genParRef->daughter(iDau));
-      bool found = false;
-      for(ushort iPID=0; iPID<PIDvec.size(); iPID++)
+      dauVec.push_back(dau);
+      PIDvec.erase(pos);
+    }
+    else
+    {
+      // Case: Candidate -> Intermediate Decays -> Daughters
+      for(ushort iGDau=0; iGDau<dau->numberOfDaughters(); iGDau++)
       {
-        if(fabs(dau.pdgId())==PIDvec[iPID])
+        const auto& gdau = findLastPar(dau->daughterRef(iGDau));
+        pos = std::find(PIDvec.begin(), PIDvec.end(), fabs(gdau->pdgId()));
+        if(pos!=PIDvec.end())
         {
-          PIDvec.erase(PIDvec.begin()+iPID);
-          found=true;
+          dauVec.push_back(gdau);
+          PIDvec.erase(pos);
           break;
         }
       }
-      if(!found) break;
     }
-    hasDau = (PIDvec.size()==0);
+    if(PIDvec.empty()) return true;
+    else if(pos==PIDvec.end()) return false;
   }
-  return hasDau;
+  return false;
 }
 
 
