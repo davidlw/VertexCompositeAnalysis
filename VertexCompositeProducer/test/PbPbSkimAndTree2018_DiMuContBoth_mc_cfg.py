@@ -14,7 +14,7 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 
 # Define the input source
 process.source = cms.Source("PoolSource",
-   fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/user/anstahll/Dilepton/MC/Embedded/Ups1SMM_5p02TeV_TuneCP5_Embd_RECO_20190401/Ups1SMM_5p02TeV_TuneCP5_Embd/Ups1SMM_5p02TeV_TuneCP5_Embd_RECO_20190401/190402_035044/0008/HIN-HINPbPbAutumn18DRHIMix-00003_step2_8372.root'),
+   fileNames = cms.untracked.vstring('/store/himc/HINPbPbAutumn18DR/DYJetsToLL_MLL-50_TuneCP5_HydjetDrumMB_5p02TeV-amcatnloFXFX-pythia8/AODSIM/mva98_103X_upgrade2018_realistic_HI_v11-v1/70003/FABA33C0-C8C5-9E4D-AEDB-48A33CC53415.root'),
    inputCommands=cms.untracked.vstring('keep *', 'drop *_hiEvtPlane_*_*')
 )
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
@@ -30,7 +30,7 @@ process.centralityBin.centralityVariable = cms.string("HFtowers")
 process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
 process.GlobalTag.toGet.extend([
     cms.PSet(record = cms.string("HeavyIonRcd"),
-        tag = cms.string("CentralityTable_HFtowers200_HydjetDrum5F_v1032x01_mc"),
+        tag = cms.string("CentralityTable_HFtowers200_HydjetDrum5F_v1032x02_mc"),
         connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
         label = cms.untracked.string("HFtowers")
         ),
@@ -71,7 +71,7 @@ doPATMuons(process, True)
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.collisionEventSelection_cff')
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.clusterCompatibilityFilter_cfi')
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.hfCoincFilter_cff')
-process.load("RecoVertex.PrimaryVertexProducer.OfflinePrimaryVerticesRecovery_cfi")
+process.load("VertexCompositeAnalysis.VertexCompositeProducer.OfflinePrimaryVerticesRecovery_cfi")
 process.colEvtSel = cms.Sequence(process.hfCoincFilter2Th4 * process.primaryVertexFilter * process.clusterCompatibilityFilter)
 
 # Define the analysis steps

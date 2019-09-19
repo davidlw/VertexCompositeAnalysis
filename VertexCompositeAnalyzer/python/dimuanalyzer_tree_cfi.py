@@ -30,6 +30,7 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
       'HLT_HIL1MuOpen_Centrality_80_100_v', # Peripheral muons
       'HLT_HIL3Mu12_v', # Electroweak bosons
       'HLT_HIUPC_SingleMuOpen_NotMBHF2AND_v', # UPC muons
+      'HLT_HIL3Mu3_NHitQ10_v1', # Low pT muons
   ),
   triggerFilterNames = cms.untracked.vstring(
       'hltL1fL1sL1DoubleMuOpenOSCentrality40100L1Filtered0',
@@ -40,6 +41,7 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
       'hltL1fL1sL1MuOpenCentrality80100L1Filtered0',
       'hltL3fL1sL1SingleMu*OpenL1f*L2f0L3Filtered12',
       'hltL1sSingleMuOpenNotMBHF2AND',
+      'hltL3fL1sL1SingleMu*OpenL1f0L2f0L3Filtered3NHitQ10',
   ),
 
   #Filter info

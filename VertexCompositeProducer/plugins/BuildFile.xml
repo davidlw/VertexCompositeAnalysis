@@ -9,4 +9,4 @@
 <use   name="CalibFormats/HcalObjects"/>
 <flags EDM_PLUGIN="1"/>
 <library   file="*.cc" name="QWNtrkOffline"/>
-<library   file="*.cc" name="RecoVertexPrimaryVertexProducerPlugins">
+<library   file="*.cc" name="RecoVertexPrimaryVertexProducerPlugins"/>
