@@ -41,9 +41,11 @@ process.d0ana_mc_wrongsign.VertexCompositeCollection = cms.untracked.InputTag("d
 process.d0ana_mc_wrongsign.MVACollection = cms.InputTag("d0selectorMCWS:MVAValuesNewD0")
 
 #process.d0selectorMCBDTPreCut.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_default_HLT185_WS_Pt1p5_v1.root')
-#process.d0selectorMCBDTPreCut.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_default_HLT185_WS_Pt1p5MassPeak_v1.root')
-process.d0selectorMCBDTPreCut.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_default_HLT185_SB_Pt1p5_v1.root')
+process.d0selectorMCBDTPreCut.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_default_HLT185_WS_Pt1p5MassPeak_v1.root')
+#process.d0selectorMCBDTPreCut.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_default_HLT185_SB_Pt1p5_v1.root')
 process.d0selectorMC = process.d0selectorMCBDTPreCut.clone()
+#process.d0selectorMC.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_default_HLT185_WS_Pt1p5MassPeak_v1.root')
+#process.d0selectorMC.useAnyMVA = cms.bool(True)
 process.d0selectorMCWS = process.d0selectorMC.clone(
   VertexCompositeCollection = cms.untracked.InputTag("generalD0CandidatesNewWrongSign:D0"),
   MVACollection = cms.InputTag("generalD0CandidatesNewWrongSign:MVAValues")
@@ -51,8 +53,8 @@ process.d0selectorMCWS = process.d0selectorMC.clone(
 
 process.npd0selectorMC = process.d0selectorMC.clone()
 #process.npd0selectorMC.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_WS_Pt1p5_v1.root')
-#process.npd0selectorMC.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_WS_Pt1p5MassPeak_v1.root')
-process.npd0selectorMC.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_SB_Pt1p5_v1.root')
+process.npd0selectorMC.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_WS_Pt1p5MassPeak_v1.root')
+#process.npd0selectorMC.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_SB_Pt1p5_v1.root')
 process.npd0selectorMCWS = process.npd0selectorMC.clone(
   VertexCompositeCollection = cms.untracked.InputTag("generalD0CandidatesNewWrongSign:D0"),
   MVACollection = cms.InputTag("generalD0CandidatesNewWrongSign:MVAValues")

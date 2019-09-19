@@ -14,16 +14,14 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 200
 
 process.source = cms.Source("PoolSource",
    fileNames = cms.untracked.vstring(
-'/store/hidata/PARun2016C/PAHighMultiplicity1/AOD/PromptReco-v1/000/285/505/00000/006F1E14-85AF-E611-9F9E-02163E014508.root'
-#'/store/hidata/PARun2016B/PAMinimumBias1/AOD/PromptReco-v1/000/285/216/00000/04214B66-30AC-E611-BFBC-FA163EBFF447.root'
-# '/store/hidata/PARun2016B/PAMinimumBias1/AOD/PromptReco-v1/000/285/090/00000/DC56AAB2-5EAB-E611-A27A-FA163E251515.root'
+'/store/himc/pPb816Summer16DR/PromptD0_D0pT-1p2_pPb-EmbEPOS_8p16_Pythia8/AODSIM/pPbEmb_80X_mcRun2_pA_v4-v1/70000/EE4A348A-CC9D-E711-9738-28924A33AFD2.root'
 )
 )
 
 # =============== Other Statements =====================
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(200))
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
-process.GlobalTag.globaltag = '80X_dataRun2_Prompt_v15'
+process.GlobalTag.globaltag = '80X_mcRun2_pA_v4'
 
 # =============== Import Sequences =====================
 #Trigger Selection
@@ -70,15 +68,13 @@ process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalD0Candidate
 process.generalD0CandidatesNew = process.generalD0Candidates.clone()
 #process.generalD0CandidatesNew.trkPtSumCut = cms.double(1.6)
 #process.generalD0CandidatesNew.trkEtaDiffCut = cms.double(1.0)
-process.generalD0CandidatesNew.tkNhitsCut = cms.int32(11)
-process.generalD0CandidatesNew.tkPtErrCut = cms.double(0.1)
-process.generalD0CandidatesNew.tkPtCut = cms.double(0.7)
+#process.generalD0CandidatesNew.tkNhitsCut = cms.int32(11)
+#process.generalD0CandidatesNew.tkPtErrCut = cms.double(0.1)
+#process.generalD0CandidatesNew.tkPtCut = cms.double(0.7)
 #process.generalD0CandidatesNew.alphaCut = cms.double(1.0)
 #process.generalD0CandidatesNew.alpha2DCut = cms.double(1.0)
 process.generalD0CandidatesNew.dPtCut = cms.double(1.0)
 
-#process.generalD0CandidatesNew.useAnyMVA = cms.bool(True)
-#process.generalD0CandidatesNew.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_scenario2.root')
 process.generalD0CandidatesNewWrongSign = process.generalD0CandidatesNew.clone(isWrongSign = cms.bool(True))
 
 process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew * process.generalD0CandidatesNewWrongSign )
@@ -97,8 +93,38 @@ process.output_HM = cms.OutputModule("PoolOutputModule",
 
 process.output_HM_step = cms.EndPath(process.output_HM)
 
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0selector_cff")
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0analyzer_ntp_cff")
+
+process.TFileService = cms.Service("TFileService",
+                                       fileName =
+cms.string('d0ana_mc_tree.root')
+                                   )
+
+process.d0ana_mc.useAnyMVA = cms.bool(False)
+process.d0ana_mc.VertexCompositeCollection = cms.untracked.InputTag("d0selectorMC:D0")
+process.d0ana_mc_wrongsign = process.d0ana_mc.clone()
+process.d0ana_mc_wrongsign.useAnyMVA = cms.bool(False)
+process.d0ana_mc_wrongsign.VertexCompositeCollection = cms.untracked.InputTag("d0selectorMCWS:D0")
+
+process.d0selectorMC.useAnyMVA = cms.bool(False)
+#process.d0selectorMC.multMin = cms.untracked.double(185)
+#process.d0selectorMC.multMax = cms.untracked.double(250)
+process.d0selectorMCWS = process.d0selectorMC.clone(
+  VertexCompositeCollection = cms.untracked.InputTag("generalD0CandidatesNewWrongSign:D0"),
+)
+
+process.d0ana_seq = cms.Sequence(process.eventFilter_HM * process.d0selectorMC * process.d0ana_mc)
+process.d0ana_wrongsign_seq = cms.Sequence(process.eventFilter_HM * process.d0selectorMCWS * process.d0ana_mc_wrongsign)
+
+process.p = cms.Path(process.d0ana_seq)
+process.p1 = cms.Path(process.d0ana_wrongsign_seq)
+
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
     process.d0rereco_step,
-    process.output_HM_step
+    process.p,
+    process.p1
 )
+#    process.output_HM_step
+#)

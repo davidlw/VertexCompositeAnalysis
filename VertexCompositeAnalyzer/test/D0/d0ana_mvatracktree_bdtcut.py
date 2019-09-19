@@ -69,7 +69,8 @@ cms.string('d0ana.root')
 
 # set up selectors
 process.d0selector = process.d0selectorBDTPreCut.clone()
-process.d0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_default_HLT185_WS_Pt1p5MassPeak_v1.root')
+#process.d0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_default_HLT185_WS_Pt1p5MassPeak_v1.root')
+process.d0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_default_HLT185_WS_Pt1p5MassPeak_NoPtErrNHitDLAngle2D_v1.root')
 process.d0selector.multMin = cms.untracked.double(0)
 process.d0selector.multMax = cms.untracked.double(100000)
 process.d0selectorWS = process.d0selector.clone(
@@ -78,14 +79,18 @@ process.d0selectorWS = process.d0selector.clone(
 )
 
 process.npd0selector = process.d0selector.clone()
-process.npd0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_WS_Pt1p5MassPeak_v1.root')
+#process.npd0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_WS_Pt1p5MassPeak_v1.root')
+process.npd0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_WS_Pt1p5MassPeak_NoPtErrNHitDLAngle2D_v1.root')
 process.npd0selectorWS = process.d0selectorWS.clone()
-process.npd0selectorWS.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_WS_Pt1p5MassPeak_v1.root')
+#process.npd0selectorWS.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_WS_Pt1p5MassPeak_v1.root')
+process.npd0selectorWS.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_WS_Pt1p5MassPeak_NoPtErrNHitDLAngle2D_v1.root')
 
 process.npd0selector1 = process.d0selector.clone()
-process.npd0selector1.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_RS_Pt1p5MassPeak_v1.root')
+#process.npd0selector1.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_RS_Pt1p5MassPeak_v1.root')
+process.npd0selector1.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_RS_Pt1p5MassPeak_NoPtErrNHitDLAngle2D_v1.root')
 process.npd0selectorWS1 = process.d0selectorWS.clone()
-process.npd0selectorWS1.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_RS_Pt1p5MassPeak_v1.root')
+#process.npd0selectorWS1.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_RS_Pt1p5MassPeak_v1.root')
+process.npd0selectorWS1.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0InpPb_default_HLT185_RS_Pt1p5MassPeak_NoPtErrNHitDLAngle2D_v1.root')
 
 process.d0ana.useAnyMVA = cms.bool(True)
 process.d0ana.multMin = cms.untracked.double(0)

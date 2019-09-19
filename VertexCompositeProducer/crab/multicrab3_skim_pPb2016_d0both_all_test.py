@@ -16,9 +16,8 @@ if __name__ == '__main__':
     config.JobType.maxMemoryMB = 4000
     config.JobType.maxJobRuntimeMin = 2750
     config.JobType.psetName = '../test/pPbSkim2016_D0Both_cfg.py'
-#    config.Data.unitsPerJob = 10
-    config.Data.unitsPerJob = 1
-#    config.Data.totalUnits = 2000
+    config.Data.unitsPerJob = 2
+    config.Data.totalUnits = 200
     config.Data.splitting = 'LumiBased'
     config.Data.lumiMask = 'Cert_285479-285832_HI8TeV_PromptReco_pPb_Collisions16_JSON_NoL1T.txt'
     config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
@@ -39,26 +38,8 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_default_b0_missing_v1'
-    config.Data.inputDataset = '/PAHighMultiplicity0/PARun2016C-PromptReco-v1/AOD'
-#    config.Data.lumiMask = 'Cert_285479-285832_HI8TeV_PromptReco_pPb_Collisions16_JSON_NoL1T.txt'
-    config.Data.lumiMask = 'notFinishedLumis_pPb_b0.json'
-    config.Data.outputDatasetTag = 'pPb_Skim_D0Both_default_v1'
-    submit(config)
-
-    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_default_b7_missing_v1'
-    config.Data.inputDataset = '/PAHighMultiplicity7/PARun2016C-PromptReco-v1/AOD'
-    config.Data.lumiMask = 'notFinishedLumis_pPb_b7.json'
-    submit(config)
-
-    config.General.requestName = 'pPb2016_Pbp_Skim_D0Both_default_b0_missing_v1'
-    config.Data.inputDataset = '/PAHighMultiplicity0/PARun2016C-PromptReco-v1/AOD'
-#    config.Data.lumiMask = 'Cert_285952-286496_HI8TeV_PromptReco_Pbp_Collisions16_JSON_NoL1T.txt'
-    config.Data.outputDatasetTag = 'Pbp_Skim_D0Both_default_v1'
-    config.Data.lumiMask = 'notFinishedLumis_Pbp_b0.json'
-    submit(config)
-
-    config.General.requestName = 'pPb2016_Pbp_Skim_D0Both_default_b7_missing_v1'
-    config.Data.inputDataset = '/PAHighMultiplicity7/PARun2016C-PromptReco-v1/AOD'
-    config.Data.lumiMask = 'notFinishedLumis_Pbp_b7.json'
+    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_NoPreCuts_b1_v2'
+    config.Data.inputDataset = '/PAHighMultiplicity1/PARun2016C-PromptReco-v1/AOD'
+    config.Data.lumiMask = 'Cert_285479-285832_HI8TeV_PromptReco_pPb_Collisions16_JSON_NoL1T.txt'
+    config.Data.outputDatasetTag = 'pPb_Skim_D0Both_NoPreCuts_v2'
     submit(config)

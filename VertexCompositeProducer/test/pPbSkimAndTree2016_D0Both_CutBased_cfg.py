@@ -21,7 +21,7 @@ process.source = cms.Source("PoolSource",
 )
 
 # =============== Other Statements =====================
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(200))
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.GlobalTag.globaltag = '80X_dataRun2_Prompt_v15'
 
@@ -68,17 +68,15 @@ process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 ########## D0 candidate rereco ###############################################################
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalD0Candidates_cff")
 process.generalD0CandidatesNew = process.generalD0Candidates.clone()
-#process.generalD0CandidatesNew.trkPtSumCut = cms.double(1.6)
-#process.generalD0CandidatesNew.trkEtaDiffCut = cms.double(1.0)
+process.generalD0CandidatesNew.trkPtSumCut = cms.double(1.6)
+process.generalD0CandidatesNew.trkEtaDiffCut = cms.double(1.0)
 process.generalD0CandidatesNew.tkNhitsCut = cms.int32(11)
 process.generalD0CandidatesNew.tkPtErrCut = cms.double(0.1)
 process.generalD0CandidatesNew.tkPtCut = cms.double(0.7)
-#process.generalD0CandidatesNew.alphaCut = cms.double(1.0)
-#process.generalD0CandidatesNew.alpha2DCut = cms.double(1.0)
+process.generalD0CandidatesNew.alphaCut = cms.double(1.0)
+process.generalD0CandidatesNew.alpha2DCut = cms.double(1.0)
 process.generalD0CandidatesNew.dPtCut = cms.double(1.0)
 
-#process.generalD0CandidatesNew.useAnyMVA = cms.bool(True)
-#process.generalD0CandidatesNew.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0InpPb_scenario2.root')
 process.generalD0CandidatesNewWrongSign = process.generalD0CandidatesNew.clone(isWrongSign = cms.bool(True))
 
 process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew * process.generalD0CandidatesNewWrongSign )
@@ -97,8 +95,37 @@ process.output_HM = cms.OutputModule("PoolOutputModule",
 
 process.output_HM_step = cms.EndPath(process.output_HM)
 
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0selector_cff")
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0analyzer_ntp_cff")
+
+process.TFileService = cms.Service("TFileService",
+                                       fileName =
+cms.string('d0ana_tree.root')
+                                   )
+
+process.d0ana.useAnyMVA = cms.bool(False)
+process.d0ana.VertexCompositeCollection = cms.untracked.InputTag("d0selector:D0")
+process.d0ana_wrongsign.useAnyMVA = cms.bool(False)
+process.d0ana_wrongsign.VertexCompositeCollection = cms.untracked.InputTag("d0selectorWS:D0")
+
+process.d0selector.useAnyMVA = cms.bool(False)
+#process.d0selector.multMin = cms.untracked.double(185)
+#process.d0selector.multMax = cms.untracked.double(250)
+process.d0selectorWS = process.d0selector.clone(
+  VertexCompositeCollection = cms.untracked.InputTag("generalD0CandidatesNewWrongSign:D0"),
+)
+
+process.d0ana_seq = cms.Sequence(process.eventFilter_HM * process.d0selector * process.d0ana)
+process.d0ana_wrongsign_seq = cms.Sequence(process.eventFilter_HM * process.d0selectorWS * process.d0ana_wrongsign)
+
+process.p = cms.Path(process.d0ana_seq)
+process.p1 = cms.Path(process.d0ana_wrongsign_seq)
+
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
     process.d0rereco_step,
-    process.output_HM_step
+    process.p,
+    process.p1
 )
+#    process.output_HM_step
+#)

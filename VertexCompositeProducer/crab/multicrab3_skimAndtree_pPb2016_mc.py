@@ -17,12 +17,13 @@ if __name__ == '__main__':
 #    config.JobType.maxJobRuntimeMin = 2750
 #    config.JobType.psetName = '../test/pPbFlowCorrSkim_2016_D0_cfg.py'
     config.Data.unitsPerJob = 1
-#    config.Data.totalUnits = 1000
+#    config.Data.totalUnits = 50
     config.Data.splitting = 'FileBased'
-    config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
-    config.Data.publication = True
-    config.Data.inputDBS = 'phys03'
-    config.Site.storageSite = 'T2_US_MIT'
+#    config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
+    config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
+    config.Data.publication = False
+#    config.Data.inputDBS = 'phys03'
+    config.Site.storageSite = 'T2_CH_CERN'
 #    config.Site.storageSite = 'T3_US_Rice'
 
     def submit(config):
@@ -48,26 +49,29 @@ if __name__ == '__main__':
 #    config.Data.inputDataset = '/ReggeGribovPartonMC_EposLHC_PbP_4080_4080_DataBS/pPb816Summer16DR-MB_80X_mcRun2_pA_v4-v2/AODSIM'
 #    submit(config)
 
-#    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_Prompt_v1'
-#    config.JobType.psetName = '../test/pPbSkim2016_D0Both_mc_cfg.py'
-#    config.Data.outputDatasetTag = 'pPb_Skim_D0Both_v1'
-#    config.Data.inputDataset = '/PromptD0_D0pT-1p2_pPb-EmbEPOS_8p16_Pythia8/pPb816Summer16DR-pPbEmb_80X_mcRun2_pA_v4-v1/AODSIM'
-#    submit(config)
-
-#    config.General.requestName = 'pPb2016_pPb_Skim_D0Both_NonPrompt_v1'
-#    config.JobType.psetName = '../test/pPbSkim2016_D0Both_mc_cfg.py'
-#    config.Data.outputDatasetTag = 'pPb_Skim_D0Both_v1'
-#    config.Data.inputDataset = '/NonPromptD0_D0pT-1p2_pPb-EmbEPOS_8p16_Pythia8/pPb816Summer16DR-pPbEmb_80X_mcRun2_pA_v4-v1/AODSIM'
-#    submit(config)
-
-    config.General.requestName = 'pPb2016_pPb_Skim_D0KKBoth_Prompt_v1'
-    config.JobType.psetName = '../test/pPbSkim2016_D0Both_mc_cfg.py'
-    config.Data.outputDatasetTag = 'pPb_Skim_PromptD0Both_v1'
-    config.Data.inputDataset = '/D0ToKK/anstahll-Embedded_PromptD0_KK_8160GeV_pythia8_RECO_20190906-61416874db099c53202c8cb2d81ec4a3/USER'
+    config.General.requestName = 'pPb2016_pPbSkimAndTree_D0Both_Prompt_20190915_v1'
+#    config.General.requestName = 'pPb2016_pPbSkimAndTree_D0Both_Prompt_NoPreCuts_v1'
+    config.JobType.psetName = '../test/pPbSkimAndTree2016_D0Both_mc_BDT_cfg.py'
+    config.Data.outputDatasetTag = 'pPb_SkimAndTree_D0Both_20190915_v1'
+#    config.Data.outputDatasetTag = 'pPb_SkimAndTree_D0Both_NoPreCuts_v1'
+    config.Data.inputDataset = '/PromptD0_D0pT-1p2_pPb-EmbEPOS_8p16_Pythia8/pPb816Summer16DR-pPbEmb_80X_mcRun2_pA_v4-v1/AODSIM'
     submit(config)
 
-    config.General.requestName = 'pPb2016_pPb_Skim_D0KKBoth_NonPrompt_v1'
-    config.JobType.psetName = '../test/pPbSkim2016_D0Both_mc_cfg.py'
-    config.Data.outputDatasetTag = 'pPb_Skim_NonPromptD0Both_v1'
-    config.Data.inputDataset = '/D0ToKK/anstahll-Embedded_NonPromptD0_KK_8160GeV_pythia8_RECO_20190906-61416874db099c53202c8cb2d81ec4a3/USER'
+    config.General.requestName = 'pPb2016_pPbSkimAndTree_D0Both_NonPrompt_20190915_v1'
+#    config.General.requestName = 'pPb2016_pPbSkimAndTree_D0Both_NonPrompt_NoPreCuts_v1'
+    config.Data.outputDatasetTag = 'pPb_SkimAndTree_D0Both_20190915_v1'
+#    config.Data.outputDatasetTag = 'pPb_SkimAndTree_D0Both_NoPreCuts_v1'
+    config.Data.inputDataset = '/NonPromptD0_D0pT-1p2_pPb-EmbEPOS_8p16_Pythia8/pPb816Summer16DR-pPbEmb_80X_mcRun2_pA_v4-v1/AODSIM'
     submit(config)
+
+#    config.General.requestName = 'pPb2016_pPb_Skim_D0KKBoth_Prompt_v1'
+#    config.JobType.psetName = '../test/pPbSkim2016_D0Both_mc_cfg.py'
+#    config.Data.outputDatasetTag = 'pPb_Skim_PromptD0Both_v1'
+#    config.Data.inputDataset = '/D0ToKK/anstahll-Embedded_PromptD0_KK_8160GeV_pythia8_RECO_20190906-61416874db099c53202c8cb2d81ec4a3/USER'
+#    submit(config)
+
+#    config.General.requestName = 'pPb2016_pPb_Skim_D0KKBoth_NonPrompt_v1'
+#    config.JobType.psetName = '../test/pPbSkim2016_D0Both_mc_cfg.py'
+#    config.Data.outputDatasetTag = 'pPb_Skim_NonPromptD0Both_v1'
+#    config.Data.inputDataset = '/D0ToKK/anstahll-Embedded_NonPromptD0_KK_8160GeV_pythia8_RECO_20190906-61416874db099c53202c8cb2d81ec4a3/USER'
+#    submit(config)

@@ -15,7 +15,8 @@ config.General.transferLogs = False
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = '../test/D0/d0ana_mvatracktree_bdtcut.py'
-config.JobType.priority = 100
+#config.JobType.psetName = '../test/D0/d0ana_trainingtree_cutbased.py'
+config.JobType.priority = 80
 
 config.section_('Data')
 config.Data.inputDBS = 'phys03'
@@ -30,8 +31,9 @@ config.JobType.allowUndistributedCMSSW = True
 config.section_('Site')
 config.Data.ignoreLocality = True
 config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
-#config.Site.whitelist = ['T1_US_*','T2_US_*','T1_FR_*','T2_FR_*','T2_CH_CERN']
-config.Site.whitelist         = ['T2_BR_*','T2_CH_CERN','T1_UK_*','T2_UK_*','T3_UK_*','T1_DE_*','T2_DE_*','T1_IT_*','T2_IT_*','T1_FR_*','T2_FR_*','T1_US_*','T2_US_*','T3_US_*']
+config.Site.whitelist = ['T2_US_Vanderbilt','T2_US_MIT']
+#config.Site.whitelist = ['T1_US_*','T2_US_*','T1_FR_*','T2_FR_*','T1_IT_*','T2_IT_*','T2_CH_CERN']
+#config.Site.whitelist         = ['T2_CH_CERN','T1_UK_*','T2_UK_*','T3_UK_*','T1_DE_*','T2_DE_*','T1_IT_*','T2_IT_*','T1_FR_*','T2_FR_*','T1_US_*','T2_US_*','T3_US_*']
 config.Site.storageSite = 'T2_CH_CERN'
 
 def submit(config):
@@ -47,34 +49,37 @@ def submit(config):
 #############################################################################################
 
 dataMap = {
-#            "PAHighMultiplicity1_pPb_test": { "PD": "/PAHighMultiplicity1/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
-#            "PAHighMultiplicity2_pPb": { "PD": "/PAHighMultiplicity2/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
-#            "PAHighMultiplicity3_pPb": { "PD": "/PAHighMultiplicity3/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
-#            "PAHighMultiplicity4_pPb": { "PD": "/PAHighMultiplicity4/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
+#            "PAHighMultiplicity1_pPb": { "PD": "/PAHighMultiplicity1/davidlw-pPb_Skim_D0Both_NoPreCuts_v2-6b0011ca8e1fd4d77d4d2c708d1d3d7d/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
+            "PAHighMultiplicity1_pPb": { "PD": "/PAHighMultiplicity1/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
+#            "PAHighMultiplicity2_pPb": { "PD": "/PAHighMultiplicity2/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER", "Units": 1, "Memory": 2000, "RunTime": 2000 },
+#            "PAHighMultiplicity3_pPb": { "PD": "/PAHighMultiplicity3/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER", "Units": 1, "Memory": 2000, "RunTime": 2000 },
+#            "PAHighMultiplicity4_pPb": { "PD": "/PAHighMultiplicity4/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER", "Units": 1, "Memory": 2800, "RunTime": 2000 },
 #            "PAHighMultiplicity5_pPb": { "PD": "/PAHighMultiplicity5/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
-#            "PAHighMultiplicity6_pPb": { "PD": "/PAHighMultiplicity6/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
-#            "PAHighMultiplicity7_pPb": { "PD": "/PAHighMultiplicity7/davidlw-pPb_Skim_D0Both_default_v1-970f442569e397a6dbe2e80979c0eea4/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
-#            "PAHighMultiplicity0_pPb": { "PD": "/PAHighMultiplicity0/davidlw-pPb_Skim_D0Both_default_v1-970f442569e397a6dbe2e80979c0eea4/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
+#            "PAHighMultiplicity6_pPb": { "PD": "/PAHighMultiplicity6/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER", "Units": 1, "Memory": 2000, "RunTime": 2000 },
+#            "PAHighMultiplicity7_pPb": { "PD": "/PAHighMultiplicity7/davidlw-pPb_Skim_D0Both_default_v1-970f442569e397a6dbe2e80979c0eea4/USER", "Units": 1, "Memory": 2800, "RunTime": 2000 },
+#            "PAHighMultiplicity0_pPb": { "PD": "/PAHighMultiplicity0/davidlw-pPb_Skim_D0Both_default_v1-970f442569e397a6dbe2e80979c0eea4/USER", "Units": 1, "Memory": 2000, "RunTime": 2000 },
 #            "PAHighMultiplicity1_Pbp": { "PD": "/PAHighMultiplicity1/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
 #            "PAHighMultiplicity2_Pbp": { "PD": "/PAHighMultiplicity2/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
 #            "PAHighMultiplicity3_Pbp": { "PD": "/PAHighMultiplicity3/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
-#            "PAHighMultiplicity4_Pbp": { "PD": "/PAHighMultiplicity4/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
+#            "PAHighMultiplicity4_Pbp": { "PD": "/PAHighMultiplicity4/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER", "Units": 1, "Memory": 2800, "RunTime": 2000 },
 #            "PAHighMultiplicity5_Pbp": { "PD": "/PAHighMultiplicity5/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
-#            "PAHighMultiplicity6_Pbp": { "PD": "/PAHighMultiplicity6/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
+#            "PAHighMultiplicity6_Pbp": { "PD": "/PAHighMultiplicity6/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER", "Units": 1, "Memory": 2000, "RunTime": 2000 },
 #            "PAHighMultiplicity7_Pbp": { "PD": "/PAHighMultiplicity7/davidlw-Pbp_Skim_D0Both_default_v1-970f442569e397a6dbe2e80979c0eea4/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
 #            "PAHighMultiplicity0_Pbp": { "PD": "/PAHighMultiplicity0/davidlw-Pbp_Skim_D0Both_default_v1-970f442569e397a6dbe2e80979c0eea4/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
           }
 
-#for i in range(4,7):
-#    dataMap[("PAMinimumBias"+str(i)+"_pPb")] = { "PD": ("/PAMinimumBias"+str(i)+"/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER"), "Units": 1, "Memory": 2800, "RunTime": 4000 }
-for i in range(1,9):
-    dataMap[("PAMinimumBias"+str(i)+"_Pbp")] = { "PD": ("/PAMinimumBias"+str(i)+"/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER"), "Units": 1, "Memory": 2800, "RunTime": 4000 }
-#for i in range(9,21):
-#    dataMap[("PAMinimumBias"+str(i)+"_Pbp")] = { "PD": ("/PAMinimumBias"+str(i)+"/davidlw-Pbp_Skim_D0Both_default_v1-970f442569e397a6dbe2e80979c0eea4/USER"), "Units": 1, "Memory": 2800, "RunTime": 4000 }
+#for i in range(7,8):
+#    dataMap[("PAMinimumBias"+str(i)+"_pPb")] = { "PD": ("/PAMinimumBias"+str(i)+"/davidlw-pPb_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER"), "Units": 1, "Memory": 2000, "RunTime": 2000 }
+#for i in range(1,9):
+#    dataMap[("PAMinimumBias"+str(i)+"_Pbp")] = { "PD": ("/PAMinimumBias"+str(i)+"/davidlw-Pbp_Skim_D0Both_default_v1-1c60067745b1f8eb361c5a1e6ce2795e/USER"), "Units": 1, "Memory": 2800, "RunTime": 4000 }
+#for i in range(16,17):
+#    dataMap[("PAMinimumBias"+str(i)+"_Pbp")] = { "PD": ("/PAMinimumBias"+str(i)+"/davidlw-Pbp_Skim_D0Both_default_v1-970f442569e397a6dbe2e80979c0eea4/USER"), "Units": 1, "Memory": 2000, "RunTime": 2000 }
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeTree_'+key+'_PARun2016C_D0AndTrackTreeMVA_20190704'
+    config.General.requestName = 'VertexCompositeTree_'+key+'_PARun2016C_D0AndTrackTreeMVA_NoDA2D_20190914'
+#    config.General.requestName = 'VertexCompositeTree_'+key+'_PARun2016C_D0AndTrackTreeMVA_NoErrHitDA2D_20190914'
+#    config.General.requestName = 'VertexCompositeTree_'+key+'_PARun2016C_D0AndTrackTreeMVA_NoPreCuts_20190914'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]

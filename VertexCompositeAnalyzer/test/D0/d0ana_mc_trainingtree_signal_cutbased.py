@@ -38,9 +38,9 @@ process.d0ana_mc.VertexCompositeCollection = cms.untracked.InputTag("d0selectorM
 process.d0ana_mc_wrongsign = process.d0ana_mc.clone()
 process.d0ana_mc_wrongsign.VertexCompositeCollection = cms.untracked.InputTag("d0selectorMCWS:D0")
 
-process.d0selectorMC = process.d0selectorMCBDTPreCut.clone()
-process.d0selectorMC.cand3DDecayLengthSigMin = cms.untracked.double(3.5)
-process.d0selectorMC.cand3DPointingAngleMax = cms.untracked.double(0.3)
+#process.d0selectorMC = process.d0selectorMCBDTPreCut.clone()
+#process.d0selectorMC.cand3DDecayLengthSigMin = cms.untracked.double(3.5)
+#process.d0selectorMC.cand3DPointingAngleMax = cms.untracked.double(0.3)
 process.d0selectorMC.useAnyMVA = cms.bool(False)
 process.d0selectorMCWS = process.d0selectorMC.clone(
   VertexCompositeCollection = cms.untracked.InputTag("generalD0CandidatesNewWrongSign:D0"),
