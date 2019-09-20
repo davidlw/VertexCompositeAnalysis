@@ -131,8 +131,8 @@ process.d0ana_wrongsign_seq = cms.Sequence(process.eventFilter_HM * process.d0se
 process.eventinfoana.selectEvents = cms.untracked.string('eventFilter_HM_step')
 process.pevt = cms.EndPath(process.eventinfoana)
 
-process.pp = cms.Path(process.eventFilter_HM * process.d0ana_seq)
-process.pp_ws = cms.Path(process.eventFilter_HM * process.d0ana_wrongsign_seq)
+process.pp = cms.Path(process.d0ana_seq)
+process.pp_ws = cms.Path(process.d0ana_wrongsign_seq)
 
 # Add the Conversion tree
 process.load("FlowCorrAna.DiHadronCorrelationAnalyzer.track_cff")
