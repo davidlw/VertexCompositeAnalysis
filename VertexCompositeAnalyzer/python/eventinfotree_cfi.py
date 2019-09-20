@@ -32,7 +32,8 @@ eventinfoana = cms.EDAnalyzer('EventInfoTreeProducer',
       'Flag_NoScraping',
       'Flag_pileupVertexFilterCut_pp5TeV',
       'Flag_pileupVertexFilterCut_pPb8TeV',
-      'Flag_pileupVertexFilterCutGplus'
+      'Flag_pileupVertexFilterCutGplus_pp5TeV',
+      'Flag_pileupVertexFilterCutGplus_pPb8TeV'
   ),
   selectEvents = cms.untracked.string(""),
 
