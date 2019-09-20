@@ -27,11 +27,13 @@ eventinfoana = cms.EDAnalyzer('EventInfoTreeProducer',
   FilterResultCollection = cms.untracked.InputTag("TriggerResults::ANASKIM"),
   eventFilterNames = cms.untracked.vstring(
       'Flag_colEvtSel',
-      'Flag_hfCoincFilter',
+      #'Flag_hfCoincFilter',
       'Flag_primaryVertexFilterPA',
       'Flag_NoScraping',
-      'Flag_pileupVertexFilterCut',
-      'Flag_pileupVertexFilterCutGplus'
+      'Flag_pileupVertexFilterCut_pp5TeV',
+      'Flag_pileupVertexFilterCut_pPb8TeV',
+      'Flag_pileupVertexFilterCutGplus_pp5TeV',
+      'Flag_pileupVertexFilterCutGplus_pPb8TeV'
   ),
   selectEvents = cms.untracked.string(""),
 
