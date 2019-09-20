@@ -43,12 +43,14 @@ process.hltFilter.HLTPaths = [
 
 # Add PbPb collision event selection
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.collisionEventSelection_cff')
-process.colEvtSel = cms.Sequence(process.hfCoincFilter * process.primaryVertexFilterPA * process.NoScraping * process.olvFilter_pPb8TeV_dz1p0)
+#process.colEvtSel = cms.Sequence(process.hfCoincFilter * process.primaryVertexFilterPA * process.NoScraping * process.olvFilter_pPb8TeV_dz1p0)
+#remove the default dz1p0 filter
+process.colEvtSel = cms.Sequence(process.hfCoincFilter * process.primaryVertexFilterPA * process.NoScraping)
 
 # Define the event selection sequence
 process.eventFilter_HM = cms.Sequence(
     process.hltFilter *
-    process.colEvtSel 
+    process.colEvtSel
 )
 process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 #process.dEdx_step = cms.Path( process.eventFilter_HM * process.produceEnergyLoss )
@@ -89,7 +91,7 @@ process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.d0analyzer_tree_cf
 process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.eventinfotree_cff")
 
 process.TFileService = cms.Service("TFileService",
-                                       fileName = 
+                                       fileName =
 cms.string('d0ana_tree.root')
                                    )
 
@@ -184,7 +186,10 @@ process.d0ana_seq2 = cms.Sequence(process.eventFilter_HM * process.d0selectorNoE
 process.npd0ana_seq2 = cms.Sequence(process.eventFilter_HM * process.npd0selectorNoErrHitDA2D * process.npd0ana_NoErrHitDA2D)
 process.npd0ana1_seq2 = cms.Sequence(process.eventFilter_HM * process.npd0selector1NoErrHitDA2D * process.npd0ana1_NoErrHitDA2D)
 
-process.pevt = cms.Path(process.eventFilter_HM * process.eventinfoana)
+# eventinfoana must be in EndPath, and process.eventinfoana.selectEvents must be the name of eventFilter_HM Path
+process.eventinfoana.selectEvents = cms.untracked.string('eventFilter_HM_step')
+process.pevt = cms.EndPath(process.eventinfoana)
+
 process.pa = cms.Path(process.d0ana_seq)
 process.pa1 = cms.Path(process.d0ana_wrongsign_seq)
 process.pa4 = cms.Path(process.npd0ana_seq)
@@ -206,18 +211,18 @@ process.ptrk = cms.Path(process.eventFilter_HM * process.track_ana)
 # Define the process schedule
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
-    process.pevt,
     process.d0rereco_step,
     process.pa,
-    process.pa4,
-    process.pb4,
-    process.pp1,
-    process.pp2,
-    process.pp3,
-    process.pp4,
-    process.pp5,
-    process.pp6,
-    process.ptrk
+    #process.pa4,
+    #process.pb4,
+    #process.pp1,
+    #process.pp2,
+    #process.pp3,
+    #process.pp4,
+    #process.pp5,
+    #process.pp6,
+    process.ptrk,
+    process.pevt,
 )
 
 # Add the event selection filters
@@ -227,7 +232,7 @@ process.Flag_primaryVertexFilterPA = cms.Path(process.eventFilter_HM * process.p
 process.Flag_NoScraping = cms.Path(process.eventFilter_HM * process.NoScraping)
 process.Flag_pileupVertexFilterCut = cms.Path(process.eventFilter_HM * process.olvFilter_pPb8TeV_dz1p0)
 process.Flag_pileupVertexFilterCutGplus = cms.Path(process.eventFilter_HM * process.pileUpFilter_pPb8TeV_Gplus)
-#eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter , process.Flag_primaryVertexFilterPA , process.Flag_NoScraping , process.Flag_pileupVertexFilterCut , process.Flag_pileupVertexFilterCutGplus ]
-eventFilterPaths = [ process.Flag_pileupVertexFilterCut , process.Flag_pileupVertexFilterCutGplus ]
+# follow the exactly same config of process.eventinfoana.eventFilterNames
+eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter , process.Flag_primaryVertexFilterPA , process.Flag_NoScraping , process.Flag_pileupVertexFilterCut , process.Flag_pileupVertexFilterCutGplus ]
 for P in eventFilterPaths:
     process.schedule.insert(0, P)
