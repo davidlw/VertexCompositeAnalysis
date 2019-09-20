@@ -194,6 +194,7 @@ EventInfoTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     const auto& index = filterNames.triggerIndex(selectEvents_);
     if(index<filterNames.size() && filterResults->wasrun(index) && !filterResults->accept(index)) return;
   }
+  fillRECO(iEvent, iSetup);
   EventInfoNtuple->Fill();
 }
 
