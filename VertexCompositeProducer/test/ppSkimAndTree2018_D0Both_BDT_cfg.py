@@ -158,9 +158,9 @@ process.Flag_NoScraping = cms.Path(process.eventFilter_HM * process.NoScraping)
 # here, if one want to use other config of olvFilter, Gplus filter, one need to change process.eventinfoana.eventFilterNames
 process.Flag_pileupVertexFilterCut_pp5TeV = cms.Path(process.eventFilter_HM * process.olvFilter_pp5TeV_dz1p0)
 process.Flag_pileupVertexFilterCut_pPb8TeV = cms.Path(process.eventFilter_HM * process.olvFilter_pPb8TeV_dz1p0)
-process.Flag_pileupVertexFilterCutGplus = cms.Path(process.eventFilter_HM * process.pileUpFilter_pPb8TeV_Gplus)
+process.Flag_pileupVertexFilterCutGplus_pp5TeV = cms.Path(process.eventFilter_HM * process.pileUpFilter_pp5TeV_Gplus)
+process.Flag_pileupVertexFilterCutGplus_pPb8TeV = cms.Path(process.eventFilter_HM * process.pileUpFilter_pPb8TeV_Gplus)
 # follow the exactly same config of process.eventinfoana.eventFilterNames
-#eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter , process.Flag_primaryVertexFilterPA , process.Flag_NoScraping , process.Flag_pileupVertexFilterCut , process.Flag_pileupVertexFilterCutGplus ]
-eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_primaryVertexFilterPA , process.Flag_NoScraping , process.Flag_pileupVertexFilterCut_pp5TeV,  process.Flag_pileupVertexFilterCut_pPb8TeV, process.Flag_pileupVertexFilterCutGplus ]
+eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_primaryVertexFilterPA , process.Flag_NoScraping , process.Flag_pileupVertexFilterCut_pp5TeV,  process.Flag_pileupVertexFilterCut_pPb8TeV, process.Flag_pileupVertexFilterCutGplus_pp5TeV, process.Flag_pileupVertexFilterCutGplus_pPb8TeV ]
 for P in eventFilterPaths:
     process.schedule.insert(0, P)
