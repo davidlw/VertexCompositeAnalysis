@@ -14,24 +14,22 @@ config.General.transferLogs = False
 
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'pPbSkimAndTree2016_DiMuContBoth_cfg.py'
+config.JobType.psetName = 'pPbSkimAndTree2016_DiMuContBoth_GENONLY_cfg.py'
 
 config.section_('Data')
 config.Data.inputDBS = 'global'
-config.Data.splitting = 'LumiBased'
-config.Data.lumiMask = 'Cert_285479-286496_HI8TeV_PromptReco_pPb_Pbp_Collisions16_JSON_NoL1T_MuonPhys.txt'
-config.Data.runRange = '285479-286496'
+config.Data.splitting = 'FileBased'
 config.Data.publication = False
 config.JobType.allowUndistributedCMSSW = True
 
 config.section_('Site')
 config.Data.ignoreLocality = True
-config.Site.whitelist = ['T1_US_*','T2_US_*','T1_FR_*','T2_FR_*','T2_CH_CERN','T2_BE_*','T1_IT_*']
+config.Site.whitelist = ['T1_US_*','T2_US_*','T1_FR_*','T2_FR_*','T2_CH_CERN','T2_KR_*']
 config.Site.storageSite = 'T2_CH_CERN'
 
 def submit(config):
     try:
-        crabCommand('submit', config = config, dryrun=False)
+        crabCommand('submit', config = config, dryrun=True)
     except HTTPException as hte:
         print "Failed submitting task: %s" % (hte.headers)
     except ClientException as cle:
@@ -42,18 +40,17 @@ def submit(config):
 #############################################################################################
 
 dataMap = {
-            "PASingleMuon": { "PD": "/PASingleMuon/PARun2016C-PromptReco-v1/AOD", "Units": 7, "Memory": 2000, "RunTime": 900 },
-            "PADoubleMuon": { "PD": "/PADoubleMuon/PARun2016C-PromptReco-v1/AOD", "Units": 10, "Memory": 2000, "RunTime": 820 }
+            "Ups1SToMuMu_pPb-Bst_GENonly": { "PD": "/Upsilon1S_pPb-Bst_8p16-Pythia8/pPb816Spring16GS-pPbBst_GENonly_80X_mcRun2_pA_v4-v4/GEN", "Units": 1, "Memory": 1600, "RunTime": 820 },
+            "Ups2SToMuMu_pPb-Bst_GENonly": { "PD": "/Upsilon2S_pPb-Bst_8p16-Pythia8/pPb816Spring16GS-pPbBst_GENonly_80X_mcRun2_pA_v4-v8/GEN", "Units": 1, "Memory": 1600, "RunTime": 820 },
+            "Ups3SToMuMu_pPb-Bst_GENonly": { "PD": "/Upsilon3S_pPb-Bst_8p16-Pythia8/pPb816Spring16GS-pPbBst_GENonly_80X_mcRun2_pA_v4-v4/GEN", "Units": 1, "Memory": 1600, "RunTime": 820 },
+            "JPsiToMuMu_pPb-Bst_GENonly": { "PD": "/Psi1S_pPb-Bst_8p16-Pythia8/pPb816Spring16GS-pPbBst_GENonly_80X_mcRun2_pA_v4-v4/GEN", "Units": 1, "Memory": 1600, "RunTime": 820 },
+            "Psi2SToMuMu_pPb-Bst_GENonly": { "PD": "/Psi2S_pPb-Bst_8p16-Pythia8/pPb816Spring16GS-pPbBst_GENonly_80X_mcRun2_pA_v4-v9/GEN", "Units": 1, "Memory": 1600, "RunTime": 820 },
+            "BToPsiToMuMu_pPb-Bst_GENonly": { "PD": "/NonPrPsi1_2S_pPb-Bst_8p16-Pythia8/pPb816Spring16GS-pPbBst_GENonly_80X_mcRun2_pA_v4-v7/GEN", "Units": 1, "Memory": 1600, "RunTime": 820 },
           }
-for i in range(1,21):
-    dataMap[("PAMinimumBias"+str(i))] = { "PD": ("/PAMinimumBias"+str(i)+"/PARun2016C-PromptReco-v1/AOD"), "Units": 12, "Memory": 2000, "RunTime": 720 }
-
-for i in range(0,8):
-    dataMap[("PAHighMultiplicity"+str(i))] = { "PD": ("/PAHighMultiplicity"+str(i)+"/PARun2016C-PromptReco-v1/AOD"), "Units": 10, "Memory": 2000, "RunTime": 720 }
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeTree_'+key+'_PARun2016C_DiMuMassMin2_20190713'
+    config.General.requestName = 'VertexCompositeTree_'+key+'_pPb816Summer16_DiMuGENONLY_20190705'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]

@@ -93,6 +93,7 @@ private:
   reco::GenParticleRef findLastPar(const reco::GenParticleRef&);
   reco::GenParticleRef findMother(const reco::GenParticleRef&);
   bool hasDaughters(const reco::GenParticleRef&, const std::vector<int>&);
+  void genDecayLength(const uint&, const reco::GenParticle&);
 
   // ----------member data ---------------------------
 
@@ -174,10 +175,13 @@ private:
   float bestvz;
   float ephfpAngle[3];
   float ephfmAngle[3];
+  float eptrackmidAngle[3];
   float ephfpQ[3];
   float ephfmQ[3];
+  float eptrackmidQ[3];
   float ephfpSumW;
   float ephfmSumW;
+  float eptrackmidSumW;
 
   //Composite candidate info
   float mva[MAXCAN];
@@ -191,6 +195,7 @@ private:
   float dlos[MAXCAN];
   float dl[MAXCAN];
   float dlerror[MAXCAN];
+  float dlerror2[MAXCAN];
   float agl[MAXCAN];
   float vtxChi2[MAXCAN];
   float ndf[MAXCAN];
@@ -290,6 +295,10 @@ private:
   int pid_gen[MAXCAN];
   int idmom_gen[MAXCAN];
   short idxrec_gen[MAXCAN];
+  float agl_abs_gen[MAXCAN];
+  float agl2D_abs_gen[MAXCAN];
+  float dl_gen[MAXCAN];
+  float dl2D_gen[MAXCAN];
   int idDau_gen[MAXDAU][MAXCAN];
   short chargeDau_gen[MAXDAU][MAXCAN];
   float ptDau_gen[MAXDAU][MAXCAN];
@@ -558,24 +567,33 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
     edm::Handle<reco::EvtPlaneCollection> eventplanes;
     iEvent.getByToken(tok_eventplaneSrc_, eventplanes);
 
-    ephfpAngle[0] = (eventplanes.isValid() ? (*eventplanes)[0].angle(2) : -99.);
-    ephfpAngle[1] = (eventplanes.isValid() ? (*eventplanes)[6].angle(2) : -99.);
-    ephfpAngle[2] = (eventplanes.isValid() ? (*eventplanes)[13].angle(2) : -99.);
+    ephfmAngle[0] = (eventplanes.isValid() ? (*eventplanes)[0].angle(2) : -99.);
+    ephfmAngle[1] = (eventplanes.isValid() ? (*eventplanes)[6].angle(2) : -99.);
+    ephfmAngle[2] = (eventplanes.isValid() ? (*eventplanes)[13].angle(2) : -99.);
 
-    ephfmAngle[0] = (eventplanes.isValid() ? (*eventplanes)[1].angle(2) : -99.);
-    ephfmAngle[1] = (eventplanes.isValid() ? (*eventplanes)[7].angle(2) : -99.);
-    ephfmAngle[2] = (eventplanes.isValid() ? (*eventplanes)[14].angle(2) : -99.);
+    ephfpAngle[0] = (eventplanes.isValid() ? (*eventplanes)[1].angle(2) : -99.);
+    ephfpAngle[1] = (eventplanes.isValid() ? (*eventplanes)[7].angle(2) : -99.);
+    ephfpAngle[2] = (eventplanes.isValid() ? (*eventplanes)[14].angle(2) : -99.);
+    
+    eptrackmidAngle[0] = -99.9;
+    eptrackmidAngle[1] = (eventplanes.isValid() ? (*eventplanes)[9].angle(2) : -99.);
+    eptrackmidAngle[2] = (eventplanes.isValid() ? (*eventplanes)[16].angle(2) : -99.);
 
-    ephfpQ[0] = (eventplanes.isValid() ? (*eventplanes)[0].q(2) : -99.);
-    ephfpQ[1] = (eventplanes.isValid() ? (*eventplanes)[6].q(2) : -99.);
-    ephfpQ[2] = (eventplanes.isValid() ? (*eventplanes)[13].q(2) : -99.);
+    ephfmQ[0] = (eventplanes.isValid() ? (*eventplanes)[0].q(2) : -99.);
+    ephfmQ[1] = (eventplanes.isValid() ? (*eventplanes)[6].q(2) : -99.);
+    ephfmQ[2] = (eventplanes.isValid() ? (*eventplanes)[13].q(2) : -99.);
 
-    ephfmQ[0] = (eventplanes.isValid() ? (*eventplanes)[1].q(2) : -99.);
-    ephfmQ[1] = (eventplanes.isValid() ? (*eventplanes)[7].q(2) : -99.);
-    ephfmQ[2] = (eventplanes.isValid() ? (*eventplanes)[14].q(2) : -99.);
+    ephfpQ[0] = (eventplanes.isValid() ? (*eventplanes)[1].q(2) : -99.);
+    ephfpQ[1] = (eventplanes.isValid() ? (*eventplanes)[7].q(2) : -99.);
+    ephfpQ[2] = (eventplanes.isValid() ? (*eventplanes)[14].q(2) : -99.);
 
-    ephfpSumW = (eventplanes.isValid() ? (*eventplanes)[6].sumw() : -99.);
-    ephfmSumW = (eventplanes.isValid() ? (*eventplanes)[7].sumw() : -99.);
+    eptrackmidQ[0] = -99.9;
+    eptrackmidQ[1] = (eventplanes.isValid() ? (*eventplanes)[9].q(2) : -99.);
+    eptrackmidQ[2] = (eventplanes.isValid() ? (*eventplanes)[16].q(2) : -99.);
+    
+    ephfmSumW = (eventplanes.isValid() ? (*eventplanes)[6].sumw() : -99.);
+    ephfpSumW = (eventplanes.isValid() ? (*eventplanes)[7].sumw() : -99.);
+    eptrackmidSumW = (eventplanes.isValid() ? (*eventplanes)[9].sumw() : -99.);
   }
 
   nPV = vertices->size();
@@ -627,9 +645,11 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
     const SMatrixSym3D& trkCovMat = *trk.userData<reco::Vertex::CovarianceMatrix>("vertexCovariance");
     const SMatrixSym3D& totalCov = vtx.covariance() + trkCovMat;
     const SVector3 distanceVector(secvx-bestvx, secvy-bestvy, secvz-bestvz);
+    const SVector3 pvec(px, py, pz);
 
     dl[it] = ROOT::Math::Mag(distanceVector);
     dlerror[it] = std::sqrt(ROOT::Math::Similarity(totalCov, distanceVector))/dl[it];
+    dlerror2[it] = std::sqrt(ROOT::Math::Similarity(totalCov, pvec))/ROOT::Math::Mag(pvec);
     dlos[it] = dl[it]/dlerror[it];
 
     //Decay length 2D
@@ -1029,6 +1049,8 @@ PATCompositeTreeProducer::fillGEN(const edm::Event& iEvent, const edm::EventSetu
     const auto& mom = findMother(trk);
     idmom_gen[candSize_gen] = (mom.isNonnull() ? mom->pdgId() : -77);
 
+    genDecayLength(candSize_gen, genpars->at(idx));
+
     if(decayInGen_)
     {
       for(ushort iDau=0; iDau<NDAU_; iDau++)
@@ -1139,10 +1161,13 @@ PATCompositeTreeProducer::initTree()
     if(isEventPlane_) {
       PATCompositeNtuple->Branch("ephfpAngle",ephfpAngle,"ephfpAngle[3]/F");
       PATCompositeNtuple->Branch("ephfmAngle",ephfmAngle,"ephfmAngle[3]/F");
+      PATCompositeNtuple->Branch("eptrackmidAngle",eptrackmidAngle,"eptrackmidAngle[3]/F");
       PATCompositeNtuple->Branch("ephfpQ",ephfpQ,"ephfpQ[3]/F");
       PATCompositeNtuple->Branch("ephfmQ",ephfmQ,"ephfmQ[3]/F");
+      PATCompositeNtuple->Branch("eptrackmidQ",eptrackmidQ,"eptrackmidQ[3]/F");
       PATCompositeNtuple->Branch("ephfpSumW",&ephfpSumW,"ephfpSumW/F");
       PATCompositeNtuple->Branch("ephfmSumW",&ephfmSumW,"ephfmSumW/F");
+      PATCompositeNtuple->Branch("eptrackmidSumW",&eptrackmidSumW,"eptrackmidSumW/F");
     }
     PATCompositeNtuple->Branch("trigPrescale",trigPrescale,Form("trigPrescale[%d]/S",NTRG_));
     PATCompositeNtuple->Branch("trigHLT",trigHLT,Form("trigHLT[%d]/O",NTRG_));
@@ -1168,6 +1193,7 @@ PATCompositeTreeProducer::initTree()
       PATCompositeNtuple->Branch("3DDecayLengthSignificance",dlos,"3DDecayLengthSignificance[candSize]/F");
       PATCompositeNtuple->Branch("3DDecayLength",dl,"3DDecayLength[candSize]/F");
       PATCompositeNtuple->Branch("3DDecayLengthError",dlerror,"3DDecayLengthError[candSize]/F");
+      PATCompositeNtuple->Branch("3DDecayLengthError2",dlerror2,"3DDecayLengthError2[candSize]/F");
       PATCompositeNtuple->Branch("2DDecayLengthSignificance",dlos2D,"2DDecayLengthSignificance[candSize]/F");
       PATCompositeNtuple->Branch("2DDecayLength",dl2D,"2DDecayLength[candSize]/F");
 
@@ -1286,6 +1312,10 @@ PATCompositeTreeProducer::initTree()
     PATCompositeNtuple->Branch("PID_gen",pid_gen,"PID_gen[candSize_gen]/I");
     PATCompositeNtuple->Branch("MotherID_gen",idmom_gen,"MotherID_gen[candSize_gen]/I");
     PATCompositeNtuple->Branch("RecIdx_gen",idxrec_gen,"RecIdx_gen[candSize_gen]/S");
+    PATCompositeNtuple->Branch("3DPointingAngle_gen",&agl_abs_gen,"3DPointingAngle_gen[candSize_gen]/F");
+    PATCompositeNtuple->Branch("2DPointingAngle_gen",&agl2D_abs_gen,"2DPointingAngle_gen[candSize_gen]/F");
+    PATCompositeNtuple->Branch("3DDecayLength_gen",&dl_gen,"3DDecayLength_gen[candSize_gen]/F");
+    PATCompositeNtuple->Branch("2DDecayLength_gen",&dl2D_gen,"2DDecayLength_gen[candSize_gen]/F");
 
     if(decayInGen_)
     {
@@ -1376,6 +1406,23 @@ PATCompositeTreeProducer::hasDaughters(const reco::GenParticleRef& genParRef, co
     hasDau = (PIDvec.size()==0);
   }
   return hasDau;
+}
+
+
+void
+PATCompositeTreeProducer::genDecayLength(const uint& it, const reco::GenParticle& gCand)
+{
+  dl_gen[it] = -99.; agl_abs_gen[it] = -99.; dl2D_gen[it] = -99.; agl2D_abs_gen[it] = -99.;
+  if(gCand.numberOfDaughters()==0 || !gCand.daughter(0)) return;
+  const auto& dauVtx = gCand.daughter(0)->vertex();
+  TVector3 ptosvec(dauVtx.X(), dauVtx.Y(), dauVtx.Z());
+  TVector3 secvec(gCand.px(), gCand.py(), gCand.pz());
+  agl_abs_gen[it] = secvec.Angle(ptosvec);
+  dl_gen[it] = ptosvec.Mag();
+  TVector3 ptosvec2D(dauVtx.X(), dauVtx.Y(), 0.0);
+  TVector3 secvec2D(gCand.px(), gCand.py(), 0.0);
+  agl2D_abs_gen[it] = secvec2D.Angle(ptosvec2D);
+  dl2D_gen[it] = ptosvec2D.Mag();
 }
 
 

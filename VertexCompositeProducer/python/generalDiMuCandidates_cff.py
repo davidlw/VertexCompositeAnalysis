@@ -7,6 +7,6 @@ TightIdReco = "(isGlobalMuon && isPFMuon && globalTrack.normalizedChi2 < 10 && g
 
 generalMuMuMassMin2Candidates = generalDiMuCandidates.clone(
     mllCutMin = cms.double(2.0),
-    muonSelection = cms.string("(p > 3.5 && abs(eta) < 2.4) && ("+SoftIdReco+" || "+TightIdReco+")"),
+    muonSelection = cms.string("(p > 2.9 && abs(eta) < 2.4) && ("+SoftIdReco+" || "+TightIdReco+")"),
     candidateSelection = cms.string("mass > 2.0")
 )
