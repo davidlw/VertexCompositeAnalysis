@@ -69,7 +69,8 @@ process.generalD0CandidatesNew.dPtCut = cms.double(1.0)
 
 process.generalD0CandidatesNewWrongSign = process.generalD0CandidatesNew.clone(isWrongSign = cms.bool(True))
 
-process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew * process.generalD0CandidatesNewWrongSign )
+process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew )
+process.d0rereco_wrongsign_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNewWrongSign )
 
 ###############################################################################################
 
@@ -257,6 +258,7 @@ process.ptrk = cms.Path(process.eventFilter_HM * process.track_ana)
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
     process.d0rereco_step,
+#    process.d0rereco_wrongsign_step,
     process.pa,
     process.pa4,
     process.pb4,
