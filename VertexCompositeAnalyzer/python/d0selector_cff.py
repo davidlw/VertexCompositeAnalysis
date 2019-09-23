@@ -12,6 +12,8 @@ d0selectorBDTPreCut = d0selector.clone(
 
   cand3DPointingAngleMax = cms.untracked.double(1.0),
   cand2DPointingAngleMax = cms.untracked.double(1.0),
+
+  GBRForestFileName = cms.string(''),
 )
 
 d0selectorBDTNonPrompt = d0selectorBDTPreCut.clone(
@@ -47,6 +49,8 @@ d0selectorMCBDTPreCut = d0selectorMC.clone(
   trkPtSumMin = cms.untracked.double(1.6),
   trkEtaDiffMax = cms.untracked.double(1.),
   trkNHitMin = cms.untracked.int32(11),
+
+  GBRForestFileName = cms.string(''),
 )
 
 d0selectorMCBDTNonPrompt = d0selectorMCBDTPreCut.clone(

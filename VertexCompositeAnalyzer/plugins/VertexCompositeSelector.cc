@@ -1495,6 +1495,7 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
             gbrVals_[18] = ptErr1;
             gbrVals_[19] = ptErr2;
 */
+
             gbrVals_[0] = pt;
             gbrVals_[1] = y;
             gbrVals_[2] = VtxProb;
@@ -1515,6 +1516,27 @@ VertexCompositeSelector::fillRECO(edm::Event& iEvent, const edm::EventSetup& iSe
             gbrVals_[17] = ptErr2;
             gbrVals_[18] = dlos2D;
             gbrVals_[19] = agl2D_abs;
+
+/*
+            gbrVals_[0] = VtxProb;
+            gbrVals_[1] = dlos;
+            gbrVals_[2] = dl;
+            gbrVals_[3] = agl_abs;
+            gbrVals_[4] = dzos1;
+            gbrVals_[5] = dzos2;
+            gbrVals_[6] = dxyos1;
+            gbrVals_[7] = dxyos2;
+            gbrVals_[8] = pt1;
+            gbrVals_[9] = pt2;
+            gbrVals_[10] = eta1;
+            gbrVals_[11] = eta2;
+            gbrVals_[12] = nhit1;
+            gbrVals_[13] = nhit2;
+            gbrVals_[14] = ptErr1;
+            gbrVals_[15] = ptErr2;
+            gbrVals_[16] = dlos2D;
+            gbrVals_[17] = agl2D_abs;
+*/
           }
 
           if(forestLabel_ == "DsInpPb" || forestLabel_ == "DsInpp" || forestLabel_ == "DsInPbPb")
@@ -1599,8 +1621,8 @@ VertexCompositeSelector::GetMVACut(double y, double pt)
   if(fabs(y)>2.4) return 1.0;
 
   //temporary
-  if(pt<4) return 0.45;
-  else if(pt>4 && pt<6) return 0.25;
+  if(pt<4) return 0.4;
+  else if(pt>4 && pt<6) return 0.3;
   else if(pt>6 && pt<8) return -0.2;
   else return -1.0;
 

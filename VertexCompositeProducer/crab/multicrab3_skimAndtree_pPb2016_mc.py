@@ -17,7 +17,7 @@ if __name__ == '__main__':
 #    config.JobType.maxJobRuntimeMin = 2750
 #    config.JobType.psetName = '../test/pPbFlowCorrSkim_2016_D0_cfg.py'
     config.Data.unitsPerJob = 1
-#    config.Data.totalUnits = 50
+#    config.Data.totalUnits = 200
     config.Data.splitting = 'FileBased'
 #    config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
     config.Data.outLFNDirBase = '/store/group/phys_heavyions/flowcorr/'
@@ -49,18 +49,15 @@ if __name__ == '__main__':
 #    config.Data.inputDataset = '/ReggeGribovPartonMC_EposLHC_PbP_4080_4080_DataBS/pPb816Summer16DR-MB_80X_mcRun2_pA_v4-v2/AODSIM'
 #    submit(config)
 
-    config.General.requestName = 'pPb2016_pPbSkimAndTree_D0Both_Prompt_20190915_v1'
+    config.General.requestName = 'pPb2016MC_pPbSkimAndTree_D0Both_Prompt_20190923_v2'
 #    config.General.requestName = 'pPb2016_pPbSkimAndTree_D0Both_Prompt_NoPreCuts_v1'
     config.JobType.psetName = '../test/pPbSkimAndTree2016_D0Both_mc_BDT_cfg.py'
-    config.Data.outputDatasetTag = 'pPb_SkimAndTree_D0Both_20190915_v1'
-#    config.Data.outputDatasetTag = 'pPb_SkimAndTree_D0Both_NoPreCuts_v1'
+    config.Data.outputDatasetTag = 'pPb_SkimAndTree_D0Both_20190923_v2'
     config.Data.inputDataset = '/PromptD0_D0pT-1p2_pPb-EmbEPOS_8p16_Pythia8/pPb816Summer16DR-pPbEmb_80X_mcRun2_pA_v4-v1/AODSIM'
     submit(config)
 
-    config.General.requestName = 'pPb2016_pPbSkimAndTree_D0Both_NonPrompt_20190915_v1'
-#    config.General.requestName = 'pPb2016_pPbSkimAndTree_D0Both_NonPrompt_NoPreCuts_v1'
-    config.Data.outputDatasetTag = 'pPb_SkimAndTree_D0Both_20190915_v1'
-#    config.Data.outputDatasetTag = 'pPb_SkimAndTree_D0Both_NoPreCuts_v1'
+    config.General.requestName = 'pPb2016MC_pPbSkimAndTree_D0Both_NonPrompt_20190923_v2'
+    config.Data.outputDatasetTag = 'pPb_SkimAndTree_D0Both_20190923_v2'
     config.Data.inputDataset = '/NonPromptD0_D0pT-1p2_pPb-EmbEPOS_8p16_Pythia8/pPb816Summer16DR-pPbEmb_80X_mcRun2_pA_v4-v1/AODSIM'
     submit(config)
 
