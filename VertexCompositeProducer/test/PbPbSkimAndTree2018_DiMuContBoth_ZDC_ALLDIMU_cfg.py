@@ -14,7 +14,7 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 
 # Define the input source
 process.source = cms.Source("PoolSource",
-   fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/hidata/HIRun2018A/HIDoubleMuon/AOD/PromptReco-v2/000/327/148/00000/37F475FE-F3F1-0749-8455-C9DB3177598B.root'),
+   fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/hidata/HIRun2018A/HIMinimumBias2/AOD/04Apr2019-v1/50000/F134F372-A1D6-9844-AB54-77742E73027C.root'),
    inputCommands=cms.untracked.vstring('keep *', 'drop *_hiEvtPlane_*_*')
 )
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
@@ -36,7 +36,7 @@ process.hiCentrality.produceTracks = False
 process.hiCentrality.producePixelTracks = False
 process.hiCentrality.reUseCentrality = True
 process.hiCentrality.srcZDChits = cms.InputTag("QWzdcreco")
-process.hiCentrality.srcReUse = cms.InputTag("hiCentrality","","RECO")
+process.hiCentrality.srcReUse = cms.InputTag("hiCentrality","","reRECO")
 process.centralityBin.Centrality = cms.InputTag("hiCentrality")
 process.centralityBin.centralityVariable = cms.string("HFtowers")
 process.centralityBin.nonDefaultGlauberModel = cms.string("")
@@ -111,6 +111,8 @@ process.hltFilter.HLTPaths = [
     'HLT_HIL1MuOpen_Centrality_80_100_v*', # Peripheral muons
     'HLT_HIL3Mu12_v*', # Electroweak bosons
     'HLT_HIUPC_SingleMuOpen_NotMBHF2AND_v*', # UPC muons
+    # MinimumBias 
+    'HLT_HIMinimumBias_*', # MinimumBias  
     ]
 
 # Add PbPb collision event selection
