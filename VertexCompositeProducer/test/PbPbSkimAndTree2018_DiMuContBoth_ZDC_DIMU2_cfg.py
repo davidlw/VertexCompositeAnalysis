@@ -15,12 +15,10 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 # Define the input source
 process.source = cms.Source("PoolSource",
 #   fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/hidata/HIRun2018A/HIMinimumBias2/AOD/04Apr2019-v1/50000/F134F372-A1D6-9844-AB54-77742E73027C.root'),
-#   fileNames = cms.untracked.vstring('/store/hidata/HIRun2018A/HIMinimumBias2/AOD/04Apr2019-v1/50000/F134F372-A1D6-9844-AB54-77742E73027C.root'),
-   fileNames = cms.untracked.vstring('/store/hidata/HIRun2018A/HIForward/AOD/04Apr2019-v1/100000/18C084D0-8ABC-0346-AE99-642B247F96CF.root'),
-
+   fileNames = cms.untracked.vstring('/store/hidata/HIRun2018A/HIMinimumBias2/AOD/04Apr2019-v1/50000/F134F372-A1D6-9844-AB54-77742E73027C.root'),
    inputCommands=cms.untracked.vstring('keep *', 'drop *_hiEvtPlane_*_*')
 )
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
 
 # Set the global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
@@ -79,7 +77,7 @@ process.evtplane_seq = cms.Sequence(process.hiEvtPlane * process.hiEvtPlaneFlat)
 
 # Add the VertexComposite producer
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalDiMuCandidates_cff")
-process.generalMuMuMassMin0CandidatesWrongSign = process.generalMuMuMassMin0Candidates.clone(isWrongSign = cms.bool(True))
+process.generalMuMuMassMin2p5CandidatesWrongSign = process.generalMuMuMassMin2p5Candidates.clone(isWrongSign = cms.bool(True))
 from VertexCompositeAnalysis.VertexCompositeProducer.PATAlgos_cff import doPATMuons
 doPATMuons(process, False)
 
@@ -87,11 +85,11 @@ doPATMuons(process, False)
 process.twoMuons = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("muons"), minNumber = cms.uint32(2))
 process.goodMuon = cms.EDFilter("MuonSelector",
             src = cms.InputTag("muons"),
-            cut = process.generalMuMuMassMin0Candidates.muonSelection,
+            cut = process.generalMuMuMassMin2p5Candidates.muonSelection,
             )
 process.twoGoodMuons = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("goodMuon"), minNumber = cms.uint32(2))
 process.goodDimuon = cms.EDProducer("CandViewShallowCloneCombiner",
-            cut = process.generalMuMuMassMin0Candidates.candidateSelection,
+            cut = process.generalMuMuMassMin2p5Candidates.candidateSelection,
             checkCharge = cms.bool(False),
             decay = cms.string('goodMuon@+ goodMuon@-')
             )
@@ -139,15 +137,15 @@ process.load('VertexCompositeAnalysis.VertexCompositeProducer.QWZDC2018RecHit_cf
 
 # Define the analysis steps
 process.pcentandep_step = cms.Path(process.eventFilter_HM * process.zdcdigi * process.QWzdcreco * process.cent_seq * process.evtplane_seq)
-process.dimurereco_step = cms.Path(process.eventFilter_HM * process.patMuonSequence * process.generalMuMuMassMin0Candidates)
-process.dimurerecowrongsign_step = cms.Path(process.eventFilter_HM * process.patMuonSequence * process.generalMuMuMassMin0CandidatesWrongSign)
+process.dimurereco_step = cms.Path(process.eventFilter_HM * process.patMuonSequence * process.generalMuMuMassMin2p5Candidates)
+process.dimurerecowrongsign_step = cms.Path(process.eventFilter_HM * process.patMuonSequence * process.generalMuMuMassMin2p5CandidatesWrongSign)
 
 # Add the VertexComposite tree
 process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.dimuanalyzer_tree_cff")
 process.dimucontana.selectEvents = cms.untracked.string("eventFilter_HM_step")
-process.dimucontana.VertexCompositeCollection = cms.untracked.InputTag("generalMuMuMassMin0Candidates:DiMu")
+process.dimucontana.VertexCompositeCollection = cms.untracked.InputTag("generalMuMuMassMin2p5Candidates:DiMu")
 process.dimucontana_wrongsign.selectEvents = cms.untracked.string("eventFilter_HM_step")
-process.dimucontana_wrongsign.VertexCompositeCollection = cms.untracked.InputTag("generalMuMuMassMin0CandidatesWrongSign:DiMu")
+process.dimucontana_wrongsign.VertexCompositeCollection = cms.untracked.InputTag("generalMuMuMassMin2p5CandidatesWrongSign:DiMu")
 
 # Define the output
 process.TFileService = cms.Service("TFileService", fileName = cms.string('dimuana.root'))
@@ -167,20 +165,8 @@ process.Flag_colEvtSel = cms.Path(process.eventFilter_HM * process.colEvtSel)
 process.Flag_hfCoincFilter2Th4 = cms.Path(process.eventFilter_HM * process.hfCoincFilter2Th4)
 process.Flag_primaryVertexFilter = cms.Path(process.eventFilter_HM * process.primaryVertexFilter)
 process.Flag_clusterCompatibilityFilter = cms.Path(process.eventFilter_HM * process.clusterCompatibilityFilter)
-process.Flag_hfPosFilterTh3 = cms.Path(process.eventFilter_HM * process.hfPosFilterTh3_seq)
-process.Flag_hfPosFilterTh4 = cms.Path(process.eventFilter_HM * process.hfPosFilterTh4_seq)
-process.Flag_hfPosFilterTh5 = cms.Path(process.eventFilter_HM * process.hfPosFilterTh5_seq)
-process.Flag_hfPosFilterTh6 = cms.Path(process.eventFilter_HM * process.hfPosFilterTh6_seq)
-process.Flag_hfPosFilterTh7 = cms.Path(process.eventFilter_HM * process.hfPosFilterTh7_seq)
-process.Flag_hfPosFilterTh8 = cms.Path(process.eventFilter_HM * process.hfPosFilterTh8_seq)
-process.Flag_hfNegFilterTh3 = cms.Path(process.eventFilter_HM * process.hfNegFilterTh3_seq)
-process.Flag_hfNegFilterTh4 = cms.Path(process.eventFilter_HM * process.hfNegFilterTh4_seq)
-process.Flag_hfNegFilterTh5 = cms.Path(process.eventFilter_HM * process.hfNegFilterTh5_seq)
-process.Flag_hfNegFilterTh6 = cms.Path(process.eventFilter_HM * process.hfNegFilterTh6_seq)
-process.Flag_hfNegFilterTh7 = cms.Path(process.eventFilter_HM * process.hfNegFilterTh7_seq)
-process.Flag_hfNegFilterTh8 = cms.Path(process.eventFilter_HM * process.hfNegFilterTh8_seq)
-eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter2Th4 , process.Flag_primaryVertexFilter, process.Flag_clusterCompatibilityFilter, process.Flag_hfPosFilterTh3, process.Flag_hfNegFilterTh3,process.Flag_hfPosFilterTh4, process.Flag_hfNegFilterTh4, process.Flag_hfPosFilterTh5, process.Flag_hfNegFilterTh5, process.Flag_hfPosFilterTh6, process.Flag_hfNegFilterTh6, process.Flag_hfPosFilterTh7, process.Flag_hfNegFilterTh7, process.Flag_hfPosFilterTh8, process.Flag_hfNegFilterTh8 ]
-
+eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter2Th4 , process.Flag_primaryVertexFilter , process.Flag_clusterCompatibilityFilter 
+, hfPosFilterTh3, hfNegFilterTh3, hfPosFilterTh4, hfNegFilterTh4, hfPosFilterTh5, hfNegFilterTh5, hfPosFilterTh6, hfNegFilterTh6, hfPosFilterTh7, hfNegFilterTh7, hfPosFilterTh8, hfNegFilterTh8]
 for P in eventFilterPaths:
     process.schedule.insert(0, P)
 

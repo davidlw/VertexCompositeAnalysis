@@ -16,3 +16,9 @@ generalMuMuMassMin0Candidates = generalDiMuCandidates.clone(
     muonSelection = cms.string("(p > 2.5 && abs(eta) < 2.4) && isTrackerMuon"),
     candidateSelection = cms.string("mass > 0.0")
 )
+
+generalMuMuMassMin2p5Candidates = generalDiMuCandidates.clone(
+    mllCutMin = cms.double(2.5),
+    muonSelection = cms.string("(p > 3.0 && abs(eta) < 2.4) && isTrackerMuon"),
+    candidateSelection = cms.string("mass > 2.5")
+)
