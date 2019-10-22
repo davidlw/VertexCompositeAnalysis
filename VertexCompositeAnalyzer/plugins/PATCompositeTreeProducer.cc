@@ -141,6 +141,7 @@ private:
   bool threeProngDecay_;
   bool doMuon_;
   bool doMuonFull_;
+  bool isGammaGamma_;
   const std::vector<int> PID_dau_;
   const ushort NDAU_;
   const ushort NGDAU_ = MAXGDAU;
@@ -371,6 +372,7 @@ PATCompositeTreeProducer::PATCompositeTreeProducer(const edm::ParameterSet& iCon
   decayInGen_ = iConfig.getUntrackedParameter<bool>("decayInGen");
   doMuon_ = iConfig.getUntrackedParameter<bool>("doMuon");
   doMuonFull_ = iConfig.getUntrackedParameter<bool>("doMuonFull");
+  isGammaGamma_ = iConfig.getUntrackedParameter<bool>("isGammaGamma");
 
   saveTree_ = iConfig.getUntrackedParameter<bool>("saveTree");
   saveHistogram_ = iConfig.getUntrackedParameter<bool>("saveHistogram");
@@ -1046,7 +1048,20 @@ PATCompositeTreeProducer::fillGEN(const edm::Event& iEvent, const edm::EventSetu
     std::vector<reco::GenParticleRef> dauVec;
 
     if (trk.isNull()) continue; //check gen particle ref
-//    if (trk->status()!=2 && trk->status()!=62) continue; //check gen particle status
+
+    if(isGammaGamma_ && idx<MAXDAU)
+    {
+      idDau_gen[idx][0] = (trk.isNonnull() ? trk->pdgId() : 99999);
+      chargeDau_gen[idx][0] = (trk.isNonnull() ? trk->charge() : 9);
+      ptDau_gen[idx][0] = (trk.isNonnull() ? trk->pt() : -1.);
+      etaDau_gen[idx][0] = (trk.isNonnull() ? trk->eta() : 9.);
+      phiDau_gen[idx][0] = (trk.isNonnull() ? trk->phi() : 9.);
+
+      candSize_gen = 1;
+      continue;
+    } 
+  
+    if (trk->status()!=2 && trk->status()!=62) continue; //check gen particle status
     if(!findDaughters(dauVec, trk)) continue; //check if has the daughters
 
     pt_gen[candSize_gen] = trk->pt();

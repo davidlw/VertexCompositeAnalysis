@@ -8,6 +8,7 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
   decayInGen = cms.untracked.bool(False),
   twoLayerDecay = cms.untracked.bool(False),
   threeProngDecay = cms.untracked.bool(False),
+  isGammaGamma = cms.untracked.bool(False),
 
   #PID used only for GEN and/or GEN match
   PID_dau = cms.untracked.vint32(13, 13),
