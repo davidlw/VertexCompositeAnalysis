@@ -160,7 +160,20 @@ process.Flag_colEvtSel = cms.Path(process.eventFilter_HM * process.colEvtSel)
 process.Flag_hfCoincFilter2Th4 = cms.Path(process.eventFilter_HM * process.hfCoincFilter2Th4)
 process.Flag_primaryVertexFilter = cms.Path(process.eventFilter_HM * process.primaryVertexFilter)
 process.Flag_clusterCompatibilityFilter = cms.Path(process.eventFilter_HM * process.clusterCompatibilityFilter)
-eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter2Th4 , process.Flag_primaryVertexFilter , process.Flag_clusterCompatibilityFilter ]
+process.Flag_hfPosFilterTh3 = cms.Path(process.eventFilter_HM * process.hfPosFilterTh3_seq)
+process.Flag_hfPosFilterTh4 = cms.Path(process.eventFilter_HM * process.hfPosFilterTh4_seq)
+process.Flag_hfPosFilterTh5 = cms.Path(process.eventFilter_HM * process.hfPosFilterTh5_seq)
+process.Flag_hfPosFilterTh6 = cms.Path(process.eventFilter_HM * process.hfPosFilterTh6_seq)
+process.Flag_hfPosFilterTh7 = cms.Path(process.eventFilter_HM * process.hfPosFilterTh7_seq)
+process.Flag_hfPosFilterTh8 = cms.Path(process.eventFilter_HM * process.hfPosFilterTh8_seq)
+process.Flag_hfNegFilterTh3 = cms.Path(process.eventFilter_HM * process.hfNegFilterTh3_seq)
+process.Flag_hfNegFilterTh4 = cms.Path(process.eventFilter_HM * process.hfNegFilterTh4_seq)
+process.Flag_hfNegFilterTh5 = cms.Path(process.eventFilter_HM * process.hfNegFilterTh5_seq)
+process.Flag_hfNegFilterTh6 = cms.Path(process.eventFilter_HM * process.hfNegFilterTh6_seq)
+process.Flag_hfNegFilterTh7 = cms.Path(process.eventFilter_HM * process.hfNegFilterTh7_seq)
+process.Flag_hfNegFilterTh8 = cms.Path(process.eventFilter_HM * process.hfNegFilterTh8_seq)
+eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter2Th4 , process.Flag_primaryVertexFilter, process.Flag_clusterCompatibilityFilter, process.Flag_hfPosFilterTh3, process.Flag_hfNegFilterTh3,process.Flag_hfPosFilterTh4, process.Flag_hfNegFilterTh4, process.Flag_hfPosFilterTh5, process.Flag_hfNegFilterTh5, process.Flag_hfPosFilterTh6, process.Flag_hfNegFilterTh6, process.Flag_hfPosFilterTh7, process.Flag_hfNegFilterTh7, process.Flag_hfPosFilterTh8, process.Flag_hfNegFilterTh8 ]
+
 for P in eventFilterPaths:
     process.schedule.insert(0, P)
 

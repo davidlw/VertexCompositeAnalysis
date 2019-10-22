@@ -49,12 +49,12 @@ dataMap = {
 #            "HIForward": { "PD": "/HIForward/HIRun2018A-04Apr2019-v1/AOD", "Units": 10, "Memory": 1800, "RunTime": 1400, "PSet": "PbPbSkimAndTree2018_DiMuContBoth_ZDC_ALLDIMU_cfg.py" },
             }
 
-for i in range(1,2):
-    dataMap[("HIMinimumBias"+str(i))] = { "PD": ("/HIMinimumBias"+str(i)+"/HIRun2018A-04Apr2019-v1/AOD"), "Units": 10, "Memory": 1800, "RunTime": 2000, "PSet": "PbPbSkimAndTree2018_DiMuContBoth_ZDC_DIMU2_cfg.py" }
+for i in range(4,7):
+    dataMap[("HIMinimumBias"+str(i))] = { "PD": ("/HIMinimumBias"+str(i)+"/HIRun2018A-04Apr2019-v1/AOD"), "Units": 20, "Memory": 2000, "RunTime": 2000, "PSet": "PbPbSkimAndTree2018_DiMuContBoth_ZDC_JPsiMB_cfg.py" }
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeTree_'+key+'_HIRun2018_04Apr2019_DiMuMassMin2_20190930'
+    config.General.requestName = 'VertexCompositeTree_'+key+'_HIRun2018_04Apr2019_DiMuMassMin2p5_Cent30100_20191010'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]

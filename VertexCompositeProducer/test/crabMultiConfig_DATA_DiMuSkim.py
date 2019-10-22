@@ -14,7 +14,8 @@ config.General.transferLogs = False
 
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'PbPbSkim2018_DiMuContBoth_ZDC_cfg.py'
+#config.JobType.psetName = 'PbPbSkimAndTree2018_DiMuContBoth_ZDC_ALLDIMU_cfg.py'
+config.JobType.psetName = 'PbPbSkimAndTree2018_DiMuContBoth_ZDC_cfg.py'
 config.JobType.inputFiles = ['HeavyIonRPRcd_PbPb2018_offline.db']
 
 config.section_('Data')
@@ -26,9 +27,10 @@ config.Data.publication = True
 config.JobType.allowUndistributedCMSSW = True
 
 config.section_('Site')
-config.Data.ignoreLocality = True
-config.Site.whitelist = ['T1_US_*','T2_US_*','T1_FR_*','T2_FR_*','T2_CH_CERN','T2_BE_IIHE']
-config.Site.storageSite = 'T2_CH_CERN'
+#config.Data.ignoreLocality = True
+#config.Site.whitelist = ['T1_US_*','T2_US_*','T1_FR_*','T2_FR_*','T2_CH_CERN','T2_BE_IIHE']
+#config.Site.storageSite = 'T2_CH_CERN'
+config.Site.storageSite = 'T3_US_Rice'
 
 def submit(config):
     try:
@@ -43,23 +45,23 @@ def submit(config):
 #############################################################################################
 
 dataMap = {
-            "HIDoubleMuon_v1": { "PD": "/HIDoubleMuon/HIRun2018A-PromptReco-v1/AOD", "Units": 7, "Memory": 2700, "RunTime": 720 },
-            "HIDoubleMuon_v2": { "PD": "/HIDoubleMuon/HIRun2018A-PromptReco-v2/AOD", "Units": 10, "Memory": 2800, "RunTime": 820 },
-            "HISingleMuon_v1": { "PD": "/HISingleMuon/HIRun2018A-PromptReco-v1/AOD", "Units": 7, "Memory": 2700, "RunTime": 720 },
-            "HISingleMuon_v2": { "PD": "/HISingleMuon/HIRun2018A-PromptReco-v2/AOD", "Units": 10, "Memory": 2800, "RunTime": 820 },
-            "HIDoubleMuonPsiPeri_v2": { "PD": "/HIDoubleMuonPsiPeri/HIRun2018A-PromptReco-v2/AOD", "Units": 10, "Memory": 2800, "RunTime": 820 },
-            "HIForward_v1": { "PD": "/HIForward/HIRun2018A-PromptReco-v1/AOD", "Units": 14, "Memory": 1800, "RunTime": 420 },
-            "HIForward_v2": { "PD": "/HIForward/HIRun2018A-PromptReco-v2/AOD", "Units": 20, "Memory": 1800, "RunTime": 420 },
+            "HIDoubleMuon_04Apr2019ReReco": { "PD": "/HIDoubleMuon/HIRun2018A-04Apr2019-v1/AOD", "Units": 30, "Memory": 1800, "RunTime": 1000 },
+#            "HISingleMuon": { "PD": "/HISingleMuon/HIRun2018A-04Apr2019-v1/AOD", "Units": 5, "Memory": 1800, "RunTime": 1000 },
+            "HIDoubleMuonPsiPeri_04Apr2019ReReco": { "PD": "/HIDoubleMuonPsiPeri/HIRun2018A-04Apr2019-v1/AOD", "Units": 30, "Memory": 1800, "RunTime": 1000 },
+#            "HIForward_04Apr2019ReReco": { "PD": "/HIForward/HIRun2018A-04Apr2019-v1/AOD", "Units": 30, "Memory": 1800, "RunTime": 1000 },
             }
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeSkim_'+key+'_HIRun2018_DiMuMassMin7_20190421'
+#    config.General.requestName = 'VertexCompositeSkim_'+key+'_HIRun2018_DiMuMassMin7_20190421'
+#    config.General.requestName = 'VertexCompositeSkim_'+key+'_HIRun2018_DiMuMassMin0_20191008'
+    config.General.requestName = 'VertexCompositeSkim_'+key+'_HIRun2018_DiMuMassMin7_20191008'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]
     config.JobType.maxJobRuntimeMin = val["RunTime"]
     config.Data.outputDatasetTag = config.General.requestName
-    config.Data.outLFNDirBase = '/store/group/phys_heavyions/%s/RiceHIN/PbPb2018/SKIM/%s' % (getUsernameFromSiteDB(), config.General.requestName)
+#    config.Data.outLFNDirBase = '/store/group/phys_heavyions/%s/RiceHIN/PbPb2018/SKIM/%s' % (getUsernameFromSiteDB(), config.General.requestName)
+    config.Data.outLFNDirBase = '/store/user/%s/RiceHIN/PbPb2018/SKIM/%s' % (getUsernameFromSiteDB(), config.General.requestName)
     print("Submitting CRAB job for: "+val["PD"])
     submit(config)
