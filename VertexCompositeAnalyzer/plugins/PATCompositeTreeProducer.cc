@@ -1046,7 +1046,7 @@ PATCompositeTreeProducer::fillGEN(const edm::Event& iEvent, const edm::EventSetu
     std::vector<reco::GenParticleRef> dauVec;
 
     if (trk.isNull()) continue; //check gen particle ref
-    if (trk->status()!=2 && trk->status()!=62) continue; //check gen particle status
+//    if (trk->status()!=2 && trk->status()!=62) continue; //check gen particle status
     if(!findDaughters(dauVec, trk)) continue; //check if has the daughters
 
     pt_gen[candSize_gen] = trk->pt();
