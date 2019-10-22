@@ -347,8 +347,14 @@ private:
     int candSize_gen;
     float pt_gen[MAXCAN];
     float eta_gen[MAXCAN];
+    float phi_gen[MAXCAN];
     int status_gen[MAXCAN];
     int idmom[MAXCAN];
+    float ptmom[MAXCAN];
+    float ymom[MAXCAN];
+    float etamom[MAXCAN];
+    float phimom[MAXCAN];
+    int statusmom[MAXCAN];
     float y_gen[MAXCAN];
     int iddau1[MAXCAN];
     int iddau2[MAXCAN];
@@ -1579,14 +1585,25 @@ VertexCompositeTreeProducer::fillGEN(const edm::Event& iEvent, const edm::EventS
 
         pt_gen[candSize_gen-1] = trk.pt();
         eta_gen[candSize_gen-1] = trk.eta();
+        phi_gen[candSize_gen-1] = trk.phi();
         status_gen[candSize_gen-1] = trk.status();
         idmom[candSize_gen-1] = -77;
         y_gen[candSize_gen-1] = trk.rapidity();
+        ptmom[candSize_gen-1] = -999.0;
+        etamom[candSize_gen-1] = -999.0;
+        phimom[candSize_gen-1] = -999.0;
+        ymom[candSize_gen-1] = -999.0;
+        statusmom[candSize_gen-1] = -999;
 
         if(trk.numberOfMothers()!=0)
         {
             const reco::Candidate * mom = trk.mother();
             idmom[candSize_gen-1] = mom->pdgId();
+            ptmom[candSize_gen-1] = mom->pt();
+            etamom[candSize_gen-1] = mom->eta();
+            phimom[candSize_gen-1] = mom->phi();
+            ymom[candSize_gen-1] = mom->rapidity();
+            statusmom[candSize_gen-1] = mom->status();
         }
 
         if(!decayInGen_) continue;
@@ -1894,9 +1911,15 @@ VertexCompositeTreeProducer::initTree()
         VertexCompositeNtuple->Branch("candSize_gen",&candSize_gen,"candSize_gen/I");
         VertexCompositeNtuple->Branch("pT_gen",&pt_gen,"pT_gen[candSize_gen]/F");
         VertexCompositeNtuple->Branch("eta_gen",&eta_gen,"eta_gen[candSize_gen]/F");
+        VertexCompositeNtuple->Branch("phi_gen",&phi_gen,"phi_gen[candSize_gen]/F");
         VertexCompositeNtuple->Branch("y_gen",&y_gen,"y_gen[candSize_gen]/F");
         VertexCompositeNtuple->Branch("status_gen",&status_gen,"status_gen[candSize_gen]/I");
         VertexCompositeNtuple->Branch("MotherID_gen",&idmom,"MotherID_gen[candSize_gen]/I");
+        VertexCompositeNtuple->Branch("MotherPt_gen",&ptmom,"MotherPt_gen[candSize_gen]/I");
+        VertexCompositeNtuple->Branch("MotherEta_gen",&etamom,"MotherEta_gen[candSize_gen]/I");
+        VertexCompositeNtuple->Branch("MotherPhi_gen",&phimom,"MotherPhi_gen[candSize_gen]/I");
+        VertexCompositeNtuple->Branch("MotherY_gen",&ymom,"MotherY_gen[candSize_gen]/I");
+        VertexCompositeNtuple->Branch("MotherStatus_gen",&statusmom,"MotherStatus_gen[candSize_gen]/I");
 
         if(decayInGen_)
         {

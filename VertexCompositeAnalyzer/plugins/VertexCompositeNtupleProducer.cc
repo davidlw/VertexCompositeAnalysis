@@ -337,8 +337,14 @@ private:
     // gen info    
     float pt_gen;
     float eta_gen;
+    float phi_gen;
     int status_gen;
     int idmom;
+    float ptmom;
+    float ymom;
+    float etamom;
+    float phimom;
+    int statusmom;
     float y_gen;
     int iddau1;
     int iddau2;
@@ -1529,14 +1535,25 @@ VertexCompositeNtupleProducer::fillGEN(const edm::Event& iEvent, const edm::Even
 
         pt_gen = trk.pt();
         eta_gen = trk.eta();
+        phi_gen = trk.phi();
         status_gen = trk.status();
         idmom = -77;
         y_gen = trk.rapidity();
+        ptmom = -999.0;
+        etamom = -999.0;
+        phimom = -999.0;
+        ymom = -999.0;
+        statusmom = -999;
 
         if(trk.numberOfMothers()!=0)
         {
             const reco::Candidate * mom = trk.mother();
             idmom = mom->pdgId();
+            ptmom = mom->pt();
+            etamom = mom->eta();
+            phimom = mom->phi();
+            ymom = mom->rapidity();
+            statusmom = mom->status();
         }
 
         if(!decayInGen_) continue;
@@ -1837,6 +1854,11 @@ VertexCompositeNtupleProducer::initTree()
         genCandidateNtuple->Branch("y_gen",&y_gen,"y_gen/F");
         genCandidateNtuple->Branch("status_gen",&status_gen,"status_gen/I");
         genCandidateNtuple->Branch("MotherID_gen",&idmom,"MotherID_gen/I");
+        genCandidateNtuple->Branch("MotherPt_gen",&ptmom,"MotherPt_gen/F");
+        genCandidateNtuple->Branch("MotherEta_gen",&etamom,"MotherEta_gen/F");
+        genCandidateNtuple->Branch("MotherPhi_gen",&phimom,"MotherPhi_gen/F");
+        genCandidateNtuple->Branch("MotherY_gen",&ymom,"MotherY_gen/F");
+        genCandidateNtuple->Branch("MotherStatus_gen",&statusmom,"MotherStatus_gen/I");
 
         if(decayInGen_)
         {

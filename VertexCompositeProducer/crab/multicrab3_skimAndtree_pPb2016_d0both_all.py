@@ -52,15 +52,15 @@ def submit(config):
 #############################################################################################
 
 dataMap = {}
-for i in range(3,4):
-    dataMap[("PAHighMultiplicity"+str(i)+"_pPb")] = { "PD": ("/PAHighMultiplicity"+str(i)+"/PARun2016C-PromptReco-v1/AOD"), "Units": 5, "Memory": 4000, "RunTime": 2000, "LumiMask": 'Cert_285479-285832_HI8TeV_PromptReco_pPb_Collisions16_JSON_NoL1T.txt' }
-for i in range(3,4):
-    dataMap[("PAHighMultiplicity"+str(i)+"_Pbp")] = { "PD": ("/PAHighMultiplicity"+str(i)+"/PARun2016C-PromptReco-v1/AOD"), "Units": 5, "Memory": 4000, "RunTime": 2000, "LumiMask": 'Cert_285952-286496_HI8TeV_PromptReco_Pbp_Collisions16_JSON_NoL1T.txt' }
+#for i in range(6,7):
+#    dataMap[("PAHighMultiplicity"+str(i)+"_pPb")] = { "PD": ("/PAHighMultiplicity"+str(i)+"/PARun2016C-PromptReco-v1/AOD"), "Units": 5, "Memory": 4000, "RunTime": 2000, "LumiMask": 'Cert_285479-285832_HI8TeV_PromptReco_pPb_Collisions16_JSON_NoL1T.txt' }
+#for i in range(6,7):
+#    dataMap[("PAHighMultiplicity"+str(i)+"_Pbp")] = { "PD": ("/PAHighMultiplicity"+str(i)+"/PARun2016C-PromptReco-v1/AOD"), "Units": 5, "Memory": 4000, "RunTime": 2000, "LumiMask": 'Cert_285952-286496_HI8TeV_PromptReco_Pbp_Collisions16_JSON_NoL1T.txt' }
 
-#for i in range(1,3):
+#for i in range(1,9):
 #    dataMap[("PAMinimumBias"+str(i)+"_pPb")] = { "PD": ("/PAMinimumBias"+str(i)+"/PARun2016C-PromptReco-v1/AOD"), "Units": 10, "Memory": 4000, "RunTime": 2000, "LumiMask": 'Cert_285479-285832_HI8TeV_PromptReco_pPb_Collisions16_JSON_NoL1T.txt' }
-#for i in range(1,3):
-#    dataMap[("PAMinimumBias"+str(i)+"_Pbp")] = { "PD": ("/PAMinimumBias"+str(i)+"/PARun2016C-PromptReco-v1/AOD"), "Units": 10, "Memory": 4000, "RunTime": 2000, "LumiMask": 'Cert_285952-286496_HI8TeV_PromptReco_Pbp_Collisions16_JSON_NoL1T.txt' }
+for i in range(11,21):
+    dataMap[("PAMinimumBias"+str(i)+"_Pbp")] = { "PD": ("/PAMinimumBias"+str(i)+"/PARun2016C-PromptReco-v1/AOD"), "Units": 10, "Memory": 4000, "RunTime": 2000, "LumiMask": 'Cert_285952-286496_HI8TeV_PromptReco_Pbp_Collisions16_JSON_NoL1T.txt' }
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
