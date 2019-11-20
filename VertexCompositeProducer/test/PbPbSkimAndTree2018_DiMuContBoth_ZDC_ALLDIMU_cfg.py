@@ -16,9 +16,9 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.source = cms.Source("PoolSource",
 #   fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/hidata/HIRun2018A/HIMinimumBias2/AOD/04Apr2019-v1/50000/F134F372-A1D6-9844-AB54-77742E73027C.root'),
 #   fileNames = cms.untracked.vstring('/store/hidata/HIRun2018A/HIMinimumBias2/AOD/04Apr2019-v1/50000/F134F372-A1D6-9844-AB54-77742E73027C.root'),
-   fileNames = cms.untracked.vstring('/store/hidata/HIRun2018A/HIForward/AOD/04Apr2019-v1/100000/18C084D0-8ABC-0346-AE99-642B247F96CF.root'),
+#   fileNames = cms.untracked.vstring('/store/hidata/HIRun2018A/HIForward/AOD/04Apr2019-v1/100000/18C084D0-8ABC-0346-AE99-642B247F96CF.root'),
 
-#   fileNames = cms.untracked.vstring('/store/hidata/HIRun2018A/HIForward/AOD/04Apr2019-v1/260000/E7B8BD0D-925F-C844-9BA7-FBD9FBFE270B.root',
+   fileNames = cms.untracked.vstring('/store/hidata/HIRun2018A/HIForward/AOD/04Apr2019-v1/50006/28E4F661-1674-2E42-B8BF-6C9F643E185A.root'),
 #'/store/hidata/HIRun2018A/HIForward/AOD/04Apr2019-v1/260000/E7A79FDC-813E-8C41-A890-900C40CEC1A9.root',
 #'/store/hidata/HIRun2018A/HIForward/AOD/04Apr2019-v1/260000/E6F11566-D396-9343-B472-0A68F1D9E6EB.root',
 #'/store/hidata/HIRun2018A/HIForward/AOD/04Apr2019-v1/260000/E650262B-11E6-B94F-91F1-FC9A033FB012.root',
@@ -159,12 +159,17 @@ process.dimucontana_wrongsign.VertexCompositeCollection = cms.untracked.InputTag
 process.TFileService = cms.Service("TFileService", fileName = cms.string('dimuana.root'))
 process.p = cms.EndPath(process.dimucontana * process.dimucontana_wrongsign)
 
+#process.load("FlowCorrAna.DiHadronCorrelationAnalyzer.track_cff")
+#process.ptrk = cms.Path(process.eventFilter_HM * process.track_ana)
+#process.track_ana.IsDebug = cms.bool(True)
+
 # Define the process schedule
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
     process.pcentandep_step,
     process.dimurereco_step,
     process.dimurerecowrongsign_step,
+#    process.ptrk,
     process.p
 )
 
@@ -179,13 +184,16 @@ process.Flag_hfPosFilterTh5 = cms.Path(process.eventFilter_HM * process.hfPosFil
 process.Flag_hfPosFilterTh6 = cms.Path(process.eventFilter_HM * process.hfPosFilterTh6_seq)
 process.Flag_hfPosFilterTh7 = cms.Path(process.eventFilter_HM * process.hfPosFilterTh7_seq)
 process.Flag_hfPosFilterTh8 = cms.Path(process.eventFilter_HM * process.hfPosFilterTh8_seq)
+process.Flag_hfPosFilterTh7p6 = cms.Path(process.eventFilter_HM * process.hfPosFilterTh7p6_seq)
 process.Flag_hfNegFilterTh3 = cms.Path(process.eventFilter_HM * process.hfNegFilterTh3_seq)
 process.Flag_hfNegFilterTh4 = cms.Path(process.eventFilter_HM * process.hfNegFilterTh4_seq)
 process.Flag_hfNegFilterTh5 = cms.Path(process.eventFilter_HM * process.hfNegFilterTh5_seq)
 process.Flag_hfNegFilterTh6 = cms.Path(process.eventFilter_HM * process.hfNegFilterTh6_seq)
 process.Flag_hfNegFilterTh7 = cms.Path(process.eventFilter_HM * process.hfNegFilterTh7_seq)
 process.Flag_hfNegFilterTh8 = cms.Path(process.eventFilter_HM * process.hfNegFilterTh8_seq)
-eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter2Th4 , process.Flag_primaryVertexFilter, process.Flag_clusterCompatibilityFilter, process.Flag_hfPosFilterTh3, process.Flag_hfNegFilterTh3,process.Flag_hfPosFilterTh4, process.Flag_hfNegFilterTh4, process.Flag_hfPosFilterTh5, process.Flag_hfNegFilterTh5, process.Flag_hfPosFilterTh6, process.Flag_hfNegFilterTh6, process.Flag_hfPosFilterTh7, process.Flag_hfNegFilterTh7, process.Flag_hfPosFilterTh8, process.Flag_hfNegFilterTh8 ]
+process.Flag_hfNegFilterTh7p3 = cms.Path(process.eventFilter_HM * process.hfNegFilterTh7p3_seq)
+
+eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter2Th4 , process.Flag_primaryVertexFilter, process.Flag_clusterCompatibilityFilter, process.Flag_hfPosFilterTh3, process.Flag_hfNegFilterTh3,process.Flag_hfPosFilterTh4, process.Flag_hfNegFilterTh4, process.Flag_hfPosFilterTh5, process.Flag_hfNegFilterTh5, process.Flag_hfPosFilterTh6, process.Flag_hfNegFilterTh6, process.Flag_hfPosFilterTh7, process.Flag_hfNegFilterTh7, process.Flag_hfPosFilterTh8, process.Flag_hfNegFilterTh8, process.Flag_hfPosFilterTh7p6, process.Flag_hfNegFilterTh7p3 ]
 
 for P in eventFilterPaths:
     process.schedule.insert(0, P)
