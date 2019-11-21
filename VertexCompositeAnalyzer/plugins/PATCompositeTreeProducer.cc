@@ -87,6 +87,7 @@ private:
   virtual void beginRun(const edm::Run&, const edm::EventSetup&);
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
   virtual void fillRECO(const edm::Event&, const edm::EventSetup&);
+  virtual void fillMUON(const edm::Event&, const edm::EventSetup&);
   virtual void fillGEN(const edm::Event&, const edm::EventSetup&);
   virtual void endJob() ;
   virtual void initHistogram();
@@ -133,7 +134,8 @@ private:
 
   //options
   bool doRecoNtuple_;
-  bool doGenNtuple_;   
+  bool doGenNtuple_;
+  bool doMuonNtuple_;
   bool doGenMatching_;
   bool doGenMatchingTOF_;
   bool decayInGen_;
@@ -162,6 +164,7 @@ private:
   short trigPrescale[MAXTRG];
   short centrality;
   int   Ntrkoffline;
+  int   NtrkHP;
   int   Npixel;
   short nPV;
   uint candSize;
@@ -303,6 +306,21 @@ private:
   float etaDau_gen[MAXDAU][MAXCAN];
   float phiDau_gen[MAXDAU][MAXCAN];
 
+  // muon info
+  uint candSize_mu;
+  float pt_mu[MAXCAN];
+  float eta_mu[MAXCAN];
+  float phi_mu[MAXCAN];
+  bool  onestmuon_mu[MAXCAN];
+  bool  glbmuon_mu[MAXCAN];
+  bool  softmuon_mu[MAXCAN];
+  bool  hpmuon_mu[MAXCAN];
+  std::vector<std::vector<UChar_t> > trgmuon_mu;
+  short ntrackerlayer_mu[MAXCAN];
+  short npixellayer_mu[MAXCAN];
+  float muondxy_mu[MAXCAN];
+  float muondz_mu[MAXCAN];
+
   bool useAnyMVA_;
   bool isSkimMVA_;
   bool isCentrality_;
@@ -320,6 +338,9 @@ private:
   edm::EDGetTokenT<reco::GenParticleCollection> tok_genParticle_;
   edm::EDGetTokenT<GenEventInfoProduct> tok_genInfo_;
   edm::EDGetTokenT<LHEEventProduct> tok_genLHE_;
+
+  edm::EDGetTokenT<pat::MuonCollection> tok_muoncol_;
+  edm::EDGetTokenT<reco::TrackCollection> tok_tracks_;
 
   edm::EDGetTokenT<int> tok_centBinLabel_;
   edm::EDGetTokenT<reco::Centrality> tok_centSrc_;
@@ -365,6 +386,7 @@ PATCompositeTreeProducer::PATCompositeTreeProducer(const edm::ParameterSet& iCon
   //options
   doRecoNtuple_ = iConfig.getUntrackedParameter<bool>("doRecoNtuple");
   doGenNtuple_ = iConfig.getUntrackedParameter<bool>("doGenNtuple");
+  doMuonNtuple_ = iConfig.getUntrackedParameter<bool>("doMuonNtuple");
   twoLayerDecay_ = iConfig.getUntrackedParameter<bool>("twoLayerDecay");
   threeProngDecay_ = iConfig.getUntrackedParameter<bool>("threeProngDecay");
   doGenMatching_ = iConfig.getUntrackedParameter<bool>("doGenMatching");
@@ -396,6 +418,9 @@ PATCompositeTreeProducer::PATCompositeTreeProducer(const edm::ParameterSet& iCon
   tok_genParticle_ = consumes<reco::GenParticleCollection>(edm::InputTag(iConfig.getUntrackedParameter<edm::InputTag>("GenParticleCollection")));
   tok_genInfo_ = consumes<GenEventInfoProduct>(edm::InputTag("generator"));
   tok_genLHE_ = consumes<LHEEventProduct>(edm::InputTag("externalLHEProducer",""));
+
+  tok_muoncol_ = consumes<pat::MuonCollection>(edm::InputTag(iConfig.getUntrackedParameter<edm::InputTag>("MuonCollection")));
+  tok_tracks_ = consumes<reco::TrackCollection>(edm::InputTag(iConfig.getUntrackedParameter<edm::InputTag>("TrackCollection")));
 
   useDeDxData_ = (iConfig.exists("useDeDxData") ? iConfig.getParameter<bool>("useDeDxData") : false);
   if(useDeDxData_)
@@ -451,6 +476,7 @@ PATCompositeTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetu
   }
   genVec_.clear();
   if(doRecoNtuple_) fillRECO(iEvent,iSetup);
+  if(doMuonNtuple_) fillMUON(iEvent,iSetup);
   if(doGenNtuple_) fillGEN(iEvent,iSetup);
   if(saveTree_) PATCompositeNtuple->Fill();
 }
@@ -557,10 +583,18 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
     ZDCPlus = (cent.isValid() ? cent->zdcSumPlus() : -1.);
     ZDCMinus = (cent.isValid() ? cent->zdcSumMinus() : -1.);
     Ntrkoffline = (cent.isValid() ? cent->Ntracks() : -1);
-      
     edm::Handle<int> cbin;
     iEvent.getByToken(tok_centBinLabel_, cbin);
     centrality = (cbin.isValid() ? *cbin : -1);
+  }
+  
+  NtrkHP = -1;
+  edm::Handle<reco::TrackCollection> trackColl;
+  iEvent.getByToken(tok_tracks_, trackColl);
+  if(trackColl.isValid()) 
+  {
+    NtrkHP = 0;
+    for (const auto& trk : *trackColl) { if (trk.quality(reco::TrackBase::highPurity)) NtrkHP++; }
   }
 
   if(isEventPlane_)
@@ -1016,6 +1050,54 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
   }
 }
 
+void
+PATCompositeTreeProducer::fillMUON(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
+  edm::Handle<pat::MuonCollection> muoncol;
+  iEvent.getByToken(tok_muoncol_, muoncol);
+  if(!muoncol.isValid()) throw cms::Exception("PATCompositeAnalyzer") << "PAT muon collection not found!" << std::endl;
+
+  //RECO Muon info
+  candSize_mu = muoncol->size();
+  if(candSize_mu>MAXCAN) throw cms::Exception("PATCompositeAnalyzer") << "Number of muons (" << candSize_mu << ") exceeds limit!" << std::endl;
+  for(uint it=0; it<candSize_mu; ++it)
+  {
+    const auto& muon = (*muoncol)[it];
+    pt_mu[it] = muon.pt();
+    eta_mu[it] = muon.eta();
+    phi_mu[it] = muon.phi();
+
+    glbmuon_mu[it] = muon.isGlobalMuon();
+    ntrackerlayer_mu[it] = (muon.innerTrack().isNonnull() ? muon.innerTrack()->hitPattern().trackerLayersWithMeasurement() : -1);
+    // Soft ID Muon POG Run 2
+    onestmuon_mu[it] = muon::isGoodMuon(muon, muon::SelectionType::TMOneStationTight);
+    npixellayer_mu[it] = (muon.innerTrack().isNonnull() ? muon.innerTrack()->hitPattern().pixelLayersWithMeasurement() : -1);
+    hpmuon_mu[it] = (muon.innerTrack().isNonnull() ? muon.innerTrack()->quality(reco::TrackBase::highPurity) : false);
+    const math::XYZPoint bestvtx(bestvx, bestvy, bestvz);
+    muondxy_mu[it] = (muon.innerTrack().isNonnull() ? muon.innerTrack()->dxy(bestvtx) : 99.);
+    muondz_mu[it] = (muon.innerTrack().isNonnull() ? muon.innerTrack()->dz(bestvtx) : 99.);
+    softmuon_mu[it] = (
+                       onestmuon_mu[it] &&
+                       (ntrackerlayer_mu[it] > 5) &&
+                       (npixellayer_mu[it] > 0) &&
+                       hpmuon_mu[it] &&
+                       (fabs(muondxy_mu[it]) < 0.3) &&
+                       (fabs(muondz_mu[it]) < 20.)
+                       );
+
+    // Muon Trigger Matching
+    if(it==0)
+    {
+      trgmuon_mu.clear();
+      trgmuon_mu = std::vector<std::vector<UChar_t>>(filterNames_.size(), std::vector<UChar_t>(candSize_mu, 0));
+    }
+    for(ushort iTr=0; iTr<filterNames_.size(); iTr++)
+    {
+      const auto& muHLTMatchesFilter = muon.triggerObjectMatchesByFilter(filterNames_.at(iTr));
+      if(muHLTMatchesFilter.size()>0) trgmuon_mu[iTr][it] = 1;
+    }
+  }
+}
 
 void
 PATCompositeTreeProducer::fillGEN(const edm::Event& iEvent, const edm::EventSetup& iSetup)
@@ -1183,6 +1265,7 @@ PATCompositeTreeProducer::initTree()
       PATCompositeNtuple->Branch("ZDCPlus",&ZDCPlus,"ZDCPlus/F");
       PATCompositeNtuple->Branch("ZDCMinus",&ZDCMinus,"ZDCMinus/F");
       PATCompositeNtuple->Branch("Ntrkoffline",&Ntrkoffline,"Ntrkoffline/I");
+      PATCompositeNtuple->Branch("NtrkHP",&NtrkHP,"NtrkHP/I");
     }
     if(isEventPlane_) {
       PATCompositeNtuple->Branch("ephfpAngle",ephfpAngle,"ephfpAngle[3]/F");
@@ -1351,6 +1434,24 @@ PATCompositeTreeProducer::initTree()
         PATCompositeNtuple->Branch(Form("PhiD%d_gen",iDau),phiDau_gen[iDau-1],Form("PhiD%d_gen[candSize_gen]/F",iDau));
       }
     }
+  }
+
+  if(doMuonNtuple_)
+  {
+    PATCompositeNtuple->Branch("candSize_mu",&candSize_mu,"candSize_mu/i");
+    PATCompositeNtuple->Branch("pT_mu",pt_mu,"pT_mu[candSize_mu]/F");
+    PATCompositeNtuple->Branch("eta_mu",eta_mu,"eta_mu[candSize_mu]/F");
+    PATCompositeNtuple->Branch("phi_mu",phi_mu,"phi_mu[candSize_mu]/F");
+
+    PATCompositeNtuple->Branch("OneStMuon_mu",onestmuon_mu,"OneStMuon_mu[candSize_mu]/O");
+    PATCompositeNtuple->Branch("GlbMuon_mu",glbmuon_mu,"GlbMuon_mu[candSize_mu]/O");
+    PATCompositeNtuple->Branch("softMuon_mu",softmuon_mu,"softMuon_mu[candSize_mu]/O");
+    PATCompositeNtuple->Branch("HPMuon_mu",hpmuon_mu,"hybridMuon_mu[candSize_mu]/O");
+    PATCompositeNtuple->Branch("trigMuon_mu",&trgmuon_mu);
+    PATCompositeNtuple->Branch("nTrackerLayer_mu",ntrackerlayer_mu,"nTrackerLayer_mu[candSize_mu]/S");
+    PATCompositeNtuple->Branch("nPixelLayer_mu",npixellayer_mu,"nPixelLayer_mu[candSize_mu]/S");
+    PATCompositeNtuple->Branch("dXY_mu",muondxy_mu,"dXY_mu[candSize_mu]/F");
+    PATCompositeNtuple->Branch("dZ_mu",muondz_mu,"dZ_mu[candSize_mu]/F");
   }
 }
 

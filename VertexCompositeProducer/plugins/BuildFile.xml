@@ -8,4 +8,3 @@
 <use   name="DataFormats/HcalDigi"/>
 <use   name="CalibFormats/HcalObjects"/>
 <flags EDM_PLUGIN="1"/>
-<library   file="*.cc" name="RecoVertexPrimaryVertexProducerPlugins"/>

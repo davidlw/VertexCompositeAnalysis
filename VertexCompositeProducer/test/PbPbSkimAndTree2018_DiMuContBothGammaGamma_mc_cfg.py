@@ -87,7 +87,9 @@ process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.dimuanalyzer_tree_
 process.TFileService = cms.Service("TFileService", fileName = cms.string('dimuana_mc.root'))
 process.p = cms.EndPath(process.dimucontana_mc * process.dimucontana_wrongsign_mc)
 process.dimucontana_mc.isGammaGamma = cms.untracked.bool(True)
+process.dimucontana_mc.doMuonNtuple = cms.untracked.bool(True)
 process.dimucontana_wrongsign_mc.isGammaGamma = cms.untracked.bool(True)
+process.dimucontana_wrongsign_mc.doMuonNtuple = cms.untracked.bool(True)
 
 # Define the process schedule
 process.schedule = cms.Schedule(
