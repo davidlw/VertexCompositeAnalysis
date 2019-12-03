@@ -3,6 +3,7 @@ import FWCore.ParameterSet.Config as cms
 dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
   doRecoNtuple = cms.untracked.bool(True),
   doMuonNtuple = cms.untracked.bool(False),
+  doTrackNtuple = cms.untracked.bool(False),
   doGenNtuple = cms.untracked.bool(False),
   doGenMatching = cms.untracked.bool(False),
   doGenMatchingTOF = cms.untracked.bool(False),

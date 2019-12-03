@@ -88,6 +88,7 @@ private:
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
   virtual void fillRECO(const edm::Event&, const edm::EventSetup&);
   virtual void fillMUON(const edm::Event&, const edm::EventSetup&);
+  virtual void fillTRACK(const edm::Event&, const edm::EventSetup&);
   virtual void fillGEN(const edm::Event&, const edm::EventSetup&);
   virtual void endJob() ;
   virtual void initHistogram();
@@ -136,6 +137,7 @@ private:
   bool doRecoNtuple_;
   bool doGenNtuple_;
   bool doMuonNtuple_;
+  bool doTrackNtuple_;
   bool doGenMatching_;
   bool doGenMatchingTOF_;
   bool decayInGen_;
@@ -177,6 +179,9 @@ private:
   float bestvx;
   float bestvy;
   float bestvz;
+  float bestvxError;
+  float bestvyError;
+  float bestvzError;
   float ephfpAngle[3];
   float ephfmAngle[3];
   float eptrackmidAngle[3];
@@ -321,6 +326,16 @@ private:
   float muondxy_mu[MAXCAN];
   float muondz_mu[MAXCAN];
 
+  // track info
+  uint candSize_trk;
+  float pt_trk[MAXCAN];
+  float eta_trk[MAXCAN];
+  float phi_trk[MAXCAN];
+  bool  hp_trk[MAXCAN];
+  short pTErr_trk[MAXCAN];
+  float dXYsig_trk[MAXCAN];
+  float dZsig_trk[MAXCAN];
+
   bool useAnyMVA_;
   bool isSkimMVA_;
   bool isCentrality_;
@@ -387,6 +402,7 @@ PATCompositeTreeProducer::PATCompositeTreeProducer(const edm::ParameterSet& iCon
   doRecoNtuple_ = iConfig.getUntrackedParameter<bool>("doRecoNtuple");
   doGenNtuple_ = iConfig.getUntrackedParameter<bool>("doGenNtuple");
   doMuonNtuple_ = iConfig.getUntrackedParameter<bool>("doMuonNtuple");
+  doTrackNtuple_ = iConfig.getUntrackedParameter<bool>("doTrackNtuple");
   twoLayerDecay_ = iConfig.getUntrackedParameter<bool>("twoLayerDecay");
   threeProngDecay_ = iConfig.getUntrackedParameter<bool>("threeProngDecay");
   doGenMatching_ = iConfig.getUntrackedParameter<bool>("doGenMatching");
@@ -477,6 +493,7 @@ PATCompositeTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetu
   genVec_.clear();
   if(doRecoNtuple_) fillRECO(iEvent,iSetup);
   if(doMuonNtuple_) fillMUON(iEvent,iSetup);
+  if(doTrackNtuple_) fillTRACK(iEvent,iSetup);
   if(doGenNtuple_) fillGEN(iEvent,iSetup);
   if(saveTree_) PATCompositeNtuple->Fill();
 }
@@ -639,7 +656,7 @@ PATCompositeTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSet
   const reco::Vertex& vtx = (isPV ? vtxPrimary : bs);
   bestvz = vtx.z(); bestvx = vtx.x(); bestvy = vtx.y();
   const math::XYZPoint bestvtx(bestvx, bestvy, bestvz);
-  const double& bestvzError = vtx.zError(), bestvxError = vtx.xError(), bestvyError = vtx.yError();
+  bestvzError = vtx.zError(), bestvxError = vtx.xError(), bestvyError = vtx.yError();
 
   //RECO Candidate info
   candSize = v0candidates->size();
@@ -1100,6 +1117,37 @@ PATCompositeTreeProducer::fillMUON(const edm::Event& iEvent, const edm::EventSet
 }
 
 void
+PATCompositeTreeProducer::fillTRACK(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
+  edm::Handle<reco::TrackCollection> trackColl;
+  iEvent.getByToken(tok_tracks_, trackColl);
+  if(!trackColl.isValid()) throw cms::Exception("PATCompositeAnalyzer") << "track collection not found!" << std::endl;
+
+  //RECO Track info
+  candSize_trk = trackColl->size();
+  if(candSize_trk>MAXCAN) throw cms::Exception("PATCompositeAnalyzer") << "Number of tracks (" << candSize_trk << ") exceeds limit!" << std::endl;
+
+  for(uint it=0; it<candSize_trk; ++it)
+  {
+    const auto& track = (*trackColl)[it];
+    pt_trk[it] = track.pt();
+    eta_trk[it] = track.eta();
+    phi_trk[it] = track.phi();
+
+    pTErr_trk[it] = fabs(track.ptError())/track.pt();
+    hp_trk[it] = track.quality(reco::TrackBase::highPurity);
+
+    math::XYZPoint bestvtx(bestvx, bestvy, bestvz);
+    double dzvtx = track.dz(bestvtx);
+    double dxyvtx = track.dxy(bestvtx);
+    double dzerror = sqrt(track.dzError()*track.dzError()+bestvzError*bestvzError);
+    double dxyerror = sqrt(track.d0Error()*track.d0Error()+bestvxError*bestvyError);
+    dZsig_trk[it] = fabs(dzvtx/dzerror);
+    dXYsig_trk[it] = fabs(dxyvtx/dxyerror);
+  }
+}
+
+void
 PATCompositeTreeProducer::fillGEN(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   edm::Handle<GenEventInfoProduct> geninfo;
@@ -1453,6 +1501,20 @@ PATCompositeTreeProducer::initTree()
     PATCompositeNtuple->Branch("dXY_mu",muondxy_mu,"dXY_mu[candSize_mu]/F");
     PATCompositeNtuple->Branch("dZ_mu",muondz_mu,"dZ_mu[candSize_mu]/F");
   }
+
+  if(doTrackNtuple_)
+  {
+    PATCompositeNtuple->Branch("candSize_trk",&candSize_trk,"candSize_trk/i");
+    PATCompositeNtuple->Branch("pT_trk",pt_trk,"pT_trk[candSize_trk]/F");
+    PATCompositeNtuple->Branch("eta_trk",eta_trk,"eta_trk[candSize_trk]/F");
+    PATCompositeNtuple->Branch("phi_trk",phi_trk,"phi_trk[candSize_trk]/F");
+
+    PATCompositeNtuple->Branch("HP_trk",hp_trk,"highPurity_trk[candSize_trk]/O");
+    PATCompositeNtuple->Branch("pTErr_trk",pTErr_trk,"pTErr_trk[candSize_trk]/F");
+    PATCompositeNtuple->Branch("dXYsig_trk",dXYsig_trk,"dXYsig_trk[candSize_trk]/F");
+    PATCompositeNtuple->Branch("dZsig_trk",dZsig_trk,"dZsig_trk[candSize_trk]/F");
+  }
+
 }
 
 
