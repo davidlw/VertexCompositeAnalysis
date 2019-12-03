@@ -67,8 +67,8 @@ dimuana = cms.EDAnalyzer('PATCompositeTreeProducer',
       'Flag_hfNegFilterTh7',
       'Flag_hfPosFilterTh8',
       'Flag_hfNegFilterTh8',
-      'Flag_hfPosFilterTh7p6',
-      'Flag_hfNegFilterTh7p3'
+      'Flag_hfPosFilterTh7p3',
+      'Flag_hfNegFilterTh7p6'
   ),
   selectEvents = cms.untracked.string(""),
 

@@ -16,9 +16,10 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.source = cms.Source("PoolSource",
 #   fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/hidata/HIRun2018A/HIMinimumBias2/AOD/04Apr2019-v1/50000/F134F372-A1D6-9844-AB54-77742E73027C.root'),
 #   fileNames = cms.untracked.vstring('/store/hidata/HIRun2018A/HIMinimumBias2/AOD/04Apr2019-v1/50000/F134F372-A1D6-9844-AB54-77742E73027C.root'),
-#   fileNames = cms.untracked.vstring('/store/hidata/HIRun2018A/HIForward/AOD/04Apr2019-v1/100000/18C084D0-8ABC-0346-AE99-642B247F96CF.root'),
+   fileNames = cms.untracked.vstring('/store/hidata/HIRun2018A/HIForward/AOD/04Apr2019-v1/100000/18C084D0-8ABC-0346-AE99-642B247F96CF.root'),
+#   fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/hidata/HIRun2018A/ZeroBias/AOD/PromptReco-v2/000/327/801/00000/438BA307-4B32-774B-98C2-2294EF3A6992.root'),
 
-   fileNames = cms.untracked.vstring('/store/hidata/HIRun2018A/HIForward/AOD/04Apr2019-v1/50006/28E4F661-1674-2E42-B8BF-6C9F643E185A.root'),
+#   fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/hidata/HIRun2018A/HIForward/AOD/04Apr2019-v1/50006/28E4F661-1674-2E42-B8BF-6C9F643E185A.root'),
 #'/store/hidata/HIRun2018A/HIForward/AOD/04Apr2019-v1/260000/E7A79FDC-813E-8C41-A890-900C40CEC1A9.root',
 #'/store/hidata/HIRun2018A/HIForward/AOD/04Apr2019-v1/260000/E6F11566-D396-9343-B472-0A68F1D9E6EB.root',
 #'/store/hidata/HIRun2018A/HIForward/AOD/04Apr2019-v1/260000/E650262B-11E6-B94F-91F1-FC9A033FB012.root',
@@ -83,27 +84,6 @@ process.PoolDBESSource = cms.ESSource("PoolDBESSource",
 process.es_prefer_flatparms = cms.ESPrefer('PoolDBESSource','')
 process.evtplane_seq = cms.Sequence(process.hiEvtPlane * process.hiEvtPlaneFlat)
 
-# Add the VertexComposite producer
-process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalDiMuCandidates_cff")
-process.generalMuMuMassMin0CandidatesWrongSign = process.generalMuMuMassMin0Candidates.clone(isWrongSign = cms.bool(True))
-from VertexCompositeAnalysis.VertexCompositeProducer.PATAlgos_cff import doPATMuons
-doPATMuons(process, False)
-
-# Add muon event selection
-process.twoMuons = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("muons"), minNumber = cms.uint32(2))
-process.goodMuon = cms.EDFilter("MuonSelector",
-            src = cms.InputTag("muons"),
-            cut = process.generalMuMuMassMin0Candidates.muonSelection,
-            )
-process.twoGoodMuons = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("goodMuon"), minNumber = cms.uint32(2))
-process.goodDimuon = cms.EDProducer("CandViewShallowCloneCombiner",
-            cut = process.generalMuMuMassMin0Candidates.candidateSelection,
-            checkCharge = cms.bool(False),
-            decay = cms.string('goodMuon@+ goodMuon@-')
-            )
-process.oneGoodDimuon = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("goodDimuon"), minNumber = cms.uint32(1))
-process.dimuonEvtSel = cms.Sequence(process.twoMuons * process.goodMuon * process.twoGoodMuons * process.goodDimuon * process.oneGoodDimuon)
-
 # Add trigger selection
 import HLTrigger.HLTfilters.hltHighLevel_cfi
 process.hltFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
@@ -111,17 +91,17 @@ process.hltFilter.andOr = cms.bool(True)
 process.hltFilter.throw = cms.bool(False)
 process.hltFilter.HLTPaths = [
     # Double muon triggers
-    'HLT_HIL1DoubleMuOpen_OS_Centrality_40_100_v*', # Peripheral OS dimuons
-    'HLT_HIL1DoubleMuOpen_Centrality_50_100_v*', # Peripheral dimuons
-    'HLT_HIL3Mu2p5NHitQ10_L2Mu2_M7toinf_v*', # Bottomonia
-    'HLT_HIL1DoubleMu10_v*', # Z bosons
-    'HLT_HIUPC_DoubleMu0_NotMBHF2AND_v*', # UPC dimuons
+#    'HLT_HIL1DoubleMuOpen_OS_Centrality_40_100_v*', # Peripheral OS dimuons
+#    'HLT_HIL1DoubleMuOpen_Centrality_50_100_v*', # Peripheral dimuons
+#    'HLT_HIL3Mu2p5NHitQ10_L2Mu2_M7toinf_v*', # Bottomonia
+#    'HLT_HIL1DoubleMu10_v*', # Z bosons
+#    'HLT_HIUPC_DoubleMu0_NotMBHF2AND_v*', # UPC dimuons
     # Single muon triggers
-    'HLT_HIL1MuOpen_Centrality_80_100_v*', # Peripheral muons
-    'HLT_HIL3Mu12_v*', # Electroweak bosons
-    'HLT_HIUPC_SingleMuOpen_NotMBHF2AND_v*', # UPC muons
+#    'HLT_HIL1MuOpen_Centrality_80_100_v*', # Peripheral muons
+#    'HLT_HIL3Mu12_v*', # Electroweak bosons
+#    'HLT_HIUPC_SingleMuOpen_NotMBHF2AND_v*', # UPC muons
     # MinimumBias 
-#    'HLT_HIMinimumBias_*', # MinimumBias  
+    'HLT_HIZeroBias_v*', # MinimumBias  
     ]
 
 # Add PbPb collision event selection
@@ -134,7 +114,6 @@ process.colEvtSel = cms.Sequence(process.hfCoincFilter2Th4 * process.primaryVert
 # Define the event selection sequence
 process.eventFilter_HM = cms.Sequence(
     process.hltFilter *
-    process.dimuonEvtSel *
     process.offlinePrimaryVerticesRecovery
 )
 process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
@@ -145,19 +124,13 @@ process.load('VertexCompositeAnalysis.VertexCompositeProducer.QWZDC2018RecHit_cf
 
 # Define the analysis steps
 process.pcentandep_step = cms.Path(process.eventFilter_HM * process.zdcdigi * process.QWzdcreco * process.cent_seq * process.evtplane_seq)
-process.dimurereco_step = cms.Path(process.eventFilter_HM * process.patMuonSequence * process.generalMuMuMassMin0Candidates)
-process.dimurerecowrongsign_step = cms.Path(process.eventFilter_HM * process.patMuonSequence * process.generalMuMuMassMin0CandidatesWrongSign)
 
-# Add the VertexComposite tree
-process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.dimuanalyzer_tree_cff")
-process.dimucontana.selectEvents = cms.untracked.string("eventFilter_HM_step")
-process.dimucontana.VertexCompositeCollection = cms.untracked.InputTag("generalMuMuMassMin0Candidates:DiMu")
-process.dimucontana_wrongsign.selectEvents = cms.untracked.string("eventFilter_HM_step")
-process.dimucontana_wrongsign.VertexCompositeCollection = cms.untracked.InputTag("generalMuMuMassMin0CandidatesWrongSign:DiMu")
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.eventinfotree_cff")
+process.eventinfoana.selectEvents = cms.untracked.string("eventFilter_HM_step")
 
 # Define the output
-process.TFileService = cms.Service("TFileService", fileName = cms.string('dimuana.root'))
-process.p = cms.EndPath(process.dimucontana * process.dimucontana_wrongsign)
+process.TFileService = cms.Service("TFileService", fileName = cms.string('evtinfo.root'))
+process.p = cms.EndPath(process.eventinfoana)
 
 #process.load("FlowCorrAna.DiHadronCorrelationAnalyzer.track_cff")
 #process.ptrk = cms.Path(process.eventFilter_HM * process.track_ana)
@@ -167,8 +140,6 @@ process.p = cms.EndPath(process.dimucontana * process.dimucontana_wrongsign)
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
     process.pcentandep_step,
-    process.dimurereco_step,
-    process.dimurerecowrongsign_step,
 #    process.ptrk,
     process.p
 )

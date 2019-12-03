@@ -47,8 +47,8 @@ hfPosTowersTh7 = hfPosTowers.clone(src=cms.InputTag("towersAboveThresholdTh7"))
 hfNegTowersTh7 = hfNegTowers.clone(src=cms.InputTag("towersAboveThresholdTh7"))
 hfPosTowersTh8 = hfPosTowers.clone(src=cms.InputTag("towersAboveThresholdTh8"))
 hfNegTowersTh8 = hfNegTowers.clone(src=cms.InputTag("towersAboveThresholdTh8"))
-hfPosTowersTh7p6 = hfPosTowers.clone(src=cms.InputTag("towersAboveThresholdTh7p6"))
-hfNegTowersTh7p3 = hfNegTowers.clone(src=cms.InputTag("towersAboveThresholdTh7p3"))
+hfPosTowersTh7p3 = hfPosTowers.clone(src=cms.InputTag("towersAboveThresholdTh7p3"))
+hfNegTowersTh7p6 = hfNegTowers.clone(src=cms.InputTag("towersAboveThresholdTh7p6"))
 
 # require at least one HF+ tower above threshold
 hfPosFilter = cms.EDFilter("CandCountFilter",
@@ -75,8 +75,8 @@ hfPosFilterTh7 =hfPosFilter.clone(src="hfPosTowersTh7")
 hfNegFilterTh7 =hfNegFilter.clone(src="hfNegTowersTh7")
 hfPosFilterTh8 =hfPosFilter.clone(src="hfPosTowersTh8")
 hfNegFilterTh8 =hfNegFilter.clone(src="hfNegTowersTh8")
-hfPosFilterTh7p6 =hfPosFilter.clone(src="hfPosTowersTh7p6")
-hfNegFilterTh7p3 =hfNegFilter.clone(src="hfNegTowersTh7p3")
+hfPosFilterTh7p3 =hfPosFilter.clone(src="hfPosTowersTh7p3")
+hfNegFilterTh7p6 =hfNegFilter.clone(src="hfNegTowersTh7p6")
 
 # one HF tower above threshold on each side
 hfCoincFilterTh3 = cms.Sequence(
@@ -167,15 +167,15 @@ hfNegFilterTh8_seq = cms.Sequence(
     hfNegTowersTh8 *
     hfNegFilterTh8)
 
-hfPosFilterTh7p6_seq = cms.Sequence(
-    towersAboveThresholdTh7p6 *
-    hfPosTowersTh7p6 *
-    hfPosFilterTh7p6)
-
-hfNegFilterTh7p3_seq = cms.Sequence(
+hfPosFilterTh7p3_seq = cms.Sequence(
     towersAboveThresholdTh7p3 *
-    hfNegTowersTh7p3 *
-    hfNegFilterTh7p3)
+    hfPosTowersTh7p3 *
+    hfPosFilterTh7p3)
+
+hfNegFilterTh7p6_seq = cms.Sequence(
+    towersAboveThresholdTh7p6 *
+    hfNegTowersTh7p6 *
+    hfNegFilterTh7p6)
 
 # two HF towers above threshold on each side
 hfPosFilter2 = hfPosFilter.clone(minNumber=cms.uint32(2))
