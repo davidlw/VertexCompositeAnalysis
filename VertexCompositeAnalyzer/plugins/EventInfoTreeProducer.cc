@@ -87,6 +87,7 @@ private:
   short trigPrescale[MAXTRG];
   short centrality;
   int   Ntrkoffline;
+  int   NtrkHP
   int   Npixel;
   short nPV;
   uint candSize;
@@ -284,6 +285,15 @@ EventInfoTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSetup&
     iEvent.getByToken(tok_centBinLabel_, cbin);
     centrality = (cbin.isValid() ? *cbin : -1);
   }
+  
+  NtrkHP = -1;
+  edm::Handle<reco::TrackCollection> trackColl;
+  iEvent.getByToken(tok_tracks_, trackColl);
+  if(trackColl.isValid()) 
+  {
+    NtrkHP = 0;
+    for (const auto& trk : *trackColl) { if (trk.quality(reco::TrackBase::highPurity)) NtrkHP++; }
+  }
 
   if(isEventPlane_)
   {
@@ -351,6 +361,7 @@ EventInfoTreeProducer::initTree()
     EventInfoNtuple->Branch("ZDCPlus",&ZDCPlus,"ZDCPlus/F");
     EventInfoNtuple->Branch("ZDCMinus",&ZDCMinus,"ZDCMinus/F");
     EventInfoNtuple->Branch("Ntrkoffline",&Ntrkoffline,"Ntrkoffline/I");
+    EventInfoNtuple->Branch("NtrkHP",&NtrkHP,"NtrkHP/I");
   }
   if(isEventPlane_) {
     EventInfoNtuple->Branch("ephfpAngle",ephfpAngle,"ephfpAngle[3]/F");
