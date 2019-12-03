@@ -87,7 +87,7 @@ private:
   short trigPrescale[MAXTRG];
   short centrality;
   int   Ntrkoffline;
-  int   NtrkHP
+  int   NtrkHP;
   int   Npixel;
   short nPV;
   uint candSize;
@@ -116,6 +116,7 @@ private:
   edm::EDGetTokenT<int> tok_centBinLabel_;
   edm::EDGetTokenT<reco::Centrality> tok_centSrc_;
   edm::EDGetTokenT<reco::EvtPlaneCollection> tok_eventplaneSrc_;
+  edm::EDGetTokenT<reco::TrackCollection> tok_tracks_;
 
   //trigger
   const std::vector<std::string> triggerNames_;
@@ -151,6 +152,7 @@ EventInfoTreeProducer::EventInfoTreeProducer(const edm::ParameterSet& iConfig) :
   //input tokens
   tok_offlineBS_ = consumes<reco::BeamSpot>(iConfig.getUntrackedParameter<edm::InputTag>("beamSpotSrc"));
   tok_offlinePV_ = consumes<reco::VertexCollection>(iConfig.getUntrackedParameter<edm::InputTag>("VertexCollection"));
+  tok_tracks_ = consumes<reco::TrackCollection>(edm::InputTag(iConfig.getUntrackedParameter<edm::InputTag>("TrackCollection")));
 
   isCentrality_ = (iConfig.exists("isCentrality") ? iConfig.getParameter<bool>("isCentrality") : false);
   if(isCentrality_)
