@@ -46,12 +46,12 @@ def submit(config):
 #############################################################################################
 
 dataMap = {
-            "HighMultiplicityEOF": { "PD": "/HighMultiplicityEOF/davidlw-pp_Skim_D0Both_default_v1-f9516adb0ab4bcb5c36605171e6520f9/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
-            "HighMultiplicityEOF0": { "PD": "/HighMultiplicityEOF0/davidlw-pp_Skim_D0Both_default_v1-f9516adb0ab4bcb5c36605171e6520f9/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
-            "HighMultiplicityEOF1": { "PD": "/HighMultiplicityEOF1/davidlw-pp_Skim_D0Both_default_v1-f9516adb0ab4bcb5c36605171e6520f9/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
+#            "HighMultiplicityEOF": { "PD": "/HighMultiplicityEOF/davidlw-pp_Skim_D0Both_default_v1-f9516adb0ab4bcb5c36605171e6520f9/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
+#            "HighMultiplicityEOF0": { "PD": "/HighMultiplicityEOF0/davidlw-pp_Skim_D0Both_default_v1-f9516adb0ab4bcb5c36605171e6520f9/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
+#            "HighMultiplicityEOF1": { "PD": "/HighMultiplicityEOF1/davidlw-pp_Skim_D0Both_default_v1-f9516adb0ab4bcb5c36605171e6520f9/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
 #            "HighMultiplicityEOF2": { "PD": "/HighMultiplicityEOF2/davidlw-pp_Skim_D0Both_default_v1-f9516adb0ab4bcb5c36605171e6520f9/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
-#            "ZeroBias_pp2018C": { "PD": "/ZeroBias/davidlw-pp2018_Skim_D0Both_default_v1-91cff2ce5544be4dc902cb93cefcf11e/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
-#            "ZeroBias_pp2018B": { "PD": "/ZeroBias/davidlw-pp2018B_Skim_D0Both_default_v1-91cff2ce5544be4dc902cb93cefcf11e/USER", "Units": 1, "Memory": 2800, "RunTime": 4000 },
+#            "ZeroBias_pp2018C": { "PD": "/ZeroBias/davidlw-pp2018_Skim_D0Both_default_v1-91cff2ce5544be4dc902cb93cefcf11e/USER", "Units": 1, "Memory": 2000, "RunTime": 2000 },
+#            "ZeroBias_pp2018B": { "PD": "/ZeroBias/davidlw-pp2018B_Skim_D0Both_default_v1-91cff2ce5544be4dc902cb93cefcf11e/USER", "Units": 1, "Memory": 2000, "RunTime": 2000 },
           }
 
 #for i in range(0,10):
@@ -59,9 +59,12 @@ dataMap = {
 #for i in range(0,10):
 #    dataMap[("MinimumBias"+str(i)+"_pp2018B")] = { "PD": ("/MinimumBias"+str(i)+"/davidlw-pp2018B_Skim_D0Both_default_v1-91cff2ce5544be4dc902cb93cefcf11e/USER"), "Units": 1, "Memory": 2800, "RunTime": 4000 }
 
+for i in range(0,10):
+    dataMap[("MinimumBias"+str(i)+"_pp2018BReReco")] = { "PD": ("/MinimumBias"+str(i)+"/davidlw-pp2018BRereco_Skim_D0Both_default_v1-91cff2ce5544be4dc902cb93cefcf11e/USER"), "Units": 1, "Memory": 2000, "RunTime": 2000 }
+
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeTree_'+key+'_Run2018_D0AndTrackTreeMVA_20190704'
+    config.General.requestName = 'VertexCompositeTree_'+key+'_Run2018_D0AndTrackTreeMVA_20190820'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]

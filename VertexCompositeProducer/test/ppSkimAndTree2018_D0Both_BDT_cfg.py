@@ -29,7 +29,7 @@ process.source = cms.Source("PoolSource",
 )
 
 # =============== Other Statements =====================
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(400))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(600))
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.GlobalTag.globaltag = '101X_dataRun2_Prompt_v11'
 
@@ -73,11 +73,12 @@ process.generalD0CandidatesNew.tkPtErrCut = cms.double(0.1)
 process.generalD0CandidatesNew.tkPtCut = cms.double(0.7)
 process.generalD0CandidatesNew.alphaCut = cms.double(1.0)
 process.generalD0CandidatesNew.alpha2DCut = cms.double(1.0)
-#process.generalD0CandidatesNew.dPtCut = cms.double(1.0)
+process.generalD0CandidatesNew.dPtCut = cms.double(1.0)
 
 process.generalD0CandidatesNewWrongSign = process.generalD0CandidatesNew.clone(isWrongSign = cms.bool(True))
 
-process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew * process.generalD0CandidatesNewWrongSign )
+process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew )
+process.d0rereco_wrongsign_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNewWrongSign )
 
 ###############################################################################################
 
@@ -105,35 +106,110 @@ cms.string('d0ana_tree.root')
 
 # set up selectors
 process.d0selector = process.d0selectorBDTPreCut.clone()
-process.d0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0Inpp_default_pplowpuHLT100_WS_Pt1p5MassPeak_v1.root')
+process.d0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0Inpp_default_pplowpuHLT100_WS_Pt1p5MassPeak_v3.root')
 process.d0selector.GBRForestLabel = cms.string('D0Inpp')
 process.d0selector.multMin = cms.untracked.double(0)
 process.d0selector.multMax = cms.untracked.double(100000)
+process.d0selector.mvaMax = cms.untracked.double(999.9)
+process.d0selector.mvaMin = cms.untracked.double(0.4)
 process.d0selectorWS = process.d0selector.clone(
   VertexCompositeCollection = cms.untracked.InputTag("generalD0CandidatesNewWrongSign:D0"),
   MVACollection = cms.InputTag("generalD0CandidatesNewWrongSign:MVAValues")
 )
+
+process.npd0selector = process.d0selector.clone()
+process.npd0selector.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0Inpp_default_pplowpuHLT100_WS_Pt1p5MassPeak_v3.root')
+process.npd0selectorWS = process.d0selectorWS.clone()
+process.npd0selectorWS.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0Inpp_default_pplowpuHLT100_WS_Pt1p5MassPeak_v3.root')
+process.npd0selector1 = process.d0selector.clone()
+process.npd0selector1.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0Inpp_default_pplowpuHLT100_RS_Pt1p5MassPeak_v3.root')
+process.npd0selectorWS1 = process.d0selectorWS.clone()
+process.npd0selectorWS1.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0Inpp_default_pplowpuHLT100_RS_Pt1p5MassPeak_v3.root')
+
+process.d0selectorNew = process.d0selector.clone()
+process.npd0selectorNew = process.npd0selector.clone()
+process.npd0selector1New = process.npd0selector1.clone()
+process.d0selectorNew.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0Inpp_default_pplowpuHLT100_WS_Pt1p5MassPeak_NoPtErrNHitDLAngle2D_v3.root')
+process.npd0selectorNew.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0Inpp_default_pplowpuHLT100_WS_Pt1p5MassPeak_NoPtErrNHitDLAngle2D_v3.root')
+process.npd0selector1New.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0Inpp_default_pplowpuHLT100_RS_Pt1p5MassPeak_NoPtErrNHitDLAngle2D_v3.root')
+process.d0selectorWSNew = process.d0selectorWS.clone()
+process.npd0selectorWSNew = process.npd0selectorWS.clone()
+process.npd0selectorWS1New = process.npd0selectorWS1.clone()
+process.d0selectorWSNew.GBRForestFileName = cms.string('GBRForestfile_BDT_PromptD0Inpp_default_pplowpuHLT100_WS_Pt1p5MassPeak_NoPtErrNHitDLAngle2D_v3.root')
+process.npd0selectorWSNew.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0Inpp_default_pplowpuHLT100_WS_Pt1p5MassPeak_NoPtErrNHitDLAngle2D_v3.root')
+process.npd0selectorWS1New.GBRForestFileName = cms.string('GBRForestfile_BDT_NonPromptD0Inpp_default_pplowpuHLT100_RS_Pt1p5MassPeak_NoPtErrNHitDLAngle2D_v3.root')
 
 process.d0ana.useAnyMVA = cms.bool(True)
 process.d0ana.multMin = cms.untracked.double(0)
 process.d0ana.multMax = cms.untracked.double(100000)
 process.d0ana.VertexCompositeCollection = cms.untracked.InputTag("d0selector:D0")
 process.d0ana.MVACollection = cms.InputTag("d0selector:MVAValuesNewD0")
-process.d0ana_wrongsign.useAnyMVA = cms.bool(True)
-process.d0ana_wrongsign.multMin = cms.untracked.double(0)
-process.d0ana_wrongsign.multMax = cms.untracked.double(100000)
+process.d0ana_wrongsign = process.d0ana.clone()
 process.d0ana_wrongsign.VertexCompositeCollection = cms.untracked.InputTag("d0selectorWS:D0")
 process.d0ana_wrongsign.MVACollection = cms.InputTag("d0selectorWS:MVAValuesNewD0")
 
+process.npd0ana = process.d0ana.clone()
+process.npd0ana.VertexCompositeCollection = cms.untracked.InputTag("npd0selector:D0")
+process.npd0ana.MVACollection = cms.InputTag("npd0selector:MVAValuesNewD0")
+process.npd0ana_wrongsign = process.d0ana_wrongsign.clone()
+process.npd0ana_wrongsign.VertexCompositeCollection = cms.untracked.InputTag("npd0selectorWS:D0")
+process.npd0ana_wrongsign.MVACollection = cms.InputTag("npd0selectorWS:MVAValuesNewD0")
+process.npd0ana1 = process.d0ana.clone()
+process.npd0ana1.VertexCompositeCollection = cms.untracked.InputTag("npd0selector1:D0")
+process.npd0ana1.MVACollection = cms.InputTag("npd0selector1:MVAValuesNewD0")
+process.npd0ana1_wrongsign = process.d0ana_wrongsign.clone()
+process.npd0ana1_wrongsign.VertexCompositeCollection = cms.untracked.InputTag("npd0selectorWS1:D0")
+process.npd0ana1_wrongsign.MVACollection = cms.InputTag("npd0selectorWS1:MVAValuesNewD0")
+
+process.d0ana_new = process.d0ana.clone()
+process.npd0ana_new = process.npd0ana.clone()
+process.npd0ana1_new = process.npd0ana1.clone()
+process.d0ana_new.VertexCompositeCollection = cms.untracked.InputTag("d0selectorNew:D0")
+process.d0ana_new.MVACollection = cms.InputTag("d0selectorNew:MVAValuesNewD0")
+process.npd0ana_new.VertexCompositeCollection = cms.untracked.InputTag("npd0selectorNew:D0")
+process.npd0ana_new.MVACollection = cms.InputTag("npd0selectorNew:MVAValuesNewD0")
+process.npd0ana1_new.VertexCompositeCollection = cms.untracked.InputTag("npd0selector1New:D0")
+process.npd0ana1_new.MVACollection = cms.InputTag("npd0selector1New:MVAValuesNewD0")
+process.d0ana_wrongsign_new = process.d0ana_wrongsign.clone()
+process.npd0ana_wrongsign_new = process.npd0ana_wrongsign.clone()
+process.npd0ana1_wrongsign_new = process.npd0ana1_wrongsign.clone()
+process.d0ana_wrongsign_new.VertexCompositeCollection = cms.untracked.InputTag("d0selectorWSNew:D0")
+process.d0ana_wrongsign_new.MVACollection = cms.InputTag("d0selectorWSNew:MVAValuesNewD0")
+process.npd0ana_wrongsign_new.VertexCompositeCollection = cms.untracked.InputTag("npd0selectorWSNew:D0")
+process.npd0ana_wrongsign_new.MVACollection = cms.InputTag("npd0selectorWSNew:MVAValuesNewD0")
+process.npd0ana1_wrongsign_new.VertexCompositeCollection = cms.untracked.InputTag("npd0selectorWS1New:D0")
+process.npd0ana1_wrongsign_new.MVACollection = cms.InputTag("npd0selectorWS1New:MVAValuesNewD0")
+
 process.d0ana_seq = cms.Sequence(process.eventFilter_HM * process.d0selector * process.d0ana)
+process.npd0ana_seq = cms.Sequence(process.eventFilter_HM * process.npd0selector * process.npd0ana)
+process.npd0ana1_seq = cms.Sequence(process.eventFilter_HM * process.npd0selector1 * process.npd0ana1)
 process.d0ana_wrongsign_seq = cms.Sequence(process.eventFilter_HM * process.d0selectorWS * process.d0ana_wrongsign)
+process.npd0ana_wrongsign_seq = cms.Sequence(process.eventFilter_HM * process.npd0selectorWS * process.npd0ana_wrongsign)
+process.npd0ana1_wrongsign_seq = cms.Sequence(process.eventFilter_HM * process.npd0selectorWS1 * process.npd0ana1_wrongsign)
+process.d0ana_seq1 = cms.Sequence(process.eventFilter_HM * process.d0selectorNew * process.d0ana_new)
+process.npd0ana_seq1 = cms.Sequence(process.eventFilter_HM * process.npd0selectorNew * process.npd0ana_new)
+process.npd0ana1_seq1 = cms.Sequence(process.eventFilter_HM * process.npd0selector1New * process.npd0ana1_new)
+process.d0ana_wrongsign_seq1 = cms.Sequence(process.eventFilter_HM * process.d0selectorWSNew * process.d0ana_wrongsign_new)
+process.npd0ana_wrongsign_seq1 = cms.Sequence(process.eventFilter_HM * process.npd0selectorWSNew * process.npd0ana_wrongsign_new)
+process.npd0ana1_wrongsign_seq1 = cms.Sequence(process.eventFilter_HM * process.npd0selectorWS1New * process.npd0ana1_wrongsign_new)
 
 # eventinfoana must be in EndPath, and process.eventinfoana.selectEvents must be the name of eventFilter_HM Path
 process.eventinfoana.selectEvents = cms.untracked.string('eventFilter_HM_step')
 process.pevt = cms.EndPath(process.eventinfoana)
 
 process.pp = cms.Path(process.d0ana_seq)
+process.pp1 = cms.Path(process.npd0ana_seq)
+process.pp2 = cms.Path(process.npd0ana1_seq)
 process.pp_ws = cms.Path(process.d0ana_wrongsign_seq)
+process.pp1_ws = cms.Path(process.npd0ana_wrongsign_seq)
+process.pp2_ws = cms.Path(process.npd0ana1_wrongsign_seq)
+
+process.ppp = cms.Path(process.d0ana_seq1)
+process.ppp1 = cms.Path(process.npd0ana_seq1)
+process.ppp2 = cms.Path(process.npd0ana1_seq1)
+process.ppp_ws = cms.Path(process.d0ana_wrongsign_seq1)
+process.ppp1_ws = cms.Path(process.npd0ana_wrongsign_seq1)
+process.ppp2_ws = cms.Path(process.npd0ana1_wrongsign_seq1)
 
 # Add the Conversion tree
 process.load("FlowCorrAna.DiHadronCorrelationAnalyzer.track_cff")
@@ -143,8 +219,19 @@ process.ptrk = cms.Path(process.eventFilter_HM * process.track_ana)
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
     process.d0rereco_step,
+#    process.d0rereco_wrongsign_step,
     process.pp,
-    process.pp_ws,
+    process.pp1,
+    process.pp2,
+#    process.pp_ws,
+#    process.pp1_ws,
+#    process.pp2_ws,
+    process.ppp,
+    process.ppp1,
+    process.ppp2,
+#    process.ppp_ws,
+#    process.ppp1_ws,
+#    process.ppp2_ws,
     process.ptrk,
     process.pevt,
 )

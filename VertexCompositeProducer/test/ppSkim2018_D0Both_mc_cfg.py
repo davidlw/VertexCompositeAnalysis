@@ -70,7 +70,9 @@ process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalD0Candidate
 process.generalD0CandidatesNew = process.generalD0Candidates.clone()
 process.generalD0CandidatesNewWrongSign = process.generalD0Candidates.clone(isWrongSign = cms.bool(True))
 
-process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew * process.generalD0CandidatesNewWrongSign )
+process.d0rereco_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNew )
+process.d0rereco_wrongsign_step = cms.Path( process.eventFilter_HM * process.generalD0CandidatesNewWrongSign )
+
 
 ###############################################################################################
 
@@ -89,5 +91,6 @@ process.output_HM_step = cms.EndPath(process.output_HM)
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
     process.d0rereco_step,
+#    process.d0rereco_wrongsign_step,
     process.output_HM_step
 )

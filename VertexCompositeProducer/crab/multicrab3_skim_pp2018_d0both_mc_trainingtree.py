@@ -41,14 +41,14 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    config.General.requestName = 'pp2018_SkimAndNtuple_D0Both_Prompt_v4'
-    config.JobType.psetName = '../test/ppSkimAndNtuple2018_D0Both_mc_cfg.py'
-    config.Data.outputDatasetTag = 'pp2018_SkimAndNtuple_D0Both_Prompt_v4'
+    config.General.requestName = 'pp2018MC_SkimAndTree_D0Both_Prompt_20190923_v2'
+    config.JobType.psetName = '../test/ppSkimAndTree2018_D0Both_mc_cfg.py'
+    config.Data.outputDatasetTag = 'pp2018MC_SkimAndTree_D0Both_Prompt_20190923_v2'
     config.Data.inputDataset = '/PrmtD0_pT-1p2_y-2p4_pp_13TeV_Pythia8/RunIILowPUAutumn18DR-102X_upgrade2018_realistic_v15-v1/AODSIM'
     submit(config)
 
-    config.General.requestName = 'pp2018_SkimAndNtuple_D0Both_NonPrompt_v4'
-    config.JobType.psetName = '../test/ppSkimAndNtuple2018_D0Both_mc_cfg.py'
-    config.Data.outputDatasetTag = 'pp2018_SkimAndNtuple_D0Both_NonPrompt_v4'
+    config.General.requestName = 'pp2018MC_SkimAndTree_D0Both_NonPrompt_20190923_v2'
+    config.JobType.psetName = '../test/ppSkimAndTree2018_D0Both_mc_cfg.py'
+    config.Data.outputDatasetTag = 'pp2018MC_SkimAndTree_D0Both_NonPrompt_20190923_v2'
     config.Data.inputDataset = '/NonPrD0_pT-1p2_y-2p4_pp_13TeV_pythia8/RunIILowPUAutumn18DR-102X_upgrade2018_realistic_v15-v1/AODSIM'
     submit(config)
