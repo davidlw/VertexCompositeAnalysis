@@ -66,3 +66,31 @@ def doPATMuons(process, MC=False):
         process.patMuonSequence = cms.Sequence( process.genMuons + process.patMuonsWithTriggerSequence )
     else:
         process.patMuonSequence = cms.Sequence( process.patMuonsWithTriggerSequence )
+
+
+def changeToMiniAOD(process):
+
+    if hasattr(process, "patMuonsWithTrigger"):
+        from MuonAnalysis.MuonAssociators.patMuonsWithTrigger_cff import useExistingPATMuons
+        useExistingPATMuons(process, newPatMuonTag=cms.InputTag("unpackedMuons"), addL1Info=False)
+
+        process.patTriggerFull = cms.EDProducer("PATTriggerObjectStandAloneUnpacker",
+            patTriggerObjectsStandAlone = cms.InputTag('slimmedPatTrigger'),
+            triggerResults              = cms.InputTag('TriggerResults::HLT'),
+            unpackFilterLabels          = cms.bool(True)
+        )
+        process.load('PhysicsTools.PatAlgos.slimming.unpackedTracksAndVertices_cfi')
+        process.eventFilter_HM.insert(0, process.unpackedTracksAndVertices)
+        process.load('VertexCompositeAnalysis.VertexCompositeProducer.unpackedMuons_cfi')
+        process.eventFilter_HM.insert(1, process.unpackedMuons)
+
+    if hasattr(process, "output_HM"):
+        process.output_HM.outputCommands.append('keep *Vert*_unpackedTracksAndVertices_*_*')
+        process.output_HM.outputCommands.append('keep patMuons_unpackedMuons_*_*')
+        process.output_HM.outputCommands.append('drop patMuons_patMuonsWith*_*_*')
+
+
+    from HLTrigger.Configuration.CustomConfigs import MassReplaceInputTag
+    process = MassReplaceInputTag(process,"offlinePrimaryVertices","unpackedTracksAndVertices")
+    process = MassReplaceInputTag(process,"generalTracks","unpackedTracksAndVertices")
+    process = MassReplaceInputTag(process,"muons","unpackedMuons")
