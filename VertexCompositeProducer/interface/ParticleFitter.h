@@ -98,6 +98,7 @@ struct ParticleComparator {
 class ParticleDaughter {
  public:
   ParticleDaughter();
+  ParticleDaughter(const edm::ParameterSet& pSet, edm::ConsumesCollector&& iC);
   ~ParticleDaughter();
 
   const int& pdgId() const { return pdgId_; }
@@ -105,13 +106,12 @@ class ParticleDaughter {
   const double& mass() const { return mass_; } 
   const pat::GenericParticleCollection& particles() const { return particles_; }
   const bool useSource() const { return !source_.isUninitialized(); }
-  void clear() { particles_.clear(); }
-
-  void fillInfo(const edm::ParameterSet& pSet, edm::ConsumesCollector& iC);
-
+  
   template <class T>
   void addParticles(const edm::Event& event, const edm::EDGetTokenT<std::vector<T> >& token, const reco::Vertex& vertex, const bool embedInfo=false);
   void addParticles(const edm::Event& event);
+  void fillInfo(const edm::ParameterSet& pSet, edm::ConsumesCollector& iC);
+  void clear();
 
  private:
   const std::map<uint, double> MASS_ = {{11, 0.000511}, {13, 0.105658}, {211, 0.139570}, {321, 0.493677}, {2212, 0.938272}};
@@ -135,21 +135,24 @@ class ParticleDaughter {
 
 class ParticleFitter {
  public:
-  ParticleFitter(const edm::ParameterSet& theParams, edm::ConsumesCollector&& iC);
+  ParticleFitter(const edm::ParameterSet& pSet, edm::ConsumesCollector&& iC);
   ~ParticleFitter();
 
-  const pat::GenericParticleCollection& getParticles() const { return candidates_; }
+  const pat::GenericParticleCollection& particles() const { return candidates_; }
+  const bool hasNoDaughters() const { return daughters_.empty(); }
 
   void setVertex(const edm::Event& iEvent);
+  void addParticles(ParticleDaughter& d, const edm::Event& iEvent);
   void fillDaughters(const edm::Event& iEvent);
   void makeCandidates();
   void fitCandidates(const edm::EventSetup& iSetup);
   void selectCandidates();
   void fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup);
-  void resetAll();
+  void clear();
 
  private:
   int pdgId_;
+  bool fitDone_;
   reco::Vertex vertex_;
   reco::Vertex beamSpot2D_;
   std::vector<ParticleDaughter> daughters_;

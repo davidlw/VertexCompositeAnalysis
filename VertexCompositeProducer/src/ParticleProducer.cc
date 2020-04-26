@@ -21,7 +21,8 @@
 
 // constructor
 ParticleProducer::ParticleProducer(const edm::ParameterSet& iConfig) :
-  fitter_(iConfig, consumesCollector())
+  fitter_(iConfig, consumesCollector()),
+  daughter_(iConfig, consumesCollector()) 
 {
   produces<pat::GenericParticleCollection>();
 }
@@ -37,15 +38,26 @@ ParticleProducer::~ParticleProducer() {
 
 // producer method
 void ParticleProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
-   // fit particles
-   fitter_.fitAll(iEvent, iSetup);
-   // extract particles
-   const auto& particles = fitter_.getParticles();
-   // store particles
-   auto output = std::make_unique<pat::GenericParticleCollection>(particles);
-   iEvent.put(std::move(output));
-   // reset fitter
-   fitter_.resetAll();
+  pat::GenericParticleCollection particles;
+  // set primary vertex
+  fitter_.setVertex(iEvent);
+  // extract particles
+  if (fitter_.hasNoDaughters()) {
+    // consider particle as daughter
+    fitter_.addParticles(daughter_, iEvent);
+    particles = daughter_.particles();
+  }
+  else {
+     // fit particles
+     fitter_.fitAll(iEvent, iSetup);
+     particles = fitter_.particles();
+  }
+  // store particles
+  auto output = std::make_unique<pat::GenericParticleCollection>(particles);
+  iEvent.put(std::move(output));
+  // clear
+  fitter_.clear();
+  daughter_.clear();
 }
 
 

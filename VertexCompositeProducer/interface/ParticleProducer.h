@@ -37,7 +37,8 @@ private:
   virtual void produce(edm::Event&, const edm::EventSetup&);
   virtual void endJob() ;
 
-  ParticleFitter fitter_; 
+  ParticleFitter fitter_;
+  ParticleDaughter daughter_;
 };
 
 #endif

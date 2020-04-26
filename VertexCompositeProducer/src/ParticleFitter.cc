@@ -34,6 +34,11 @@ ParticleFitter::ParticleFitter(const edm::ParameterSet& theParameters, edm::Cons
   token_tracks_ = iC.consumes<reco::TrackCollection>(theParameters.getParameter<edm::InputTag>("tracks"));
   token_pfParticles_ = iC.consumes<reco::PFCandidateCollection>(theParameters.getParameter<edm::InputTag>("pfParticles"));
   token_jets_ = iC.consumes<pat::JetCollection>(theParameters.getParameter<edm::InputTag>("jets"));
+  // initialize attributes
+  fitDone_ = false;
+  vertex_ = reco::Vertex();
+  beamSpot2D_ = reco::Vertex();
+  candidates_ = {};
 };
 
 
@@ -43,8 +48,6 @@ ParticleFitter::~ParticleFitter() {
 
 // Method containing the algorithm for vertex reconstruction
 void ParticleFitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-  // set primary vertex
-  setVertex(iEvent);
   // fill daughters particles
   fillDaughters(iEvent);
   // create candidates
@@ -56,7 +59,8 @@ void ParticleFitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSe
 };
 
 
-void ParticleFitter::resetAll() {
+void ParticleFitter::clear() {
+  fitDone_ = false;
   vertex_ = reco::Vertex();
   beamSpot2D_ = reco::Vertex();
   candidates_.clear();
@@ -84,20 +88,25 @@ void ParticleFitter::setVertex(const edm::Event& iEvent) {
 };
 
 
+void ParticleFitter::addParticles(ParticleDaughter& d, const edm::Event& iEvent) {
+  const auto pdgId = std::abs(d.pdgId());
+  const auto charge = d.charge();
+  const auto& vertex = (vertex_.isFake() ? beamSpot2D_ : vertex_);
+  if (d.useSource()) { d.addParticles(iEvent); }
+  else if (pdgId==0 ) { d.addParticles(iEvent, token_pfParticles_, vertex); }
+  else if (pdgId<=6 ) { d.addParticles(iEvent, token_jets_, vertex);        }
+  else if (pdgId==11) { d.addParticles(iEvent, token_electrons_, vertex);   }
+  else if (pdgId==13) { d.addParticles(iEvent, token_muons_, vertex);       }
+  else if (pdgId==15) { d.addParticles(iEvent, token_taus_, vertex);        }
+  else if (pdgId==22) { d.addParticles(iEvent, token_photons_, vertex);     }
+  else if (charge!=0) { d.addParticles(iEvent, token_tracks_, vertex);      }
+  else                { d.addParticles(iEvent, token_pfParticles_, vertex); }
+};
+
+
 void ParticleFitter::fillDaughters(const edm::Event& iEvent) {
   for (auto& daughter : daughters_) {
-    const auto pdgId = std::abs(daughter.pdgId());
-    const auto charge = daughter.charge();
-    const auto& vertex = (vertex_.isFake() ? beamSpot2D_ : vertex_);
-    if (daughter.useSource()) { daughter.addParticles(iEvent); }
-    else if (pdgId==0 ) { daughter.addParticles(iEvent, token_pfParticles_, vertex); }
-    else if (pdgId<=6 ) { daughter.addParticles(iEvent, token_jets_, vertex);        }
-    else if (pdgId==11) { daughter.addParticles(iEvent, token_electrons_, vertex);   }
-    else if (pdgId==13) { daughter.addParticles(iEvent, token_muons_, vertex);       }
-    else if (pdgId==15) { daughter.addParticles(iEvent, token_taus_, vertex);        }
-    else if (pdgId==22) { daughter.addParticles(iEvent, token_photons_, vertex);     }
-    else if (charge!=0) { daughter.addParticles(iEvent, token_tracks_, vertex);      }
-    else                { daughter.addParticles(iEvent, token_pfParticles_, vertex); }
+    addParticles(daughter, iEvent);
   }
 };
 
@@ -134,6 +143,7 @@ void ParticleFitter::makeCandidates() {
       if (preSelection_(cand)) {
         pat::GenericParticleCollection daughterColl(daughters.begin(), daughters.end());
         cand.addUserData<pat::GenericParticleCollection>("daughters", daughterColl);
+        cand.addUserData<reco::Vertex>("primaryVertex", vertex_);
         candidates.insert(cand);
       }
     }
@@ -144,6 +154,7 @@ void ParticleFitter::makeCandidates() {
 
 
 void ParticleFitter::fitCandidates(const edm::EventSetup& iSetup) {
+  if (candidates_.empty() || daughters_.size()<2) return;
   // get the magnetic field
   edm::ESHandle<MagneticField> bFieldHandle;
   iSetup.get<IdealMagneticFieldRecord>().get(bFieldHandle);
@@ -157,16 +168,13 @@ void ParticleFitter::fitCandidates(const edm::EventSetup& iSetup) {
     for (size_t iDau=0; iDau<daughterColl.size(); iDau++) {
       const auto& trk = daughterColl[iDau].track();
       if (trk.isNonnull()) {
-        const auto& tt = reco::TransientTrack(*trk, magField);
-        if (tt.impactPointTSCP().isValid()) {
-          daughters.push_back({tt, iDau});
-        }
+        daughters.push_back({reco::TransientTrack(*trk, magField), iDau});
       }
       else if (daughterColl[iDau].hasUserData("state")) {
         daughters.push_back({reco::TransientTrack(), iDau});
       }
     }
-    if (daughters.size()<2) continue;
+    if (daughters.size()<2) return;
     // measure distance between daughter tracks at their closest approach
     if (daughters.size()==2 &&
         daughters[0].first.impactPointTSCP().isValid() &&
@@ -232,7 +240,6 @@ void ParticleFitter::fitCandidates(const edm::EventSetup& iSetup) {
     cand.setVertex(decayVertexPos);
     cand.addUserFloat("vertexProb", TMath::Prob(decayVertex.chi2(), decayVertex.ndof()));
     cand.addUserData<reco::Vertex>("decayVertex", decayVertex);
-    cand.addUserData<reco::Vertex>("primaryVertex", vertex_);
     cand.addUserData<KinematicState>("state", candState);
     // add fitted candidates
     if (postSelection_(cand)) {
@@ -240,13 +247,16 @@ void ParticleFitter::fitCandidates(const edm::EventSetup& iSetup) {
     }
   }
   candidates_ = candidates;
+  fitDone_ = true;
 };
 
 
 void ParticleFitter::selectCandidates() {
+  if (!candidates_.empty() || !fitDone_) return;
   // loop over candidates
   pat::GenericParticleCollection candidates;
   for (auto cand : candidates_) {
+    if (!cand.hasUserData("decayVertex") || !cand.hasUserData("primaryVertex")) continue;
     const auto& decayVertex = *cand.userData<reco::Vertex>("decayVertex");
     const auto& primaryVertex = *cand.userData<reco::Vertex>("primaryVertex");
     // compute lifetime information
@@ -285,15 +295,26 @@ ParticleDaughter::ParticleDaughter()
   selection_ = "";
   finalSelection_ = "";
   source_ = edm::EDGetTokenT<pat::GenericParticleCollection>();
-  particles_ = {};
+  particles_ = {}; 
+};
+
+
+ParticleDaughter::ParticleDaughter(const edm::ParameterSet& pSet, edm::ConsumesCollector&& iC) :
+  ParticleDaughter()
+{
+  fillInfo(pSet, iC);
 };
 
 
 ParticleDaughter::~ParticleDaughter() {
 };
 
+void ParticleDaughter::clear() {
+  particles_.clear();
+};
 
-void ParticleDaughter::fillInfo(const edm::ParameterSet& pSet, edm::ConsumesCollector& iC) {
+
+void ParticleDaughter::fillInfo(const edm::ParameterSet& pSet, edm::ConsumesCollector& iC) { 
   if (pSet.existsAs<int>("pdgId")) {
     pdgId_ = pSet.getParameter<int>("pdgId");
   }
@@ -348,6 +369,7 @@ void ParticleDaughter::addParticles(const edm::Event& event, const edm::EDGetTok
         cand.addUserFloat("dzSig", dz/dzerror);
         cand.addUserFloat("dxySig", dxy/dxyerror);
       }
+      else if (cand.charge()!=0) continue; // ignore if charged particle has no track
       cand.addUserFloat("width", cand.mass()*1.e-6);
       if (finalSelection(cand)) {
         particles.insert(cand);
