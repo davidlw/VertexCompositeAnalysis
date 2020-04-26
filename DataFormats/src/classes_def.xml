@@ -1,0 +1,11 @@
+<lcgdict>
+  <class name="pat::UserHolder<pat::Muon>" />
+  <class name="pat::UserHolder<pat::Electron>" />
+  <class name="pat::UserHolder<pat::Jet>" />
+  <class name="pat::UserHolder<pat::Tau>" />
+  <class name="pat::UserHolder<reco::PFCandidate>" />
+  <class name="pat::UserHolder<pat::GenericParticle>" />
+  <class name="pat::UserHolder<pat::GenericParticleCollection>" />
+  <class name="KinematicState" />
+  <class name="pat::UserHolder<KinematicState>" />
+</lcgdict>
