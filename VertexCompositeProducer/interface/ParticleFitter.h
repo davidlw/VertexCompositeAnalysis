@@ -74,7 +74,7 @@
 #include <TVector3.h>
 
 
-struct ParticleComparator {
+struct ParticleDaughterComparator {
   template<class T>
   const bool isEqual(const T& x, const T& y) const
   {
@@ -85,12 +85,25 @@ struct ParticleComparator {
   {
     return !isEqual(x, y) && x < y;
   }
-  inline bool operator()(const pat::GenericParticle& x, const pat::GenericParticle& y) const
+  const bool isParticleLess(const pat::GenericParticle& x, const pat::GenericParticle& y) const
   {
     return (isLess(x.pt(), y.pt()) ||
             (isEqual(x.pt(), y.pt()) && isLess(x.eta(), y.eta())) ||
             (isEqual(x.pt(), y.pt()) && isEqual(x.eta(), y.eta()) && isLess(x.phi(), y.phi())) ||
             (isEqual(x.pt(), y.pt()) && isEqual(x.eta(), y.eta()) && isEqual(x.phi(), y.phi()) && isLess(x.charge(), y.charge())));
+  }
+  inline bool operator()(const pat::GenericParticle& x, const pat::GenericParticle& y) const
+  {
+    return isParticleLess(x, y);
+  }
+};
+
+
+struct ParticleComparator : ParticleDaughterComparator {
+  inline bool operator()(const pat::GenericParticle& x, const pat::GenericParticle& y) const
+  {
+    return (isParticleLess(x, y) ||
+            (isEqual(x.pt(), y.pt()) && isEqual(x.eta(), y.eta()) && isEqual(x.phi(), y.phi()) && isEqual(x.charge(), y.charge()) && isLess(x.mass(), y.mass())));
   }
 };
 
@@ -174,6 +187,7 @@ class ParticleFitter {
 };
 
 
+typedef std::set<pat::GenericParticle, ParticleDaughterComparator> ParticleDaughterSet;
 typedef std::set<pat::GenericParticle, ParticleComparator> ParticleSet;
 typedef ROOT::Math::SVector<double, 3> SVector3;
 

@@ -129,7 +129,7 @@ void ParticleFitter::makeCandidates() {
     pat::GenericParticle cand;
     auto charge = cand.charge();
     auto p4 = cand.p4();
-    ParticleSet daughters;
+    ParticleDaughterSet daughters;
     for (const auto& daughter : combination) {
       charge += daughter->charge();
       p4 += daughter->p4();
