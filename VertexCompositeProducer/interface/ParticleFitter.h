@@ -30,6 +30,8 @@
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include "DataFormats/TrackReco/interface/DeDxData.h"
+#include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Tau.h"
@@ -111,19 +113,19 @@ struct ParticleComparator : ParticleDaughterComparator {
 class ParticleDaughter {
  public:
   ParticleDaughter();
-  ParticleDaughter(const edm::ParameterSet& pSet, edm::ConsumesCollector&& iC);
+  ParticleDaughter(const edm::ParameterSet& pSet, const edm::ParameterSet& config, edm::ConsumesCollector&& iC);
   ~ParticleDaughter();
 
   const int& pdgId() const { return pdgId_; }
   const int& charge() const { return charge_; }
   const double& mass() const { return mass_; } 
   const pat::GenericParticleCollection& particles() const { return particles_; }
-  const bool useSource() const { return !source_.isUninitialized(); }
+  const bool useSource() const { return !token_source_.isUninitialized(); }
   
   template <class T>
-  void addParticles(const edm::Event& event, const edm::EDGetTokenT<std::vector<T> >& token, const reco::Vertex& vertex, const bool embedInfo=false);
+  void addParticles(const edm::Event& event, const edm::EDGetTokenT<std::vector<T> >& token, const reco::Vertex& vertex, const bool embedInfo=true);
   void addParticles(const edm::Event& event);
-  void fillInfo(const edm::ParameterSet& pSet, edm::ConsumesCollector& iC);
+  void fillInfo(const edm::ParameterSet& pSet, const edm::ParameterSet& config, edm::ConsumesCollector& iC);
   void clear();
 
  private:
@@ -135,14 +137,19 @@ class ParticleDaughter {
   void addData(pat::GenericParticle& c, const reco::PFCandidateRef& p, const bool& embedInfo);
   void addData(pat::GenericParticle& c, const pat::MuonRef& p, const bool& embedInfo);
   void addData(pat::GenericParticle& c, const pat::ElectronRef& p, const bool& embedInfo);
+  void setMVA (pat::GenericParticle& c, const size_t& i, const edm::Handle<std::vector<float> >& m);
+  void setDeDx(pat::GenericParticle& c, const edm::Handle<edm::ValueMap<reco::DeDxData> >& m);
 
   int pdgId_;
   int charge_;
   double mass_;
   std::string selection_;
   std::string finalSelection_;
-  edm::EDGetTokenT<pat::GenericParticleCollection> source_;
   pat::GenericParticleCollection particles_;
+
+  edm::EDGetTokenT<pat::GenericParticleCollection> token_source_;
+  edm::EDGetTokenT<std::vector<float> >            token_mva_;
+  edm::EDGetTokenT<edm::ValueMap<reco::DeDxData> > token_dedx_;
 };
 
 

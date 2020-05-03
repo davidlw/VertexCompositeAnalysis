@@ -137,7 +137,7 @@ process.dimurereco_step = cms.Path(process.eventFilter_HM * process.patMuonSeque
 
 # Define the output
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.ppanalysisSkimContentJPsi_cff")
-process.analysisSkimContent.outputCommands.append("drop *_hiCentrality_*_RECO")
+process.analysisSkimContent.outputCommands.append("keep *")
 process.output_HM = cms.OutputModule("PoolOutputModule",
     outputCommands = process.analysisSkimContent.outputCommands,
     fileName = cms.untracked.string('PbPb_DiMuCont.root'),

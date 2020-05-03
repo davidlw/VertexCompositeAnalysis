@@ -21,9 +21,10 @@ ParticleFitter::ParticleFitter(const edm::ParameterSet& theParameters, edm::Cons
   const auto daughterVPset = theParameters.getParameter<std::vector<edm::ParameterSet> >("daughterInfo");
   for (const auto& pSet : daughterVPset) {
     ParticleDaughter daughter;
-    daughter.fillInfo(pSet, iC);
+    daughter.fillInfo(pSet, theParameters, iC);
     daughters_.push_back(daughter);
   }
+
   // get input tags
   token_beamSpot_ = iC.consumes<reco::BeamSpot>(edm::InputTag("offlineBeamSpot"));
   token_vertices_ = iC.consumes<reco::VertexCollection>(theParameters.getParameter<edm::InputTag>("primaryVertices"));
@@ -34,6 +35,7 @@ ParticleFitter::ParticleFitter(const edm::ParameterSet& theParameters, edm::Cons
   token_tracks_ = iC.consumes<reco::TrackCollection>(theParameters.getParameter<edm::InputTag>("tracks"));
   token_pfParticles_ = iC.consumes<reco::PFCandidateCollection>(theParameters.getParameter<edm::InputTag>("pfParticles"));
   token_jets_ = iC.consumes<pat::JetCollection>(theParameters.getParameter<edm::InputTag>("jets"));
+
   // initialize attributes
   fitDone_ = false;
   vertex_ = reco::Vertex();
@@ -130,9 +132,11 @@ void ParticleFitter::makeCandidates() {
     auto charge = cand.charge();
     auto p4 = cand.p4();
     ParticleDaughterSet daughters;
+    float tkPtSum = 0;
     for (const auto& daughter : combination) {
       charge += daughter->charge();
       p4 += daughter->p4();
+      tkPtSum += daughter->pt();
       daughters.insert(*daughter);
     }
     // check if all daughters are unique (are in set)
@@ -140,6 +144,11 @@ void ParticleFitter::makeCandidates() {
       cand.setCharge(charge);
       cand.setP4(p4);
       cand.setPdgId(pdgId_);
+      cand.addUserFloat("tkPtSum", tkPtSum);
+      if (nDaughters==2) {
+         auto dau1 = daughters.cbegin();
+         cand.addUserFloat("tkEtaDiff", std::abs(std::next(dau1)->eta()-dau1->eta()));
+      }
       if (preSelection_(cand)) {
         pat::GenericParticleCollection daughterColl(daughters.begin(), daughters.end());
         cand.addUserData<pat::GenericParticleCollection>("daughters", daughterColl);
@@ -170,7 +179,7 @@ void ParticleFitter::fitCandidates(const edm::EventSetup& iSetup) {
       if (trk.isNonnull()) {
         daughters.push_back({reco::TransientTrack(*trk, magField), iDau});
       }
-      else if (daughterColl[iDau].hasUserData("state")) {
+      else if (daughterColl[iDau].hasUserData("kinematicParameters")) {
         daughters.push_back({reco::TransientTrack(), iDau});
       }
     }
@@ -201,7 +210,9 @@ void ParticleFitter::fitCandidates(const edm::EventSetup& iSetup) {
       }
       else {
         float chi = 0.0, ndf = 0.0;
-        const auto& state = *daughter.userData<KinematicState>("state");
+        const auto& kinPar = *daughter.userData<KinematicParameters>("kinematicParameters");
+        const auto& kinParError = *daughter.userData<KinematicParametersError>("kinematicParametersError");
+        const auto state = KinematicState(kinPar, kinParError, daughter.charge(), magField);
         VirtualKinematicParticleFactory pFactory;
         particles.push_back(pFactory.particle(state, chi, ndf, NULL));
       }
@@ -240,7 +251,8 @@ void ParticleFitter::fitCandidates(const edm::EventSetup& iSetup) {
     cand.setVertex(decayVertexPos);
     cand.addUserFloat("vertexProb", TMath::Prob(decayVertex.chi2(), decayVertex.ndof()));
     cand.addUserData<reco::Vertex>("decayVertex", decayVertex);
-    cand.addUserData<KinematicState>("state", candState);
+    cand.addUserData<KinematicParameters>("kinematicParameters", candState.kinematicParameters());
+    cand.addUserData<KinematicParametersError>("kinematicParametersError", candState.kinematicParametersError());
     // add fitted candidates
     if (postSelection_(cand)) {
       candidates.push_back(cand);
@@ -294,15 +306,14 @@ ParticleDaughter::ParticleDaughter()
   mass_ = 0.;
   selection_ = "";
   finalSelection_ = "";
-  source_ = edm::EDGetTokenT<pat::GenericParticleCollection>();
   particles_ = {}; 
 };
 
 
-ParticleDaughter::ParticleDaughter(const edm::ParameterSet& pSet, edm::ConsumesCollector&& iC) :
+ParticleDaughter::ParticleDaughter(const edm::ParameterSet& pSet, const edm::ParameterSet& config, edm::ConsumesCollector&& iC) :
   ParticleDaughter()
 {
-  fillInfo(pSet, iC);
+  fillInfo(pSet, config, iC);
 };
 
 
@@ -314,7 +325,7 @@ void ParticleDaughter::clear() {
 };
 
 
-void ParticleDaughter::fillInfo(const edm::ParameterSet& pSet, edm::ConsumesCollector& iC) { 
+void ParticleDaughter::fillInfo(const edm::ParameterSet& pSet, const edm::ParameterSet& config, edm::ConsumesCollector& iC) {
   if (pSet.existsAs<int>("pdgId")) {
     pdgId_ = pSet.getParameter<int>("pdgId");
   }
@@ -334,17 +345,31 @@ void ParticleDaughter::fillInfo(const edm::ParameterSet& pSet, edm::ConsumesColl
     finalSelection_ = pSet.getParameter<std::string>("finalSelection");
   }
   if (pSet.existsAs<edm::InputTag>("source")) {
-    source_ = iC.consumes<pat::GenericParticleCollection>(pSet.getParameter<edm::InputTag>("source"));
+    token_source_ = iC.consumes<pat::GenericParticleCollection>(pSet.getParameter<edm::InputTag>("source"));
+  }
+  const auto& mvaSet = (pSet.existsAs<edm::InputTag>("mva") ? pSet : config);
+  if (mvaSet.existsAs<edm::InputTag>("mva")) {
+    token_mva_ = iC.consumes<std::vector<float> >(mvaSet.getParameter<edm::InputTag>("mva"));
+  }
+  if (config.existsAs<edm::InputTag>("dedxHarmonic2")) {
+    token_dedx_ = iC.consumes<edm::ValueMap<reco::DeDxData>>(config.getParameter<edm::InputTag>("dedxHarmonic2"));
   }
 };
 
 
 template <class T>
 void ParticleDaughter::addParticles(const edm::Event& event, const edm::EDGetTokenT<std::vector<T> >& token, const reco::Vertex& vertex, const bool embedInfo) {
+  // extract input collections
   edm::Handle<std::vector<T> > handle;
-  event.getByToken(token, handle);
+  if (!token.isUninitialized()) event.getByToken(token, handle);
+  edm::Handle<edm::ValueMap<reco::DeDxData> > dEdxMap;
+  if (!token_dedx_.isUninitialized()) event.getByToken(token_dedx_, dEdxMap);
+  edm::Handle<std::vector<float> > mvaColl;
+  if (!token_mva_.isUninitialized()) event.getByToken(token_mva_, mvaColl);
+  // set selections
   StringCutObjectSelector<T, true> selection(selection_);
   StringCutObjectSelector<pat::GenericParticle, true> finalSelection(finalSelection_);
+  // add particles
   if (handle.isValid()) {
     ParticleSet particles;
     for (size_t i=0; i<handle->size(); i++) {
@@ -371,6 +396,8 @@ void ParticleDaughter::addParticles(const edm::Event& event, const edm::EDGetTok
       }
       else if (cand.charge()!=0) continue; // ignore if charged particle has no track
       cand.addUserFloat("width", cand.mass()*1.e-6);
+      setDeDx(cand, dEdxMap);
+      setMVA(cand, i, mvaColl);
       if (finalSelection(cand)) {
         particles.insert(cand);
       }
@@ -382,7 +409,7 @@ void ParticleDaughter::addParticles(const edm::Event& event, const edm::EDGetTok
 
 void ParticleDaughter::addParticles(const edm::Event& event) {
   edm::Handle<pat::GenericParticleCollection> handle;
-  event.getByToken(source_, handle);
+  event.getByToken(token_source_, handle);
   StringCutObjectSelector<pat::GenericParticle, true> selection(selection_);
   StringCutObjectSelector<pat::GenericParticle, true> finalSelection(finalSelection_);
   if (handle.isValid()) {
@@ -433,4 +460,20 @@ void ParticleDaughter::addData(pat::GenericParticle& c, const pat::ElectronRef& 
   c.setEcalIso(p->ecalIso());
   c.setHcalIso(p->hcalIso());
   c.addUserData<pat::Electron>("src", *p);
+};
+
+
+void ParticleDaughter::setMVA(pat::GenericParticle& cand, const size_t& i, const edm::Handle<std::vector<float> >& mvaColl) {
+  if (mvaColl.isValid()) {
+    cand.addUserFloat("mva", mvaColl->at(i));
+  }
+};
+
+
+void ParticleDaughter::setDeDx(pat::GenericParticle& cand, const edm::Handle<edm::ValueMap<reco::DeDxData> >& dEdxMap) {
+  if (cand.track().isNull()) return;
+  if (dEdxMap.isValid() && dEdxMap->contains(cand.track().id())) {
+    const auto& dEdx = (*dEdxMap)[cand.track()].dEdx();
+    cand.addUserFloat("dEdx", dEdx);
+  }
 };
