@@ -264,7 +264,7 @@ void ParticleFitter::fitCandidates(const edm::EventSetup& iSetup) {
 
 
 void ParticleFitter::selectCandidates() {
-  if (!candidates_.empty() || !fitDone_) return;
+  if (candidates_.empty() || !fitDone_) return;
   // loop over candidates
   pat::GenericParticleCollection candidates;
   for (auto cand : candidates_) {
