@@ -14,6 +14,7 @@
 ParticleFitter::ParticleFitter(const edm::ParameterSet& theParameters, edm::ConsumesCollector && iC) :
   pdgId_(theParameters.getParameter<int>("pdgId")),
   preSelection_(theParameters.getParameter<std::string>("preSelection")),
+  pocaSelection_(theParameters.getParameter<std::string>("pocaSelection")),
   postSelection_(theParameters.getParameter<std::string>("postSelection")),
   finalSelection_(theParameters.getParameter<std::string>("finalSelection"))
 {
@@ -46,7 +47,6 @@ ParticleFitter::ParticleFitter(const edm::ParameterSet& theParameters, edm::Cons
 
 ParticleFitter::~ParticleFitter() {
 };
-
 
 // Method containing the algorithm for vertex reconstruction
 void ParticleFitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
@@ -132,11 +132,11 @@ void ParticleFitter::makeCandidates() {
     auto charge = cand.charge();
     auto p4 = cand.p4();
     ParticleDaughterSet daughters;
-    float tkPtSum = 0;
+    float dauPtSum = 0;
     for (const auto& daughter : combination) {
       charge += daughter->charge();
       p4 += daughter->p4();
-      tkPtSum += daughter->pt();
+      dauPtSum += daughter->pt();
       daughters.insert(*daughter);
     }
     // check if all daughters are unique (are in set)
@@ -144,15 +144,14 @@ void ParticleFitter::makeCandidates() {
       cand.setCharge(charge);
       cand.setP4(p4);
       cand.setPdgId(pdgId_);
-      cand.addUserFloat("tkPtSum", tkPtSum);
+      cand.addUserFloat("dauPtSum", dauPtSum);
       if (nDaughters==2) {
          auto dau1 = daughters.cbegin();
-         cand.addUserFloat("tkEtaDiff", std::abs(std::next(dau1)->eta()-dau1->eta()));
+         cand.addUserFloat("dauEtaDiff", std::abs(std::next(dau1)->eta()-dau1->eta()));
       }
       if (preSelection_(cand)) {
         pat::GenericParticleCollection daughterColl(daughters.begin(), daughters.end());
         cand.addUserData<pat::GenericParticleCollection>("daughters", daughterColl);
-        cand.addUserData<reco::Vertex>("primaryVertex", vertex_);
         candidates.insert(cand);
       }
     }
@@ -171,6 +170,7 @@ void ParticleFitter::fitCandidates(const edm::EventSetup& iSetup) {
   // loop over candidates
   pat::GenericParticleCollection candidates;
   for (auto cand : candidates_) {
+    const auto iniP4 = cand.p4();
     // get the daughters transient tracks
     auto& daughterColl = *const_cast<pat::GenericParticleCollection*>(cand.userData<pat::GenericParticleCollection>("daughters"));
     std::vector<std::pair<reco::TransientTrack, size_t> > daughters;
@@ -197,7 +197,13 @@ void ParticleFitter::fitCandidates(const edm::EventSetup& iSetup) {
       const auto& tscpDau1 = daughters[0].first.trajectoryStateClosestToPoint(cxPt);
       const auto& tscpDau2 = daughters[1].first.trajectoryStateClosestToPoint(cxPt);
       if (!tscpDau1.isValid() || !tscpDau2.isValid()) continue;
+      const auto dau1Energy = std::sqrt(tscpDau1.momentum().mag2() + daughterColl[daughters[0].second].massSqr());
+      const auto dau2Energy = std::sqrt(tscpDau2.momentum().mag2() + daughterColl[daughters[1].second].massSqr());
+      const auto tscpDau1P4 = reco::Candidate::LorentzVector(tscpDau1.momentum().x(), tscpDau1.momentum().y(), tscpDau1.momentum().z(), dau1Energy);
+      const auto tscpDau2P4 = reco::Candidate::LorentzVector(tscpDau2.momentum().x(), tscpDau2.momentum().y(), tscpDau2.momentum().z(), dau2Energy);
+      cand.setP4(tscpDau1P4 + tscpDau2P4);
       cand.addUserFloat("dca", cApp.distance());
+      if (!pocaSelection_(cand)) continue;
     }
     // prepare particles for decay vertex fit
     std::vector<RefCountedKinematicParticle> particles;
@@ -217,6 +223,7 @@ void ParticleFitter::fitCandidates(const edm::EventSetup& iSetup) {
         particles.push_back(pFactory.particle(state, chi, ndf, NULL));
       }
     }
+    if (particles.size()<2) continue;
     // fit decay vertex
     KinematicParticleVertexFitter fitter;
     const auto& result = fitter.fit(particles);
@@ -235,26 +242,31 @@ void ParticleFitter::fitCandidates(const edm::EventSetup& iSetup) {
     }
     if (daughterParticles.size()!=daughters.size()) continue;
     // update particle kinematics from fit
-    cand.addUserData<reco::Candidate::PolarLorentzVector>("initialP4", cand.polarP4());
+    cand.addUserData<reco::Candidate::LorentzVector>("initialP4", iniP4);
+    reco::Candidate::LorentzVector candP4(0, 0, 0, 0);
     for (size_t iDau=0; iDau<daughters.size(); iDau++) {
       auto& daughter = daughterColl[daughters[iDau].second];
-      const auto iniP4 = daughter.polarP4();
+      const auto iniP4 = daughter.p4();
       const auto fitKP = daughterParticles[iDau]->currentState().kinematicParameters();
-      const auto fitP4 = reco::Candidate::PolarLorentzVector(fitKP.momentum().perp(), fitKP.momentum().eta(), fitKP.momentum().phi(), fitKP.mass());
-      daughter.addUserData<reco::Candidate::PolarLorentzVector>("initialP4", iniP4);
+      const auto fitEnergy = std::sqrt(fitKP.momentum().mag2() + daughter.massSqr());
+      const auto fitP4 = reco::Candidate::LorentzVector(fitKP.momentum().x(), fitKP.momentum().y(), fitKP.momentum().z(), fitEnergy);
+      daughter.addUserData<reco::Candidate::LorentzVector>("initialP4", iniP4);
       daughter.setP4(fitP4);
-      cand.setP4((cand.polarP4() + fitP4) - iniP4);
+      candP4 += fitP4;
     }
+    cand.setP4(candP4);
     // set data
     const auto decayVertexPos = reco::Particle::Point(fitVertex->position().x(), fitVertex->position().y(), fitVertex->position().z());
     reco::Vertex decayVertex(decayVertexPos, fitVertex->error().matrix(), fitVertex->chiSquared(), fitVertex->degreesOfFreedom(), daughters.size());
     cand.setVertex(decayVertexPos);
+    cand.addUserFloat("normChi2", decayVertex.chi2()/decayVertex.ndof());
     cand.addUserFloat("vertexProb", TMath::Prob(decayVertex.chi2(), decayVertex.ndof()));
-    cand.addUserData<reco::Vertex>("decayVertex", decayVertex);
-    cand.addUserData<KinematicParameters>("kinematicParameters", candState.kinematicParameters());
-    cand.addUserData<KinematicParametersError>("kinematicParametersError", candState.kinematicParametersError());
     // add fitted candidates
     if (postSelection_(cand)) {
+      cand.addUserData<reco::Vertex>("primaryVertex", vertex_);
+      cand.addUserData<reco::Vertex>("decayVertex", decayVertex);
+      cand.addUserData<KinematicParameters>("kinematicParameters", candState.kinematicParameters());
+      cand.addUserData<KinematicParametersError>("kinematicParametersError", candState.kinematicParametersError());
       candidates.push_back(cand);
     }
   }
@@ -304,6 +316,7 @@ ParticleDaughter::ParticleDaughter()
   pdgId_ = 0;
   charge_ = -99;
   mass_ = 0.;
+  width_ = 0.;
   selection_ = "";
   finalSelection_ = "";
   particles_ = {}; 
@@ -335,9 +348,16 @@ void ParticleDaughter::fillInfo(const edm::ParameterSet& pSet, const edm::Parame
   if (pSet.existsAs<double>("mass")) {
     mass_ = pSet.getParameter<double>("mass");
   }
-  else if (MASS_.count(pdgId_)) {
+  else if (MASS_.find(pdgId_)!=MASS_.end()) {
     mass_ = MASS_.at(pdgId_);
   }
+  if (pSet.existsAs<double>("width")) {
+    width_ = pSet.getParameter<double>("width");
+  }
+  else if (WIDTH_.find(pdgId_)!=WIDTH_.end()) {
+    width_ = WIDTH_.at(pdgId_);
+  }
+  else { width_ = mass_*1e-6; }
   if (pSet.existsAs<std::string>("selection")) {
     selection_ = pSet.getParameter<std::string>("selection");
   }
@@ -395,7 +415,7 @@ void ParticleDaughter::addParticles(const edm::Event& event, const edm::EDGetTok
         cand.addUserFloat("dxySig", dxy/dxyerror);
       }
       else if (cand.charge()!=0) continue; // ignore if charged particle has no track
-      cand.addUserFloat("width", cand.mass()*1.e-6);
+      cand.addUserFloat("width", width_);
       setDeDx(cand, dEdxMap);
       setMVA(cand, i, mvaColl);
       if (finalSelection(cand)) {

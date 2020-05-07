@@ -118,7 +118,8 @@ class ParticleDaughter {
 
   const int& pdgId() const { return pdgId_; }
   const int& charge() const { return charge_; }
-  const double& mass() const { return mass_; } 
+  const double& mass() const { return mass_; }
+  const float& width() const { return width_; }
   const pat::GenericParticleCollection& particles() const { return particles_; }
   const bool useSource() const { return !token_source_.isUninitialized(); }
   
@@ -129,7 +130,8 @@ class ParticleDaughter {
   void clear();
 
  private:
-  const std::map<uint, double> MASS_ = {{11, 0.000511}, {13, 0.105658}, {211, 0.139570}, {321, 0.493677}, {2212, 0.938272}};
+  const std::map<uint, double> MASS_ = {{11, 0.000511}, {13, 0.105658}, {211, 0.13957018}, {321, 0.493677}, {2212, 0.938272}};
+  const std::map<uint, float> WIDTH_ = {{211, 3.5E-7f}, {321, 1.6E-5f}};
 
   template <class T>
   void addData(pat::GenericParticle& c, const edm::Ref<std::vector<T> >& p, const bool& embedInfo);
@@ -143,6 +145,7 @@ class ParticleDaughter {
   int pdgId_;
   int charge_;
   double mass_;
+  float width_;
   std::string selection_;
   std::string finalSelection_;
   pat::GenericParticleCollection particles_;
@@ -189,6 +192,7 @@ class ParticleFitter {
   edm::EDGetTokenT<pat::JetCollection> token_jets_;
 
   StringCutObjectSelector<pat::GenericParticle, true> preSelection_;
+  StringCutObjectSelector<pat::GenericParticle, true> pocaSelection_;
   StringCutObjectSelector<pat::GenericParticle, true> postSelection_;
   StringCutObjectSelector<pat::GenericParticle, true> finalSelection_;
 };

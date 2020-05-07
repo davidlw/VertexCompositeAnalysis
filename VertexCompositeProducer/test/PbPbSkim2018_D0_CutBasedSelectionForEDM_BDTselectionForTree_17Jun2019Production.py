@@ -25,7 +25,7 @@ process.source = cms.Source("PoolSource",
 'file:output_numEvent100.root'
    ),
 )
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
 
 
 # Set the global tag
@@ -89,17 +89,24 @@ process.evtplane_seq = cms.Sequence(process.hiEvtPlane * process.hiEvtPlaneFlat)
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalParticles_cff")
 process.generalD0CandidatesNew = process.generalParticles.clone(
     preSelection = cms.string(""
-       "mass<2.01 && mass> 1.72 && pt > 1.0"
-       "&& userFloat('tkPtSum')>1.6 && userFloat('tkEtaDiff')<1.0"
+       "charge==0"
+       "&& userFloat('dauPtSum') >= 1.6 && userFloat('dauEtaDiff') <= 1.0"
+       "&& mass < 2.71 && mass > 1.02"
+       ),
+    pocaSelection = cms.string(""
+       "mass >= 1.72 && mass <= 2.01 && pt >= 1.0"
+       "&& userFloat('dca') >= 0 && userFloat('dca') <= 9999."
        ),
     postSelection = cms.string(""
-       "userFloat('vertexProb')>0.02"
+       "userFloat('vertexProb') >= 0.02"
+       "&& userFloat('normChi2') <= 9999.0"
        ),
     finalSelection = cms.string(""
-       "userFloat('rVtxSig') > 2.0 "
-       "&& userFloat('lVtxSig') > 3.0"
-       "&& abs(userFloat('angle3D')) < 0.2 && abs(userFloat('angle2D')) < 0.2"
-       "&& abs(mass-1.86484)<0.15"
+       "userFloat('rVtxMag') >= 0.0 && userFloat('rVtxSig') >= 2.0"
+       "&& userFloat('lVtxMag') >= 0.0 && userFloat('lVtxSig') >= 3.0"
+       "&& cos(userFloat('angle3D')) >= -2.0 && cos(userFloat('angle2D')) >= -2.0"
+       "&& abs(userFloat('angle3D')) <= 0.2 && abs(userFloat('angle2D')) <= 0.2"
+       "&& abs(mass-1.86484) < 0.15 && abs(rapidity) < 2.0"
        ),
 #
     # daughter information
@@ -112,8 +119,8 @@ process.generalD0CandidatesNew = process.generalParticles.clone(
               "&& numberOfValidHits >=11"
               ),
            finalSelection = cms.string(''
-              'userFloat("dzSig") < 3.0 && userFloat("dxySig") < 3.0'
-              '&& (!hasUserFloat("mva") || track.algo!=6 || userFloat("mva")>=0.98)'
+              'abs(userFloat("dzSig")) < 3.0 && abs(userFloat("dxySig")) < 3.0'
+              '&& (track.algo!=6 || userFloat("mva")>=0.98)'
               )
            ),
         cms.PSet(pdgId = cms.int32(211), charge = cms.int32(+1),
@@ -124,8 +131,8 @@ process.generalD0CandidatesNew = process.generalParticles.clone(
               "&& numberOfValidHits >=11"
               ),
            finalSelection = cms.string(''
-              'userFloat("dzSig") < 3.0 && userFloat("dxySig") < 3.0'
-              '&& (!hasUserFloat("mva") || track.algo!=6 || userFloat("mva")>=0.98)'
+              'abs(userFloat("dzSig")) < 3.0 && abs(userFloat("dxySig")) < 3.0'
+              '&& (track.algo!=6 || userFloat("mva")>=0.98)'
               )
            )
     ])
@@ -143,7 +150,7 @@ process.generalD0CandidatesNew = process.generalParticles.clone(
 #process.generalD0CandidatesNew.vtxSignificance2DCut = cms.double(2.0)
 #process.generalD0CandidatesNew.VtxChiProbCut = cms.double(0.02)
 #process.generalD0CandidatesNew.tkEtaCut = cms.double(2.4)
-#process.generalD0CandidatesNew.mvaTrackRecoSrc = cms.InputTag("generalTracks","MVAValues") ###cesar:to change iter6 tracking mva cut
+process.generalD0CandidatesNew.mva = cms.InputTag("generalTracks","MVAValues") ###cesar:to change iter6 tracking mva cut
 
 
 

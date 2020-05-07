@@ -6,6 +6,7 @@ generalParticles = cms.EDProducer("ParticleProducer",
 
     # particle selection
     preSelection = cms.string(""),
+    pocaSelection = cms.string(""),
     postSelection = cms.string(""),
     finalSelection = cms.string(""),
 
