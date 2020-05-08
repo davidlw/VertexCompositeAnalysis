@@ -41,11 +41,48 @@
 #include "CommonTools/Statistics/interface/ChiSquaredProbability.h"
 #include "CondFormats/DataRecord/interface/GBRWrapperRcd.h"
 
-const float piMassD0 = 0.13957018;
-const float piMassD0Squared = piMassD0*piMassD0;
-const float kaonMassD0 = 0.493677;
-const float kaonMassD0Squared = kaonMassD0*kaonMassD0;
-const float d0MassD0 = 1.86484;
+// yousen-begin
+#include <fstream>
+bool isEqual (const float x, const float y)
+{
+  if(std::fabs(x-y)<1e-6) return true;
+  return false;
+}
+
+bool isLess (const float x, const float y)
+{
+   if (!isEqual(x, y) && x<y) return true;
+   return false;
+}
+
+struct lessForTrack{
+   bool operator() (const reco::TrackRef& trk1, const reco::TrackRef& trk2)
+   {
+      if (isLess(trk1->pt(), trk2->pt())) return true;
+      else if (isEqual(trk1->pt(), trk2->pt()) && isLess(trk1->eta(), trk2->eta()))  return true;
+      else if (isEqual(trk1->pt(), trk2->pt()) && isEqual(trk1->eta(), trk2->eta()) && isLess(trk1->phi(), trk2->phi()))  return true;
+      else if (isEqual(trk1->pt(), trk2->pt()) && isEqual(trk1->eta(), trk2->eta()) && isEqual(trk1->phi(), trk2->phi()) && isLess(trk1->charge(), trk2->charge())) return true;
+      return false;
+   }
+};
+struct lessForCandidate{
+   bool operator() (const reco::CompositeCandidate& trk1, const reco::CompositeCandidate& trk2)
+   {
+      if (isLess(trk1.pt(), trk2.pt())) return true;
+      else if (isEqual(trk1.pt(), trk2.pt()) && isLess(trk1.eta(), trk2.eta()))  return true;
+      else if (isEqual(trk1.pt(), trk2.pt()) && isEqual(trk1.eta(), trk2.eta()) && isLess(trk1.phi(), trk2.phi()))  return true;
+      else if (isEqual(trk1.pt(), trk2.pt()) && isEqual(trk1.eta(), trk2.eta()) && isEqual(trk1.phi(), trk2.phi()) && isLess(trk1.charge(), trk2.charge())) return true;
+      else if (isEqual(trk1.pt(), trk2.pt()) && isEqual(trk1.eta(), trk2.eta()) && isEqual(trk1.phi(), trk2.phi()) && isEqual(trk1.charge(), trk2.charge()) && isLess(trk1.mass(), trk2.mass())) return true;
+      return false;
+   }
+};
+// yousen-end
+
+const double piMassD0 = 0.13957018;
+const double piMassD0Squared = piMassD0*piMassD0;
+const double kaonMassD0 = 0.493677;
+const double kaonMassD0Squared = kaonMassD0*kaonMassD0;
+const double d0MassD0 = 1.86484;
 float piMassD0_sigma = 3.5E-7f;
 float kaonMassD0_sigma = 1.6E-5f;
 float d0MassD0_sigma = d0MassD0*1.e-6;
@@ -60,6 +97,10 @@ D0Fitter::D0Fitter(const edm::ParameterSet& theParameters,  edm::ConsumesCollect
   token_tracks = iC.consumes<reco::TrackCollection>(theParameters.getParameter<edm::InputTag>("trackRecoAlgorithm"));
   token_vertices = iC.consumes<reco::VertexCollection>(theParameters.getParameter<edm::InputTag>("vertexRecoAlgorithm"));
   token_dedx = iC.consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag("dedxHarmonic2"));
+   ///cesar begin
+  mvaTrackRecoSrcLabel_ = theParameters.getParameter<edm::InputTag>("mvaTrackRecoSrc");
+  mvaTrackRecoSrc_ = iC.consumes<std::vector<float>>(mvaTrackRecoSrcLabel_);
+   ///cesar end
 
   // Second, initialize post-fit cuts
   mPiKCutMin = theParameters.getParameter<double>(string("mPiKCutMin"));
@@ -144,6 +185,10 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   //  passing to the KalmanVertexFitter)
   std::vector<TrackRef> theTrackRefs;
   std::vector<TransientTrack> theTransTracks;
+  // yousen-begin
+  std::vector<TrackRef> thePosTracks;
+  std::vector<TrackRef> theNegTracks;
+  // yousen-end
 
   // Handles for tracks, B-field, and tracker geometry
   Handle<reco::TrackCollection> theTrackHandle;
@@ -159,6 +204,11 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   iEvent.getByToken(token_beamSpot, theBeamSpotHandle);  
   iEvent.getByToken(token_dedx, dEdxHandle);
 
+
+  ///cesar-begin
+  Handle<std::vector<float>> mvaTrackRecooutput;
+  iEvent.getByToken(mvaTrackRecoSrc_, mvaTrackRecooutput);
+  ///cesar-end
 
   if( !theTrackHandle->size() ) return;
   iSetup.get<IdealMagneticFieldRecord>().get(bFieldHandle);
@@ -214,7 +264,17 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
     }
     if( !quality_ok ) continue;
 
-    if( tmpRef->normalizedChi2() < tkChi2Cut &&
+    ///cesar - begin
+    float mvaTrackReco = (*mvaTrackRecooutput)[indx];
+    if(tmpRef->algo() == 6){
+      if(mvaTrackReco < 0.98) continue;
+      //std::cout<<"mvaTrackReco : "<<mvaTrackReco<<std::endl;
+    }
+    ///cesar - end 
+
+    ///if( tmpRef->normalizedChi2() < tkChi2Cut && //cesar:commented to be consistent with HI tracking group
+    const reco::HitPattern& hit_pattern = tmpRef->hitPattern();//cesar: so, used a diferent selection dividing by nlayers 
+    if( tmpRef->normalizedChi2()/hit_pattern.trackerLayersWithMeasurement() < tkChi2Cut &&
         tmpRef->numberOfValidHits() >= tkNhitsCut &&
         tmpRef->ptError() / tmpRef->pt() < tkPtErrCut &&
         tmpRef->pt() > tkPtCut && fabs(tmpRef->eta()) < tkEtaCut ) {
@@ -229,15 +289,34 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       double dauLongImpactSig = dzvtx/dzerror;
       double dauTransImpactSig = dxyvtx/dxyerror;
 
-      if( fabs(dauTransImpactSig) > dauTransImpactSigCut && fabs(dauLongImpactSig) > dauLongImpactSigCut ) {
+      if( fabs(dauTransImpactSig) < dauTransImpactSigCut && fabs(dauLongImpactSig) < dauLongImpactSigCut ) {
         theTrackRefs.push_back( tmpRef );
         theTransTracks.push_back( tmpTk );
+        // yousen-begin
+        if(tmpRef->charge()>0) thePosTracks.push_back(tmpRef);
+        if(tmpRef->charge()<0) theNegTracks.push_back(tmpRef);
+        // yousen-end
       }
     }
   }
 
-  float posCandMass[2] = {piMassD0, kaonMassD0};
-  float negCandMass[2] = {kaonMassD0, piMassD0};
+  // yousen-begin
+  if(thePosTracks.size()>0 && theNegTracks.size()>0){
+    std::sort(thePosTracks.begin(), thePosTracks.end(), lessForTrack());
+    std::sort(theNegTracks.begin(), theNegTracks.end(), lessForTrack());
+    ofstream posTrackTxt("posTrackTxt.txt", std::ios_base::app);
+    for(const auto& posTrk : thePosTracks){
+      posTrackTxt << Form("%.12f, %.12f, %.12f, %.12f, %.12f, %.12f, %.12f, %.12f, %.12f, %.12f, %.12f, %d", xVtx, yVtx, zVtx, posTrk->vertex().x(), posTrk->vertex().y(), posTrk->vertex().z(), posTrk->pt(), posTrk->eta(), posTrk->phi(), piMassD0, piMassD0_sigma, posTrk->charge()) << std::endl;
+    }
+    ofstream negTrackTxt("negTrackTxt.txt", std::ios_base::app);
+    for(const auto& negTrk : theNegTracks){
+      negTrackTxt << Form("%.12f, %.12f, %.12f, %.12f, %.12f, %.12f, %.12f, %.12f, %.12f, %.12f, %.12f, %d", xVtx, yVtx, zVtx, negTrk->vertex().x(), negTrk->vertex().y(), negTrk->vertex().z(), negTrk->pt(), negTrk->eta(), negTrk->phi(), kaonMassD0, kaonMassD0_sigma, negTrk->charge()) << std::endl;
+    }
+  }
+  // yousen-end
+
+  double posCandMass[2] = {piMassD0, kaonMassD0};
+  double negCandMass[2] = {kaonMassD0, piMassD0};
   float posCandMass_sigma[2] = {piMassD0_sigma, kaonMassD0_sigma};
   float negCandMass_sigma[2] = {kaonMassD0_sigma, piMassD0_sigma};
   int   pdg_id[2] = {421, -421};
@@ -377,9 +456,9 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
       // Create the vertex fitter object and vertex the tracks
     
-      float posCandTotalE[2]={0.0};
-      float negCandTotalE[2]={0.0};
-      float d0TotalE[2]={0.0};
+      double posCandTotalE[2]={0.0};
+      double negCandTotalE[2]={0.0};
+      double d0TotalE[2]={0.0};
 
       for(int i=0;i<2;i++)
       {
@@ -517,7 +596,7 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
         theD0->setPdgId(pdg_id[i]);
         addp4.set( *theD0 );
         if( theD0->mass() < d0MassD0 + d0MassCut &&
-            theD0->mass() > d0MassD0 - d0MassCut ) //&&
+            theD0->mass() > d0MassD0 - d0MassCut && fabs(theD0->rapidity())<2.0 ) //&& //cesar:added condition in rapidity
 	   // theD0->pt() > dPtCut ) {
         {
           theD0s.push_back( *theD0 );
@@ -563,6 +642,12 @@ void D0Fitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       }
     }
   }
+ 
+  ofstream candTxt("candTxt.txt", std::ios_base::app);
+  std::sort(theD0s.begin(), theD0s.end(), lessForCandidate());
+  for(const auto& cand : theD0s){
+    candTxt << Form("%.12f, %.12f, %.12f, %.12f, %.12f, %.12f, %.12f, %d", cand.vertex().x(), cand.vertex().y(), cand.vertex().z(), cand.pt(), cand.eta(), cand.phi(), cand.mass(), cand.charge()) << std::endl;
+  }             
 
 //  mvaFiller.insert(theD0s,mvaVals_.begin(),mvaVals_.end());
 //  mvaFiller.fill();

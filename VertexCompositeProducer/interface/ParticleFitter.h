@@ -168,8 +168,8 @@ class ParticleFitter {
   void addParticles(ParticleDaughter& d, const edm::Event& iEvent);
   void fillDaughters(const edm::Event& iEvent);
   void makeCandidates();
-  void fitCandidates(const edm::EventSetup& iSetup);
-  void selectCandidates();
+  bool fitCandidate(pat::GenericParticle& cand);
+  bool selectCandidate(pat::GenericParticle& cand);
   void fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   void clear();
 
@@ -180,6 +180,8 @@ class ParticleFitter {
   reco::Vertex beamSpot2D_;
   std::vector<ParticleDaughter> daughters_;
   pat::GenericParticleCollection candidates_;
+
+  edm::ESHandle<MagneticField> bFieldHandle_;
 
   edm::EDGetTokenT<reco::BeamSpot> token_beamSpot_;
   edm::EDGetTokenT<reco::VertexCollection> token_vertices_;

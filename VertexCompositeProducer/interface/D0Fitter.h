@@ -102,6 +102,10 @@ class D0Fitter {
   edm::EDGetTokenT<reco::VertexCollection> token_vertices;
   edm::EDGetTokenT<edm::ValueMap<reco::DeDxData> > token_dedx;
   edm::EDGetTokenT<reco::BeamSpot> token_beamSpot;
+  ///cesar -begin
+  edm::InputTag mvaTrackRecoSrcLabel_;
+  edm::EDGetTokenT<std::vector<float>> mvaTrackRecoSrc_;
+  ///cesar -end
 
   // Cuts
   double mPiKCutMin;

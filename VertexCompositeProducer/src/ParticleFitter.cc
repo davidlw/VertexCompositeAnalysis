@@ -50,14 +50,12 @@ ParticleFitter::~ParticleFitter() {
 
 // Method containing the algorithm for vertex reconstruction
 void ParticleFitter::fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+  // set the magnetic field
+  iSetup.get<IdealMagneticFieldRecord>().get(bFieldHandle_);
   // fill daughters particles
   fillDaughters(iEvent);
   // create candidates
   makeCandidates();
-  // fit candidates
-  fitCandidates(iSetup);
-  // add extra information and make final selection
-  selectCandidates();
 };
 
 
@@ -149,11 +147,16 @@ void ParticleFitter::makeCandidates() {
          auto dau1 = daughters.cbegin();
          cand.addUserFloat("dauEtaDiff", std::abs(std::next(dau1)->eta()-dau1->eta()));
       }
-      if (preSelection_(cand)) {
-        pat::GenericParticleCollection daughterColl(daughters.begin(), daughters.end());
-        cand.addUserData<pat::GenericParticleCollection>("daughters", daughterColl);
-        candidates.insert(cand);
-      }
+      // make preselection
+      if (!preSelection_(cand)) continue;
+      pat::GenericParticleCollection daughterColl(daughters.begin(), daughters.end());
+      cand.addUserData<pat::GenericParticleCollection>("daughters", daughterColl);
+      // fit candidate and make postselection
+      if (!fitCandidate(cand)) continue;
+      // add extra information and make final selection
+      if (!selectCandidate(cand)) continue;
+      // add candidadte
+      candidates.insert(cand);
     }
   }
   // insert all unique candidates
@@ -161,152 +164,135 @@ void ParticleFitter::makeCandidates() {
 };
 
 
-void ParticleFitter::fitCandidates(const edm::EventSetup& iSetup) {
-  if (candidates_.empty() || daughters_.size()<2) return;
-  // get the magnetic field
-  edm::ESHandle<MagneticField> bFieldHandle;
-  iSetup.get<IdealMagneticFieldRecord>().get(bFieldHandle);
-  const auto& magField = bFieldHandle.product();
-  // loop over candidates
-  pat::GenericParticleCollection candidates;
-  for (auto cand : candidates_) {
-    const auto iniP4 = cand.p4();
-    // get the daughters transient tracks
-    auto& daughterColl = *const_cast<pat::GenericParticleCollection*>(cand.userData<pat::GenericParticleCollection>("daughters"));
-    std::vector<std::pair<reco::TransientTrack, size_t> > daughters;
-    for (size_t iDau=0; iDau<daughterColl.size(); iDau++) {
-      const auto& trk = daughterColl[iDau].track();
-      if (trk.isNonnull()) {
-        daughters.push_back({reco::TransientTrack(*trk, magField), iDau});
-      }
-      else if (daughterColl[iDau].hasUserData("kinematicParameters")) {
-        daughters.push_back({reco::TransientTrack(), iDau});
-      }
+bool ParticleFitter::fitCandidate(pat::GenericParticle& cand) {
+  if (!cand.hasUserData("daughters") || daughters_.size()<2) return true;
+  const auto iniP4 = cand.p4();
+  const auto& magField = bFieldHandle_.product();
+  // get the daughters transient tracks
+  auto& daughterColl = *const_cast<pat::GenericParticleCollection*>(cand.userData<pat::GenericParticleCollection>("daughters"));
+  std::vector<std::pair<reco::TransientTrack, size_t> > daughters;
+  for (size_t iDau=0; iDau<daughterColl.size(); iDau++) {
+    const auto& trk = daughterColl[iDau].track();
+    if (trk.isNonnull()) {
+      daughters.push_back({reco::TransientTrack(*trk, magField), iDau});
     }
-    if (daughters.size()<2) return;
-    // measure distance between daughter tracks at their closest approach
-    if (daughters.size()==2 &&
-        daughters[0].first.impactPointTSCP().isValid() &&
-        daughters[1].first.impactPointTSCP().isValid()) {
-      ClosestApproachInRPhi cApp;
-      const auto& stateDau1 = daughters[0].first.impactPointTSCP().theState();
-      const auto& stateDau2 = daughters[1].first.impactPointTSCP().theState();
-      cApp.calculate(stateDau1, stateDau2);
-      if (!cApp.status()) continue;
-      const auto& cxPt = cApp.crossingPoint();
-      const auto& tscpDau1 = daughters[0].first.trajectoryStateClosestToPoint(cxPt);
-      const auto& tscpDau2 = daughters[1].first.trajectoryStateClosestToPoint(cxPt);
-      if (!tscpDau1.isValid() || !tscpDau2.isValid()) continue;
-      const auto dau1Energy = std::sqrt(tscpDau1.momentum().mag2() + daughterColl[daughters[0].second].massSqr());
-      const auto dau2Energy = std::sqrt(tscpDau2.momentum().mag2() + daughterColl[daughters[1].second].massSqr());
-      const auto tscpDau1P4 = reco::Candidate::LorentzVector(tscpDau1.momentum().x(), tscpDau1.momentum().y(), tscpDau1.momentum().z(), dau1Energy);
-      const auto tscpDau2P4 = reco::Candidate::LorentzVector(tscpDau2.momentum().x(), tscpDau2.momentum().y(), tscpDau2.momentum().z(), dau2Energy);
-      cand.setP4(tscpDau1P4 + tscpDau2P4);
-      cand.addUserFloat("dca", cApp.distance());
-      if (!pocaSelection_(cand)) continue;
-    }
-    // prepare particles for decay vertex fit
-    std::vector<RefCountedKinematicParticle> particles;
-    for (const auto& d : daughters) {
-      const auto& daughter = daughterColl[d.second];
-      if (d.first.impactPointTSCP().isValid()) {
-        float chi = 0., ndf = 0., width = daughter.userFloat("width");
-        KinematicParticleFactoryFromTransientTrack pFactory;
-        particles.push_back(pFactory.particle(d.first, daughter.mass(), chi, ndf, width));
-      }
-      else {
-        float chi = 0.0, ndf = 0.0;
-        const auto& kinPar = *daughter.userData<KinematicParameters>("kinematicParameters");
-        const auto& kinParError = *daughter.userData<KinematicParametersError>("kinematicParametersError");
-        const auto state = KinematicState(kinPar, kinParError, daughter.charge(), magField);
-        VirtualKinematicParticleFactory pFactory;
-        particles.push_back(pFactory.particle(state, chi, ndf, NULL));
-      }
-    }
-    if (particles.size()<2) continue;
-    // fit decay vertex
-    KinematicParticleVertexFitter fitter;
-    const auto& result = fitter.fit(particles);
-    if (!result->isValid()) continue;
-    const auto& fitVertex = result->currentDecayVertex();
-    if (!fitVertex->vertexIsValid()) continue;
-    // check fitted final state particle
-    const auto& candState = result->currentParticle()->currentState();
-    if (!candState.isValid()) continue;
-    // check fitted daughter particles
-    std::vector<RefCountedKinematicParticle> daughterParticles;
-    for (const auto& p : result->daughterParticles()) {
-      if (p->currentState().isValid()) {
-        daughterParticles.push_back(p);
-      }
-    }
-    if (daughterParticles.size()!=daughters.size()) continue;
-    // update particle kinematics from fit
-    cand.addUserData<reco::Candidate::LorentzVector>("initialP4", iniP4);
-    reco::Candidate::LorentzVector candP4(0, 0, 0, 0);
-    for (size_t iDau=0; iDau<daughters.size(); iDau++) {
-      auto& daughter = daughterColl[daughters[iDau].second];
-      const auto iniP4 = daughter.p4();
-      const auto fitKP = daughterParticles[iDau]->currentState().kinematicParameters();
-      const auto fitEnergy = std::sqrt(fitKP.momentum().mag2() + daughter.massSqr());
-      const auto fitP4 = reco::Candidate::LorentzVector(fitKP.momentum().x(), fitKP.momentum().y(), fitKP.momentum().z(), fitEnergy);
-      daughter.addUserData<reco::Candidate::LorentzVector>("initialP4", iniP4);
-      daughter.setP4(fitP4);
-      candP4 += fitP4;
-    }
-    cand.setP4(candP4);
-    // set data
-    const auto decayVertexPos = reco::Particle::Point(fitVertex->position().x(), fitVertex->position().y(), fitVertex->position().z());
-    reco::Vertex decayVertex(decayVertexPos, fitVertex->error().matrix(), fitVertex->chiSquared(), fitVertex->degreesOfFreedom(), daughters.size());
-    cand.setVertex(decayVertexPos);
-    cand.addUserFloat("normChi2", decayVertex.chi2()/decayVertex.ndof());
-    cand.addUserFloat("vertexProb", TMath::Prob(decayVertex.chi2(), decayVertex.ndof()));
-    // add fitted candidates
-    if (postSelection_(cand)) {
-      cand.addUserData<reco::Vertex>("primaryVertex", vertex_);
-      cand.addUserData<reco::Vertex>("decayVertex", decayVertex);
-      cand.addUserData<KinematicParameters>("kinematicParameters", candState.kinematicParameters());
-      cand.addUserData<KinematicParametersError>("kinematicParametersError", candState.kinematicParametersError());
-      candidates.push_back(cand);
+    else if (daughterColl[iDau].hasUserData("kinematicParameters")) {
+      daughters.push_back({reco::TransientTrack(), iDau});
     }
   }
-  candidates_ = candidates;
-  fitDone_ = true;
+  if (daughters.size()<2) return true;
+  // measure distance between daughter tracks at their closest approach
+  if (daughters.size()==2 &&
+      daughters[0].first.impactPointTSCP().isValid() &&
+      daughters[1].first.impactPointTSCP().isValid()) {
+    ClosestApproachInRPhi cApp;
+    const auto& stateDau1 = daughters[0].first.impactPointTSCP().theState();
+    const auto& stateDau2 = daughters[1].first.impactPointTSCP().theState();
+    cApp.calculate(stateDau1, stateDau2);
+    if (!cApp.status()) return false;
+    const auto& cxPt = cApp.crossingPoint();
+    const auto& tscpDau1 = daughters[0].first.trajectoryStateClosestToPoint(cxPt);
+    const auto& tscpDau2 = daughters[1].first.trajectoryStateClosestToPoint(cxPt);
+    if (!tscpDau1.isValid() || !tscpDau2.isValid()) return false;
+    const auto dau1Energy = std::sqrt(tscpDau1.momentum().mag2() + daughterColl[daughters[0].second].massSqr());
+    const auto dau2Energy = std::sqrt(tscpDau2.momentum().mag2() + daughterColl[daughters[1].second].massSqr());
+    const auto tscpDau1P4 = reco::Candidate::LorentzVector(tscpDau1.momentum().x(), tscpDau1.momentum().y(), tscpDau1.momentum().z(), dau1Energy);
+    const auto tscpDau2P4 = reco::Candidate::LorentzVector(tscpDau2.momentum().x(), tscpDau2.momentum().y(), tscpDau2.momentum().z(), dau2Energy);
+    cand.setP4(tscpDau1P4 + tscpDau2P4);
+    cand.addUserFloat("dca", cApp.distance());
+    if (!pocaSelection_(cand)) return false;
+  }
+  // prepare particles for decay vertex fit
+  std::vector<RefCountedKinematicParticle> particles;
+  for (const auto& d : daughters) {
+    const auto& daughter = daughterColl[d.second];
+    if (d.first.impactPointTSCP().isValid()) {
+      float chi = 0., ndf = 0., width = daughter.userFloat("width");
+      KinematicParticleFactoryFromTransientTrack pFactory;
+      particles.push_back(pFactory.particle(d.first, daughter.mass(), chi, ndf, width));
+    }
+    else {
+    float chi = 0.0, ndf = 0.0;
+      const auto& kinPar = *daughter.userData<KinematicParameters>("kinematicParameters");
+      const auto& kinParError = *daughter.userData<KinematicParametersError>("kinematicParametersError");
+      const auto state = KinematicState(kinPar, kinParError, daughter.charge(), magField);
+      VirtualKinematicParticleFactory pFactory;
+      particles.push_back(pFactory.particle(state, chi, ndf, NULL));
+    }
+  }
+  if (particles.size()<2) return false;
+  // fit decay vertex
+  KinematicParticleVertexFitter fitter;
+  const auto& result = fitter.fit(particles);
+  if (!result->isValid()) return false;
+  const auto& fitVertex = result->currentDecayVertex();
+  if (!fitVertex->vertexIsValid()) return false;
+  // check fitted final state particle
+  const auto& candState = result->currentParticle()->currentState();
+  if (!candState.isValid()) return false;
+  // check fitted daughter particles
+  std::vector<RefCountedKinematicParticle> daughterParticles;
+  for (const auto& p : result->daughterParticles()) {
+    if (p->currentState().isValid()) {
+      daughterParticles.push_back(p);
+    }
+  }
+  if (daughterParticles.size()!=daughters.size()) return false;
+  // update particle kinematics from fit
+  cand.addUserData<reco::Candidate::LorentzVector>("initialP4", iniP4);
+  reco::Candidate::LorentzVector candP4(0, 0, 0, 0);
+  for (size_t iDau=0; iDau<daughters.size(); iDau++) {
+    auto& daughter = daughterColl[daughters[iDau].second];
+    const auto iniP4 = daughter.p4();
+    const auto fitKP = daughterParticles[iDau]->currentState().kinematicParameters();
+    const auto fitEnergy = std::sqrt(fitKP.momentum().mag2() + daughter.massSqr());
+    const auto fitP4 = reco::Candidate::LorentzVector(fitKP.momentum().x(), fitKP.momentum().y(), fitKP.momentum().z(), fitEnergy);
+    daughter.addUserData<reco::Candidate::LorentzVector>("initialP4", iniP4);
+    daughter.setP4(fitP4);
+    candP4 += fitP4;
+  }
+  cand.setP4(candP4);
+  // set data
+  const auto decayVertexPos = reco::Particle::Point(fitVertex->position().x(), fitVertex->position().y(), fitVertex->position().z());
+  reco::Vertex decayVertex(decayVertexPos, fitVertex->error().matrix(), fitVertex->chiSquared(), fitVertex->degreesOfFreedom(), daughters.size());
+  cand.setVertex(decayVertexPos);
+  cand.addUserFloat("normChi2", decayVertex.chi2()/decayVertex.ndof());
+  cand.addUserFloat("vertexProb", TMath::Prob(decayVertex.chi2(), decayVertex.ndof()));
+  // add information to fitted candidate
+  if (!postSelection_(cand)) return false;
+  cand.addUserData<reco::Vertex>("primaryVertex", vertex_);
+  cand.addUserData<reco::Vertex>("decayVertex", decayVertex);
+  cand.addUserData<KinematicParameters>("kinematicParameters", candState.kinematicParameters());
+  cand.addUserData<KinematicParametersError>("kinematicParametersError", candState.kinematicParametersError());
+  return true;
 };
 
 
-void ParticleFitter::selectCandidates() {
-  if (candidates_.empty() || !fitDone_) return;
-  // loop over candidates
-  pat::GenericParticleCollection candidates;
-  for (auto cand : candidates_) {
-    if (!cand.hasUserData("decayVertex") || !cand.hasUserData("primaryVertex")) continue;
-    const auto& decayVertex = *cand.userData<reco::Vertex>("decayVertex");
-    const auto& primaryVertex = *cand.userData<reco::Vertex>("primaryVertex");
-    // compute lifetime information
-    const auto lineOfFlight = decayVertex.position() - primaryVertex.position();
-    const auto lVtxMag = lineOfFlight.r();
-    const auto rVtxMag = lineOfFlight.rho();
-    const auto angle3D = angle(lineOfFlight.x(), lineOfFlight.y(), lineOfFlight.z(), cand.px(), cand.py(), cand.pz());
-    const auto angle2D = angle(lineOfFlight.x(), lineOfFlight.y(), 0.0, cand.px(), cand.py(), 0.0);
-    const auto distanceVector3D = SVector3(lineOfFlight.x(), lineOfFlight.y(), lineOfFlight.z());
-    const auto distanceVector2D = SVector3(lineOfFlight.x(), lineOfFlight.y(), 0.0);
-    const auto totalCov = decayVertex.covariance() + primaryVertex.covariance();
-    const auto sigmaLvtxMag = std::sqrt(ROOT::Math::Similarity(totalCov, distanceVector3D)) / lVtxMag;
-    const auto sigmaRvtxMag = std::sqrt(ROOT::Math::Similarity(totalCov, distanceVector2D)) / rVtxMag;
-    // set lifetime infomation
-    cand.addUserFloat("lVtxMag", lVtxMag);
-    cand.addUserFloat("rVtxMag", rVtxMag);
-    cand.addUserFloat("lVtxSig", (lVtxMag/sigmaLvtxMag));
-    cand.addUserFloat("rVtxSig", (rVtxMag/sigmaRvtxMag));
-    cand.addUserFloat("angle3D", angle3D);
-    cand.addUserFloat("angle2D", angle2D);
-    // select final candidates
-    if (finalSelection_(cand)) {
-      candidates.push_back(cand);
-    }
-  }
-  candidates_ = candidates;
+bool ParticleFitter::selectCandidate(pat::GenericParticle& cand) {
+  if (!cand.hasUserData("decayVertex") || !cand.hasUserData("primaryVertex")) return true;
+  const auto& decayVertex = *cand.userData<reco::Vertex>("decayVertex");
+  const auto& primaryVertex = *cand.userData<reco::Vertex>("primaryVertex");
+  // compute lifetime information
+  const auto lineOfFlight = decayVertex.position() - primaryVertex.position();
+  const auto lVtxMag = lineOfFlight.r();
+  const auto rVtxMag = lineOfFlight.rho();
+  const auto angle3D = angle(lineOfFlight.x(), lineOfFlight.y(), lineOfFlight.z(), cand.px(), cand.py(), cand.pz());
+  const auto angle2D = angle(lineOfFlight.x(), lineOfFlight.y(), 0.0, cand.px(), cand.py(), 0.0);
+  const auto distanceVector3D = SVector3(lineOfFlight.x(), lineOfFlight.y(), lineOfFlight.z());
+  const auto distanceVector2D = SVector3(lineOfFlight.x(), lineOfFlight.y(), 0.0);
+  const auto totalCov = decayVertex.covariance() + primaryVertex.covariance();
+  const auto sigmaLvtxMag = std::sqrt(ROOT::Math::Similarity(totalCov, distanceVector3D)) / lVtxMag;
+  const auto sigmaRvtxMag = std::sqrt(ROOT::Math::Similarity(totalCov, distanceVector2D)) / rVtxMag;
+  // set lifetime infomation
+  cand.addUserFloat("lVtxMag", lVtxMag);
+  cand.addUserFloat("rVtxMag", rVtxMag);
+  cand.addUserFloat("lVtxSig", (lVtxMag/sigmaLvtxMag));
+  cand.addUserFloat("rVtxSig", (rVtxMag/sigmaRvtxMag));
+  cand.addUserFloat("angle3D", angle3D);
+  cand.addUserFloat("angle2D", angle2D);
+  // select final candidates
+  if (!finalSelection_(cand)) return false;
+  return true;
 };
 
 
