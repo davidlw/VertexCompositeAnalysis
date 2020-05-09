@@ -76,7 +76,7 @@
 #include <TVector3.h>
 
 
-struct ParticleDaughterComparator {
+struct ParticleComparator {
   template<class T>
   const bool isEqual(const T& x, const T& y) const
   {
@@ -86,6 +86,10 @@ struct ParticleDaughterComparator {
   const bool isLess(const T& x, const T& y) const
   {
     return !isEqual(x, y) && x < y;
+  }
+  const bool isParticleEqual(const pat::GenericParticle& x, const pat::GenericParticle& y) const
+  {
+    return (isEqual(x.pt(), y.pt()) && isEqual(x.eta(), y.eta()) && isEqual(x.phi(), y.phi()) && isEqual(x.charge(), y.charge()));
   }
   const bool isParticleLess(const pat::GenericParticle& x, const pat::GenericParticle& y) const
   {
@@ -101,13 +105,22 @@ struct ParticleDaughterComparator {
 };
 
 
-struct ParticleComparator : ParticleDaughterComparator {
+struct ParticleMassComparator : ParticleComparator {
   inline bool operator()(const pat::GenericParticle& x, const pat::GenericParticle& y) const
   {
     return (isParticleLess(x, y) ||
             (isEqual(x.pt(), y.pt()) && isEqual(x.eta(), y.eta()) && isEqual(x.phi(), y.phi()) && isEqual(x.charge(), y.charge()) && isLess(x.mass(), y.mass())));
   }
 };
+
+
+const std::map<uint, double> MASS_ = {
+  {11, 0.000511}, {13, 0.105658}, {15, 1.77686}, // leptons
+  {211, 0.13957018}, {310, 0.497614}, {321, 0.493677}, {333, 1.019445}, // light and strange mesons
+  {411, 1.86962}, {421, 1.86484}, {431, 1.96847}, {511, 5.27929}, // charmed and bottom mesons
+  {2212, 0.938272013}, {3122, 1.115683}, {3312, 1.32171}, {3334, 1.67245}, {4122, 2.28646} // baryons
+};
+const std::map<uint, float> WIDTH_ = {{211, 3.5E-7f}, {321, 1.6E-5f}, {2212, 1.6E-5f}};
 
 
 class ParticleDaughter {
@@ -130,9 +143,6 @@ class ParticleDaughter {
   void clear();
 
  private:
-  const std::map<uint, double> MASS_ = {{11, 0.000511}, {13, 0.105658}, {211, 0.13957018}, {321, 0.493677}, {2212, 0.938272}};
-  const std::map<uint, float> WIDTH_ = {{211, 3.5E-7f}, {321, 1.6E-5f}};
-
   template <class T>
   void addData(pat::GenericParticle& c, const edm::Ref<std::vector<T> >& p, const bool& embedInfo);
   void addData(pat::GenericParticle& c, const reco::TrackRef& p, const bool& embedInfo);
@@ -161,6 +171,8 @@ class ParticleFitter {
   ParticleFitter(const edm::ParameterSet& pSet, edm::ConsumesCollector&& iC);
   ~ParticleFitter();
 
+  typedef std::map<double, std::vector<double> > DoubleMap;
+
   const pat::GenericParticleCollection& particles() const { return candidates_; }
   const bool hasNoDaughters() const { return daughters_.empty(); }
 
@@ -168,14 +180,18 @@ class ParticleFitter {
   void addParticles(ParticleDaughter& d, const edm::Event& iEvent);
   void fillDaughters(const edm::Event& iEvent);
   void makeCandidates();
+  void swapDaughters(DoubleMap& swapDauColls, const pat::GenericParticle& cand);
+  void setBestMass(pat::GenericParticle& cand, const DoubleMap& swapDauColls);
+  void addSwapCandidates(pat::GenericParticleCollection& swapCandColl, const pat::GenericParticle& cand, const DoubleMap& swapDauColls);
   bool fitCandidate(pat::GenericParticle& cand);
-  bool selectCandidate(pat::GenericParticle& cand);
+  void addExtraInfo(pat::GenericParticle& cand);
   void fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   void clear();
 
  private:
   int pdgId_;
-  bool fitDone_;
+  bool doSwap_;
+  double mass_, width_;
   reco::Vertex vertex_;
   reco::Vertex beamSpot2D_;
   std::vector<ParticleDaughter> daughters_;
@@ -200,8 +216,8 @@ class ParticleFitter {
 };
 
 
-typedef std::set<pat::GenericParticle, ParticleDaughterComparator> ParticleDaughterSet;
 typedef std::set<pat::GenericParticle, ParticleComparator> ParticleSet;
+typedef std::set<pat::GenericParticle, ParticleMassComparator> ParticleMassSet;
 typedef ROOT::Math::SVector<double, 3> SVector3;
 
 

@@ -27,6 +27,9 @@ process.source = cms.Source("PoolSource",
 )
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
 
+#Setup FWK for multithreaded
+#process.options.numberOfThreads=cms.untracked.uint32(8)
+#process.options.numberOfStreams=cms.untracked.uint32(0)
 
 # Set the global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
@@ -88,12 +91,16 @@ process.evtplane_seq = cms.Sequence(process.hiEvtPlane * process.hiEvtPlaneFlat)
 # D0 candidate rereco
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalParticles_cff")
 process.generalD0CandidatesNew = process.generalParticles.clone(
+    pdgId = cms.int32(421),
+    doSwap = cms.bool(True),
+    width = cms.double(0.15),
+
     preSelection = cms.string(""
        "charge==0"
        "&& userFloat('dauPtSum') >= 1.6 && userFloat('dauEtaDiff') <= 1.0"
        ),
     pocaSelection = cms.string(""
-       "mass >= 1.71 && mass <= 2.02 && pt >= 1.0"
+       "userFloat('mass') >= 1.71 && userFloat('mass') <= 2.02 && pt >= 1.0"
        "&& userFloat('dca') >= 0 && userFloat('dca') <= 9999."
        ),
     postSelection = cms.string(""
@@ -105,12 +112,12 @@ process.generalD0CandidatesNew = process.generalParticles.clone(
        "&& userFloat('lVtxMag') >= 0.0 && userFloat('lVtxSig') >= 3.0"
        "&& cos(userFloat('angle3D')) >= -2.0 && cos(userFloat('angle2D')) >= -2.0"
        "&& abs(userFloat('angle3D')) <= 0.2 && abs(userFloat('angle2D')) <= 0.2"
-       "&& abs(mass-1.86484) < 0.15 && abs(rapidity) < 2.0"
+       "&& abs(rapidity) < 2.0"
        ),
 #
     # daughter information
     daughterInfo = cms.VPSet([
-        cms.PSet(pdgId = cms.int32(321),#, charge = cms.int32(-1),
+        cms.PSet(pdgId = cms.int32(321), charge = cms.int32(-1),
            selection = cms.string(
               "pt>1.0 && abs(eta)<2.4"
               "&& quality('highPurity') && ptError/pt<0.1"
@@ -122,7 +129,7 @@ process.generalD0CandidatesNew = process.generalParticles.clone(
               '&& (track.algo!=6 || userFloat("mva")>=0.98)'
               )
            ),
-        cms.PSet(pdgId = cms.int32(211),#, charge = cms.int32(+1),
+        cms.PSet(pdgId = cms.int32(211), charge = cms.int32(+1),
            selection = cms.string(
               "pt>1.0 && abs(eta)<2.4"
               "&& quality('highPurity') && ptError/pt<0.1"
