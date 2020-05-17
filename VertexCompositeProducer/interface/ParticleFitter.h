@@ -115,12 +115,17 @@ struct ParticleMassComparator : ParticleComparator {
 
 
 const std::map<uint, double> MASS_ = {
-  {11, 0.000511}, {13, 0.105658}, {15, 1.77686}, // leptons
+  {11, 0.000511}, {13, 0.10565837}, {15, 1.77686}, // leptons
   {211, 0.13957018}, {310, 0.497614}, {321, 0.493677}, {333, 1.019445}, // light and strange mesons
   {411, 1.86962}, {421, 1.86484}, {431, 1.96847}, {511, 5.27929}, // charmed and bottom mesons
   {2212, 0.938272013}, {3122, 1.115683}, {3312, 1.32171}, {3334, 1.67245}, {4122, 2.28646} // baryons
 };
 const std::map<uint, float> WIDTH_ = {{211, 3.5E-7f}, {321, 1.6E-5f}, {2212, 1.6E-5f}};
+
+
+typedef std::set<pat::GenericParticle, ParticleComparator> ParticleSet;
+typedef std::set<pat::GenericParticle, ParticleMassComparator> ParticleMassSet;
+typedef ROOT::Math::SVector<double, 3> SVector3;
 
 
 class ParticleDaughter {
@@ -179,6 +184,7 @@ class ParticleFitter {
   void setVertex(const edm::Event& iEvent);
   void addParticles(ParticleDaughter& d, const edm::Event& iEvent);
   void fillDaughters(const edm::Event& iEvent);
+  bool isUniqueDaughter(ParticleSet& set, const pat::GenericParticle& dau);
   void makeCandidates();
   void swapDaughters(DoubleMap& swapDauColls, const pat::GenericParticle& cand);
   void setBestMass(pat::GenericParticle& cand, const DoubleMap& swapDauColls);
@@ -214,11 +220,6 @@ class ParticleFitter {
   StringCutObjectSelector<pat::GenericParticle, true> postSelection_;
   StringCutObjectSelector<pat::GenericParticle, true> finalSelection_;
 };
-
-
-typedef std::set<pat::GenericParticle, ParticleComparator> ParticleSet;
-typedef std::set<pat::GenericParticle, ParticleMassComparator> ParticleMassSet;
-typedef ROOT::Math::SVector<double, 3> SVector3;
 
 
 #endif

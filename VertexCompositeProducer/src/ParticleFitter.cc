@@ -122,12 +122,24 @@ void ParticleFitter::fillDaughters(const edm::Event& iEvent) {
 };
 
 
+bool ParticleFitter::isUniqueDaughter(ParticleSet& set, const pat::GenericParticle& dau) {
+  if (dau.hasUserData("daughters")) {
+    const auto& gDauColl = *dau.userData<pat::GenericParticleCollection>("daughters");
+    for (const auto& gDau : gDauColl) {
+      if (!isUniqueDaughter(set, gDau)) { return false; }
+    }
+  }
+  else if (!set.insert(dau).second) { return false; }
+  return true;
+};
+
+
 void ParticleFitter::makeCandidates() {
   // define daughter container
   const auto nDaughters = daughters_.size();
   std::vector<pat::GenericParticleCollection> daughterColls;
   for (const auto& daughter : daughters_) {
-    if (daughter.particles().empty()) continue;
+    if (daughter.particles().empty()) break;
     daughterColls.push_back(daughter.particles());
   }
   if (daughterColls.size()!=nDaughters) return;
@@ -140,7 +152,7 @@ void ParticleFitter::makeCandidates() {
     // get unique set of daughters
     ParticleSet daughters;
     for (const auto& daughter : combination) {
-      daughters.insert(*daughter);
+      if(!daughters.insert(*daughter).second) break;
     }
     // check if all daughters are unique (are in set)
     if (daughters.size()!=nDaughters) continue;
@@ -173,6 +185,12 @@ void ParticleFitter::makeCandidates() {
     pat::GenericParticleCollection daughterColl(daughters.begin(), daughters.end());
     cand.addUserData<pat::GenericParticleCollection>("daughters", daughterColl);
     auto iniCand = cand;
+    // check if grandaughters are unique
+    bool hasDuplicate = false;
+    for (const auto& dau : daughterColl) {
+      if (dau.hasUserData("daughters") && !isUniqueDaughter(daughters, dau)) { hasDuplicate = true; break; }
+    }
+    if (hasDuplicate) continue;
     // fit candidate and make postselection
     if (!fitCandidate(cand)) continue;
     // add extra information
