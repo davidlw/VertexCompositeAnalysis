@@ -143,22 +143,19 @@ process.generalD0CandidatesNew = process.generalParticles.clone(
            )
     ])
   )
-#process.generalD0CandidatesNew.tkPtSumCut = cms.double(1.6)
-#process.generalD0CandidatesNew.tkEtaDiffCut = cms.double(1.0)
-#process.generalD0CandidatesNew.tkNhitsCut = cms.int32(11)
-#process.generalD0CandidatesNew.tkPtErrCut = cms.double(0.1)
-#process.generalD0CandidatesNew.tkPtCut = cms.double(1.0)
-#process.generalD0CandidatesNew.tkChi2Cut = cms.double(0.18) ###cesar: changed chi2/dof/nlayers in D0Fitter and cut according to Tracking group
-#process.generalD0CandidatesNew.dPtCut = cms.double(1.0)
-#process.generalD0CandidatesNew.alphaCut = cms.double(0.2)
-#process.generalD0CandidatesNew.vtxSignificance3DCut = cms.double(3.0)
-#process.generalD0CandidatesNew.alpha2DCut = cms.double(0.2)
-#process.generalD0CandidatesNew.vtxSignificance2DCut = cms.double(2.0)
-#process.generalD0CandidatesNew.VtxChiProbCut = cms.double(0.02)
-#process.generalD0CandidatesNew.tkEtaCut = cms.double(2.4)
 process.generalD0CandidatesNew.mva = cms.InputTag("generalTracks","MVAValues") ###cesar:to change iter6 tracking mva cut
 
+# tree producer
+process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.generalanalyzer_tree_cff")
+process.generalanaNew = process.generalana.clone(
+  VertexCompositeCollection = cms.untracked.InputTag("generalD0CandidatesNew"),
+  isEventPlane = cms.bool(True),
+  eventplaneSrc = cms.InputTag("hiEvtPlane"),
+  centralityBinLabel = cms.InputTag("centralityBin","HFtowers"),
+  FilterResultCollection = cms.untracked.InputTag("TriggerResults::D0PbPb2018SKIM"),
+    )
 
+process.generalanaNewSeq = cms.Sequence(process.generalanaNew)
 
 # Add PbPb collision event selection
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.OfflinePrimaryVerticesRecovery_cfi")
@@ -179,12 +176,10 @@ process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 process.pcentandep_step = cms.Path(process.eventFilter_HM * process.cent_seq * process.evtplane_seq)
 process.d0rereco_step = cms.Path(process.eventFilter_HM * process.generalD0CandidatesNew)
 
-
 # Define the output
 process.TFileService = cms.Service("TFileService",
                                        fileName = cms.string('d0ana_PbPb2018.root')
                                   )
-
 
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.ppanalysisSkimContentD0_cff")
 process.output_HM = cms.OutputModule("PoolOutputModule",
@@ -195,6 +190,8 @@ process.output_HM = cms.OutputModule("PoolOutputModule",
       dataTier = cms.untracked.string('AOD')
     )
 )
+
+process.generalana_step = cms.EndPath( process.generalanaNewSeq )
 
 
 process.output_HM.outputCommands = cms.untracked.vstring(#'drop *',
@@ -212,9 +209,19 @@ process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
     process.pcentandep_step,
     process.d0rereco_step,
-    process.output_HM_step
+    process.output_HM_step,
+    process.generalana_step
 )
 
+# Add the event selection filters
+process.colEvtSel = cms.Sequence(process.hfCoincFilter2Th4 * process.primaryVertexFilter * process.clusterCompatibilityFilter)
+process.Flag_colEvtSel = cms.Path(process.eventFilter_HM * process.colEvtSel)
+process.Flag_hfCoincFilter2Th4 = cms.Path(process.eventFilter_HM * process.hfCoincFilter2Th4)
+process.Flag_primaryVertexFilter = cms.Path(process.eventFilter_HM * process.primaryVertexFilter)
+process.Flag_clusterCompatibilityFilter = cms.Path(process.eventFilter_HM * process.clusterCompatibilityFilter)
+eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter2Th4 , process.Flag_primaryVertexFilter , process.Flag_clusterCompatibilityFilter ]
+for P in eventFilterPaths:
+      process.schedule.insert(0, P)
 
 # peripheral pv recovery
 from HLTrigger.Configuration.CustomConfigs import MassReplaceInputTag
