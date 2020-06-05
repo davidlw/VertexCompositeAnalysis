@@ -155,6 +155,7 @@ void ParticleFitter::makeCandidates() {
     cand.setCharge(charge);
     cand.setP4(p4);
     cand.setPdgId(pdgId_);
+    cand.setStatus(3);
     // check if candidate has not been found
     const auto& candTuple = std::make_tuple(cand.pt(), cand.eta(), cand.phi(), (doSwap_ ? 0.0 : cand.mass()), cand.charge());
     if (!candidates.insert(candTuple).second) continue;
@@ -387,6 +388,10 @@ void ParticleFitter::addExtraInfo(pat::GenericParticle& cand) {
   const auto totalCov = decayVertex.covariance() + primaryVertex.covariance();
   const auto sigmaLvtxMag = std::sqrt(ROOT::Math::Similarity(totalCov, distanceVector3D)) / lVtxMag;
   const auto sigmaRvtxMag = std::sqrt(ROOT::Math::Similarity(totalCov, distanceVector2D)) / rVtxMag;
+  const auto pVector3D = SVector3(cand.px(), cand.py(), cand.pz());
+  const auto pVector2D = SVector3(cand.px(), cand.py(), 0);;
+  const auto sigmaPseudoLvtxMag = std::sqrt(ROOT::Math::Similarity(totalCov, pVector3D)) / cand.p();
+  const auto sigmaPseudoRvtxMag = std::sqrt(ROOT::Math::Similarity(totalCov, pVector2D)) / cand.pt();
   // set lifetime infomation
   cand.addUserFloat("lVtxMag", lVtxMag);
   cand.addUserFloat("rVtxMag", rVtxMag);
@@ -394,6 +399,8 @@ void ParticleFitter::addExtraInfo(pat::GenericParticle& cand) {
   cand.addUserFloat("rVtxSig", (rVtxMag/sigmaRvtxMag));
   cand.addUserFloat("angle3D", angle3D);
   cand.addUserFloat("angle2D", angle2D);
+  cand.addUserFloat("pdlErr3D", sigmaPseudoLvtxMag);
+  cand.addUserFloat("pdlErr2D", sigmaPseudoRvtxMag);
 };
 
 
@@ -489,6 +496,7 @@ void ParticleDaughter::addParticles(const edm::Event& event, const edm::EDGetTok
       cand.setP4(p4);
       cand.setCharge(p->charge());
       cand.setVertex(p->vertex());
+      cand.setStatus(1);
       addData(cand, p, embedInfo);
       if (cand.track().isNonnull()) {
         const auto& trk = *cand.track();
@@ -524,6 +532,9 @@ void ParticleDaughter::addParticles(const edm::Event& event) {
     for (const auto& p : *handle) {
       if (!selection(p)) continue;
       if (charge_!=-99 && p.charge()!=charge_) continue;
+      if (p.hasUserData("daughters")) {
+        const_cast<pat::GenericParticle*>(&p)->setStatus(2);
+      }
       if (finalSelection(p)) {
         particles.insert(p);
       }
@@ -546,9 +557,7 @@ void ParticleDaughter::addData(pat::GenericParticle& c, const reco::TrackRef& p,
 
 
 void ParticleDaughter::addData(pat::GenericParticle& c, const reco::PFCandidateRef& p, const bool& embedInfo) {
-  if (c.pdgId()==0) {
-    c.setPdgId(p->pdgId());
-  }
+  if (c.pdgId()==0) { c.setPdgId(p->pdgId()); }
   c.setTrack(p->trackRef(), embedInfo);
   c.addUserData<reco::PFCandidate>("src", *p);
 };

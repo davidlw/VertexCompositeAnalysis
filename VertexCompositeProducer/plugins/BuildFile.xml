@@ -4,6 +4,7 @@
 <use   name="clhep"/>
 <use   name="RecoVertex/PrimaryVertexProducer"/>
 <use   name="TrackingTools/Records"/>
+<use   name="DataFormats/Luminosity"/>
 <use   name="DataFormats/CaloTowers"/>
 <use   name="DataFormats/HcalDigi"/>
 <use   name="CalibFormats/HcalObjects"/>
