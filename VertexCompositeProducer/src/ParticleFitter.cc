@@ -297,8 +297,8 @@ bool ParticleFitter::fitCandidate(pat::GenericParticle& cand) {
   if (daughters.size()<2) return true;
   // measure distance between daughter tracks at their point of closest approach
   if (daughters.size()==2 &&
-      daughters[0].first.impactPointTSCP().isValid() &&
-      daughters[1].first.impactPointTSCP().isValid()) {
+      daughters[0].first.isValid() && daughters[0].first.impactPointTSCP().isValid() &&
+      daughters[1].first.isValid() && daughters[1].first.impactPointTSCP().isValid()) {
     ClosestApproachInRPhi cApp;
     const auto& stateDau1 = daughters[0].first.impactPointTSCP().theState();
     const auto& stateDau2 = daughters[1].first.impactPointTSCP().theState();
@@ -329,7 +329,8 @@ bool ParticleFitter::fitCandidate(pat::GenericParticle& cand) {
   std::vector<RefCountedKinematicParticle> particles;
   for (const auto& d : daughters) {
     const auto& daughter = daughterColl[d.second];
-    if (d.first.impactPointTSCP().isValid()) {
+    if (d.first.isValid()) {
+      if (!d.first.impactPointTSCP().isValid()) return false;
       float chi = 0., ndf = 0., width = daughter.userFloat("width");
       KinematicParticleFactoryFromTransientTrack pFactory;
       particles.push_back(pFactory.particle(d.first, daughter.mass(), chi, ndf, width));
