@@ -758,7 +758,7 @@ ParticleAnalyzer::fillEventInfo(const edm::Event& iEvent)
   eventInfo_.add("RunNb", iEvent.id().run());
   eventInfo_.add("EventNb", getUInt(iEvent.id().event()));
   eventInfo_.add("LSNb", getUShort(iEvent.luminosityBlock()));
-  eventInfo_.add("BXNb", getUShort(iEvent.bunchCrossing()));
+  eventInfo_.add("BXNb", getShort(iEvent.bunchCrossing()));
 
   // fill vertex information
   eventInfo_.add("nPV", getUChar(vertices_.size()));
