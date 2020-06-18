@@ -1,4 +1,5 @@
 <use name="FWCore/Utilities"/>
+<use name="DataFormats/Luminosity"/>
 <use name="DataFormats/TrackReco"/>
 <use name="DataFormats/VertexReco"/>
 <use name="DataFormats/Candidate"/>
