@@ -627,8 +627,8 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
     for (size_t iTrg=0; iTrg<triggerInfo_.size(); iTrg++)
     {
       const auto& pSet = triggerInfo_[iTrg];
-      const auto& minN = (pSet.existsAs<std::string>("minN") ? pSet.getParameter<int>("minN") : 0);
-      const auto& isL1OR = (pSet.existsAs<bool>("isL1OR") ? pSet.getParameter<int>("isL1OR") : false);
+      const auto& minN = (pSet.existsAs<int>("minN") ? pSet.getParameter<int>("minN") : 0);
+      const auto& isL1OR = (pSet.existsAs<bool>("isL1OR") ? pSet.getParameter<bool>("isL1OR") : false);
       const auto& pathLabel = (pSet.existsAs<std::string>("path") ? pSet.getParameter<std::string>("path") : std::string());
       const auto& filterLabel = (pSet.existsAs<std::string>("filter") ? pSet.getParameter<std::string>("filter") : std::string());
       // initialize trigger data
@@ -996,7 +996,7 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
   const auto& rVtxSig = getFloat(cand, "rVtxSig", -99.9);
   info.add("decayLength2D", rVtxMag);
   info.add("decayLengthError2D", ((rVtxMag==-99.9 || rVtxSig==-99.9) ? -1. : rVtxMag/rVtxSig));
-  info.add("pseudoDecayLength2D", getFloat(cand, "pdlErr2D"));
+  info.add("pseudoDecayLengthError2D", getFloat(cand, "pdlErr2D"));
 
   // trigger information
   if (!triggerData_.empty())
@@ -1005,6 +1005,7 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
     addTriggerObject(*const_cast<pat::GenericParticle*>(&cand));
     for (UShort_t i=0; i<triggerData_.size(); i++)
     {
+      if (triggerData_[i].minN()==0) continue;
       std::vector<UShort_t> trigObjIdx;
       const auto& triggerObjects = cand.triggerObjectMatchesByFilter(triggerData_[i].filterName());
       info.add(Form("matchTRG%d",i), !triggerObjects.empty());
