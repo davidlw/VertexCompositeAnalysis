@@ -40,6 +40,8 @@
 #include "DataFormats/EgammaCandidates/interface/HIPhotonIsolation.h"
 #include "DataFormats/Math/interface/angle.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "CondFormats/DataRecord/interface/L1TGlobalPrescalesVetosRcd.h"
+#include "CondFormats/L1TObjects/interface/L1TGlobalPrescalesVetos.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "HLTrigger/HLTcore/interface/HLTPrescaleProvider.h"
@@ -135,17 +137,19 @@ private:
   const edm::EDGetTokenT<edm::TriggerResults> tok_filterResults_;
   const edm::EDGetTokenT<LumiInfo> tok_lumiInfo_;
   const edm::EDGetTokenT<LumiScalersCollection> tok_lumiScalers_;
+  std::vector< edm::EDGetTokenT<LumiInfo> > tok_triggerLumiInfo_;
 
   // input data
   const std::vector<edm::ParameterSet> triggerInfo_;
   const std::vector<std::string> eventFilters_;
   const std::string selectEvents_;
-  const bool saveTree_, addTrack_, addSource_;
+  const bool saveTree_, addTrack_, addSource_, addTrgObj_;
   const int maxGenIter_;
   const double maxGenDeltaR_, maxGenDeltaPtRel_, maxTrgDeltaR_, maxTrgDeltaPtRel_;
   const std::vector<int> dauIDs_;
 
   HLTPrescaleProvider hltPrescaleProvider_;
+  std::vector<std::vector<int> > l1PrescaleTable_;
 
   // attributes
   edm::Service<TFileService> fileService_;
@@ -405,10 +409,10 @@ private:
   class TriggerInfo
   {
    public:
-    TriggerInfo()
+    TriggerInfo() : triggerIndex_(-1), filterIndex_(-1), minN_(0), hltPDs_(0),
+                    validPrescale_(0), validLumi_(0), hltPrescale_(0), l1Prescale_(0),
+                    triggerName_(""), filterName_(""), recordLumi_(0), totalLumi_(0)
     {
-      triggerIndex_ = -1;
-      filterIndex_  = -1;
     };
     ~TriggerInfo() {};
 
@@ -419,17 +423,21 @@ private:
     bool              validPrescale() const { return validPrescale_; }
     UShort_t          hltPrescale()   const { return hltPrescale_;   }
     UShort_t          l1Prescale()    const { return l1Prescale_;    }
+    UChar_t           hltPDs()        const { return hltPDs_;        }
     std::string       triggerName()   const { return triggerName_;   }
     std::string       filterName()    const { return filterName_;    }
     std::vector<bool> triggerBit()    const { return triggerBit_;    }
     bool              triggerBit(const size_t& i) const { return (i<triggerBit_.size() ? triggerBit_[i] : false); }
     pat::TriggerObjectCollection filterObjects() const { return filterObjects_; }
+    bool              validLumi()     const { return validLumi_;     }
+    float             recordLumi()    const { return recordLumi_;    }
+    float             totalLumi()     const { return totalLumi_;     }
 
     // setters
     void setInfo(const int& triggerIndex, const int& filterIndex,
                  const std::string& triggerName, const std::string& filterName, const int& minN,
                  const bool& validPrescale, const UShort_t& hltPrescale, const UShort_t& l1Prescale,
-                 const std::vector<bool>& bit, const pat::TriggerObjectCollection& filterObjects)
+                 const UChar_t& hltPDs, const std::vector<bool>& bit, const pat::TriggerObjectCollection& filterObjects)
     {
       triggerIndex_  = triggerIndex;
       filterIndex_   = filterIndex;
@@ -439,17 +447,27 @@ private:
       validPrescale_ = validPrescale;
       hltPrescale_   = hltPrescale;
       l1Prescale_    = l1Prescale;
+      hltPDs_        = hltPDs;
       triggerBit_    = bit;
       filterObjects_ = filterObjects;
     }
 
+    void setLumiInfo(const double& recordLumi, const double& totalLumi)
+    {
+      recordLumi_ = recordLumi;
+      totalLumi_  = totalLumi;
+      validLumi_  = true;
+    };
+
    private:
     int triggerIndex_, filterIndex_, minN_;
-    bool validPrescale_;
+    UChar_t hltPDs_;
+    bool validPrescale_, validLumi_;
     UShort_t hltPrescale_, l1Prescale_;
     std::string triggerName_, filterName_;
     std::vector<bool> triggerBit_;
     pat::TriggerObjectCollection filterObjects_;
+    float recordLumi_, totalLumi_;
   };
   typedef std::vector<TriggerInfo> TriggerContainer;
 
@@ -487,6 +505,7 @@ ParticleAnalyzer::ParticleAnalyzer(const edm::ParameterSet& iConfig) :
   saveTree_(iConfig.getUntrackedParameter<bool>("saveTree", true)),
   addTrack_(iConfig.getUntrackedParameter<bool>("addTrack", true)),
   addSource_(iConfig.getUntrackedParameter<bool>("addSource", false)),
+  addTrgObj_(iConfig.getUntrackedParameter<bool>("addTrgObj", false)),
   maxGenIter_(iConfig.getUntrackedParameter<int>("maxGenIter", 0)),
   maxGenDeltaR_(iConfig.getUntrackedParameter<double>("maxGenDeltaR", 0.03)),
   maxGenDeltaPtRel_(iConfig.getUntrackedParameter<double>("maxGenDeltaPtRel", 0.5)),
@@ -495,6 +514,9 @@ ParticleAnalyzer::ParticleAnalyzer(const edm::ParameterSet& iConfig) :
   dauIDs_(iConfig.getUntrackedParameter<std::vector<int> >("dauIDs", {})),
   hltPrescaleProvider_(iConfig, consumesCollector(), *this)
 {
+  for (const auto& data : triggerInfo_) {
+    tok_triggerLumiInfo_.push_back(consumes<LumiInfo>(data.existsAs<edm::InputTag>("lumiInfo") ? data.getParameter<edm::InputTag>("lumiInfo") : edm::InputTag()));
+  }
 }
 
 
@@ -617,7 +639,6 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
     // retrieve trigger information
     auto& l1tGlobalUtil = *const_cast<l1t::L1TGlobalUtil*>(&hltPrescaleProvider_.l1tGlobalUtil());
     const auto& hltConfig = hltPrescaleProvider_.hltConfigProvider();
-    l1tGlobalUtil.retrieveL1Event(iEvent, iSetup);
     const bool validPrescale = (hltConfig.inited() && hltPrescaleProvider_.prescaleSet(iEvent, iSetup) >= 0);
     const auto& hltPaths = hltConfig.triggerNames();
     const auto& triggerObjects = triggerEvent->getObjects();
@@ -626,9 +647,10 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
     {
       const auto& pSet = triggerInfo_[iTrg];
       const auto& minN = (pSet.existsAs<int>("minN") ? pSet.getParameter<int>("minN") : 0);
-      const auto& isL1OR = (pSet.existsAs<bool>("isL1OR") ? pSet.getParameter<bool>("isL1OR") : false);
+      const auto& isL1OR = (pSet.existsAs<bool>("isL1OR") ? pSet.getParameter<bool>("isL1OR") : true);
       const auto& pathLabel = (pSet.existsAs<std::string>("path") ? pSet.getParameter<std::string>("path") : std::string());
       const auto& filterLabel = (pSet.existsAs<std::string>("filter") ? pSet.getParameter<std::string>("filter") : std::string());
+      const auto& tok_lumiInfo = tok_triggerLumiInfo_[iTrg];
       // initialize trigger data
       int triggerIndex=-1, filterIndex=-1;
       // extract the trigger index
@@ -714,23 +736,23 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
         if (!presInfo.first.empty())
         {
           // L1 prescale
-          int l1Pres = (isL1OR ? 1E9 : -1E9);
-          for (const auto p : presInfo.first)
-          {
-            int pres; if (!l1tGlobalUtil.getPrescaleByName(p.first, pres)) continue;
-            if (pres==0) { pres = 1E9; }
-            l1Pres = (isL1OR ? std::min(l1Pres, pres) : std::max(l1Pres, pres));
-          }
-          if (std::abs(l1Pres)==1E9) { l1Pres = 0; }
-          l1Prescale = getUShort(l1Pres);
-          // L1 decision
-          for (const auto p : presInfo.first)
+          const auto& pCol = l1tGlobalUtil.prescaleColumn();
+          typedef std::tuple<bool, int, int> l1T_t;
+          std::vector<l1T_t> l1Info;
+          for (const auto& p : presInfo.first)
           {
             int l1Bit; if (!l1tGlobalUtil.getAlgBitFromName(p.first, l1Bit)) continue;
-            bit[1] = l1tGlobalUtil.decisionsInitial()[l1Bit].second;
-            bit[3] = (l1tGlobalUtil.decisionsInitial()[l1Bit].second == l1tGlobalUtil.decisionsFinal()[l1Bit].second);
-            if (isL1OR==bit[1]) break;
+            int pres = (pCol<l1PrescaleTable_.size() && l1PrescaleTable_[pCol][l1Bit]>0 ? l1PrescaleTable_[pCol][l1Bit] : 1E9);
+            bool fail = !l1tGlobalUtil.decisionsFinal()[l1Bit].second;
+            l1Info.push_back(std::make_tuple(fail, pres, l1Bit));
           }
+          std::sort(l1Info.begin(), l1Info.end(), [=](const l1T_t& i, const l1T_t& j) { return (isL1OR ? i < j : i > j); });
+          auto l1Pres = std::get<1>(l1Info[0]); if (std::abs(l1Pres)==1E9) { l1Pres = 0; }
+          l1Prescale = getUShort(l1Pres);
+          // L1 decision
+          const auto& l1Bit = std::get<0>(l1Info[0]);
+          bit[1] = l1tGlobalUtil.decisionsInitial()[l1Bit].second;
+          bit[3] = (l1tGlobalUtil.decisionsInitial()[l1Bit].second == l1tGlobalUtil.decisionsFinal()[l1Bit].second);
         }
       }
       // extract filter objects
@@ -744,7 +766,14 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
         filterObjects.push_back(obj);
       }
       // store trigger information
-      triggerData_[iTrg].setInfo(triggerIndex, filterIndex, triggerName, filterName, minN, validPrescale, hltPrescale, l1Prescale, bit, filterObjects);
+      triggerData_[iTrg].setInfo(triggerIndex, filterIndex, triggerName, filterName, minN, validPrescale, hltPrescale, l1Prescale, trgIdxFound.size(), bit, filterObjects);
+      // store lumi information per trigger
+      edm::Handle<LumiInfo> lumiInfo;
+      iEvent.getByToken(tok_lumiInfo, lumiInfo);
+      if (lumiInfo.isValid())
+      {
+        triggerData_[iTrg].setLumiInfo(lumiInfo->recordedLuminosity(), lumiInfo->integLuminosity());
+      }
     }
   }
 }
@@ -861,7 +890,12 @@ ParticleAnalyzer::fillTriggerInfo(const edm::Event& iEvent, const edm::EventSetu
     eventInfo_.push("passL1Prescaler", data.triggerBit(3));
     eventInfo_.push("hltPrescale", data.hltPrescale());
     eventInfo_.push("l1Prescale", data.l1Prescale());
+    eventInfo_.push("hltPDs", data.hltPDs());
     for (const auto& obj: data.filterObjects()) { fillTriggerObjectInfo(obj, idx); }
+    if (data.validLumi()) {
+      eventInfo_.push("hltTotalLumi", data.totalLumi());
+      eventInfo_.push("hltRecordLumi", data.recordLumi());
+    }
   }
 }
 
@@ -872,7 +906,7 @@ ParticleAnalyzer::initParticleInfo(const std::string& type, const int& pId)
   // return if already initialized
   if (particleInfo_.find(type)!=particleInfo_.end()) return;
   // check type
-  if      (type=="trig" && triggerData_.empty()) return;
+  if      (type=="trig" && (triggerData_.empty() || !addTrgObj_)) return;
   else if (type=="trk"  && !addTrack_) return;
   else if (type=="gen"  && !isMC_) return;
   else if (type=="src"  && !addSource_) return;
@@ -897,7 +931,7 @@ ParticleAnalyzer::initParticleInfo(const std::string& type, const int& pId)
 UShort_t
 ParticleAnalyzer::fillTriggerObjectInfo(const pat::TriggerObject& obj, const UShort_t& trigIdx, const UShort_t& candIdx)
 {
-  if (triggerData_.empty()) return USHRT_MAX;
+  if (triggerData_.empty() || !addTrgObj_) return USHRT_MAX;
 
   // fill trigger information
   auto& info = particleInfo_["trig"];
@@ -996,12 +1030,11 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
     addTriggerObject(*const_cast<pat::GenericParticle*>(&cand));
     for (UShort_t i=0; i<triggerData_.size(); i++)
     {
-      std::cout << "TRIGGER: " << triggerData_[i].filterName() << " " << triggerData_[i].triggerName() << " " << triggerData_[i].minN() << std::endl;
       if (triggerData_[i].minN()==0) continue;
       std::vector<UShort_t> trigObjIdx;
       const auto& triggerObjects = cand.triggerObjectMatchesByFilter(triggerData_[i].filterName());
       info.add(Form("matchTRG%d",i), !triggerObjects.empty());
-      if (cand.status()==1)
+      if (cand.status()==1 && addTrgObj_)
       {
         for (const auto& obj : triggerObjects)
         {
@@ -1009,7 +1042,7 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
         }
       }
     }
-    info.add("trigIdx", trigIdx);
+    if (addTrgObj_) info.add("trigIdx", trigIdx);
   }
 
   // track information
@@ -1762,9 +1795,11 @@ ParticleAnalyzer::beginRun(const edm::Run& iRun, const edm::EventSetup& iSetup)
   EDConsumerBase::Labels triggerResultsLabel;
   EDConsumerBase::labelsForToken(tok_triggerResults_, triggerResultsLabel);
   if (!hltPrescaleProvider_.init(iRun, iSetup, triggerResultsLabel.process, changed)) { throw(cms::Exception("Trigger")<<"HLT provider failed init"); }
-  auto& l1tGlobalUtil = *const_cast<l1t::L1TGlobalUtil*>(&hltPrescaleProvider_.l1tGlobalUtil());
-  l1tGlobalUtil.setUnprescaledUnmasked(false, true);
-  l1tGlobalUtil.retrieveL1Setup(iSetup);
+  edm::ESHandle<L1TGlobalPrescalesVetos> l1GtPrescalesVetoes;
+  iSetup.get<L1TGlobalPrescalesVetosRcd>().get(l1GtPrescalesVetoes);
+  if (l1GtPrescalesVetoes.isValid()) {
+    l1PrescaleTable_ = l1GtPrescalesVetoes->prescale_table_;
+  }
 }
 
 

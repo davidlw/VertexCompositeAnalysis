@@ -54,6 +54,7 @@ private:
   const std::string lumiFile_;
   const bool throwIfNotFound_;
   const bool doBunchByBunch_;
+  const bool isTrigger_;
   std::map<std::pair<int, int>, std::pair<float, float> > lumiData_;
 };
 
@@ -64,7 +65,8 @@ private:
 LumiProducerFromBrilcalc::LumiProducerFromBrilcalc(const edm::ParameterSet& iConfig)
     : lumiFile_(iConfig.getParameter<std::string>("lumiFile")),
       throwIfNotFound_(iConfig.getParameter<bool>("throwIfNotFound")),
-      doBunchByBunch_(iConfig.getParameter<bool>("doBunchByBunch")) {
+      doBunchByBunch_(iConfig.getParameter<bool>("doBunchByBunch")),
+      isTrigger_(iConfig.getParameter<bool>("isTrigger")) {
   //register your products
   produces<LumiInfo>("brilcalc");
 
@@ -101,7 +103,7 @@ LumiProducerFromBrilcalc::LumiProducerFromBrilcalc(const edm::ParameterSet& iCon
     while (std::getline(ss, field, ','))
       fields.push_back(field);
 
-    if (fields.size() != 9) {
+    if (fields.size() != (isTrigger_?8:9)) {
       edm::LogWarning("LumiProducerFromBrilcalc") << "Malformed line in csv file: " << line;
       continue;
     }
@@ -116,9 +118,9 @@ LumiProducerFromBrilcalc::LumiProducerFromBrilcalc(const edm::ParameterSet& iCon
 
     // Extract the delivered and recorded lumi from fields[5] and fields[6].
     float lumiDel, lumiRec, dtFrac;
-    std::stringstream lumiDelString(fields[5]);
+    std::stringstream lumiDelString(fields[(isTrigger_?4:5)]);
     lumiDelString >> lumiDel;
-    std::stringstream lumiRecString(fields[6]);
+    std::stringstream lumiRecString(fields[(isTrigger_?5:6)]);
     lumiRecString >> lumiRec;
 
     // Calculate the deadtime fraction
@@ -169,6 +171,7 @@ void LumiProducerFromBrilcalc::fillDescriptions(edm::ConfigurationDescriptions& 
   desc.add<std::string>("lumiFile");
   desc.add<bool>("throwIfNotFound", false);
   desc.add<bool>("doBunchByBunch", false);
+  desc.add<bool>("isTrigger", false);
   descriptions.addDefault(desc);
 }
 
