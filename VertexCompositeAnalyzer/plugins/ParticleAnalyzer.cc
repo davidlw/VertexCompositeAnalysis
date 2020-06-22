@@ -105,10 +105,14 @@ private:
   template <class T> UShort_t getUShort(const T& n) const { if (!(n >= 0        && n < USHRT_MAX)) { throw(cms::Exception("Overflow")<<"Invalid ushort: "<<n); }; return UShort_t(n); }
   template <class T> Int_t    getInt   (const T& n) const { if (!(n >= INT_MIN  && n < INT_MAX  )) { throw(cms::Exception("Overflow")<<"Invalid int: "   <<n); }; return Int_t(n);    }
   template <class T> UInt_t   getUInt  (const T& n) const { if (!(n >= 0        && n < UINT_MAX )) { throw(cms::Exception("Overflow")<<"Invalid uint: "  <<n); }; return UInt_t(n);   }
+  
+  template <class T1, class T2>
+  bool contain (const T1& v, const T2& o) const { return (std::find(v.begin(), v.end(), o)!=v.end()); }
+  void insert (reco::GenParticleRefVector& v, const reco::GenParticleRef& p) { if (p.isNonnull() && !contain(v, p)) { v.push_back(p); } }
 
   bool isCompatible(const reco::Candidate& p1, const reco::Candidate& p2) const
   {
-    return ((p1.status()==1)==(p2.status()==1) && p1.charge()==p2.charge() && std::abs(p1.pdgId())!=std::abs(p2.pdgId()));
+    return ((p1.status()==1)==(p2.status()==1) && p1.charge()==p2.charge() && (p1.status()==1 ? std::abs(p1.pdgId())==std::abs(p2.pdgId()) : true));
   }
   double deltaPt(const double& pT1, const double& pT2) const
   {
@@ -119,6 +123,10 @@ private:
     const auto deltaR = reco::deltaR(c1.Eta(), c1.Phi(), c2.Eta(), c2.Phi());
     const auto dPtRel = deltaPt(c1.Pt(), c2.Pt());
     return (deltaR < maxDeltaR && dPtRel < maxDeltaPtRel);
+  }
+  bool passGenStatus(const reco::GenParticleRef& p) const
+  {
+    return (p->status()==1 || p->statusFlags().isDecayedLeptonHadron());
   }
 
   // ----------member data ---------------------------
@@ -146,7 +154,7 @@ private:
   const bool saveTree_, addTrack_, addSource_, addTrgObj_;
   const int maxGenIter_;
   const double maxGenDeltaR_, maxGenDeltaPtRel_, maxTrgDeltaR_, maxTrgDeltaPtRel_;
-  const std::vector<int> dauIDs_;
+  const std::vector<UInt_t> sourceId_, genPdgId_;
 
   HLTPrescaleProvider hltPrescaleProvider_;
   std::vector<std::vector<int> > l1PrescaleTable_;
@@ -159,7 +167,7 @@ private:
   bool isMC_;
   reco::Vertex vertex_;
   reco::VertexCollection vertices_;
-  reco::GenParticleRefVector genParticles_;
+  reco::GenParticleRefVector genParticlesToKeep_, genParticlesToMatch_;
   const MagneticField* magField_;
 
   // containers
@@ -511,7 +519,8 @@ ParticleAnalyzer::ParticleAnalyzer(const edm::ParameterSet& iConfig) :
   maxGenDeltaPtRel_(iConfig.getUntrackedParameter<double>("maxGenDeltaPtRel", 0.5)),
   maxTrgDeltaR_(iConfig.getUntrackedParameter<double>("maxTrgDeltaR", 0.3)),
   maxTrgDeltaPtRel_(iConfig.getUntrackedParameter<double>("maxTrgDeltaPtRel", 10.)),
-  dauIDs_(iConfig.getUntrackedParameter<std::vector<int> >("dauIDs", {})),
+  sourceId_(iConfig.getUntrackedParameter<std::vector<UInt_t> >("sourceId", {})),
+  genPdgId_(iConfig.getUntrackedParameter<std::vector<UInt_t> >("genPdgId", {})),
   hltPrescaleProvider_(iConfig, consumesCollector(), *this)
 {
   for (const auto& data : triggerInfo_) {
@@ -546,7 +555,8 @@ ParticleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   // clear information
   vertex_ = reco::Vertex();
   vertices_.clear();
-  genParticles_.clear();
+  genParticlesToKeep_.clear();
+  genParticlesToMatch_.clear();
   eventInfo_.clear();
   triggerData_.clear();
   for (auto& p : particleInfo_) { p.second.clear(); }
@@ -609,15 +619,40 @@ ParticleAnalyzer::getEventData(const edm::Event& iEvent, const edm::EventSetup& 
   {
     // initialize generated particle container
     initParticleInfo("gen");
+    int nGenTracks = 0;
     // extract generated particles
     for (size_t i=0; i<genParticles->size(); i++)
     {
-      const auto& p = reco::GenParticleRef(genParticles, i); 
-      if (p->isLastCopy() && (p->isPromptFinalState() || p->isPromptDecayed() || p->statusFlags().fromHardProcess()))
+      const auto& p = reco::GenParticleRef(genParticles, i);
+      // sum charged tracks within CMS acceptance
+      if (p->isLastCopy() && p->status()==1 && p->charge()!=0 && p->pt()>0.4 && std::abs(p->eta())<2.4)
+      {   
+        nGenTracks += 1;
+      }
+      // add generated particles for reco-gen matching
+      if (p->isLastCopy() && passGenStatus(p) && contain(genPdgId_, std::abs(p->pdgId())))
       {
-        genParticles_.push_back(p);
+        const auto& mom = (p->status()==1 ? findGenMother(p) : reco::GenParticleRef());
+        if (mom.isNull() || contain(genPdgId_, std::abs(mom->pdgId())))
+        {
+          genParticlesToMatch_.push_back(p);
+        }
       }
     }
+    for (const auto& p : genParticlesToMatch_)
+    {
+      // keep generated particle
+      insert(genParticlesToKeep_, p);
+      // keep its mother
+      insert(genParticlesToKeep_, findGenMother(p));
+      // keep its daughters
+      for (size_t iDau=0; iDau<p->numberOfDaughters(); iDau++)
+      {
+        insert(genParticlesToKeep_, findGenDaughter(p, iDau));
+      }
+    }
+    // fill generated particle multiplicity
+    eventInfo_.add("Ntrkgen", nGenTracks);
   }
 }
 
@@ -724,12 +759,17 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
       std::vector<bool> bit(4);
       bit[0] = (triggerIndex>=0 ? triggerResults->accept(triggerIndex) : false);
       // extract prescale information
-      UShort_t hltPrescale=0, l1Prescale=0;
-      if (validPrescale && triggerIndex>=0)
+      UShort_t hltPrescale=0, l1Prescale=0, activePDs=1;
+      if (!isMC_ && validPrescale && triggerIndex>=0)
       {
         // HLT information
         const auto& presInfo = hltPrescaleProvider_.prescaleValuesInDetail(iEvent, iSetup, triggerName);
         hltPrescale = getUShort(presInfo.second);
+        for (size_t trgIdx=1; trgIdx<trgIdxFound.size(); trgIdx++) {
+          const auto& trgName = hltPaths.at(trgIdxFound[trgIdx]);
+          const auto& trgPres = hltPrescaleProvider_.prescaleValuesInDetail(iEvent, iSetup, trgName).second;
+          activePDs += (trgPres==hltPrescale);
+        }
         const auto& lastModule = hltConfig.moduleLabel(triggerIndex, triggerResults->index(triggerIndex));
         bit[2] = hltConfig.moduleType(lastModule)!="HLTPrescaler";
         // L1 information
@@ -755,6 +795,14 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
           bit[3] = (l1tGlobalUtil.decisionsInitial()[l1Bit].second == l1tGlobalUtil.decisionsFinal()[l1Bit].second);
         }
       }
+      else if (isMC_)
+      {
+        hltPrescale = 1;
+        l1Prescale = 1;
+        bit[2] = true;
+        bit[3] = true;
+      }
+
       // extract filter objects
       pat::TriggerObjectCollection filterObjects;
       const auto& filterKeys = (filterIndex>=0 ? triggerEvent->filterKeys(filterIndex) : std::vector<UShort_t>());
@@ -766,11 +814,11 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
         filterObjects.push_back(obj);
       }
       // store trigger information
-      triggerData_[iTrg].setInfo(triggerIndex, filterIndex, triggerName, filterName, minN, validPrescale, hltPrescale, l1Prescale, trgIdxFound.size(), bit, filterObjects);
+      triggerData_[iTrg].setInfo(triggerIndex, filterIndex, triggerName, filterName, minN, validPrescale, hltPrescale, l1Prescale, activePDs, bit, filterObjects);
       // store lumi information per trigger
       edm::Handle<LumiInfo> lumiInfo;
       iEvent.getByToken(tok_lumiInfo, lumiInfo);
-      if (lumiInfo.isValid())
+      if (!isMC_ && lumiInfo.isValid())
       {
         triggerData_[iTrg].setLumiInfo(lumiInfo->recordedLuminosity(), lumiInfo->integLuminosity());
       }
@@ -785,8 +833,9 @@ ParticleAnalyzer::fillEventInfo(const edm::Event& iEvent)
   // fill general information
   eventInfo_.add("RunNb", iEvent.id().run());
   eventInfo_.add("EventNb", getUInt(iEvent.id().event()));
-  eventInfo_.add("LSNb", getUShort(iEvent.luminosityBlock()));
-  eventInfo_.add("BXNb", getShort(iEvent.bunchCrossing()));
+  eventInfo_.add("LSNb", getUInt(iEvent.luminosityBlock()));
+  const auto& bx = iEvent.bunchCrossing();
+  eventInfo_.add("BXNb", getUShort(bx>=0 ? bx : 0));
 
   // fill vertex information
   eventInfo_.add("nPV", getUChar(vertices_.size()));
@@ -852,6 +901,8 @@ ParticleAnalyzer::fillEventInfo(const edm::Event& iEvent)
 void
 ParticleAnalyzer::fillLumiInfo(const edm::Event& iEvent)
 {
+  if (isMC_) return;
+
   // offline luminosity information
   edm::Handle<LumiInfo> lumiInfo;
   iEvent.getByToken(tok_lumiInfo_, lumiInfo);
@@ -971,7 +1022,7 @@ ParticleAnalyzer::fillRecoParticleInfo(const edm::Event& iEvent)
     // initialize reconstructed particle containers
     initParticleInfo("cand");
     initParticleInfo("trk");
-    for (const auto& pId : dauIDs_) { initParticleInfo("src", pId); }
+    for (const auto& pId : sourceId_) { initParticleInfo("src", pId); }
     // loop over reconstructed particles
     for (const auto& cand : *particles) { fillRecoParticleInfo(cand); }
   }
@@ -1054,12 +1105,12 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
   // generated particle information
   if (isMC_)
   {
-    if (!cand.hasUserInt("isGenMatched")) { addGenParticle(*const_cast<pat::GenericParticle*>(&cand), genParticles_); } 
+    if (!cand.hasUserInt("isGenMatched")) { addGenParticle(*const_cast<pat::GenericParticle*>(&cand), genParticlesToMatch_); } 
     const auto& genPar = cand.genParticleRef();
     info.add("genIdx", fillGenParticleInfo(genPar, idx));
     info.add("matchGEN", genPar.isNonnull());
     info.add("isSwap", (cand.hasUserInt("isSwap") ? cand.userInt("isSwap") : false));
-    info.add("idmom_reco", (genPar.isNonnull() ? genPar->pdgId() : 0));
+    info.add("genPdgId", (genPar.isNonnull() ? genPar->pdgId() : 0));
   }
 
   // initialize daughter information
@@ -1562,9 +1613,9 @@ ParticleAnalyzer::fillGenParticleInfo(const edm::Event& iEvent)
   if (!isMC_) return;
 
   // fill generated particle information
-  if (!genParticles_.empty())
+  if (!genParticlesToKeep_.empty())
   {
-    for (const auto& cand : genParticles_) { fillGenParticleInfo(cand); }
+    for (const auto& cand : genParticlesToKeep_) { fillGenParticleInfo(cand); }
   }
 
   // fill generator weight
@@ -1580,7 +1631,7 @@ ParticleAnalyzer::fillGenParticleInfo(const edm::Event& iEvent)
 UShort_t
 ParticleAnalyzer::fillGenParticleInfo(const reco::GenParticleRef& candR, const UShort_t& candIdx, const bool& force)
 {
-  const bool hasGen = candR.isNonnull();
+  const bool hasGen = candR.isNonnull() && contain(genParticlesToKeep_, candR);
   if (!force && !hasGen) return USHRT_MAX;
 
   // fill generated particle information
@@ -1617,12 +1668,12 @@ ParticleAnalyzer::fillGenParticleInfo(const reco::GenParticleRef& candR, const U
   if (cand.numberOfDaughters()>0 && cand.daughter(0))
   {
     auto mom = candR;
-    while (mom.isNonnull() && mom->numberOfMothers()>0 && mom->mother(0) && mom->motherRef(0)->fromHardProcessDecayed()) { mom = mom->motherRef(0); }
+    while (mom.isNonnull() && mom->numberOfMothers()>0 && mom->mother(0) && std::abs(mom->pdgId())>21) { mom = mom->motherRef(0); }
     const auto lineOfFlight = cand.daughter(0)->vertex() - mom->vertex();
     dl3D = lineOfFlight.r();
     dl2D = lineOfFlight.rho();
-    angle3D = angle(lineOfFlight.x(), lineOfFlight.y(), lineOfFlight.z(), cand.px(), cand.py(), cand.pz());
-    angle2D =  angle(lineOfFlight.x(), lineOfFlight.y(), 0.0, cand.px(), cand.py(), 0.0);
+    angle3D = (dl3D>0. ? angle(lineOfFlight.x(), lineOfFlight.y(), lineOfFlight.z(), cand.px(), cand.py(), cand.pz()) : -10.);
+    angle2D = (dl2D>0. ? angle(lineOfFlight.x(), lineOfFlight.y(), 0.0, cand.px(), cand.py(), 0.0) : -10.);
   }
   info.add("angle3D", angle3D);
   info.add("angle2D", angle2D);
@@ -1650,12 +1701,9 @@ ParticleAnalyzer::fillGenParticleInfo(const reco::GenParticleRef& candR, const U
   // mother information
   if (cand.numberOfMothers()>0)
   {
-    for (size_t iMom=0; iMom<cand.numberOfMothers(); iMom++)
-    {
-      const auto& mom = findGenMother(candR);
-      const auto& momIdx = fillGenParticleInfo(mom, idx);
-      if (idx!=USHRT_MAX) { info.push(idx, "momIdx", momIdx); }
-    }
+    const auto& mom = findGenMother(candR);
+    const auto& momIdx = fillGenParticleInfo(mom, idx);
+    if (idx!=USHRT_MAX) { info.push(idx, "momIdx", momIdx); }
   }
 
   // return index
@@ -1666,7 +1714,7 @@ ParticleAnalyzer::fillGenParticleInfo(const reco::GenParticleRef& candR, const U
 bool
 ParticleAnalyzer::addGenParticle(pat::GenericParticle& cand, const reco::GenParticleRefVector& genColl)
 {
-  if (genColl.empty()) return false;
+  if (genColl.empty() || cand.status()==0) return false;
 
   // check that it is in input collection if already matched
   if (cand.genParticle()) { return std::find(genColl.begin(), genColl.end(), cand.genParticleRef())!=genColl.end(); }
@@ -1688,6 +1736,7 @@ ParticleAnalyzer::addGenParticle(pat::GenericParticle& cand, const reco::GenPart
       if (!isMatched(genPar->p4(), cand.p4(), maxGenDeltaR_, dPtRel)) continue;
       dPtRel = deltaPt(genPar->pt(), cand.pt());
       genCand = genPar;
+      isSwap = (std::abs(genCand->mass()-cand.mass()) > 0.01);
     }
     // case: decayed particle (daughter matching)
     else if (cand.status()>1)
@@ -1710,7 +1759,6 @@ ParticleAnalyzer::addGenParticle(pat::GenericParticle& cand, const reco::GenPart
   if (genCand.isNull()) return false;
 
   // add generated particle information
-  isSwap = isSwap || (std::abs(genCand->mass()-cand.mass()) > 0.01);
   cand.addGenParticleRef(genCand);
   cand.addUserInt("isSwap", isSwap);
   return true;
@@ -1720,7 +1768,7 @@ ParticleAnalyzer::addGenParticle(pat::GenericParticle& cand, const reco::GenPart
 void
 ParticleAnalyzer::findGenDaughters(reco::GenParticleRefVector& genColl, const reco::GenParticleRef& genPar, const pat::GenericParticle& cand, const short& iter)
 {
-  if (iter>=0 || genPar.isNull()) return;
+  if (iter<0 || genPar.isNull()) return;
   for (size_t i=0; i<genPar->numberOfDaughters(); i++)
   {
     const auto& dau = findGenDaughter(genPar, i);
@@ -1795,10 +1843,14 @@ ParticleAnalyzer::beginRun(const edm::Run& iRun, const edm::EventSetup& iSetup)
   EDConsumerBase::Labels triggerResultsLabel;
   EDConsumerBase::labelsForToken(tok_triggerResults_, triggerResultsLabel);
   if (!hltPrescaleProvider_.init(iRun, iSetup, triggerResultsLabel.process, changed)) { throw(cms::Exception("Trigger")<<"HLT provider failed init"); }
-  edm::ESHandle<L1TGlobalPrescalesVetos> l1GtPrescalesVetoes;
-  iSetup.get<L1TGlobalPrescalesVetosRcd>().get(l1GtPrescalesVetoes);
-  if (l1GtPrescalesVetoes.isValid()) {
-    l1PrescaleTable_ = l1GtPrescalesVetoes->prescale_table_;
+  l1PrescaleTable_.clear();
+  const auto& l1Data = iSetup.tryToGet<L1TGlobalPrescalesVetosRcd>();
+  if (l1Data) {
+    edm::ESHandle<L1TGlobalPrescalesVetos> l1GtPrescalesVetoes;
+    l1Data->get(l1GtPrescalesVetoes);
+    if (l1GtPrescalesVetoes.isValid()) {
+      l1PrescaleTable_ = l1GtPrescalesVetoes->prescale_table_;
+    }
   }
 }
 

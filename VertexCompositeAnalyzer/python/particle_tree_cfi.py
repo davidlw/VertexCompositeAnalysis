@@ -43,17 +43,17 @@ particleAna = cms.EDAnalyzer('ParticleAnalyzer',
   # luminosity information
   lumiInfo    = cms.untracked.InputTag("lumiInfo", "brilcalc"),
   lumiScalers = cms.untracked.InputTag("scalersRawToDigi"),
-  lumiRecord  = cms.untracked.InputTag("onlineMetaDataDigis"),
 
   # options
   saveTree  = cms.untracked.bool(True),
   addTrack  = cms.untracked.bool(True),
   addSource = cms.untracked.bool(True),
-  dauIDs    = cms.untracked.vint32([13]),
+  sourceId  = cms.untracked.vuint32([13]),
 )
 
 particleAna_mc = particleAna.clone(
   # generated information
   genParticles = cms.untracked.InputTag("genMuons"),
   genInfo      = cms.untracked.InputTag("generator"),
+  genPdgId     = cms.untracked.vuint32([13, 443, 100443, 15, 23]),
 )
