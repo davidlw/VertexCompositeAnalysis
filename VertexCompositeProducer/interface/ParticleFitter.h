@@ -216,6 +216,7 @@ class ParticleFitter {
   edm::EDGetTokenT<pat::JetCollection> token_jets_;
 
   StringCutObjectSelector<pat::GenericParticle, true> preSelection_;
+  StringCutObjectSelector<pat::GenericParticle, true> preMassSelection_;
   StringCutObjectSelector<pat::GenericParticle, true> pocaSelection_;
   StringCutObjectSelector<pat::GenericParticle, true> postSelection_;
   StringCutObjectSelector<pat::GenericParticle, true> finalSelection_;

@@ -15,6 +15,7 @@ ParticleFitter::ParticleFitter(const edm::ParameterSet& theParameters, edm::Cons
   pdgId_(theParameters.getParameter<int>("pdgId")),
   doSwap_(theParameters.getParameter<bool>("doSwap")),
   preSelection_(theParameters.getParameter<std::string>("preSelection")),
+  preMassSelection_(theParameters.getParameter<std::string>("preMassSelection")),
   pocaSelection_(theParameters.getParameter<std::string>("pocaSelection")),
   postSelection_(theParameters.getParameter<std::string>("postSelection")),
   finalSelection_(theParameters.getParameter<std::string>("finalSelection"))
@@ -192,6 +193,12 @@ void ParticleFitter::makeCandidates() {
       if (dau.hasUserData("daughters") && !isUniqueDaughter(daughters, dau)) { hasDuplicate = true; break; }
     }
     if (hasDuplicate) continue;
+    // make swapped daughters
+    DoubleMap swapDauColls;
+    swapDaughters(swapDauColls, iniCand);
+    setBestMass(cand, swapDauColls);
+    // make mass preselection
+    if (!preMassSelection_(cand)) continue;
     // fit candidate and make postselection
     if (!fitCandidate(cand)) continue;
     // add extra information
@@ -202,9 +209,6 @@ void ParticleFitter::makeCandidates() {
     if (std::abs(cand.mass()-mass_) < width_) {
       candidates_.push_back(cand);
     }
-    // make swapped daughters
-    DoubleMap swapDauColls;
-    swapDaughters(swapDauColls, iniCand);
     // add swapped candidates
     pat::GenericParticleCollection swapCandColl;
     addSwapCandidates(swapCandColl, cand, swapDauColls);
@@ -236,6 +240,7 @@ void ParticleFitter::swapDaughters(DoubleMap& swapDauColls, const pat::GenericPa
       const auto& sourceID2 = (per.hasUserInt("sourceID") ? per.userInt("sourceID") : 0);
       if (sourceID1!=sourceID2) break;
       if (sourceID1==0 && !ParticleComparator().isParticleEqual(dau, per)) break;
+      if (cand.charge()!=0 && dau.charge()!=per.charge()) break;
       swapDauColl.push_back(per.mass());
       p4 += reco::Candidate::LorentzVector(dau.px(), dau.py(), dau.pz(), std::sqrt(dau.p4().P2()+per.massSqr()));
     }
@@ -254,7 +259,7 @@ void ParticleFitter::setBestMass(pat::GenericParticle& cand, const DoubleMap& sw
   for (const auto& swapM : swapDauColls) {
     mass = ((std::abs(swapM.first - mass_) < std::abs(mass - mass_)) ? swapM.first : mass);
   }
-  cand.addUserFloat("mass", mass);
+  cand.addUserFloat("bestMass", mass);
 };
 
 
@@ -320,7 +325,7 @@ bool ParticleFitter::fitCandidate(pat::GenericParticle& cand) {
     cand.setP4(p4);
     if (doSwap_) {
       const auto& mass = reco::Candidate::PolarLorentzVector(swapP4).M();
-      cand.addUserFloat("mass", ((std::abs(cand.mass() - mass_) < std::abs(mass - mass_)) ? cand.mass() : mass), true);
+      cand.addUserFloat("bestMass", ((std::abs(cand.mass() - mass_) < std::abs(mass - mass_)) ? cand.mass() : mass), true);
     }
     cand.addUserFloat("dca", cApp.distance());
     if (!pocaSelection_(cand)) return false;
