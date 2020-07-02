@@ -305,9 +305,19 @@ private:
       return true;
     };
 
+    template <class T>
+    T        get(const size_t& i, const std::string& n, const T&        d) = delete; // avoid implicit conversion
+    bool     get(const size_t& i, const std::string& n, const bool&     d) { return (i < size_ ? boolVM_[n][i]   : d); };
+    UShort_t get(const size_t& i, const std::string& n, const UShort_t& d) { return (i < size_ ? ushortVM_[n][i] : d); };
+
     // setters
     template <class T>
     void add(const std::string& n, const T& v) { data_.add(n, v); };
+
+    template <class T>
+    void add(const size_t& i, const std::string& n, const T&        v) = delete; // avoid implicit conversion
+    void add(const size_t& i, const std::string& n, const bool&     v) { if (i < size_) { boolVM_[n][i]   = v; } else { add(n, v); } };
+    void add(const size_t& i, const std::string& n, const UShort_t& v) { if (i < size_) { ushortVM_[n][i] = v; } else { add(n, v); } };
 
     template <class T>
     void push(const std::string& n, const T& v, const bool& c=0) { data_.push(n, v, c); };
@@ -1039,6 +1049,12 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
   size_t index;
   const bool found = info.getIndex(index, cand);
   info.push(index, "momIdx", momIdx, true);
+  const bool& momMatchGEN = (isMC_ ? info.get(momIdx, "matchGEN", false) : false);
+  if (momMatchGEN)
+  {
+    info.add(index, "momMatchGEN", true);
+    info.add(index, "momMatchIdx", momIdx);
+  }
   const auto& idx = getUShort(index);
   // return if already added
   if (found) return idx;
@@ -1111,6 +1127,8 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
     info.add("matchGEN", genPar.isNonnull());
     info.add("isSwap", (cand.hasUserInt("isSwap") ? cand.userInt("isSwap") : false));
     info.add("genPdgId", (genPar.isNonnull() ? genPar->pdgId() : 0));
+    info.add("momMatchGEN", momMatchGEN);
+    info.add("momMatchIdx", momMatchGEN ? momIdx : USHRT_MAX);
   }
 
   // initialize daughter information
