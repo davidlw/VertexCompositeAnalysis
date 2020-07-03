@@ -76,6 +76,9 @@ private:
   virtual void fillGenParticleInfo(const edm::Event&);
   virtual void endJob();
   virtual void initTree();
+  virtual void initNTuple();
+  virtual void addParticleToNtuple(const size_t&, const std::pair<int, int>&);
+  virtual void fillNTuple();
 
   UShort_t fillTriggerObjectInfo(const pat::TriggerObject&, const UShort_t&, const UShort_t& candIdx=USHRT_MAX);
   UShort_t fillRecoParticleInfo(const pat::GenericParticle&, const UShort_t& momIdx=USHRT_MAX);
@@ -227,6 +230,26 @@ private:
     void push(const std::string& n, const UInt_t&   v, const bool& c=0) { if(!c || v!=UINT_MAX ) uintVM_[n].push_back(v);   };
     void push(const std::string& n, const float&    v, const bool& c=0) { floatVM_[n].push_back(v); };
 
+    void copyData(Container& data, const std::string& n="") const
+    {
+      for (const auto& d : boolM_   ) { data.add(n+d.first, d.second); }
+      for (const auto& d : charM_   ) { data.add(n+d.first, d.second); }
+      for (const auto& d : shortM_  ) { data.add(n+d.first, d.second); }
+      for (const auto& d : intM_    ) { data.add(n+d.first, d.second); }
+      for (const auto& d : ucharM_  ) { data.add(n+d.first, d.second); }
+      for (const auto& d : ushortM_ ) { data.add(n+d.first, d.second); }
+      for (const auto& d : uintM_   ) { data.add(n+d.first, d.second); }
+      for (const auto& d : floatM_  ) { data.add(n+d.first, d.second); }
+      for (const auto& d : boolVM_  ) { for (uint i=0; i<d.second.size(); i++) { data.add(n+d.first+Form("%u",i), d.second[i]); } }
+      for (const auto& d : charVM_  ) { for (uint i=0; i<d.second.size(); i++) { data.add(n+d.first+Form("%u",i), d.second[i]); } }
+      for (const auto& d : shortVM_ ) { for (uint i=0; i<d.second.size(); i++) { data.add(n+d.first+Form("%u",i), d.second[i]); } }
+      for (const auto& d : intVM_   ) { for (uint i=0; i<d.second.size(); i++) { data.add(n+d.first+Form("%u",i), d.second[i]); } }
+      for (const auto& d : ucharVM_ ) { for (uint i=0; i<d.second.size(); i++) { data.add(n+d.first+Form("%u",i), d.second[i]); } }
+      for (const auto& d : ushortVM_) { for (uint i=0; i<d.second.size(); i++) { data.add(n+d.first+Form("%u",i), d.second[i]); } }
+      for (const auto& d : uintVM_  ) { for (uint i=0; i<d.second.size(); i++) { data.add(n+d.first+Form("%u",i), d.second[i]); } }
+      for (const auto& d : floatVM_ ) { for (uint i=0; i<d.second.size(); i++) { data.add(n+d.first+Form("%u",i), d.second[i]); } }
+    }
+
     // clear
     void clear()
     {
@@ -247,6 +270,23 @@ private:
       for (auto& d : uintVM_  ) { d.second.clear(); }
       for (auto& d : floatVM_ ) { d.second.clear(); }
     };
+
+    template <class T>
+    void erase(std::map<std::string, T>& c, const std::string& n)
+    {
+      for (const auto& it : std::map<std::string, T>(c))
+      {
+        const bool has = it.first.find(n)!=std::string::npos;
+        if (has) { c.erase(it.first); }
+      }
+    }
+
+    void erase(const std::string& n)
+    {
+      erase(boolM_, n);
+      erase(ucharM_, n);
+      erase(ushortM_, n);
+    }
 
     // tree initializer
     void initTree(TTree& tree, const std::string& n="")
@@ -306,9 +346,12 @@ private:
     };
 
     template <class T>
-    T        get(const size_t& i, const std::string& n, const T&        d) = delete; // avoid implicit conversion
-    bool     get(const size_t& i, const std::string& n, const bool&     d) { return (i < size_ ? boolVM_[n][i]   : d); };
-    UShort_t get(const size_t& i, const std::string& n, const UShort_t& d) { return (i < size_ ? ushortVM_[n][i] : d); };
+    T        get(const size_t& i, const std::string& n, const T&        d) const = delete; // avoid implicit conversion
+    bool     get(const size_t& i, const std::string& n, const bool&     d) const { return (i < size_ ? boolVM_.at(n)[i]   : d); };
+    int      get(const size_t& i, const std::string& n, const Int_t&    d) const { return (i < size_ ? intVM_.at(n)[i]    : d); };
+    UChar_t  get(const size_t& i, const std::string& n, const UChar_t&  d) const { return (i < size_ ? ucharVM_.at(n)[i]  : d); };
+    UShort_t get(const size_t& i, const std::string& n, const UShort_t& d) const { return (i < size_ ? ushortVM_.at(n)[i] : d); };
+    std::vector<UShort_t> get(const size_t& i, const std::string& n, const std::vector<UShort_t>& d) const { return (i < size_ ? ushortVVM_.at(n)[i] : d); };
 
     // setters
     template <class T>
@@ -351,6 +394,18 @@ private:
       for (const auto& d : data_.uintVM()  ) { uintVVM_[d.first].push_back(d.second);   }
       parM_[par] = size_++;
     };
+
+    void copyData(Container& data, const size_t& i, const std::string& n="") const
+    {
+      for (const auto& d : boolVM_   ) { data.add(n+d.first, (i<size_ ? d.second[i] : false));        }
+      for (const auto& d : charVM_   ) { data.add(n+d.first, (i<size_ ? d.second[i] : char(-99)));    }
+      for (const auto& d : shortVM_  ) { data.add(n+d.first, (i<size_ ? d.second[i] : short(-99)));   }
+      for (const auto& d : intVM_    ) { data.add(n+d.first, (i<size_ ? d.second[i] : int(-99)));     }
+      for (const auto& d : ucharVM_  ) { data.add(n+d.first, (i<size_ ? d.second[i] : UChar_t(0)));   }
+      for (const auto& d : ushortVM_ ) { data.add(n+d.first, (i<size_ ? d.second[i] : UShort_t(0)));  }
+      for (const auto& d : uintVM_   ) { data.add(n+d.first, (i<size_ ? d.second[i] : UInt_t(0)));    }
+      for (const auto& d : floatVM_  ) { data.add(n+d.first, (i<size_ ? d.second[i] : float(-99.9))); }
+    }
 
     // clear
     void clear()
@@ -490,7 +545,7 @@ private:
   typedef std::vector<TriggerInfo> TriggerContainer;
 
   // class container attributes
-  Container eventInfo_;
+  Container eventInfo_, ntupleInfo_;
   TriggerContainer triggerData_;
   ParticleContainerMap particleInfo_;
 };
@@ -533,7 +588,8 @@ ParticleAnalyzer::ParticleAnalyzer(const edm::ParameterSet& iConfig) :
   genPdgId_(iConfig.getUntrackedParameter<std::vector<UInt_t> >("genPdgId", {})),
   hltPrescaleProvider_(iConfig, consumesCollector(), *this)
 {
-  for (const auto& data : triggerInfo_) {
+  for (const auto& data : triggerInfo_)
+  {
     tok_triggerLumiInfo_.push_back(consumes<LumiInfo>(data.existsAs<edm::InputTag>("lumiInfo") ? data.getParameter<edm::InputTag>("lumiInfo") : edm::InputTag()));
   }
 }
@@ -582,11 +638,15 @@ ParticleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   fillRecoParticleInfo(iEvent);
   fillGenParticleInfo(iEvent);
 
-  // fill tree
+  // fill tree or ntuple
   if (saveTree_)
   {
     if (!tree_) initTree();
     tree_->Fill();
+  }
+  else
+  {
+    fillNTuple();
   }
 }
 
@@ -946,12 +1006,15 @@ ParticleAnalyzer::fillTriggerInfo(const edm::Event& iEvent, const edm::EventSetu
     const auto& data = triggerData_[idx];
     eventInfo_.push("passHLT", data.triggerBit(0));
     eventInfo_.push("passL1", data.triggerBit(1));
-    eventInfo_.push("validPrescale", data.validPrescale());
-    eventInfo_.push("passHLTPrescaler", data.triggerBit(2));
-    eventInfo_.push("passL1Prescaler", data.triggerBit(3));
-    eventInfo_.push("hltPrescale", data.hltPrescale());
-    eventInfo_.push("l1Prescale", data.l1Prescale());
-    eventInfo_.push("hltPDs", data.hltPDs());
+    if (!isMC_)
+    {
+      eventInfo_.push("validPrescale", data.validPrescale());
+      eventInfo_.push("passHLTPrescaler", data.triggerBit(2));
+      eventInfo_.push("passL1Prescaler", data.triggerBit(3));
+      eventInfo_.push("hltPrescale", data.hltPrescale());
+      eventInfo_.push("l1Prescale", data.l1Prescale());
+      eventInfo_.push("hltPDs", data.hltPDs());
+    }
     for (const auto& obj: data.filterObjects()) { fillTriggerObjectInfo(obj, idx); }
     if (data.validLumi()) {
       eventInfo_.push("hltTotalLumi", data.totalLumi());
@@ -1128,7 +1191,7 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
     info.add("isSwap", (cand.hasUserInt("isSwap") ? cand.userInt("isSwap") : false));
     info.add("genPdgId", (genPar.isNonnull() ? genPar->pdgId() : 0));
     info.add("momMatchGEN", momMatchGEN);
-    info.add("momMatchIdx", momMatchGEN ? momIdx : USHRT_MAX);
+    info.add("momMatchIdx", momMatchGEN ? momIdx : UShort_t(-1));
   }
 
   // initialize daughter information
@@ -1845,6 +1908,84 @@ ParticleAnalyzer::initTree()
 }
 
 
+void
+ParticleAnalyzer::initNTuple()
+{
+  if (ntuple_) return;
+  ntuple_ = fileService_->make<TTree>("ParticleNTuple","ParticleNTuple");
+  // add branches
+  ntupleInfo_.initTree(*ntuple_);
+}
+
+
+void
+ParticleAnalyzer::addParticleToNtuple(const size_t& i, const std::pair<int, int>& dau)
+{
+  const auto& cand = particleInfo_["cand"];
+  const auto pdgId = std::abs(cand.get(i, "pdgId", int(0)));
+  // define label
+  std::string label;
+  if (dau.first>0)
+  {
+    for (int j=0; j<dau.first-1; j++) { label += "g"; }
+    label += Form("dau%d_", dau.second);
+  }
+  // add particle information
+  for (const auto& p : particleInfo_)
+  {
+    auto idx = UShort_t(-1);
+    if      (p.first=="cand") { idx = i; }
+    else if (p.first=="trig") { idx = cand.get(i, "trigIdx", idx); }
+    else if (p.first=="gen" ) { idx = cand.get(i, "genIdx",  idx); }
+    else if (p.first=="trk" ) { idx = cand.get(i, "trkIdx",  idx); }
+    else if (p.first=="jet"  && pdgId<=6 ) { idx = cand.get(i, "srcIdx",  idx); }
+    else if (p.first=="elec" && pdgId==11) { idx = cand.get(i, "srcIdx",  idx); }
+    else if (p.first=="muon" && pdgId==13) { idx = cand.get(i, "srcIdx",  idx); }
+    else if (p.first=="tau"  && pdgId==15) { idx = cand.get(i, "srcIdx",  idx); }
+    else if (p.first=="pho"  && pdgId==22) { idx = cand.get(i, "srcIdx",  idx); }
+    if (p.first=="cand" || p.first=="trig" || p.first=="gen" || p.first=="trk" || idx<USHRT_MAX)
+    {
+      p.second.copyData(ntupleInfo_, idx, (p.first+"_"+label));
+    }
+  }
+  // add daughter information
+  const auto& dauIdx = cand.get(i, "dauIdx", std::vector<UShort_t>({}));
+  for (size_t iDau=0; iDau<dauIdx.size(); iDau++)
+  {
+    addParticleToNtuple(dauIdx[iDau], {dau.first+1, iDau});
+  }
+}
+
+
+void
+ParticleAnalyzer::fillNTuple()
+{
+  // loop over candidates
+  const auto& cand = particleInfo_["cand"];
+  for (size_t i=0; i<cand.size(); i++)
+  {
+    const auto status = cand.get(i, "status", UChar_t(0));
+    if (status!=3) continue;
+    // clear
+    ntupleInfo_.clear();
+    // copy event information
+    eventInfo_.copyData(ntupleInfo_);
+    // copy particle information
+    addParticleToNtuple(i, {0, 0});
+    // initialize ntuple
+    if (!ntuple_)
+    {
+      ntupleInfo_.erase("Idx");
+      ntupleInfo_.erase("cand_matchTRG");
+      ntupleInfo_.erase("cand_momMatch");
+      initNTuple();
+    }
+    // fill ntuple
+    ntuple_->Fill();
+  }
+}
+
+
 // ------------ method called once each job just before starting event
 //loop  ------------
 void
@@ -1863,10 +2004,12 @@ ParticleAnalyzer::beginRun(const edm::Run& iRun, const edm::EventSetup& iSetup)
   if (!hltPrescaleProvider_.init(iRun, iSetup, triggerResultsLabel.process, changed)) { throw(cms::Exception("Trigger")<<"HLT provider failed init"); }
   l1PrescaleTable_.clear();
   const auto& l1Data = iSetup.tryToGet<L1TGlobalPrescalesVetosRcd>();
-  if (l1Data) {
+  if (l1Data)
+  {
     edm::ESHandle<L1TGlobalPrescalesVetos> l1GtPrescalesVetoes;
     l1Data->get(l1GtPrescalesVetoes);
-    if (l1GtPrescalesVetoes.isValid()) {
+    if (l1GtPrescalesVetoes.isValid())
+    {
       l1PrescaleTable_ = l1GtPrescalesVetoes->prescale_table_;
     }
   }
