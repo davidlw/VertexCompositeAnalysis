@@ -1784,7 +1784,7 @@ ParticleAnalyzer::fillGenParticleInfo(const reco::GenParticleRef& candR, const U
   {
     const auto& mom = findGenMother(candR);
     const auto& momIdx = fillGenParticleInfo(mom, idx);
-    if (idx!=USHRT_MAX) { info.push(idx, "momIdx", momIdx); }
+    if (momIdx!=USHRT_MAX) { info.push(idx, "momIdx", momIdx); }
   }
 
   // return index
