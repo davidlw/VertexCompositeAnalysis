@@ -154,7 +154,7 @@ private:
   const std::vector<edm::ParameterSet> triggerInfo_;
   const std::vector<std::string> eventFilters_;
   const std::string selectEvents_;
-  const bool saveTree_, addTrack_, addSource_, addTrgObj_;
+  const bool useTrackSize_, saveTree_, addTrack_, addSource_, addTrgObj_;
   const int maxGenIter_;
   const double maxGenDeltaR_, maxGenDeltaPtRel_, maxTrgDeltaR_, maxTrgDeltaPtRel_;
   const std::vector<UInt_t> sourceId_, genPdgId_;
@@ -575,6 +575,7 @@ ParticleAnalyzer::ParticleAnalyzer(const edm::ParameterSet& iConfig) :
   triggerInfo_(iConfig.getUntrackedParameter<std::vector<edm::ParameterSet> >("triggerInfo")),
   eventFilters_(iConfig.getUntrackedParameter<std::vector<std::string> >("eventFilterNames")),
   selectEvents_(iConfig.getParameter<std::string>("selectEvents")),
+  useTrackSize_(iConfig.getUntrackedParameter<bool>("useTrackSize", false)),
   saveTree_(iConfig.getUntrackedParameter<bool>("saveTree", true)),
   addTrack_(iConfig.getUntrackedParameter<bool>("addTrack", true)),
   addSource_(iConfig.getUntrackedParameter<bool>("addSource", false)),
@@ -673,7 +674,7 @@ ParticleAnalyzer::getEventData(const edm::Event& iEvent, const edm::EventSetup& 
     }
   }
   auto byTracksSize = [] (const reco::Vertex& v1, const reco::Vertex& v2) -> bool { return v1.tracksSize() > v2.tracksSize(); };
-  std::sort(vertices_.begin(), vertices_.end(), byTracksSize);
+  if(useTrackSize_) std::sort(vertices_.begin(), vertices_.end(), byTracksSize);
   if (vertices_.empty())
   {
     edm::Handle<reco::BeamSpot> beamspot;
@@ -1138,8 +1139,11 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
   info.add("vtxProb", getFloat(cand, "vertexProb", -1.));
 
   // decay angle information
-  info.add("angle3D", getFloat(cand, "angle2D", -10.));
-  info.add("angle2D", getFloat(cand, "angle3D", -10.));
+  info.add("angle3D", getFloat(cand, "angle3D", -10.));
+  info.add("angle2D", getFloat(cand, "angle2D", -10.));
+
+  // DCA between two daughters, valid when nDaughters == 2
+  info.add("dca", getFloat(cand, "dca", -99.9));
 
   // decay length information
   const auto& lVtxMag = getFloat(cand, "lVtxMag", -99.9);
