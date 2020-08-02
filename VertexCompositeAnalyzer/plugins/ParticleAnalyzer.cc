@@ -169,6 +169,7 @@ private:
 
   bool isMC_;
   reco::Vertex vertex_;
+  reco::Particle::Point genVertex_;
   reco::VertexCollection vertices_;
   reco::GenParticleRefVector genParticlesToKeep_, genParticlesToMatch_;
   const MagneticField* magField_;
@@ -620,6 +621,7 @@ ParticleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
   // clear information
   vertex_ = reco::Vertex();
+  genVertex_ = reco::Vertex();
   vertices_.clear();
   genParticlesToKeep_.clear();
   genParticlesToMatch_.clear();
@@ -687,6 +689,15 @@ ParticleAnalyzer::getEventData(const edm::Event& iEvent, const edm::EventSetup& 
   iEvent.getByToken(tok_genParticle_, genParticles);
   if (isMC_ && genParticles.isValid())
   {
+    // generated primary vertex information
+    for (const auto& p : *genParticles)
+    {
+      if (p.statusFlags().isLastCopy() && (p.pdgId()==21 || std::abs(p.pdgId())<=6))
+      {
+        genVertex_ = p.vertex();
+        break;
+      }
+    }
     // initialize generated particle container
     initParticleInfo("gen");
     int nGenTracks = 0;
@@ -1748,9 +1759,7 @@ ParticleAnalyzer::fillGenParticleInfo(const reco::GenParticleRef& candR, const U
   float dl3D = -99.9, angle3D = -10., dl2D = -99.9, angle2D = -10.;
   if (cand.numberOfDaughters()>0 && cand.daughter(0))
   {
-    auto mom = candR;
-    while (mom.isNonnull() && mom->numberOfMothers()>0 && mom->mother(0) && std::abs(mom->pdgId())>21) { mom = mom->motherRef(0); }
-    const auto lineOfFlight = cand.daughter(0)->vertex() - mom->vertex();
+    const auto lineOfFlight = cand.daughter(0)->vertex() - genVertex_;
     dl3D = lineOfFlight.r();
     dl2D = lineOfFlight.rho();
     angle3D = (dl3D>0. ? angle(lineOfFlight.x(), lineOfFlight.y(), lineOfFlight.z(), cand.px(), cand.py(), cand.pz()) : -10.);
