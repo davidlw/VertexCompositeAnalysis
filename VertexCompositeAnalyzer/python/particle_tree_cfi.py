@@ -46,14 +46,12 @@ particleAna = cms.EDAnalyzer('ParticleAnalyzer',
 
   # options
   saveTree  = cms.untracked.bool(True),
-  addTrack  = cms.untracked.bool(True),
-  addSource = cms.untracked.bool(True),
-  sourceId  = cms.untracked.vuint32([13]),
+  addTrgObj = cms.untracked.bool(False),
 )
 
 particleAna_mc = particleAna.clone(
   # generated information
-  genParticles = cms.untracked.InputTag("genMuons"),
+  genParticles = cms.untracked.InputTag("genParticles"),
   genInfo      = cms.untracked.InputTag("generator"),
-  genPdgId     = cms.untracked.vuint32([13, 443, 100443, 15, 23]),
+  genPdgId     = cms.untracked.vuint32(),
 )

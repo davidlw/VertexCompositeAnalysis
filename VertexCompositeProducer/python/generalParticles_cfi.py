@@ -27,6 +27,7 @@ generalParticles = cms.EDProducer("ParticleProducer",
     photons = cms.InputTag(''),
     pfParticles = cms.InputTag(''),
     jets = cms.InputTag(''),
+    conversions = cms.InputTag(''),
     mva = cms.InputTag(''),
     dedxHarmonic2 = cms.InputTag(''),
 )

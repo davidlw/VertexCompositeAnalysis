@@ -25,6 +25,9 @@ ParticleProducer::ParticleProducer(const edm::ParameterSet& iConfig) :
   daughter_(iConfig, iConfig, consumesCollector())
 {
   produces<pat::GenericParticleCollection>();
+  if (!fitter_.hasNoDaughters()) {
+    produces<pat::GenericParticleCollection>("daughters");
+  }
 }
 
 // dDestructor
@@ -48,9 +51,15 @@ void ParticleProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
     particles = daughter_.particles();
   }
   else {
+     // set daughters product
+     const auto& dauProd = iEvent.getRefBeforePut<pat::GenericParticleCollection>("daughters");
+     fitter_.setDauProd(dauProd);
      // fit particles
      fitter_.fitAll(iEvent, iSetup);
      particles = fitter_.particles();
+     // store daughters
+     auto daughters = std::make_unique<pat::GenericParticleCollection>(fitter_.daughters());
+     iEvent.put(std::move(daughters), "daughters");
   }
   // store particles
   auto output = std::make_unique<pat::GenericParticleCollection>(particles);

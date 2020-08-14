@@ -6,6 +6,20 @@ def doPATMuons(process, MC=False):
 
     # Make PAT Muons
     process.load("MuonAnalysis.MuonAssociators.patMuonsWithTrigger_cff")
+    process.patMuonsWithoutTrigger.embedTrack = cms.bool(True)
+    process.patMuonsWithoutTrigger.embedMuonBestTrack = cms.bool(True)
+    process.patMuonsWithoutTrigger.forceBestTrackEmbedding = cms.bool(False)
+    process.patMuonsWithoutTrigger.embedTunePMuonBestTrack = cms.bool(False)
+    process.patMuonsWithoutTrigger.embedCombinedMuon = cms.bool(True)
+    process.patMuonsWithoutTrigger.embedStandAloneMuon = cms.bool(True)
+    process.patMuonsWithoutTrigger.embedPFCandidate = cms.bool(False)
+    process.patMuonsWithoutTrigger.embedCaloMETMuonCorrs = cms.bool(False)
+    process.patMuonsWithoutTrigger.embedTcMETMuonCorrs = cms.bool(False)
+    process.patMuonsWithoutTrigger.embedPfEcalEnergy = cms.bool(False)
+    process.patMuonsWithoutTrigger.embedPickyMuon = cms.bool(False)
+    process.patMuonsWithoutTrigger.embedTpfmsMuon = cms.bool(False)
+    process.patMuonsWithoutTrigger.embedDytMuon = cms.bool(False)
+    process.patMuonsWithoutTrigger.embedHighLevelSelection = cms.bool(False)
 
     # Add trigger matching
     from MuonAnalysis.MuonAssociators.patMuonsWithTrigger_cff import switchOffAmbiguityResolution, addHLTL1Passthrough, useL1Stage2Candidates

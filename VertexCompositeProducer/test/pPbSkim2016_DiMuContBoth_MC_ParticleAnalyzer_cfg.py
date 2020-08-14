@@ -33,8 +33,8 @@ process.generalMuMuCandidates = generalParticles.clone(
     finalSelection = cms.string(''),
     # daughter information
     daughterInfo = cms.VPSet([
-        cms.PSet(pdgId = cms.int32(13), selection = cms.string(''), muonL1Info = cms.InputTag('muonL1Info:propagatedReco')),
-        cms.PSet(pdgId = cms.int32(13), selection = cms.string(''), muonL1Info = cms.InputTag('muonL1Info:propagatedReco')),
+        cms.PSet(pdgId = cms.int32(13), selection = cms.string('')),
+        cms.PSet(pdgId = cms.int32(13), selection = cms.string('')),
     ]),
 )
 from VertexCompositeAnalysis.VertexCompositeProducer.PATAlgos_cff import doPATMuons
@@ -45,23 +45,23 @@ process.load('VertexCompositeAnalysis.VertexCompositeProducer.collisionEventSele
 process.colEvtSel = cms.Sequence(process.hfCoincFilter * process.primaryVertexFilterPA * process.NoScraping * process.olvFilter_pPb8TeV_dz1p0)
 
 # Define the analysis steps
-process.dimurereco_step = cms.Path(process.patMuonSequence * process.generalMuMuCandidates)
-
-# Add the VertexComposite tree
-from VertexCompositeAnalysis.VertexCompositeAnalyzer.particle_tree_cff import particleAna_mc
-process.dimucontana_mc = particleAna_mc.clone(
-  recoParticles = cms.InputTag("generalMuMuCandidates"),
-  genParticles = cms.untracked.InputTag("genParticles"),
-  selectEvents = cms.string("")
-)
+process.rereco_step = cms.Path(process.patMuonSequence * process.generalMuMuCandidates)
 
 # Define the output
-process.TFileService = cms.Service("TFileService", fileName = cms.string('dimuana_mc.root'))
-process.p = cms.EndPath(process.dimucontana_mc)
+process.load('VertexCompositeAnalysis.VertexCompositeProducer.particleSkimContent_cff')
+process.output = cms.OutputModule("PoolOutputModule",
+    outputCommands = process.analysisSkimContent.outputCommands,
+    fileName = cms.untracked.string('skim_mc.root'),
+    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('rereco_step')),
+    dataset = cms.untracked.PSet(
+      dataTier = cms.untracked.string('AOD')
+    )
+)
+process.p = cms.EndPath(process.output)
 
 # Define the process schedule
 process.schedule = cms.Schedule(
-    process.dimurereco_step,
+    process.rereco_step,
     process.p
 )
 

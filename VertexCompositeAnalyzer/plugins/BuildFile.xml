@@ -28,5 +28,6 @@
 <use name="RecoVertex/KalmanVertexFit"/>
 <use name="RecoHI/HiCentralityAlgos"/>
 <use name="HLTrigger/HLTcore"/>
+<use name="heppdt"/>
 
 <flags EDM_PLUGIN="1"/>

@@ -32,6 +32,7 @@
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/TrackReco/interface/DeDxData.h"
 #include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
+#include "DataFormats/EgammaCandidates/interface/Conversion.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Tau.h"
@@ -125,6 +126,8 @@ const std::map<uint, float> WIDTH_ = {{211, 3.5E-7f}, {321, 1.6E-5f}, {2212, 1.6
 
 typedef std::set<pat::GenericParticle, ParticleComparator> ParticleSet;
 typedef std::set<pat::GenericParticle, ParticleMassComparator> ParticleMassSet;
+typedef std::tuple<float, float, float, float, signed char> ParticleTuple;
+typedef std::vector<reco::Candidate::LorentzVector> LorentzVectorVector;
 typedef ROOT::Math::SVector<double, 3> SVector3;
 
 
@@ -147,7 +150,12 @@ class ParticleDaughter {
   void fillInfo(const edm::ParameterSet& pSet, const edm::ParameterSet& config, edm::ConsumesCollector& iC);
   void clear();
 
+  pat::GenericParticleCollection particles_;
+
  private:
+  template <class T>
+  void addInfo(pat::GenericParticle& c, const T& p);
+  void addInfo(pat::GenericParticle& c, const reco::Conversion& p);
   template <class T>
   void addData(pat::GenericParticle& c, const edm::Ref<std::vector<T> >& p, const bool& embedInfo);
   void addData(pat::GenericParticle& c, const reco::TrackRef& p, const bool& embedInfo);
@@ -156,6 +164,7 @@ class ParticleDaughter {
   void addData(pat::GenericParticle& c, const pat::ElectronRef& p, const bool& embedInfo);
   void setMVA (pat::GenericParticle& c, const size_t& i, const edm::Handle<std::vector<float> >& m);
   void setDeDx(pat::GenericParticle& c, const edm::Handle<edm::ValueMap<reco::DeDxData> >& m);
+  void addMuonL1Info(pat::GenericParticle& c, const edm::Handle<pat::TriggerObjectStandAloneMatch>& m);
 
   int pdgId_;
   int charge_;
@@ -163,11 +172,11 @@ class ParticleDaughter {
   float width_;
   std::string selection_;
   std::string finalSelection_;
-  pat::GenericParticleCollection particles_;
 
   edm::EDGetTokenT<pat::GenericParticleCollection> token_source_;
   edm::EDGetTokenT<std::vector<float> >            token_mva_;
   edm::EDGetTokenT<edm::ValueMap<reco::DeDxData> > token_dedx_;
+  edm::EDGetTokenT<pat::TriggerObjectStandAloneMatch> token_muonL1Info_;
 };
 
 
@@ -177,13 +186,17 @@ class ParticleFitter {
   ~ParticleFitter();
 
   typedef std::map<double, std::vector<double> > DoubleMap;
+  typedef edm::RefProd<pat::GenericParticleCollection> GenericParticleRefProd;
 
   const pat::GenericParticleCollection& particles() const { return candidates_; }
+  const pat::GenericParticleCollection& daughters() const { return particles_; }
   const bool hasNoDaughters() const { return daughters_.empty(); }
 
+  void setDauProd(const GenericParticleRefProd& prod) { dauProd_ = prod; };
   void setVertex(const edm::Event& iEvent);
   void addParticles(ParticleDaughter& d, const edm::Event& iEvent);
   void fillDaughters(const edm::Event& iEvent);
+  pat::GenericParticleRef addParticle(const pat::GenericParticle& particle);
   bool isUniqueDaughter(ParticleSet& set, const pat::GenericParticle& dau);
   void makeCandidates();
   void swapDaughters(DoubleMap& swapDauColls, const pat::GenericParticle& cand);
@@ -201,8 +214,10 @@ class ParticleFitter {
   reco::Vertex vertex_;
   reco::Vertex beamSpot2D_;
   std::vector<ParticleDaughter> daughters_;
-  pat::GenericParticleCollection candidates_;
+  pat::GenericParticleCollection candidates_, particles_;
+  std::map<ParticleTuple, pat::GenericParticleRef> particleRefMap_;
 
+  GenericParticleRefProd dauProd_;
   edm::ESHandle<MagneticField> bFieldHandle_;
 
   edm::EDGetTokenT<reco::BeamSpot> token_beamSpot_;
@@ -214,6 +229,7 @@ class ParticleFitter {
   edm::EDGetTokenT<reco::TrackCollection> token_tracks_;
   edm::EDGetTokenT<reco::PFCandidateCollection> token_pfParticles_;
   edm::EDGetTokenT<pat::JetCollection> token_jets_;
+  edm::EDGetTokenT<reco::ConversionCollection> token_convPhotons_;
 
   StringCutObjectSelector<pat::GenericParticle, true> preSelection_;
   StringCutObjectSelector<pat::GenericParticle, true> preMassSelection_;

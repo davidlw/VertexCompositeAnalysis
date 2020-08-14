@@ -1,2 +1,3 @@
-<flags   EDM_PLUGIN="1"/>
 <use   name="root"/>
+<use   name="heppdt"/>
+<flags   EDM_PLUGIN="1"/>

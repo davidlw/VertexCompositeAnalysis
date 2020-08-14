@@ -4,10 +4,11 @@
   <class name="pat::UserHolder<pat::Jet>" />
   <class name="pat::UserHolder<pat::Tau>" />
   <class name="pat::UserHolder<reco::PFCandidate>" />
-  <class name="pat::UserHolder<pat::GenericParticle>" />
-  <class name="pat::UserHolder<pat::GenericParticleCollection>" />
+  <class name="pat::UserHolder<std::vector<reco::Candidate::LorentzVector> >" />
+  <class name="pat::UserHolder<pat::GenericParticleRefVector>" />
   <class name="KinematicParameters" />
   <class name="pat::UserHolder<KinematicParameters>" />
   <class name="KinematicParametersError" />
   <class name="pat::UserHolder<KinematicParametersError>" />
+  <class name="pat::UserHolder<reco::TrackRef>" />
 </lcgdict>
