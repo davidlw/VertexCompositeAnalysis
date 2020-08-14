@@ -41,6 +41,7 @@
 #include "DataFormats/EgammaCandidates/interface/HIPhotonIsolation.h"
 #include "DataFormats/Math/interface/angle.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
 #include "CondFormats/DataRecord/interface/L1TGlobalPrescalesVetosRcd.h"
 #include "CondFormats/L1TObjects/interface/L1TGlobalPrescalesVetos.h"
 
@@ -146,6 +147,7 @@ private:
   const edm::EDGetTokenT<pat::GenericParticleCollection> tok_recParticle_;
   const edm::EDGetTokenT<reco::GenParticleCollection> tok_genParticle_;
   const edm::EDGetTokenT<GenEventInfoProduct> tok_genInfo_;
+  const edm::EDGetTokenT<LHEEventProduct> tok_lheInfo_;
   const edm::EDGetTokenT<int> tok_centBin_;
   const edm::EDGetTokenT<reco::Centrality> tok_centSrc_;
   const edm::EDGetTokenT<reco::EvtPlaneCollection> tok_eventPlaneSrc_;
@@ -426,6 +428,7 @@ private:
       for (const auto& d : ushortVM_ ) { data.add(n+d.first, (i<size_ ? d.second[i] : UShort_t(0)));  }
       for (const auto& d : uintVM_   ) { data.add(n+d.first, (i<size_ ? d.second[i] : UInt_t(0)));    }
       for (const auto& d : floatVM_  ) { data.add(n+d.first, (i<size_ ? d.second[i] : float(-99.9))); }
+      for (const auto& d : floatVVM_ ) { for (uint j=0; i<size_ && j<d.second[i].size(); j++) { data.add(n+d.first+Form("%u",j), d.second[i][j]); } }
     }
 
     // clear
@@ -588,6 +591,7 @@ ParticleAnalyzer::ParticleAnalyzer(const edm::ParameterSet& iConfig) :
   tok_recParticle_(consumes<pat::GenericParticleCollection>(iConfig.getParameter<edm::InputTag>("recoParticles"))),
   tok_genParticle_(consumes<reco::GenParticleCollection>(iConfig.getUntrackedParameter<edm::InputTag>("genParticles", edm::InputTag("genParticles")))),
   tok_genInfo_(consumes<GenEventInfoProduct>(iConfig.getUntrackedParameter<edm::InputTag>("genInfo", edm::InputTag("generator")))),
+  tok_lheInfo_(consumes<LHEEventProduct>(iConfig.getUntrackedParameter<edm::InputTag>("lheInfo", edm::InputTag("externalLHEProducer","")))),
   tok_centBin_(consumes<int>(iConfig.getUntrackedParameter<edm::InputTag>("centralityBin"))),
   tok_centSrc_(consumes<reco::Centrality>(iConfig.getUntrackedParameter<edm::InputTag>("centrality"))),
   tok_eventPlaneSrc_(consumes<reco::EvtPlaneCollection>(iConfig.getUntrackedParameter<edm::InputTag>("eventPlane"))),
@@ -1772,6 +1776,25 @@ ParticleAnalyzer::fillGenParticleInfo(const edm::Event& iEvent)
   if (genInfo.isValid())
   {
     eventInfo_.add("genWeight", genInfo->weight());
+    if (genInfo->hasBinningValues())
+    {
+      eventInfo_.add("pTHat",  genInfo->binningValues()[0]);
+    }
+  }
+
+  // fill LHE weightss
+  edm::Handle<LHEEventProduct> lheInfo;
+  iEvent.getByToken(tok_lheInfo_, lheInfo);
+  if (lheInfo.isValid() && genInfo.isValid())
+  {
+    std::vector<float> weightLHE;
+    const auto& asdd = lheInfo->originalXWGTUP();
+    for(const auto& w : lheInfo->weights())
+    {
+      const auto& asdde = w.wgt;
+      weightLHE.push_back(genInfo->weight()*asdde/asdd);
+    }
+    eventInfo_.add("lheWeight", weightLHE);
   }
 }
 
@@ -2043,6 +2066,7 @@ ParticleAnalyzer::fillNTuple()
       ntupleInfo_.erase("Idx");
       ntupleInfo_.erase("cand_matchTRG");
       ntupleInfo_.erase("cand_momMatch");
+      ntupleInfo_.erase("lheWeight");
       initNTuple();
     }
     // fill ntuple
