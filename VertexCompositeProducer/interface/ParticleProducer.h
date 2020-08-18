@@ -25,6 +25,7 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/PatCandidates/interface/GenericParticle.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
 #include "VertexCompositeAnalysis/VertexCompositeProducer/interface/ParticleFitter.h"
 
 class ParticleProducer : public edm::EDProducer {

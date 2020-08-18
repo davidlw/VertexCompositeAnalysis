@@ -24,8 +24,10 @@
 <use   name="RecoVertex/VertexPrimitives"/>
 <use   name="RecoVertex/KinematicFit"/>
 <use   name="RecoVertex/KinematicFitPrimitives"/>
+<use   name="RecoVertex/GaussianSumVertexFit"/>
 <use   name="TrackingTools/TransientTrack"/>
 <use   name="TrackingTools/IPTools"/>
 <use   name="TrackingTools/Records"/>
 <use   name="CondFormats/DataRecord"/>
 <use   name="CondFormats/EgammaObjects"/>
+<use   name="heppdt"/>

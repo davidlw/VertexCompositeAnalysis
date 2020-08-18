@@ -7,6 +7,7 @@
 #include <RecoVertex/KinematicFitPrimitives/interface/KinematicParameters.h>
 #include <RecoVertex/KinematicFitPrimitives/interface/KinematicParametersError.h>
 #include <DataFormats/TrackReco/interface/Track.h>
+#include <DataFormats/VertexReco/interface/Vertex.h>
 
 
 pat::UserHolder<pat::Electron> dummy1;
@@ -20,3 +21,4 @@ pat::UserHolder<KinematicParameters> dummy8;
 KinematicParametersError dummy9;
 pat::UserHolder<KinematicParametersError> dummy10;
 pat::UserHolder<reco::TrackRef> dummy11;
+pat::UserHolder<reco::VertexRef> dummy12;

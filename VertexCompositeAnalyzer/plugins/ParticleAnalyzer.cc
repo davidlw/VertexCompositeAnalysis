@@ -1192,12 +1192,22 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
   const auto& lVtxSig = getFloat(cand, "lVtxSig", -99.9);
   info.add("decayLength3D", lVtxMag);
   info.add("decayLengthError3D", ((lVtxMag==-99.9 || lVtxSig==-99.9) ? -1. : lVtxMag/lVtxSig));
-  info.add("pseudoDecayLengthError3D", getFloat(cand, "pdlErr3D"));
   const auto& rVtxMag = getFloat(cand, "rVtxMag", -99.9);
   const auto& rVtxSig = getFloat(cand, "rVtxSig", -99.9);
   info.add("decayLength2D", rVtxMag);
   info.add("decayLengthError2D", ((rVtxMag==-99.9 || rVtxSig==-99.9) ? -1. : rVtxMag/rVtxSig));
-  info.add("pseudoDecayLengthError2D", getFloat(cand, "pdlErr2D"));
+
+  double sigmaPseudoLvtxMag = -99.9, sigmaPseudoRvtxMag = -99.9;
+  if (cand.hasUserData("decayVertex")) {
+    const auto& decayVertex = *cand.userData<reco::Vertex>("decayVertex");
+    const auto& primaryVertex = *cand.userData<reco::VertexRef>("primaryVertex");
+    const auto totalCov = decayVertex.covariance() + primaryVertex->covariance();
+    typedef ROOT::Math::SVector<double, 3> SV3;
+    sigmaPseudoLvtxMag = std::sqrt(ROOT::Math::Similarity(totalCov, SV3(cand.px(), cand.py(), cand.pz()))) / cand.p();
+    sigmaPseudoRvtxMag = std::sqrt(ROOT::Math::Similarity(totalCov, SV3(cand.px(), cand.py(), 0        ))) / cand.pt();
+  }
+  info.add("pseudoDecayLengthError3D", sigmaPseudoLvtxMag);
+  info.add("pseudoDecayLengthError2D", sigmaPseudoRvtxMag);
 
   // mva information
   if (addInfo_.at("mva")) info.add("mva", getFloat(cand, "mva"));
