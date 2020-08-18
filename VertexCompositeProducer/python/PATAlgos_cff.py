@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-def doPATMuons(process, MC=False):
+def doPATMuons(process):
     # Check if sequence already ran
     if hasattr(process, 'patMuonsWithTrigger'): return
 
@@ -47,28 +47,8 @@ def doPATMuons(process, MC=False):
     process.muonMatchHLTL3.maxDeltaR = cms.double(0.1)
     process.muonMatchHLTL3.maxDPtRel = cms.double(10.0)
 
-    # Add MC gen matching
-    if MC:
-        # Prune generated particles to muons and their parents
-        process.genMuons = cms.EDProducer("GenParticlePruner",
-            src = cms.InputTag("genParticles"),
-            select = cms.vstring(
-                "drop  *  ",                      # this is the default
-                "++keep abs(pdgId) = 13"          # keep muons and their parents
-            )
-        )
-        from MuonAnalysis.MuonAssociators.patMuonsWithTrigger_cff import addMCinfo
-        addMCinfo(process)
-        # since we match inner tracks, keep the matching tight and make it one-to-one
-        process.muonMatch.maxDeltaR = cms.double(0.05)
-        process.muonMatch.resolveByMatchQuality = cms.bool(True)
-        process.muonMatch.matched = cms.InputTag("genMuons")
-
     # Make a sequence
-    if MC:
-        process.patMuonSequence = cms.Sequence( process.genMuons + process.patMuonsWithTriggerSequence )
-    else:
-        process.patMuonSequence = cms.Sequence( process.patMuonsWithTriggerSequence )
+    process.patMuonSequence = cms.Sequence( process.patMuonsWithTriggerSequence )
 
     ### Temporal fix for the PAT Trigger prescale warnings.
     process.patTriggerFull.l1GtReadoutRecordInputTag = cms.InputTag("gtDigis","","RECO")

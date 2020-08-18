@@ -11,4 +11,5 @@
   <class name="KinematicParametersError" />
   <class name="pat::UserHolder<KinematicParametersError>" />
   <class name="pat::UserHolder<reco::TrackRef>" />
+  <class name="pat::UserHolder<reco::VertexRef>" />
 </lcgdict>

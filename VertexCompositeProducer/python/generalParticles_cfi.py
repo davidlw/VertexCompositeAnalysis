@@ -5,6 +5,7 @@ generalParticles = cms.EDProducer("ParticleProducer",
     pdgId = cms.int32(0),
     doSwap = cms.bool(False),
     width = cms.double(999999999.),
+    fitAlgo = cms.vuint32([0]),
 
     # particle selection
     preSelection = cms.string(""),
