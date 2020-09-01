@@ -6,16 +6,23 @@ particleAna = cms.EDAnalyzer('ParticleAnalyzer',
   beamSpot = cms.InputTag("offlineBeamSpot"),
   primaryVertices = cms.InputTag("offlinePrimaryVertices"),
   recoParticles = cms.InputTag("generalParticles"),
+  nTracksVMap = cms.untracked.InputTag("generalParticles:nTracks"),
 
   # trigger information
   triggerResults = cms.untracked.InputTag("TriggerResults::HLT"),
   triggerEvent   = cms.untracked.InputTag("hltTriggerSummaryAOD::HLT"),
   triggerInfo = cms.untracked.VPSet([
-      #cms.PSet(path = cms.string('HLT_HIL1DoubleMuOpen_OS_Centrality_40_100_v'), filter = cms.string('hltL1fL1sL1DoubleMuOpenOSCentrality40100L1Filtered0'), minN = cms.int32(2)),
-      #cms.PSet(path = cms.string('HLT_HIL3Mu2p5NHitQ10_L2Mu2_M7toinf_v'), minN = cms.int32(2)),
-      #cms.PSet(path = cms.string('HLT_HIL3Mu3_NHitQ10_v'), filter = cms.string('hltL3fL1sL1SingleMu*OpenL1f0L2f0L3Filtered3NHitQ10')),
-      #cms.PSet(path = cms.string('HLT_HIL3Mu12_v'), minN = cms.int32(1)),
-      cms.PSet(path = cms.string('HLT_HIMinimumBias_*'))
+      #cms.PSet(path = cms.string(''), filter = cms.string(''), minN = cms.int32(), isL1OR = cms.bool(), lumiInfo = cms.InputTag(''))
+  ]),
+
+  # trigger-reco matching information
+  # default values:
+  # L1 muons:  deltaR < 0.3, deltaEta < 0.2, deltaPhi < 6.0
+  # L2 muons:  deltaR < 0.3, deltaPtRel < 10.0
+  # L3 muons:  deltaR < 0.1, deltaPtRel < 10.0
+  # any other: deltaR < 0.3, deltaPtRel < 10.0
+  matchInfo = cms.untracked.VPSet([
+      #cms.PSet(collection = cms.string(''), maxDeltaR = cms.double(), maxDeltaPtRes = cms.double(), maxDeltaEta = cms.double(), maxDeltaPhi = cms.double()),
   ]),
 
   #Filter info
@@ -54,13 +61,12 @@ particleAna = cms.EDAnalyzer('ParticleAnalyzer',
 
   # options
   saveTree  = cms.untracked.bool(True),
-  addTrack  = cms.untracked.bool(True),
-  addSource = cms.untracked.bool(False),
-  dauIDs    = cms.untracked.vint32([13]),
+  addTrgObj = cms.untracked.bool(False),
 )
 
 particleAna_mc = particleAna.clone(
   # generated information
-  genParticles = cms.untracked.InputTag("genMuons"),
+  genParticles = cms.untracked.InputTag("genParticles"),
   genInfo      = cms.untracked.InputTag("generator"),
+  genPdgId     = cms.untracked.vuint32(),
 )

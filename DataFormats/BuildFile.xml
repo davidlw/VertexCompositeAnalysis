@@ -1,5 +1,4 @@
 <use   name="DataFormats/PatCandidates"/>
-<use   name="RecoVertex/KinematicFitPrimitives"/>
 <flags LCG_DICT_HEADER="classes.h"/>
 <flags LCG_DICT_XML="classes_def.xml"/>
 <export>

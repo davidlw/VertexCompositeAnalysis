@@ -27,11 +27,9 @@
 
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
-#include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/TrackReco/interface/Track.h"
-#include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/TrackReco/interface/DeDxData.h"
-#include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
+#include "DataFormats/EgammaCandidates/interface/Conversion.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Tau.h"
@@ -42,38 +40,31 @@
 
 #include "RecoVertex/VertexPrimitives/interface/TransientVertex.h"
 #include "RecoVertex/KalmanVertexFit/interface/KalmanVertexFitter.h"
+#include "RecoVertex/KalmanVertexFit/interface/KalmanVertexSmoother.h"
 #include "RecoVertex/AdaptiveVertexFit/interface/AdaptiveVertexFitter.h"
+#include "RecoVertex/GaussianSumVertexFit/interface/GsfVertexFitter.h"
+#include "RecoVertex/GaussianSumVertexFit/interface/AdaptiveGsfVertexFitter.h"
 #include "RecoVertex/KinematicFitPrimitives/interface/KinematicState.h"
-#include "RecoVertex/KinematicFitPrimitives/interface/KinematicParticle.h"
 #include "RecoVertex/KinematicFitPrimitives/interface/RefCountedKinematicParticle.h"
-#include "RecoVertex/KinematicFitPrimitives/interface/TransientTrackKinematicParticle.h"
 #include "RecoVertex/KinematicFitPrimitives/interface/KinematicParticleFactoryFromTransientTrack.h"
 #include "RecoVertex/KinematicFitPrimitives/interface/VirtualKinematicParticleFactory.h"
-#include "RecoVertex/KinematicFitPrimitives/interface/MultiTrackKinematicConstraint.h"
+#include "RecoVertex/KinematicFitPrimitives/interface/KinematicPerigeeConversions.h"
 #include "RecoVertex/KinematicFit/interface/KinematicParticleVertexFitter.h"
-#include "RecoVertex/KinematicFit/interface/KinematicParticleFitter.h"
-#include "RecoVertex/KinematicFit/interface/MassKinematicConstraint.h"
 #include "RecoVertex/KinematicFit/interface/KinematicConstrainedVertexFitter.h"
-#include "RecoVertex/KinematicFit/interface/TwoTrackMassKinematicConstraint.h"
+#include "RecoVertex/KinematicFit/interface/MultiTrackMassKinematicConstraint.h"
+#include "RecoVertex/KinematicFit/interface/MultiTrackPointingKinematicConstraint.h"
+#include "RecoVertex/KinematicFit/interface/FinalTreeBuilder.h"
 
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
-#include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackFromFTSFactory.h"
-#include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 #include "TrackingTools/PatternTools/interface/ClosestApproachInRPhi.h"
-#include "TrackingTools/PatternTools/interface/TSCBLBuilderNoMaterial.h"
-#include "TrackingTools/IPTools/interface/IPTools.h"
 
+#include "MuonAnalysis/MuonAssociators/interface/PropagateToMuon.h"
 #include "CommonTools/UtilAlgos/interface/StringCutObjectSelector.h"
-#include "CommonTools/Statistics/interface/ChiSquaredProbability.h"
+#include "HepPDT/ParticleID.hh"
 
 #include "combinations.hpp"
-#include <Math/Functions.h>
-#include <Math/SVector.h>
-#include <Math/SMatrix.h>
-#include <TMath.h>
-#include <TVector3.h>
 
 
 struct ParticleComparator {
@@ -109,15 +100,17 @@ struct ParticleMassComparator : ParticleComparator {
   inline bool operator()(const pat::GenericParticle& x, const pat::GenericParticle& y) const
   {
     return (isParticleLess(x, y) ||
-            (isEqual(x.pt(), y.pt()) && isEqual(x.eta(), y.eta()) && isEqual(x.phi(), y.phi()) && isEqual(x.charge(), y.charge()) && isLess(x.mass(), y.mass())));
+            (isParticleEqual(x, y) && isLess(x.mass(), y.mass())));
   }
 };
 
 
 const std::map<uint, double> MASS_ = {
   {11, 0.000511}, {13, 0.10565837}, {15, 1.77686}, // leptons
+  {23, 91.188}, {24, 80.38}, // bosons
   {211, 0.13957018}, {310, 0.497614}, {321, 0.493677}, {333, 1.019445}, // light and strange mesons
   {411, 1.86962}, {421, 1.86484}, {431, 1.96847}, {511, 5.27929}, // charmed and bottom mesons
+  {443, 3.096900}, {100443, 3.68609}, {553, 9.4603}, {100553, 10.0233}, {200553, 10.3552}, // quarkonia
   {2212, 0.938272013}, {3122, 1.115683}, {3312, 1.32171}, {3334, 1.67245}, {4122, 2.28646} // baryons
 };
 const std::map<uint, float> WIDTH_ = {{211, 3.5E-7f}, {321, 1.6E-5f}, {2212, 1.6E-5f}};
@@ -125,7 +118,6 @@ const std::map<uint, float> WIDTH_ = {{211, 3.5E-7f}, {321, 1.6E-5f}, {2212, 1.6
 
 typedef std::set<pat::GenericParticle, ParticleComparator> ParticleSet;
 typedef std::set<pat::GenericParticle, ParticleMassComparator> ParticleMassSet;
-typedef ROOT::Math::SVector<double, 3> SVector3;
 
 
 class ParticleDaughter {
@@ -145,9 +137,17 @@ class ParticleDaughter {
   void addParticles(const edm::Event& event, const edm::EDGetTokenT<std::vector<T> >& token, const reco::Vertex& vertex, const bool embedInfo=true);
   void addParticles(const edm::Event& event);
   void fillInfo(const edm::ParameterSet& pSet, const edm::ParameterSet& config, edm::ConsumesCollector& iC);
+  void init(const edm::EventSetup& iSetup);
   void clear();
+  template<class T>
+  void clear(std::vector<T>& v) { std::vector<T>().swap(v); };
+
+  pat::GenericParticleCollection particles_;
 
  private:
+  template <class T>
+  void addInfo(pat::GenericParticle& c, const T& p);
+  void addInfo(pat::GenericParticle& c, const reco::Conversion& p);
   template <class T>
   void addData(pat::GenericParticle& c, const edm::Ref<std::vector<T> >& p, const bool& embedInfo);
   void addData(pat::GenericParticle& c, const reco::TrackRef& p, const bool& embedInfo);
@@ -156,6 +156,7 @@ class ParticleDaughter {
   void addData(pat::GenericParticle& c, const pat::ElectronRef& p, const bool& embedInfo);
   void setMVA (pat::GenericParticle& c, const size_t& i, const edm::Handle<std::vector<float> >& m);
   void setDeDx(pat::GenericParticle& c, const edm::Handle<edm::ValueMap<reco::DeDxData> >& m);
+  void addMuonL1Info(pat::GenericParticle& c, const edm::Handle<pat::TriggerObjectStandAloneMatch>& m);
 
   int pdgId_;
   int charge_;
@@ -163,11 +164,14 @@ class ParticleDaughter {
   float width_;
   std::string selection_;
   std::string finalSelection_;
-  pat::GenericParticleCollection particles_;
+
+  edm::ParameterSet conf_;
+  PropagateToMuon* propToMuon_;
 
   edm::EDGetTokenT<pat::GenericParticleCollection> token_source_;
   edm::EDGetTokenT<std::vector<float> >            token_mva_;
   edm::EDGetTokenT<edm::ValueMap<reco::DeDxData> > token_dedx_;
+  edm::EDGetTokenT<pat::TriggerObjectStandAloneMatch> token_muonL1Info_;
 };
 
 
@@ -177,13 +181,35 @@ class ParticleFitter {
   ~ParticleFitter();
 
   typedef std::map<double, std::vector<double> > DoubleMap;
+  typedef edm::RefProd<pat::GenericParticleCollection> GenericParticleRefProd;
+  typedef std::vector<math::XYZTLorentzVector> LorentzVectorColl;
+  typedef std::vector<reco::TransientTrack> TransTrackColl;
+  typedef std::vector<RefCountedKinematicParticle> KinParColl;
+  typedef std::tuple<float, float, float, size_t, bool> VertexTuple;
+  typedef std::tuple<float, float, float, float, signed char> ParticleTuple;
+  typedef std::tuple<KinParColl, TransTrackColl, std::map<ParticleTuple, size_t> > ParticleInfo;
+  typedef std::pair<std::vector<int>, edm::Handle<reco::VertexCollection> > IntValueMap;
 
-  const pat::GenericParticleCollection& particles() const { return candidates_; }
-  const bool hasNoDaughters() const { return daughters_.empty(); }
+  const reco::VertexCollection& vertices() const { return vertices_; };
+  const pat::GenericParticleCollection& particles() const { return candidates_; };
+  const pat::GenericParticleCollection& daughters() const { return particles_; };
+  const IntValueMap& vtxNTrk() const { return vtxNTrk_; } 
+  const bool hasNoDaughters() const { return daughters_.empty(); };
+  const bool doNTracks() const { return doNTracks_; }
 
+  reco::VertexRef getVertexRef(const reco::Vertex& vertex);
+  math::XYZTLorentzVector getP4(const GlobalVector& p, const double& m);
+  pat::GenericParticleRef addParticle(const pat::GenericParticle& particle);
+  void matchPrimaryVertex(pat::GenericParticle& cand, const TransTrackColl& tracks={}, FreeTrajectoryState fts={}, const double& thr=1.E-9);
+  RefCountedKinematicTree fitVertex(const ParticleInfo& parInfo, const int& fitAlgo, GlobalPoint decP, const reco::Vertex& priVtx={});
+  RefCountedKinematicTree fitVertex(const ParticleInfo& parInfo, const int& fitAlgo);
+
+  void setVtxProd(const reco::VertexRefProd& prod) { vtxProd_ = prod; };
+  void setDauProd(const GenericParticleRefProd& prod) { dauProd_ = prod; };
   void setVertex(const edm::Event& iEvent);
+  void getNTracks(const edm::Event& iEvent);
   void addParticles(ParticleDaughter& d, const edm::Event& iEvent);
-  void fillDaughters(const edm::Event& iEvent);
+  void fillDaughters(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   bool isUniqueDaughter(ParticleSet& set, const pat::GenericParticle& dau);
   void makeCandidates();
   void swapDaughters(DoubleMap& swapDauColls, const pat::GenericParticle& cand);
@@ -193,15 +219,26 @@ class ParticleFitter {
   void addExtraInfo(pat::GenericParticle& cand);
   void fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   void clear();
+  template<class T>
+  void clear(std::vector<T>& v) { std::vector<T>().swap(v); };
 
  private:
   int pdgId_;
-  bool doSwap_;
+  bool doSwap_, doNTracks_, matchVertex_;
   double mass_, width_;
-  reco::Vertex vertex_;
-  reco::Vertex beamSpot2D_;
+  std::vector<UInt_t> fitAlgoV_;
+  std::vector<double> puMap_;
+  reco::BeamSpot beamSpot_;
+  reco::Vertex beamSpot2D_, vertex_;
+  reco::VertexCollection vertices_, priVertices_;
   std::vector<ParticleDaughter> daughters_;
-  pat::GenericParticleCollection candidates_;
+  pat::GenericParticleCollection candidates_, particles_;
+  std::map<VertexTuple, reco::VertexRef> vertexRefMap_;
+  std::map<ParticleTuple, pat::GenericParticleRef> particleRefMap_;
+  IntValueMap vtxNTrk_;
+
+  reco::VertexRefProd vtxProd_;
+  GenericParticleRefProd dauProd_;
 
   edm::ESHandle<MagneticField> bFieldHandle_;
 
@@ -214,8 +251,10 @@ class ParticleFitter {
   edm::EDGetTokenT<reco::TrackCollection> token_tracks_;
   edm::EDGetTokenT<reco::PFCandidateCollection> token_pfParticles_;
   edm::EDGetTokenT<pat::JetCollection> token_jets_;
+  edm::EDGetTokenT<reco::ConversionCollection> token_convPhotons_;
 
   StringCutObjectSelector<pat::GenericParticle, true> preSelection_;
+  StringCutObjectSelector<pat::GenericParticle, true> preMassSelection_;
   StringCutObjectSelector<pat::GenericParticle, true> pocaSelection_;
   StringCutObjectSelector<pat::GenericParticle, true> postSelection_;
   StringCutObjectSelector<pat::GenericParticle, true> finalSelection_;

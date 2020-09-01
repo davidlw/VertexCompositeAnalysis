@@ -100,7 +100,7 @@ process.generalD0CandidatesNew = process.generalParticles.clone(
        "&& userFloat('dauPtSum') >= 1.6 && userFloat('dauEtaDiff') <= 1.0"
        ),
     pocaSelection = cms.string(""
-       "userFloat('mass') >= 1.71 && userFloat('mass') <= 2.02 && pt >= 1.0"
+       "userFloat('bestMass') >= 1.71 && userFloat('bestMass') <= 2.02 && pt >= 1.0"
        "&& userFloat('dca') >= 0 && userFloat('dca') <= 9999."
        ),
     postSelection = cms.string(""
@@ -146,14 +146,14 @@ process.generalD0CandidatesNew = process.generalParticles.clone(
 process.generalD0CandidatesNew.mva = cms.InputTag("generalTracks","MVAValues") ###cesar:to change iter6 tracking mva cut
 
 # tree producer
-process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.generalanalyzer_tree_cff")
-process.generalanaNew = process.generalana.clone(
-  VertexCompositeCollection = cms.untracked.InputTag("generalD0CandidatesNew"),
-  isEventPlane = cms.bool(True),
-  eventplaneSrc = cms.InputTag("hiEvtPlane"),
-  centralityBinLabel = cms.InputTag("centralityBin","HFtowers"),
-  FilterResultCollection = cms.untracked.InputTag("TriggerResults::D0PbPb2018SKIM"),
-    )
+from VertexCompositeAnalysis.VertexCompositeAnalyzer.particle_tree_cff import particleAna
+process.generalanaNew = particleAna.clone(
+  recoParticles = cms.InputTag("generalD0CandidatesNew"),
+  triggerInfo = cms.untracked.VPSet([
+    cms.PSet(path = cms.string('HLT_HIMinimumBias_*')), # Minimum bias
+  ]),
+  selectEvents = cms.string("eventFilter_HM"),
+)
 
 process.generalanaNewSeq = cms.Sequence(process.generalanaNew)
 
@@ -203,6 +203,24 @@ process.output_HM.outputCommands = cms.untracked.vstring(#'drop *',
 )
 process.output_HM_step = cms.EndPath(process.output_HM)
 
+process.load("VertexCompositeAnalysis.VertexCompositeProducer.ppanalysisSkimContentD0_cff")
+process.output_HM = cms.OutputModule("PoolOutputModule",
+    outputCommands = process.analysisSkimContent.outputCommands,
+    fileName = cms.untracked.string('PbPb2018_SKIM_AOD2.root'),
+    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eventFilter_HM_step')),
+    dataset = cms.untracked.PSet(
+      dataTier = cms.untracked.string('AOD')
+    )
+)
+process.output_HM_step = cms.EndPath(process.output_HM)
+
+process.output_HM.outputCommands = cms.untracked.vstring('drop *',
+      'keep *_generalD0CandidatesNew_*_*',
+      'keep *_offlinePrimaryVerticesRecovery_*_*',
+      'keep *_hiEvtPlane_*_*',
+      'keep *_centralityBin_*_*',
+      'keep *_hiCentrality_*_D0PbPb2018SKIM',
+)
 
 # Define the process schedule
 process.schedule = cms.Schedule(

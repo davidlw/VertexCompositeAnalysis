@@ -25,6 +25,7 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/PatCandidates/interface/GenericParticle.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
 #include "VertexCompositeAnalysis/VertexCompositeProducer/interface/ParticleFitter.h"
 
 class ParticleProducer : public edm::EDProducer {
@@ -35,7 +36,7 @@ public:
 private:
   virtual void beginJob();
   virtual void produce(edm::Event&, const edm::EventSetup&);
-  virtual void endJob() ;
+  virtual void endJob();
 
   ParticleFitter fitter_;
   ParticleDaughter daughter_;
