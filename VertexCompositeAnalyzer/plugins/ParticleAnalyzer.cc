@@ -299,7 +299,20 @@ private:
     {
       erase(boolM_, n);
       erase(ucharM_, n);
+      erase(charM_, n);
       erase(ushortM_, n);
+      erase(shortM_, n);
+      erase(uintM_, n);
+      erase(intM_, n);
+      erase(floatM_, n);
+      erase(boolVM_, n);
+      erase(ucharVM_, n);
+      erase(charVM_, n);
+      erase(ushortVM_, n);
+      erase(shortVM_, n);
+      erase(uintVM_, n);
+      erase(intVM_, n);
+      erase(floatVM_, n);
     }
 
     // tree initializer
@@ -1245,8 +1258,18 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
   {
     const auto& dauColl = *cand.userData<pat::GenericParticleRefVector>("daughters");
     const auto& daughtersP4 = *cand.userData<std::vector<reco::Candidate::LorentzVector> >("daughtersP4");
-    for(size_t iDau=0; iDau<dauColl.size(); iDau++)
+    std::vector<std::pair<std::pair<int, int>, size_t>> dauIdxMV(dauColl.size());
+    for(size_t iDau=0; iDau<dauColl.size(); iDau++){
+      const auto& dau = *dauColl[iDau];
+      dauIdxMV.at(iDau) = std::make_pair(std::make_pair(dau.pdgId(), dau.charge()), iDau);
+    }
+    std::sort(dauIdxMV.begin(), dauIdxMV.end(), [](std::pair<std::pair<int, int>, size_t> a, std::pair<std::pair<int, int>, size_t> b){
+          return (a.first.first < b.first.first || (a.first.first == b.first.first && a.first.second < b.first.second));
+        });
+    //for(size_t iDau=0; iDau<dauColl.size(); iDau++)
+    for(size_t idau=0; idau<dauIdxMV.size(); idau++)
     {
+      size_t iDau = dauIdxMV[idau].second;
       const auto& dau = *dauColl[iDau];
       const auto& p4 = daughtersP4[iDau];
       info.push(idx, "dauIdx", fillRecoParticleInfo(dau, idx));
@@ -2036,8 +2059,25 @@ ParticleAnalyzer::addParticleToNtuple(const size_t& i, const std::pair<int, int>
       p.second.copyData(ntupleInfo_, idx, (p.first+"_"+label));
     }
   }
+
   // add daughter information
   const auto& dauIdx = cand.get(i, "dauIdx", std::vector<UShort_t>({}));
+
+  // remove meaningless variables 
+  // detectable particles such as pions do not have decay info 
+  if(!dauIdx.size()) {
+    ntupleInfo_.erase(label+"decayLength");
+    ntupleInfo_.erase(label+"pseudoDecayLength");
+    ntupleInfo_.erase(label+"angle");
+    ntupleInfo_.erase(label+"dca");
+    ntupleInfo_.erase(label+"vtx");
+  }
+  // intermediate particles such Ks mesons do not have track info
+  if(cand.get(i, "status", UChar_t(1)) != 1) {
+    ntupleInfo_.erase("trk_"+label);
+  }
+
+  // add daughter information
   for (size_t iDau=0; iDau<dauIdx.size(); iDau++)
   {
     addParticleToNtuple(dauIdx[iDau], {dau.first+1, iDau});
