@@ -18,7 +18,7 @@ process.source = cms.Source("PoolSource",
    #fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/himc/pPb816Summer16DR/Psi1S_PbP-EmbEPOS_8p16TeV_Pythia/AODSIM/PbPEmb_80X_mcRun2_pA_v4-v3/60000/D6DB2977-97E8-E911-A850-D8D385AF8A88.root'),
    inputCommands=cms.untracked.vstring('keep *')
 )
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
 
 # Set the global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
@@ -29,6 +29,8 @@ from VertexCompositeAnalysis.VertexCompositeProducer.generalParticles_cff import
 process.generalMuMuCandidates = generalParticles.clone(
     pdgId = cms.int32(443),
     doSwap = cms.bool(False),
+    matchVertex = cms.bool(True),
+    doNTracks = cms.bool(True),
     width = cms.double(999999999999.),
     finalSelection = cms.string(''),
     # daughter information
@@ -38,7 +40,7 @@ process.generalMuMuCandidates = generalParticles.clone(
     ]),
 )
 from VertexCompositeAnalysis.VertexCompositeProducer.PATAlgos_cff import doPATMuons
-doPATMuons(process, True)
+doPATMuons(process)
 
 # Add PbPb collision event selection
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.collisionEventSelection_cff')

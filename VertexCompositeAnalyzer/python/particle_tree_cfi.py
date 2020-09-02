@@ -6,24 +6,26 @@ particleAna = cms.EDAnalyzer('ParticleAnalyzer',
   beamSpot = cms.InputTag("offlineBeamSpot"),
   primaryVertices = cms.InputTag("offlinePrimaryVertices"),
   recoParticles = cms.InputTag("generalParticles"),
+  nTracksVMap = cms.untracked.InputTag("generalParticles:nTracks"),
 
   # trigger information
   triggerResults = cms.untracked.InputTag("TriggerResults::HLT"),
   triggerEvent   = cms.untracked.InputTag("hltTriggerSummaryAOD::HLT"),
   triggerInfo = cms.untracked.VPSet([
-      #  Double muon triggers
-      cms.PSet(path = cms.string('HLT_PAL1DoubleMuOpen_v'), minN = cms.int32(2)), # Dimuons
-      # Single muon triggers
-      cms.PSet(path = cms.string('HLT_PAL3Mu12_v'), minN = cms.int32(1)), # Electroweak boson
-      # Other triggers
-      cms.PSet(path = cms.string('HLT_PAFullTracks_Multiplicity120_v')), # High multiplicity
-      cms.PSet(path = cms.string('HLT_PAFullTracks_Multiplicity150_v')), # High multiplicity
-      cms.PSet(path = cms.string('HLT_PAFullTracks_Multiplicity185_part')), # High multiplicity
-      cms.PSet(path = cms.string('HLT_PAFullTracks_Multiplicity250_v')), # High multiplicity
-      cms.PSet(path = cms.string('HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part')), # Minimum bias
+      #cms.PSet(path = cms.string(''), filter = cms.string(''), minN = cms.int32(), isL1OR = cms.bool(), lumiInfo = cms.InputTag(''))
   ]),
 
-  #Filter info
+  # trigger-reco matching information
+  # default values:
+  # L1 muons:  deltaR < 0.3, deltaEta < 0.2, deltaPhi < 6.0
+  # L2 muons:  deltaR < 0.3, deltaPtRel < 10.0
+  # L3 muons:  deltaR < 0.1, deltaPtRel < 10.0
+  # any other: deltaR < 0.3, deltaPtRel < 10.0
+  matchInfo = cms.untracked.VPSet([
+      #cms.PSet(collection = cms.string(''), maxDeltaR = cms.double(), maxDeltaPtRes = cms.double(), maxDeltaEta = cms.double(), maxDeltaPhi = cms.double()),
+  ]),
+
+  # filter information
   eventFilterResults = cms.untracked.InputTag("TriggerResults"),
   eventFilterNames = cms.untracked.vstring(
       'Flag_colEvtSel',
