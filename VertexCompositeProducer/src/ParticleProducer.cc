@@ -27,12 +27,16 @@ ParticleProducer::ParticleProducer(const edm::ParameterSet& iConfig) :
   produces<pat::GenericParticleCollection>();
   if (!fitter_.hasNoDaughters()) {
     produces<pat::GenericParticleCollection>("daughters");
+    produces<reco::VertexCollection>("vertices");
   }
-  produces<reco::VertexCollection>("vertices");
+  if (fitter_.doNTracks()) {
+    produces<edm::ValueMap<int> >("nTracks");
+  }
 }
 
 // dDestructor
-ParticleProducer::~ParticleProducer() {
+ParticleProducer::~ParticleProducer()
+{
 }
 
 
@@ -41,11 +45,22 @@ ParticleProducer::~ParticleProducer() {
 //
 
 // producer method
-void ParticleProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
+void ParticleProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
   pat::GenericParticleCollection particles;
   // set primary vertex
   fitter_.setVtxProd(iEvent.getRefBeforePut<reco::VertexCollection>("vertices"));
   fitter_.setVertex(iEvent);
+  // store nTrack-vertex map
+  if (fitter_.doNTracks()) {
+    fitter_.getNTracks(iEvent);
+    const auto& vtxNTrk = fitter_.vtxNTrk();
+    auto valueMap = std::make_unique<edm::ValueMap<int> >();
+    edm::ValueMap<int>::Filler filler(*valueMap);
+    filler.insert(vtxNTrk.second, vtxNTrk.first.begin(), vtxNTrk.first.end());
+    filler.fill();
+    iEvent.put(std::move(valueMap), "nTracks");
+  }
   // extract particles
   if (fitter_.hasNoDaughters()) {
     // consider particle as daughter
@@ -53,20 +68,24 @@ void ParticleProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
     particles = daughter_.particles();
   }
   else {
-     // set daughters product
-     fitter_.setDauProd(iEvent.getRefBeforePut<pat::GenericParticleCollection>("daughters"));
-     // fit particles
-     fitter_.fitAll(iEvent, iSetup);
-     particles = fitter_.particles();
-     // store daughters
-     auto daughters = std::make_unique<pat::GenericParticleCollection>(fitter_.daughters());
-     daughters->shrink_to_fit();
-     iEvent.put(std::move(daughters), "daughters");
+    // set daughters product
+    fitter_.setDauProd(iEvent.getRefBeforePut<pat::GenericParticleCollection>("daughters"));
+    // fit particles
+    fitter_.fitAll(iEvent, iSetup);
+    particles = fitter_.particles();
+  }
+  // store daughters
+  if (!fitter_.hasNoDaughters()) {
+    auto daughters = std::make_unique<pat::GenericParticleCollection>(fitter_.daughters());
+    daughters->shrink_to_fit();
+    iEvent.put(std::move(daughters), "daughters");
   }
   // store vertices
-  auto vertices = std::make_unique<reco::VertexCollection>(fitter_.vertices());
-  vertices->shrink_to_fit();
-  iEvent.put(std::move(vertices), "vertices");
+  if (!fitter_.hasNoDaughters()) {
+    auto vertices = std::make_unique<reco::VertexCollection>(fitter_.vertices());
+    vertices->shrink_to_fit();
+    iEvent.put(std::move(vertices), "vertices");
+  }
   // store particles
   auto output = std::make_unique<pat::GenericParticleCollection>(particles);
   output->shrink_to_fit();
@@ -77,11 +96,13 @@ void ParticleProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
 }
 
 
-void ParticleProducer::beginJob() {
+void ParticleProducer::beginJob()
+{
 }
 
 
-void ParticleProducer::endJob() {
+void ParticleProducer::endJob()
+{
 }
 
 //define this as a plug-in

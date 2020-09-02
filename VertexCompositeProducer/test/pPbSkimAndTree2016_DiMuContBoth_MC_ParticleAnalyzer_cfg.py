@@ -18,7 +18,7 @@ process.source = cms.Source("PoolSource",
    #fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/himc/pPb816Summer16DR/Psi1S_PbP-EmbEPOS_8p16TeV_Pythia/AODSIM/PbPEmb_80X_mcRun2_pA_v4-v3/60000/D6DB2977-97E8-E911-A850-D8D385AF8A88.root'),
    inputCommands=cms.untracked.vstring('keep *')
 )
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
 # Set the global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
@@ -29,16 +29,19 @@ from VertexCompositeAnalysis.VertexCompositeProducer.generalParticles_cff import
 process.generalMuMuCandidates = generalParticles.clone(
     pdgId = cms.int32(443),
     doSwap = cms.bool(False),
+    matchVertex = cms.bool(True),
+    doNTracks = cms.bool(True),
     width = cms.double(999999999999.),
     finalSelection = cms.string(''),
     # daughter information
     daughterInfo = cms.VPSet([
-        cms.PSet(pdgId = cms.int32(13), selection = cms.string(''), muonL1Info = cms.InputTag('muonL1Info:propagatedReco')),
-        cms.PSet(pdgId = cms.int32(13), selection = cms.string(''), muonL1Info = cms.InputTag('muonL1Info:propagatedReco')),
+        cms.PSet(pdgId = cms.int32(13), selection = cms.string('')),
+        cms.PSet(pdgId = cms.int32(13), selection = cms.string('')),
     ]),
+
 )
 from VertexCompositeAnalysis.VertexCompositeProducer.PATAlgos_cff import doPATMuons
-doPATMuons(process, True)
+doPATMuons(process)
 
 # Add PbPb collision event selection
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.collisionEventSelection_cff')
@@ -51,8 +54,23 @@ process.dimurereco_step = cms.Path(process.patMuonSequence * process.generalMuMu
 from VertexCompositeAnalysis.VertexCompositeAnalyzer.particle_tree_cff import particleAna_mc
 process.dimucontana_mc = particleAna_mc.clone(
   recoParticles = cms.InputTag("generalMuMuCandidates"),
+  nTracksVMap = cms.untracked.InputTag("generalMuMuCandidates:nTracks"),
   genParticles = cms.untracked.InputTag("genParticles"),
-  selectEvents = cms.string("")
+  genPdgId = cms.untracked.vuint32([100443, 443]),
+  triggerInfo = cms.untracked.VPSet([
+    #  Double muon triggers
+    cms.PSet(path = cms.string('HLT_PAL1DoubleMuOpen_v'), minN = cms.int32(2)), # Dimuons
+    # Single muon triggers
+    cms.PSet(path = cms.string('HLT_PAL3Mu12_v'), minN = cms.int32(1)), # Electroweak boson
+    # Other triggers
+    cms.PSet(path = cms.string('HLT_PAFullTracks_Multiplicity120_v')), # High multiplicity
+    cms.PSet(path = cms.string('HLT_PAFullTracks_Multiplicity150_v')), # High multiplicity
+    cms.PSet(path = cms.string('HLT_PAFullTracks_Multiplicity185_part')), # High multiplicity
+    cms.PSet(path = cms.string('HLT_PAFullTracks_Multiplicity250_v')), # High multiplicity
+    cms.PSet(path = cms.string('HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part')), # Minimum bias
+  ]),
+  addTrgObj = cms.untracked.bool(True),
+  selectEvents = cms.string(""),
 )
 
 # Define the output

@@ -9,12 +9,15 @@ analysisSkimContent = cms.PSet(
       'keep *_hltTriggerSummaryAOD_*_*',
       'keep *_gtStage2Digis_*_*',
       'keep recoCentrality_*_*_*',
+      'keep *_*_centralityBin_*'
       'keep recoEvtPlanes_*_*_*',
       'keep LumiProducerFromBrilcalc_*_*_*',
       'keep LumiScalerss_*_*_*',
+      'keep *_externalLHEProducer_*_*',
       'keep GenEventInfoProduct_*_*_*',
       'keep recoGenParticles_*_*_*',
       'keep patGenericParticles_*_*_*',
+      'keep *_*_nTracks_*',
       'keep LumiInfo_*_*_*',
       )
     )
