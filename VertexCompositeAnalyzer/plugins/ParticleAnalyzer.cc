@@ -1361,7 +1361,7 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
   // generated particle information
   if (isMC_)
   {
-    if (!cand.hasUserInt("isGenMatched")) { addGenParticle(*const_cast<pat::GenericParticle*>(&cand), cand.p4(), genParticlesToMatch_); } 
+    if (!cand.hasUserInt("isGenMatched")) { addGenParticle(*const_cast<pat::GenericParticle*>(&cand), cand.p4(), genParticlesToMatch_); }
     const auto& genPar = cand.genParticleRef();
     info.add("genIdx", fillGenParticleInfo(genPar, idx));
     info.add("matchGEN", genPar.isNonnull());
@@ -2189,8 +2189,22 @@ ParticleAnalyzer::addParticleToNtuple(const size_t& i, const std::pair<int, int>
       p.second.copyData(ntupleInfo_, idx, (p.first+"_"+label));
     }
   }
+
   // add daughter information
   const auto& dauIdx = cand.get(i, "dauIdx", std::vector<UShort_t>());
+  // remove meaningless variables 
+  // detectable particles such as pions do not have decay info 
+  if(!dauIdx.size()) {
+    ntupleInfo_.erase(label+"decayLength", {"float", "floatV"});
+    ntupleInfo_.erase(label+"pseudoDecayLength", {"float", "floatV"});
+    ntupleInfo_.erase(label+"angle", {"float", "floatV"});
+    ntupleInfo_.erase(label+"dca", {"float", "floatV"});
+    ntupleInfo_.erase(label+"vtx", {"float", "floatV"});
+  }
+  // intermediate particles such as Ks mesons do not have track info
+  if(cand.get(i, "status", UChar_t(1)) != 1) {
+    ntupleInfo_.erase("trk_"+label, {"float", "floatV", "bool", "boolV", "ushort", "ushortV"});
+  }
   for (size_t iDau=0; iDau<dauIdx.size(); iDau++)
   {
     addParticleToNtuple(dauIdx[iDau], {dau.first+1, iDau});

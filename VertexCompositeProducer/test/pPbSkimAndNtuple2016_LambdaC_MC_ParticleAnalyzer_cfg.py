@@ -17,7 +17,7 @@ process.source = cms.Source("PoolSource",
    fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/himc/pPb816Summer16DR/LambdaC-KsPr_LCpT-5p9_pPb-EmbEPOS_8p16_Pythia8/AODSIM/pPbEmb_80X_mcRun2_pA_v4-v1/70000/30A92DC7-C99C-E711-8E53-0242AC110003.root'),
    inputCommands=cms.untracked.vstring('keep *')
 )
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(9))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
 
 # Set the global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
@@ -36,7 +36,7 @@ process.kShort = generalParticles.clone(
     pocaSelection = cms.string("pt >= 1.0 && abs(rapidity) < 2.4"),
     postSelection = cms.string(""),
     preMassSelection = cms.string(""),
-    finalSelection = cms.string( " "),
+    finalSelection = cms.string( "abs(userFloat('angle3D'))<0.2 && abs(userFloat('lVtxSig'))>2.5"),
     # daughter information
     daughterInfo = cms.VPSet([
         cms.PSet(pdgId = cms.int32(211), charge = cms.int32(-1),
@@ -87,6 +87,7 @@ process.lambdacAna_mc = particleAna_mc.clone(
   selectEvents = cms.string(""),
   addSource    = cms.untracked.bool(False),
   genPdgId     = cms.untracked.vuint32([4122, 310, 2212, 211]),
+  saveTree = cms.untracked.bool(False)
 )
 
 # Define the output

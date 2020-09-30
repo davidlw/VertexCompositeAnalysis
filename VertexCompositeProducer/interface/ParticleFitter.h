@@ -99,8 +99,8 @@ struct ParticleComparator {
 struct ParticleMassComparator : ParticleComparator {
   inline bool operator()(const pat::GenericParticle& x, const pat::GenericParticle& y) const
   {
-    return (isParticleLess(x, y) ||
-            (isParticleEqual(x, y) && isLess(x.mass(), y.mass())));
+    return (isLess(x.mass(), y.mass()) ||
+            (isEqual(x.mass(), y.mass()) && isParticleLess(x, y)));
   }
 };
 
@@ -193,7 +193,7 @@ class ParticleFitter {
   const reco::VertexCollection& vertices() const { return vertices_; };
   const pat::GenericParticleCollection& particles() const { return candidates_; };
   const pat::GenericParticleCollection& daughters() const { return particles_; };
-  const IntValueMap& vtxNTrk() const { return vtxNTrk_; } 
+  const IntValueMap& vtxNTrk() const { return vtxNTrk_; }
   const bool hasNoDaughters() const { return daughters_.empty(); };
   const bool doNTracks() const { return doNTracks_; }
 
@@ -223,6 +223,7 @@ class ParticleFitter {
   void clear(std::vector<T>& v) { std::vector<T>().swap(v); };
 
  private:
+  bool shrinkDauColl_;
   int pdgId_;
   bool doSwap_, doNTracks_, matchVertex_;
   double mass_, width_;
