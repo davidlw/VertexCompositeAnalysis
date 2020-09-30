@@ -17,7 +17,7 @@ process.source = cms.Source("PoolSource",
    fileNames = cms.untracked.vstring('root://cmsxrootd.fnal.gov//store/himc/pPb816Summer16DR/LambdaC-KsPr_LCpT-5p9_pPb-EmbEPOS_8p16_Pythia8/AODSIM/pPbEmb_80X_mcRun2_pA_v4-v1/70000/30A92DC7-C99C-E711-8E53-0242AC110003.root'),
    inputCommands=cms.untracked.vstring('keep *')
 )
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
 
 # Set the global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
@@ -56,6 +56,7 @@ process.kShort = generalParticles.clone(
     ]),
 )
 process.LambdaC = generalParticles.clone(
+    shrinkDauColl = cms.bool(False),
     pdgId = cms.int32(4122),
     doSwap = cms.bool(False),
     preMassSelection = cms.string("abs(charge)==1"),

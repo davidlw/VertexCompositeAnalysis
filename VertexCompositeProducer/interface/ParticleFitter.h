@@ -99,8 +99,8 @@ struct ParticleComparator {
 struct ParticleMassComparator : ParticleComparator {
   inline bool operator()(const pat::GenericParticle& x, const pat::GenericParticle& y) const
   {
-    return (isParticleLess(x, y) ||
-            (isParticleEqual(x, y) && isLess(x.mass(), y.mass())));
+    return (isLess(x.mass(), y.mass()) ||
+            (isEqual(x.mass(), y.mass()) && isParticleLess(x, y)));
   }
 };
 
@@ -223,6 +223,7 @@ class ParticleFitter {
   void clear(std::vector<T>& v) { std::vector<T>().swap(v); };
 
  private:
+  bool shrinkDauColl_;
   int pdgId_;
   bool doSwap_, doNTracks_, matchVertex_;
   double mass_, width_;

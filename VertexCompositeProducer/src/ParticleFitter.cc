@@ -21,6 +21,11 @@ ParticleFitter::ParticleFitter(const edm::ParameterSet& theParameters, edm::Cons
   finalSelection_(theParameters.getParameter<std::string>("finalSelection"))
 {
   // get candidate information
+  if (theParameters.existsAs<bool>("shrinkDauColl")) {
+    shrinkDauColl_ = theParameters.getParameter<bool>("shrinkDauColl");
+  } else {
+    shrinkDauColl_ = true;
+  }
   if (theParameters.existsAs<double>("mass")) {
     mass_ = theParameters.getParameter<double>("mass");
   }
@@ -354,6 +359,7 @@ void ParticleFitter::makeCandidates()
   // sort candidates
   std::sort(candidates_.begin(), candidates_.end(), ParticleMassComparator());
   // shrink daughter collection
+  if(!shrinkDauColl_) return;
   auto par = particles_; particles_.clear(); particleRefMap_.clear();
   for (const auto& c : candidates_) {
     auto& daughters = *const_cast<pat::GenericParticleRefVector*>(c.userData<pat::GenericParticleRefVector>("daughters"));

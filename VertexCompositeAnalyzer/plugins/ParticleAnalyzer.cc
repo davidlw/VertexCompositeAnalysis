@@ -2203,7 +2203,7 @@ ParticleAnalyzer::addParticleToNtuple(const size_t& i, const std::pair<int, int>
   }
   // intermediate particles such as Ks mesons do not have track info
   if(cand.get(i, "status", UChar_t(1)) != 1) {
-    ntupleInfo_.erase("trk_"+label, {"float", "floatV"});
+    ntupleInfo_.erase("trk_"+label, {"float", "floatV", "bool", "boolV", "ushort", "ushortV"});
   }
   for (size_t iDau=0; iDau<dauIdx.size(); iDau++)
   {
