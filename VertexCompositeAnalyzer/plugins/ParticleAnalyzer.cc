@@ -1016,9 +1016,10 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
         {
           const auto& i = triggerEvent->collectionIndex(col);
           const auto& cK = triggerEvent->collectionKeys();
+          const auto& triggerObjects = triggerEvent->getObjects();
           for (size_t j=cK[i>0?i-1:0]; j<cK[i]; j++)
           {
-            triggerObjectMap_[col][j] = triggerEvent->getObjects()[j];
+            triggerObjectMap_[col][j] = triggerObjects[j];
             triggerObjectMap_[col][j].setCollection(col);
           }
         }
@@ -1386,11 +1387,6 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
     info.add("genPdgId", (genPar.isNonnull() ? genPar->pdgId() : 0));
     info.add("momMatchGEN", momMatchGEN);
     info.add("momMatchIdx", momMatchGEN ? momIdx : UShort_t(-1));
-    if (genPar.isNonnull()) {
-      std::cout << std::endl;
-      std::cout << "GEN: " << genPar->polarP4() << std::endl;
-      std::cout << "REC: " << cand.polarP4() << std::endl;
-    }
   }
 
   // initialize daughter information
