@@ -1,4 +1,4 @@
-#include "VertexCompositeAnalysis/VertexCompositeProducer/interface/PrimaryVertexRecoveryProducer.h"
+#include "PrimaryVertexRecoveryProducer.h"
 
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
@@ -129,6 +129,21 @@ PrimaryVertexRecoveryProducer::~PrimaryVertexRecoveryProducer() {
 
 
 void
+PrimaryVertexRecoveryProducer::skimTracks(reco::VertexCollection& vColl)
+{
+  std::map<size_t, size_t> nTrkM;
+  for (const auto& v : vColl) nTrkM[v.tracksSize()] = std::min(size_t(2), v.tracksSize());
+  size_t i=0; for (auto& v : nTrkM) v.second += (v.first<2 ? 0 : i++);
+  auto vC = vColl;
+  for (size_t i=0; i<vColl.size(); i++) {
+    vC[i].removeTracks();
+    for (size_t j=0; j<nTrkM[vColl[i].tracksSize()]; j++) { vC[i].add({}); }
+  }
+  vColl = vC; 
+}
+
+
+void
 PrimaryVertexRecoveryProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 
@@ -184,6 +199,7 @@ PrimaryVertexRecoveryProducer::produce(edm::Event& iEvent, const edm::EventSetup
         if(hasValid){
           nAlgosFound++;
           vColl.push_back((*recoVertices)[biggestIndx]);
+          skimTracks(vColl);
           iEvent.put(std::move(result), algorithm->label); 
           continue;
         }
@@ -317,7 +333,7 @@ PrimaryVertexRecoveryProducer::produce(edm::Event& iEvent, const edm::EventSetup
     // convert transient vertices returned by the theAlgo to (reco) vertices
     for (std::vector<TransientVertex>::const_iterator iv = pvs.begin();
 	 iv != pvs.end(); iv++) {
-      reco::Vertex v = *iv;
+     reco::Vertex v = *iv;
       vColl.push_back(v);
     }
 
@@ -370,6 +386,7 @@ PrimaryVertexRecoveryProducer::produce(edm::Event& iEvent, const edm::EventSetup
       std::cout << "Recovered a Vertex with " <<  std::setw(3) << vColl[0].tracksSize() << " tracks!" << std::endl;
       std::cout << "x: " << std::setw(6) << vColl[0].position().x() << " y: " << std::setw(6) << vColl[0].position().y() << " z: " << std::setw(6) << vColl[0].position().z() << " chi2/ndof: " <<  std::setw(4) << vColl[0].chi2()/vColl[0].ndof() << std::endl;
     }
+    skimTracks(vColl);
     iEvent.put(std::move(result), algorithm->label); 
   }
   

@@ -29,9 +29,6 @@ ParticleProducer::ParticleProducer(const edm::ParameterSet& iConfig) :
     produces<pat::GenericParticleCollection>("daughters");
     produces<reco::VertexCollection>("vertices");
   }
-  if (fitter_.doNTracks()) {
-    produces<edm::ValueMap<int> >("nTracks");
-  }
 }
 
 // dDestructor
@@ -51,16 +48,6 @@ void ParticleProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
   // set primary vertex
   fitter_.setVtxProd(iEvent.getRefBeforePut<reco::VertexCollection>("vertices"));
   fitter_.setVertex(iEvent);
-  // store nTrack-vertex map
-  if (fitter_.doNTracks()) {
-    fitter_.getNTracks(iEvent);
-    const auto& vtxNTrk = fitter_.vtxNTrk();
-    auto valueMap = std::make_unique<edm::ValueMap<int> >();
-    edm::ValueMap<int>::Filler filler(*valueMap);
-    filler.insert(vtxNTrk.second, vtxNTrk.first.begin(), vtxNTrk.first.end());
-    filler.fill();
-    iEvent.put(std::move(valueMap), "nTracks");
-  }
   // extract particles
   if (fitter_.hasNoDaughters()) {
     // consider particle as daughter

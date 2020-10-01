@@ -61,6 +61,7 @@ public:
   ~PrimaryVertexRecoveryProducer() override;
   
   void produce(edm::Event&, const edm::EventSetup&) override;
+  void skimTracks(reco::VertexCollection&);
 
   // access to config
   edm::ParameterSet config() const { return theConfig; }

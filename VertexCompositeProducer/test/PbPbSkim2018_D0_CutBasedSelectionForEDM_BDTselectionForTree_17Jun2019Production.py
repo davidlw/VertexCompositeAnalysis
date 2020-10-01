@@ -210,7 +210,9 @@ process.output_HM = cms.OutputModule("PoolOutputModule",
     SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eventFilter_HM_step')),
     dataset = cms.untracked.PSet(
       dataTier = cms.untracked.string('AOD')
-    )
+    ),
+    compressionLevel = cms.untracked.int32(9),
+    compressionAlgorithm = cms.untracked.string('LZMA'),
 )
 process.output_HM_step = cms.EndPath(process.output_HM)
 
@@ -228,7 +230,7 @@ process.schedule = cms.Schedule(
     process.pcentandep_step,
     process.d0rereco_step,
     process.output_HM_step,
-    process.generalana_step
+    #process.generalana_step
 )
 
 # Add the event selection filters

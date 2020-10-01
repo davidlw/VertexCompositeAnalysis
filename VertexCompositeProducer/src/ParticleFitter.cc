@@ -27,7 +27,9 @@ ParticleFitter::ParticleFitter(const edm::ParameterSet& theParameters, edm::Cons
   else if (MASS_.find(pdgId_)!=MASS_.end()) {
     mass_ = MASS_.at(pdgId_);
   }
-  width_ = mass_*0.15;
+  else { throw std::logic_error(Form("[ERROR] No mass parameter provided for candidate with pdgId: %d", pdgId_)); }
+  if (doSwap_ && mass_<0.) { throw std::logic_error("[ERROR] Can't swap with undefined input mass!"); }
+  width_ = mass_*0.15;;
   if (theParameters.existsAs<double>("width")) {
     width_ = theParameters.getParameter<double>("width");
   }
@@ -43,7 +45,6 @@ ParticleFitter::ParticleFitter(const edm::ParameterSet& theParameters, edm::Cons
 
   // get general settings
   fitAlgoV_ = theParameters.getParameter<std::vector<UInt_t> >("fitAlgo");
-  doNTracks_ = theParameters.getParameter<bool>("doNTracks");
   matchVertex_ = theParameters.getParameter<bool>("matchVertex");
   if (matchVertex_) {
     puMap_ = theParameters.getParameter<std::vector<double> >("puMap");
@@ -71,7 +72,6 @@ ParticleFitter::ParticleFitter(const edm::ParameterSet& theParameters, edm::Cons
   priVertices_ = {};
   vertexRefMap_ = {};
   particleRefMap_ = {};
-  vtxNTrk_ = {};
 };
 
 
@@ -102,7 +102,6 @@ void ParticleFitter::clear()
   clear(priVertices_);
   vertexRefMap_.clear();
   particleRefMap_.clear();
-  vtxNTrk_ = {};
   std::for_each(daughters_.begin(), daughters_.end(), [](ParticleDaughter &d){ d.clear(); });
 };
 
@@ -135,7 +134,6 @@ void ParticleFitter::setVertex(const edm::Event& iEvent)
   iEvent.getByToken(token_vertices_, vertexHandle);
   iEvent.getByToken(token_beamSpot_, beamSpotHandle);
   // initialize containers
-  vtxNTrk_ = std::make_pair(std::vector<int>(vertexHandle->size(),0), vertexHandle);
   priVertices_.reserve(vertexHandle->size());
   // select primary vertices (sort based on track multiplicity)
   for (size_t iVtx=0; iVtx<vertexHandle->size(); iVtx++) {
@@ -159,33 +157,6 @@ void ParticleFitter::setVertex(const edm::Event& iEvent)
   beamSpot2DError(0,0) = std::pow(beamSpotHandle->BeamWidthX(), 2.);
   beamSpot2DError(1,1) = std::pow(beamSpotHandle->BeamWidthY(), 2.);
   beamSpot2D_ = reco::Vertex(beamSpot2DValue, beamSpot2DError);
-};
-
-
-void ParticleFitter::getNTracks(const edm::Event& iEvent)
-{
-  if (!doNTracks_ || priVertices_.empty()) return;
-  // extract the input collections
-  edm::Handle<reco::TrackCollection> trackHandle;
-  iEvent.getByToken(token_tracks_, trackHandle);
-  // loop over general tracks
-  for (const auto& trk : *trackHandle) {
-    if (!trk.quality(reco::TrackBase::highPurity)) continue;
-    if (trk.pt() <= 0.4 || std::abs(trk.eta()) >= 2.4) continue;
-    if (trk.ptError()/trk.pt() >= 0.1) continue;
-    // loop over primary vertices
-    for (const auto& v : vertexRefMap_) {
-      if (!std::get<4>(v.first)) continue;
-      const auto& pv = v.second;
-      const auto& dz = trk.dz(pv->position());
-      const auto& dzErr2 = trk.dzError()*trk.dzError() + pv->zError()*pv->zError();
-      if (dz*dz >= 9.0*dzErr2) continue;
-      const auto& dxy = trk.dxy(pv->position());
-      const auto& dxyErr2 = trk.dxyError()*trk.dxyError() + pv->xError()*pv->yError();
-      if (dxy*dxy >= 9.0*dxyErr2) continue;
-      vtxNTrk_.first[pv.key()] += 1;
-    }
-  }
 };
 
 
@@ -214,13 +185,6 @@ void ParticleFitter::fillDaughters(const edm::Event& iEvent, const edm::EventSet
     daughter.init(iSetup);
     addParticles(daughter, iEvent);
     npar += daughter.particles().size();
-  }
-  // insert daughter particles
-  particles_.reserve(npar*2);
-  for (const auto& daughter : daughters_) {
-    for (const auto& particle : daughter.particles_) {
-      addParticle(particle);
-    }
   }
 };
 
@@ -251,7 +215,7 @@ bool ParticleFitter::isUniqueDaughter(ParticleSet& set, const pat::GenericPartic
   if (dau.hasUserData("daughters")) {
     const auto& gDauColl = *dau.userData<pat::GenericParticleRefVector>("daughters");
     for (const auto& gDau : gDauColl) {
-      if (!isUniqueDaughter(set, particles_.at(gDau.key()))) { return false; }
+      if (!isUniqueDaughter(set, *gDau)) { return false; }
     }
   }
   else if (!set.insert(dau).second) { return false; }
@@ -310,67 +274,68 @@ void ParticleFitter::makeCandidates()
     }
     // make preselection
     if (!preSelection_(cand)) continue;
-    pat::GenericParticleRefVector dauRefColl(dauProd_.id());
-    LorentzVectorColl daughtersP4;
-    for (const auto& daughter : daughters) {
-      const auto& tuple = std::make_tuple(daughter.pt(), daughter.eta(), daughter.phi(), daughter.mass(), daughter.charge());
-      dauRefColl.push_back(particleRefMap_.at(tuple));
-      daughtersP4.push_back(daughter.p4());
-    }
-    cand.addUserData<pat::GenericParticleRefVector>("daughters", dauRefColl);
-    cand.addUserData<LorentzVectorColl>("daughtersP4", daughtersP4);
-    auto iniCand = cand;
     // check if grandaughters are unique
     bool hasDuplicate = false;
     for (const auto& dau : daughters) {
       if (dau.hasUserData("daughters") && !isUniqueDaughter(daughters, dau)) { hasDuplicate = true; break; }
     }
     if (hasDuplicate) continue;
+    // extract daughter information
+    pat::GenericParticleCollection dauColl(daughters.begin(), daughters.end());
+    LorentzVectorColl daughtersP4;
+    for (const auto& daughter : daughters) {
+      daughtersP4.push_back(daughter.p4());
+    }
+    cand.addUserData<LorentzVectorColl>("daughtersP4", daughtersP4);
     // make swapped daughters
     DoubleMap swapDauColls;
-    swapDaughters(swapDauColls, iniCand);
+    swapDaughters(swapDauColls, cand, dauColl);
     setBestMass(cand, swapDauColls);
     // make mass preselection
     if (!preMassSelection_(cand)) continue;
     // fit candidate and make postselection
-    if (!fitCandidate(cand)) continue;
+    if (!fitCandidate(cand, dauColl)) continue;
     // add extra information
     addExtraInfo(cand);
     // make final selection
     if (!finalSelection_(cand)) continue;
     // add candidate
-    if (std::abs(cand.mass()-mass_) < width_) {
-      candidates_.push_back(cand);
+    pat::GenericParticleCollection candidates;
+    if (width_<=0. || std::abs(cand.mass()-mass_) < width_) {
+      candidates.push_back(cand);
     }
     // add swapped candidates
     pat::GenericParticleCollection swapCandColl;
     addSwapCandidates(swapCandColl, cand, swapDauColls);
     for (const auto& swapCand : swapCandColl) {
-      if (std::abs(swapCand.mass()-mass_) < width_) {
-        candidates_.push_back(swapCand);
+      if (width_<=0. || std::abs(swapCand.mass()-mass_) < width_) {
+        candidates.push_back(swapCand);
       }
+    }
+    // insert candidates
+    std::vector<size_t> idxV(dauColl.size());
+    pat::GenericParticleRefVector dauRefColl(dauProd_.id());
+    for (auto& c : candidates) {
+      if (dauRefColl.empty()) {
+        std::iota(idxV.begin(), idxV.end(), 0);
+        std::sort(idxV.begin(), idxV.end(), [&](size_t i, size_t j) { return ParticleTreeComparator()(dauColl[i], dauColl[j]); });
+        auto dR=dauColl; std::transform(idxV.begin(), idxV.end(), dauColl.begin(), [&](size_t i){ return dR[i]; });
+        for (const auto& dau : dauColl) dauRefColl.push_back(addParticle(dau));
+      }
+      auto& dP4Coll = *const_cast<LorentzVectorColl*>(c.userData<LorentzVectorColl>("daughtersP4"));
+      auto dR=dP4Coll; std::transform(idxV.begin(), idxV.end(), dP4Coll.begin(), [&](size_t i){ return dR[i]; });
+      c.addUserData<pat::GenericParticleRefVector>("daughters", dauRefColl);
+      candidates_.push_back(c);
     }
   }
   // sort candidates
   std::sort(candidates_.begin(), candidates_.end(), ParticleMassComparator());
-  // shrink daughter collection
-  auto par = particles_; particles_.clear(); particleRefMap_.clear();
-  for (const auto& c : candidates_) {
-    auto& daughters = *const_cast<pat::GenericParticleRefVector*>(c.userData<pat::GenericParticleRefVector>("daughters"));
-    pat::GenericParticleRefVector dauColl(dauProd_.id());
-    for (const auto& dau : daughters) { dauColl.push_back(addParticle(par.at(dau.key()))); }
-    daughters = dauColl;
-  }
 };
 
 
-void ParticleFitter::swapDaughters(DoubleMap& swapDauColls, const pat::GenericParticle& cand)
+void ParticleFitter::swapDaughters(DoubleMap& swapDauColls, const pat::GenericParticle& cand, const pat::GenericParticleCollection& dauColl)
 {
   if (!doSwap_) return;
-  // extract daughter collection
-  const auto& dauRefColl = *cand.userData<pat::GenericParticleRefVector>("daughters");
-  pat::GenericParticleCollection dauColl; dauColl.reserve(dauRefColl.size());
-  for (const auto& dau : dauRefColl) { dauColl.push_back(particles_.at(dau.key())); }
   // loop over permutations of daughters
   auto perColl = dauColl;
   while (std::next_permutation(perColl.begin(), perColl.end(), ParticleComparator())) {
@@ -451,6 +416,7 @@ RefCountedKinematicTree ParticleFitter::fitVertex(const ParticleInfo& parInfo, c
       res = fitter.fit(std::get<0>(parInfo), &constrain, &decP);
     }
     else if (fitAlgo==2) {
+      if (mass_<0.) { throw std::logic_error("[ERROR] Trying to do constrain mass fit with unknown input mass!"); }
       MultiTrackMassKinematicConstraint constrain(mass_, std::get<0>(parInfo).size());
       res = fitter.fit(std::get<0>(parInfo), &constrain, &decP);
     }
@@ -553,15 +519,14 @@ RefCountedKinematicTree ParticleFitter::fitVertex(const ParticleInfo& parInfo, c
 };
   
 
-bool ParticleFitter::fitCandidate(pat::GenericParticle& cand)
+bool ParticleFitter::fitCandidate(pat::GenericParticle& cand, const pat::GenericParticleCollection& dauColl)
 {
-  if (fitAlgoV_.empty() || !cand.hasUserData("daughters") || daughters_.size()<2) return true;
+  if (fitAlgoV_.empty() || daughters_.size()<2) return true;
   const auto& magField = bFieldHandle_.product();
   // get the daughters transient tracks
-  const auto& dauColl = *cand.userData<pat::GenericParticleRefVector>("daughters");
   std::vector<std::pair<std::vector<std::pair<reco::TransientTrack, double> >, size_t> > daughters;
   for (size_t iDau=0; iDau<dauColl.size(); iDau++) {
-    const auto& daughter = particles_.at(dauColl[iDau].key());
+    const auto& daughter = dauColl.at(iDau);
     std::vector<std::pair<reco::TransientTrack, double> > tracks;
     if (daughter.numberOfTracks()>0) {
       for (size_t iTrk=0; iTrk<daughter.numberOfTracks(); iTrk++) {
@@ -596,7 +561,7 @@ bool ParticleFitter::fitCandidate(pat::GenericParticle& cand)
       if (!tscpDau.isValid()) return false;
       for (size_t j=0; j<2; j++) {
         if (!doSwap_ && i!=j) continue;
-        const auto& daughter = particles_.at(dauColl[daughters[j].second].key());
+        const auto& daughter = dauColl[daughters[j].second];
         const auto& tscpDauP4 = getP4(tscpDau.momentum(), daughter.mass());
         if (i==j) { p4 += tscpDauP4; }
         else { swapP4 += tscpDauP4; }
@@ -614,7 +579,7 @@ bool ParticleFitter::fitCandidate(pat::GenericParticle& cand)
   ParticleInfo parInfo;
   std::map<size_t, std::vector<size_t> > dauParIdx;
   for (const auto& d : daughters) {
-    const auto& daughter = particles_.at(dauColl[d.second].key());
+    const auto& daughter = dauColl[d.second];
     if (d.first[0].first.isValid()) {
       for (const auto& t : d.first) {
         if (!t.first.isValid() || !t.first.impactPointTSCP().isValid()) return false;
@@ -813,6 +778,7 @@ void ParticleDaughter::fillInfo(const edm::ParameterSet& pSet, const edm::Parame
   else if (MASS_.find(pdgId_)!=MASS_.end()) {
     mass_ = MASS_.at(pdgId_);
   }
+  else { throw std::logic_error(Form("[ERROR] No mass parameter provided for daughter with pdgId: %d", pdgId_)); }
   if (pSet.existsAs<double>("width")) {
     width_ = pSet.getParameter<double>("width");
   }
@@ -994,12 +960,15 @@ void ParticleDaughter::addData(pat::GenericParticle& c, const reco::PFCandidateR
 void ParticleDaughter::addData(pat::GenericParticle& c, const pat::MuonRef& p, const bool& embedInfo)
 {
   auto track = p->track();
-  if (!track.id().isValid()) { track = dynamic_cast<const reco::Muon*>(p->originalObject())->track(); }
+  if (!track.id().isValid() && p->originalObjectRef().isAvailable()) {
+    const auto& t = dynamic_cast<const reco::Muon*>(p->originalObject())->track();
+    if (t.isNonnull() && t.isAvailable()) { track = t; }
+  }
   c.setTrack(track, embedInfo);
-  if (embedInfo) c.addUserData<reco::TrackRef>("trackRef", track);
+  if (embedInfo && track.id().isValid()) c.addUserData<reco::TrackRef>("trackRef", track);
   c.addUserData<pat::Muon>("src", *p);
   // propagate inner track to 2nd muon station (for L1 trigger matching)
-  if (!p->hasUserInt("prop") && propToMuon_ && p->track().isNonnull()) {
+  if (!p->hasUserInt("prop") && propToMuon_ && track.isNonnull()) {
     const auto& fts = propToMuon_->extrapolate(*track);
     if (fts.isValid()) {
       const_cast<pat::Muon*>(&*p)->addUserFloat("l1Eta", fts.globalPosition().eta());
