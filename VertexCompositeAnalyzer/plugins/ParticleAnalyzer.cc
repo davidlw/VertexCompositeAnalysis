@@ -841,7 +841,8 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
   iEvent.getByToken(tok_triggerEvent_, triggerEvent);
   edm::Handle<edm::TriggerResults> triggerResults;
   iEvent.getByToken(tok_triggerResults_, triggerResults);
-  if (triggerEvent.isValid() && triggerResults.isValid())
+  const auto& isTrgEvtValid = triggerEvent.isValid();
+  if (triggerResults.isValid())
   {
     // initialize trigger container
     triggerData_.resize(triggerInfo_.size());
@@ -850,33 +851,36 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
     const auto& hltConfig = hltPrescaleProvider_.hltConfigProvider();
     const bool validPrescale = (hltConfig.inited() && hltPrescaleProvider_.prescaleSet(iEvent, iSetup) >= 0);
     const auto& hltPaths = hltConfig.triggerNames();
-    const auto& triggerObjects = triggerEvent->getObjects();
     // extract matching information
-    std::vector<std::string> objCol(triggerObjects.size());
-    const auto& cK = triggerEvent->collectionKeys();
-    for (size_t i=1; i<cK.size(); i++)
+    std::vector<std::string> objCol;
+    if (isTrgEvtValid)
     {
-      const auto& coll = triggerEvent->collectionTag(i).encode();
-      // add default limits
-      double maxDeltaR = 1.E6, maxDeltaPtRel = 1.E6, maxDeltaEta = 1.E6, maxDeltaPhi = 1.E6;
-      if (coll.find("Stage2Digis:Muon")!=std::string::npos) { maxDeltaR = 0.3; maxDeltaEta = 0.2; maxDeltaPhi = 6.0; } // L1 muon
-      else if (coll.find("L2Muon")!=std::string::npos) { maxDeltaR = 0.3; maxDeltaPtRel = 10.0; } // L2 muon
-      else if (coll.find("L3Muon")!=std::string::npos) { maxDeltaR = 0.1; maxDeltaPtRel = 10.0; } // L3 muon
-      else { maxDeltaR = 0.3; maxDeltaPtRel = 10.0; } // default
-      // set user defined limits
-      for (const auto& pSet : matchInfo_)
+      objCol = std::vector<std::string>(triggerEvent->getObjects().size());
+      const auto& cK = triggerEvent->collectionKeys();
+      for (size_t i=1; i<cK.size(); i++)
       {
-        if (coll.find(pSet.getParameter<std::string>("collection"))==std::string::npos) continue;
-        if (pSet.existsAs<double>("maxDeltaR"    )) maxDeltaR     = pSet.getParameter<double>("maxDeltaR");
-        if (pSet.existsAs<double>("maxDeltaPtRel")) maxDeltaPtRel = pSet.getParameter<double>("maxDeltaPtRel");
-        if (pSet.existsAs<double>("maxDeltaEta"  )) maxDeltaEta   = pSet.getParameter<double>("maxDeltaEta");
-        if (pSet.existsAs<double>("maxDeltaPhi"  )) maxDeltaPhi   = pSet.getParameter<double>("maxDeltaPhi");
-        break;
+        const auto& coll = triggerEvent->collectionTag(i).encode();
+        // add default limits
+        double maxDeltaR = 1.E6, maxDeltaPtRel = 1.E6, maxDeltaEta = 1.E6, maxDeltaPhi = 1.E6;
+        if (coll.find("Stage2Digis:Muon")!=std::string::npos) { maxDeltaR = 0.3; maxDeltaEta = 0.2; maxDeltaPhi = 6.0; } // L1 muon
+        else if (coll.find("L2Muon")!=std::string::npos) { maxDeltaR = 0.3; maxDeltaPtRel = 10.0; } // L2 muon
+        else if (coll.find("L3Muon")!=std::string::npos) { maxDeltaR = 0.1; maxDeltaPtRel = 10.0; } // L3 muon
+        else { maxDeltaR = 0.3; maxDeltaPtRel = 10.0; } // default
+        // set user defined limits
+        for (const auto& pSet : matchInfo_)
+        {
+          if (coll.find(pSet.getParameter<std::string>("collection"))==std::string::npos) continue;
+          if (pSet.existsAs<double>("maxDeltaR"    )) maxDeltaR     = pSet.getParameter<double>("maxDeltaR");
+          if (pSet.existsAs<double>("maxDeltaPtRel")) maxDeltaPtRel = pSet.getParameter<double>("maxDeltaPtRel");
+          if (pSet.existsAs<double>("maxDeltaEta"  )) maxDeltaEta   = pSet.getParameter<double>("maxDeltaEta");
+          if (pSet.existsAs<double>("maxDeltaPhi"  )) maxDeltaPhi   = pSet.getParameter<double>("maxDeltaPhi");
+          break;
+        }
+        // store trigger matching information
+        matchData_[coll].setInfo(coll, maxDeltaR, maxDeltaPtRel, maxDeltaEta, maxDeltaPhi);
+        // fill trigger object - collection map
+        for (size_t j=cK[i-1]; j<cK[i]; j++) { objCol[j] = coll; }
       }
-      // store trigger matching information
-      matchData_[coll].setInfo(coll, maxDeltaR, maxDeltaPtRel, maxDeltaEta, maxDeltaPhi);
-      // fill trigger object - collection map
-      for (size_t j=cK[i-1]; j<cK[i]; j++) { objCol[j] = coll; }
     }
     // extract trigger information
     for (size_t iTrg=0; iTrg<triggerInfo_.size(); iTrg++)
@@ -902,7 +906,7 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
       }
       // extract the filter index
       std::vector<size_t> filterIdxFound;
-      if (filterLabel!="")
+      if (filterLabel!="" && isTrgEvtValid)
       {
         for (size_t filterIdx=0; filterIdx<triggerEvent->sizeFilters(); filterIdx++)
         {
@@ -936,7 +940,7 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
         triggerIndex = trgIdxFound[0];
         for (const auto& trgIdx : trgIdxFound) { if (triggerResults->accept(trgIdx)) { triggerIndex = trgIdx; break; } }
         // find last filter module
-        if (filterLabel=="" && triggerResults->accept(triggerIndex))
+        if (filterLabel=="" && triggerResults->accept(triggerIndex) && isTrgEvtValid)
         {
           for (int j = hltConfig.moduleLabels(triggerIndex).size()-1; j >= 0; j--)
           {
@@ -955,7 +959,7 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
       else if (pathLabel=="" && filterIdxFound.empty()) continue;
       // determine the trigger/filter name
       const auto triggerName = (triggerIndex>=0 ? hltPaths.at(triggerIndex) : std::string());
-      const auto filterName  = (filterIndex>=0  ? triggerEvent->filterLabel(filterIndex) : std::string());
+      const auto filterName  = (isTrgEvtValid && filterIndex>=0 ? triggerEvent->filterLabel(filterIndex) : std::string());
       // determine the trigger decision
       std::array<bool,4> bit;
       bit[0] = (triggerIndex>=0 ? triggerResults->accept(triggerIndex) : false);
@@ -999,8 +1003,8 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
       }
       // extract filter objects
       std::map<std::string, std::vector<size_t> > filterObjects;
-      const auto& filterKeys = (filterIndex>=0 ? triggerEvent->filterKeys(filterIndex) : std::vector<UShort_t>());
-      const auto& filterIds = (filterIndex>=0 ? triggerEvent->filterIds(filterIndex) : std::vector<int>());
+      const auto& filterKeys = (isTrgEvtValid && filterIndex>=0 ? triggerEvent->filterKeys(filterIndex) : std::vector<UShort_t>());
+      const auto& filterIds = (isTrgEvtValid && filterIndex>=0 ? triggerEvent->filterIds(filterIndex) : std::vector<int>());
       for (size_t iKey=0; iKey<filterKeys.size() && minN>0; iKey++)
       {
         const auto& col = objCol[filterKeys[iKey]];
@@ -1008,9 +1012,10 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
         if (triggerObjectMap_.find(col)==triggerObjectMap_.end())
         {
           const auto& i = triggerEvent->collectionIndex(col);
+          const auto& cK = triggerEvent->collectionKeys();
           for (size_t j=cK[i>0?i-1:0]; j<cK[i]; j++)
           {
-            triggerObjectMap_[col][j] = triggerObjects[j];
+            triggerObjectMap_[col][j] = triggerEvent->getObjects()[j];
             triggerObjectMap_[col][j].setCollection(col);
           }
         }
@@ -1146,7 +1151,6 @@ ParticleAnalyzer::fillTriggerInfo(const edm::Event& iEvent)
     eventInfo_.push("passL1", data.triggerBit(1));
     if (!isMC_)
     {
-      eventInfo_.push("validPrescale", data.validPrescale());
       eventInfo_.push("passHLTPrescaler", data.triggerBit(2));
       eventInfo_.push("passL1Prescaler", data.triggerBit(3));
       eventInfo_.push("hltPrescale", data.hltPrescale());
@@ -1339,7 +1343,9 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
     for (UShort_t i=0; i<triggerData_.size(); i++)
     {
       if (triggerData_[i].minN()==0) continue;
-      const auto& triggerObjects = cand.triggerObjectMatchesByFilter(triggerData_[i].filterName());
+      pat::TriggerObjectStandAloneCollection triggerObjects;
+      if (triggerData_[i].filterName()!="") triggerObjects = cand.triggerObjectMatchesByFilter(triggerData_[i].filterName());
+      else triggerObjects = cand.triggerObjectMatchesByPath(triggerData_[i].triggerName());
       info.add(Form("matchTRG%d",i), !triggerObjects.empty());
       if (cand.status()==1 && addInfo_.at("trgObj"))
       {
@@ -1369,6 +1375,11 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
     info.add("genPdgId", (genPar.isNonnull() ? genPar->pdgId() : 0));
     info.add("momMatchGEN", momMatchGEN);
     info.add("momMatchIdx", momMatchGEN ? momIdx : UShort_t(-1));
+    if (genPar.isNonnull()) {
+      std::cout << std::endl;
+      std::cout << "GEN: " << genPar->polarP4() << std::endl;
+      std::cout << "REC: " << cand.polarP4() << std::endl;
+    }
   }
 
   // initialize daughter information
@@ -1426,64 +1437,78 @@ bool
 ParticleAnalyzer::addTriggerObject(pat::GenericParticle& cand, const math::XYZTLorentzVector& p4, const TriggerIndexMap& filterObjects,
                                    const std::string& triggerName, const std::string& filterName, const int& minN)
 {
-  if (filterObjects.empty() || minN<=0) return false;
+  if (minN<=0 || (triggerName=="" && filterName=="")) return false;
 
   // check if cand has already been matched
-  if (cand.hasUserInt(filterName)) return !cand.triggerObjectMatchesByFilter(filterName).empty();
+  if (filterName!="" && cand.hasUserInt(filterName)) return !cand.triggerObjectMatchesByFilter(filterName).empty();
+  if (cand.hasUserInt(triggerName)) return !cand.triggerObjectMatchesByPath(triggerName).empty();
 
   // initialize trigger objects
   pat::TriggerObjectStandAloneCollection triggerObjects;
-  cand.addUserInt(filterName, 1);
+  cand.addUserInt(filterName!="" ? filterName : triggerName, 1);
 
-  // do trigger-reco matching
-  // case: final state particle (direct matching)
-  if (cand.status()==1)
+  // if already matched, copy them
+  if (cand.hasUserData("src") && cand.userData<pat::Muon>("src"))
   {
-    for (const auto& c : filterObjects)
+    for (const auto& obj : cand.userData<pat::Muon>("src")->triggerObjectMatches())
     {
-      if (!cand.hasUserInt(c.first))
-      {
-        cand.addUserInt(c.first, 1);
-        const auto& m = matchData_.at(c.first);
-        auto deltaR = m.maxDeltaR();
-        pat::TriggerObjectStandAlone mObj;
-        for (const auto& o : triggerObjectMap_.at(c.first))
-        {
-          // general case: match by deltaR and deltaPtRel, select lowest deltaR
-          if (c.first.find("Stage2Digis:Muon")==std::string::npos && !o.second.id(-81))
-          {
-            if (!isMatched(p4, o.second.p4(), deltaR, m.maxDeltaPtRel())) continue;
-            deltaR = reco::deltaR(p4.eta(), p4.phi(), o.second.eta(), o.second.phi());
-            mObj = o.second;
-          }
-          // L1 muon case: match by deltaR, deltaEta and deltaPhi, select lowest deltaR
-          else if (cand.hasUserFloat("l1Eta"))
-          {
-            math::PtEtaPhiMLorentzVector propP4(p4.pt(), cand.userFloat("l1Eta"), cand.userFloat("l1Phi")-(M_PI/144.), 0); // L1 phi offset: 1.25*pi/180
-            if (!isL1MuMatched(propP4, o.second.p4(), deltaR, m.maxDeltaEta(), m.maxDeltaPhi())) continue;
-            deltaR = reco::deltaR(propP4.eta(), propP4.phi(), o.second.eta(), o.second.phi());
-            mObj = o.second;
-          }
-        }
-        cand.addTriggerObjectMatch(mObj);
-      }
-      const auto& mObj = cand.triggerObjectMatchByCollection(c.first);
-      if (mObj && mObj->hasFilterLabel(filterName)) triggerObjects.push_back(*mObj);
+      const bool& isMatched = (filterName!="" ? obj.hasFilterLabel(filterName) : obj.hasPathName(triggerName));
+      if (isMatched) triggerObjects.push_back(obj);
     }
   }
-  // case: decayed particle (daughter matching)
-  else if (cand.status()>1)
+
+  // do trigger-reco matching
+  if (triggerObjects.empty() && !filterObjects.empty() && filterName!="")
   {
-    int n=0;
-    const auto& dauColl = *cand.userData<pat::GenericParticleRefVector>("daughters");
-    const auto& dauP4V = *cand.userData<std::vector<math::XYZTLorentzVector> >("daughtersP4");
-    for (size_t i=0; i<dauColl.size(); i++)
+    // case: final state particle (direct matching)
+    if (cand.status()==1)
     {
-      auto& dau = *const_cast<pat::GenericParticle*>(dauColl[i].get());
-      if (addTriggerObject(dau, dauP4V[i], filterObjects, triggerName, filterName, minN)) { n+=1; }
-      if (n==minN) { triggerObjects.push_back(pat::TriggerObjectStandAlone()); break; }
+      for (const auto& c : filterObjects)
+      {
+        if (!cand.hasUserInt(c.first))
+        {
+          cand.addUserInt(c.first, 1);
+          const auto& m = matchData_.at(c.first);
+          auto deltaR = m.maxDeltaR();
+          pat::TriggerObjectStandAlone mObj;
+          for (const auto& o : triggerObjectMap_.at(c.first))
+          {
+            // general case: match by deltaR and deltaPtRel, select lowest deltaR
+            if (c.first.find("Stage2Digis:Muon")==std::string::npos && !o.second.id(-81))
+            {
+              if (!isMatched(p4, o.second.p4(), deltaR, m.maxDeltaPtRel())) continue;
+              deltaR = reco::deltaR(p4.eta(), p4.phi(), o.second.eta(), o.second.phi());
+              mObj = o.second;
+            }
+            // L1 muon case: match by deltaR, deltaEta and deltaPhi, select lowest deltaR
+            else if (cand.hasUserFloat("l1Eta"))
+            {
+              math::PtEtaPhiMLorentzVector propP4(p4.pt(), cand.userFloat("l1Eta"), cand.userFloat("l1Phi")-(M_PI/144.), 0); // L1 phi offset: 1.25*pi/180
+              if (!isL1MuMatched(propP4, o.second.p4(), deltaR, m.maxDeltaEta(), m.maxDeltaPhi())) continue;
+              deltaR = reco::deltaR(propP4.eta(), propP4.phi(), o.second.eta(), o.second.phi());
+              mObj = o.second;
+            }
+          }
+          cand.addTriggerObjectMatch(mObj);
+        }
+        const auto& mObj = cand.triggerObjectMatchByCollection(c.first);
+        if (mObj->hasFilterLabel(filterName)) triggerObjects.push_back(*mObj);
+      }
     }
-    if (n==minN) triggerObjects.back().addFilterLabel(filterName);
+    // case: decayed particle (daughter matching)
+    else if (cand.status()>1)
+    {
+      int n=0;
+      const auto& dauColl = *cand.userData<pat::GenericParticleRefVector>("daughters");
+      const auto& dauP4V = *cand.userData<std::vector<math::XYZTLorentzVector> >("daughtersP4");
+      for (size_t i=0; i<dauColl.size(); i++)
+      {
+        auto& dau = *const_cast<pat::GenericParticle*>(dauColl[i].get());
+        if (addTriggerObject(dau, dauP4V[i], filterObjects, triggerName, filterName, minN)) { n+=1; }
+        if (n==minN) { triggerObjects.push_back(pat::TriggerObjectStandAlone()); break; }
+      }
+      if (n==minN) triggerObjects.back().addFilterLabel(filterName);
+    }
   }
   // check if matches found
   if (triggerObjects.empty()) return false;
@@ -1607,7 +1632,6 @@ ParticleAnalyzer::fillMuonInfo(const pat::GenericParticle& cand, const UShort_t&
   // soft ID muon POG Run 2
   info.add("isOneStTight", bool(selectionType & (1U<<muon::SelectionType::TMOneStationTight)));
   info.add("nPixelLayer", getChar(iTrack.isNonnull() ? iTrack->hitPattern().pixelLayersWithMeasurement() : -1));
-  info.add("isHP", (iTrack.isNonnull() ? iTrack->quality(reco::TrackBase::highPurity) : false));
   info.add("dXY", (iTrack.isNonnull() ? iTrack->dxy(vertex) : -99.9));
   info.add("dZ", (iTrack.isNonnull() ? iTrack->dz(vertex) : -99.9));
   const auto softmuon = (
@@ -2187,6 +2211,24 @@ ParticleAnalyzer::addParticleToNtuple(const size_t& i, const std::pair<int, int>
     if (p.first=="cand" || p.first=="trig" || p.first=="gen" || p.first=="trk" || idx<USHRT_MAX)
     {
       p.second.copyData(ntupleInfo_, idx, (p.first+"_"+label));
+    }
+  }
+  // remove meaningless variables
+  if (!ntuple_)
+  {
+    // detectable particles such as pions do not have decay info 
+    if (cand.get(i, "status", UChar_t(1))==1)
+    {
+      ntupleInfo_.erase(label+"decayLength", {"float", "floatV"});
+      ntupleInfo_.erase(label+"pseudoDecayLength", {"float", "floatV"});
+      ntupleInfo_.erase(label+"angle", {"float", "floatV"});
+      ntupleInfo_.erase(label+"dca", {"float", "floatV"});
+      ntupleInfo_.erase(label+"vtx", {"float", "floatV"});
+    }
+    // intermediate particles such as Ks mesons do not have track info
+    else
+    {
+      ntupleInfo_.erase("trk_"+label, {"float", "floatV", "bool", "boolV", "ushort", "ushortV"});
     }
   }
   // add daughter information

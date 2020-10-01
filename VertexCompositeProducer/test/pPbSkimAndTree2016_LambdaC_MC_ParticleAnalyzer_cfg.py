@@ -71,12 +71,16 @@ process.LambdaC = generalParticles.clone(
     ]),
 )
 
-# Add PbPb collision event selection
+# Add pPb collision event selection
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.collisionEventSelection_cff')
 process.colEvtSel = cms.Sequence(process.hfCoincFilter * process.primaryVertexFilterPA * process.NoScraping * process.olvFilter_pPb8TeV_dz1p0)
 
+# Add ntrack map
+process.load("VertexCompositeAnalysis.VertexCompositeProducer.nTracks_cfi")
+process.ntrack_seq = cms.Sequence(process.nTracks)
+
 # Define the analysis steps
-process.rereco_step = cms.Path(process.kShort * process.LambdaC)
+process.rereco_step = cms.Path(process.ntrack_seq * process.kShort * process.LambdaC)
 
 # Add the VertexComposite tree
 from VertexCompositeAnalysis.VertexCompositeAnalyzer.particle_tree_cff import particleAna_mc
