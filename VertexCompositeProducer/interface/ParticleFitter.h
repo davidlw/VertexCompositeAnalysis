@@ -99,13 +99,22 @@ struct ParticleComparator {
 struct ParticleMassComparator : ParticleComparator {
   inline bool operator()(const pat::GenericParticle& x, const pat::GenericParticle& y) const
   {
+    return (isParticleLess(x, y) ||
+            (isParticleEqual(x, y) && isLess(x.mass(), y.mass())));
+  }
+};
+struct ParticleTreeComparator : ParticleComparator {
+  inline bool operator()(const pat::GenericParticle& x, const pat::GenericParticle& y) const
+  {
     return (isLess(x.mass(), y.mass()) ||
-            (isEqual(x.mass(), y.mass()) && isParticleLess(x, y)));
+            (isEqual(x.mass(), y.mass()) && isLess(x.charge(), y.charge())) ||
+            (isEqual(x.mass(), y.mass()) && isEqual(x.charge(), y.charge()) && isParticleLess(x, y)));
   }
 };
 
 
 const std::map<uint, double> MASS_ = {
+  {0, -1.}, // default
   {11, 0.000511}, {13, 0.10565837}, {15, 1.77686}, // leptons
   {23, 91.188}, {24, 80.38}, // bosons
   {211, 0.13957018}, {310, 0.497614}, {321, 0.493677}, {333, 1.019445}, // light and strange mesons
@@ -188,14 +197,11 @@ class ParticleFitter {
   typedef std::tuple<float, float, float, size_t, bool> VertexTuple;
   typedef std::tuple<float, float, float, float, signed char> ParticleTuple;
   typedef std::tuple<KinParColl, TransTrackColl, std::map<ParticleTuple, size_t> > ParticleInfo;
-  typedef std::pair<std::vector<int>, edm::Handle<reco::VertexCollection> > IntValueMap;
 
   const reco::VertexCollection& vertices() const { return vertices_; };
   const pat::GenericParticleCollection& particles() const { return candidates_; };
   const pat::GenericParticleCollection& daughters() const { return particles_; };
-  const IntValueMap& vtxNTrk() const { return vtxNTrk_; }
   const bool hasNoDaughters() const { return daughters_.empty(); };
-  const bool doNTracks() const { return doNTracks_; }
 
   reco::VertexRef getVertexRef(const reco::Vertex& vertex);
   math::XYZTLorentzVector getP4(const GlobalVector& p, const double& m);
@@ -212,10 +218,10 @@ class ParticleFitter {
   void fillDaughters(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   bool isUniqueDaughter(ParticleSet& set, const pat::GenericParticle& dau);
   void makeCandidates();
-  void swapDaughters(DoubleMap& swapDauColls, const pat::GenericParticle& cand);
+  void swapDaughters(DoubleMap& swapDauColls, const pat::GenericParticle& cand, const pat::GenericParticleCollection& dauColl);
   void setBestMass(pat::GenericParticle& cand, const DoubleMap& swapDauColls);
   void addSwapCandidates(pat::GenericParticleCollection& swapCandColl, const pat::GenericParticle& cand, const DoubleMap& swapDauColls);
-  bool fitCandidate(pat::GenericParticle& cand);
+  bool fitCandidate(pat::GenericParticle& cand, const pat::GenericParticleCollection& dauColl);
   void addExtraInfo(pat::GenericParticle& cand);
   void fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   void clear();
@@ -223,9 +229,8 @@ class ParticleFitter {
   void clear(std::vector<T>& v) { std::vector<T>().swap(v); };
 
  private:
-  bool shrinkDauColl_;
   int pdgId_;
-  bool doSwap_, doNTracks_, matchVertex_;
+  bool doSwap_, matchVertex_;
   double mass_, width_;
   std::vector<UInt_t> fitAlgoV_;
   std::vector<double> puMap_;
@@ -236,7 +241,6 @@ class ParticleFitter {
   pat::GenericParticleCollection candidates_, particles_;
   std::map<VertexTuple, reco::VertexRef> vertexRefMap_;
   std::map<ParticleTuple, pat::GenericParticleRef> particleRefMap_;
-  IntValueMap vtxNTrk_;
 
   reco::VertexRefProd vtxProd_;
   GenericParticleRefProd dauProd_;

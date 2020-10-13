@@ -56,7 +56,6 @@ process.kShort = generalParticles.clone(
     ]),
 )
 process.LambdaC = generalParticles.clone(
-    shrinkDauColl = cms.bool(False),
     pdgId = cms.int32(4122),
     doSwap = cms.bool(False),
     preMassSelection = cms.string("abs(charge)==1"),

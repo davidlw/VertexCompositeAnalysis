@@ -30,9 +30,6 @@ TightIdReco = "(isGlobalMuon && isPFMuon && globalTrack.normalizedChi2 < 10 && g
 muonSelection = cms.string("(p > 2.5 && abs(eta) < 2.4) && ("+SoftIdReco+" || "+TightIdReco+")")
 
 process.generalMuMuMassMin2Candidates = generalParticles.clone(
-    pdgId = cms.int32(445),
-    doSwap = cms.bool(False),
-    width = cms.double(999999999999.),
     finalSelection = cms.string("mass>2.0"),
     # daughter information
     daughterInfo = cms.VPSet([
@@ -41,7 +38,7 @@ process.generalMuMuMassMin2Candidates = generalParticles.clone(
     ]),
 )
 from VertexCompositeAnalysis.VertexCompositeProducer.PATAlgos_cff import doPATMuons
-doPATMuons(process, False)
+doPATMuons(process)
 
 # Add muon event selection
 process.twoMuons = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("muons"), minNumber = cms.uint32(2))
