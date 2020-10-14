@@ -276,8 +276,10 @@ void ParticleFitter::makeCandidates()
     if (!preSelection_(cand)) continue;
     // check if grandaughters are unique
     bool hasDuplicate = false;
+    ParticleSet finalStateColl;
     for (const auto& dau : daughters) {
-      if (dau.hasUserData("daughters") && !isUniqueDaughter(daughters, dau)) { hasDuplicate = true; break; }
+      //if (dau.hasUserData("daughters") && !isUniqueDaughter(daughters, dau)) { hasDuplicate = true; break; }
+      if (!isUniqueDaughter(finalStateColl, dau)) { hasDuplicate = true; break; }
     }
     if (hasDuplicate) continue;
     // extract daughter information
@@ -799,9 +801,12 @@ void ParticleDaughter::fillInfo(const edm::ParameterSet& pSet, const edm::Parame
   if (mvaSet.existsAs<edm::InputTag>("mva")) {
     token_mva_ = iC.consumes<std::vector<float> >(mvaSet.getParameter<edm::InputTag>("mva"));
   }
-  if (config.existsAs<edm::InputTag>("dedxHarmonic2")) {
-    token_dedx_ = iC.consumes<edm::ValueMap<reco::DeDxData> >(config.getParameter<edm::InputTag>("dedxHarmonic2"));
+  if (config.existsAs<std::vector<std::string> >("dEdxInputs")) {
+    for (const auto& input : config.getParameter<std::vector<std::string> >("dEdxInputs")){
+      tokens_dedx_.insert( std::make_pair(input, iC.consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag(input))));
+    }
   }
+
   if (std::abs(pdgId_)==13 && (!pSet.existsAs<bool>("propToMuon") || pSet.getParameter<bool>("propToMuon"))) {
     conf_.addParameter("useSimpleGeometry", (pSet.existsAs<bool>("useSimpleGeometry") ? pSet.getParameter<bool>("useSimpleGeometry") : true)); // default: true
     conf_.addParameter("useTrack", (pSet.existsAs<std::string>("useTrack") ? pSet.getParameter<std::string>("useTrack") : "none")); // default: none
@@ -828,8 +833,14 @@ void ParticleDaughter::addParticles(const edm::Event& event, const edm::EDGetTok
   // extract input collections
   edm::Handle<std::vector<T> > handle;
   if (!token.isUninitialized()) event.getByToken(token, handle);
-  edm::Handle<edm::ValueMap<reco::DeDxData> > dEdxMap;
-  if (!token_dedx_.isUninitialized()) event.getByToken(token_dedx_, dEdxMap);
+  std::map<std::string, edm::Handle<edm::ValueMap<reco::DeDxData> > > dEdxMaps;
+  for (const auto& tokenMap : tokens_dedx_) {
+    if (!tokenMap.second.isUninitialized()) {
+      edm::Handle<edm::ValueMap<reco::DeDxData> > dEdxMapTemp;
+      event.getByToken(tokenMap.second, dEdxMapTemp);
+      dEdxMaps.insert ( std::make_pair( tokenMap.first, dEdxMapTemp) );
+    }
+  }
   edm::Handle<std::vector<float> > mvaColl;
   if (!token_mva_.isUninitialized()) event.getByToken(token_mva_, mvaColl);
   // set selections
@@ -860,7 +871,7 @@ void ParticleDaughter::addParticles(const edm::Event& event, const edm::EDGetTok
       }
       else if (cand.charge()!=0) continue; // ignore if charged particle has no track
       cand.addUserFloat("width", width_);
-      setDeDx(cand, dEdxMap);
+      setDeDx(cand, dEdxMaps);
       setMVA(cand, i, mvaColl);
       if (finalSelection(cand)) {
         particles.insert(cand);
@@ -998,13 +1009,16 @@ void ParticleDaughter::setMVA(pat::GenericParticle& c, const size_t& i, const ed
   }
 };
 
-
-void ParticleDaughter::setDeDx(pat::GenericParticle& c, const edm::Handle<edm::ValueMap<reco::DeDxData> >& dEdxMap)
+void ParticleDaughter::setDeDx(pat::GenericParticle& c,
+    const std::map<std::string, edm::Handle<edm::ValueMap<reco::DeDxData> > >& dEdxMaps)
 {
   const auto& track = (c.hasUserData("trackRef") ? *c.userData<reco::TrackRef>("trackRef") : c.track());
   if (track.isNull()) return;
-  if (dEdxMap.isValid() && dEdxMap->contains(track.id())) {
-    const auto& dEdx = (*dEdxMap)[track].dEdx();
-    c.addUserFloat("dEdx", dEdx);
+  for (const auto& dEdxMapPair : dEdxMaps) {
+    const auto& dEdxMap = dEdxMapPair.second;
+    if (dEdxMap.isValid() && dEdxMap->contains(track.id())) {
+      const auto& dEdx = (*dEdxMap)[track].dEdx();
+      c.addUserFloat("dEdx_"+dEdxMapPair.first, dEdx);
+    }
   }
 };
