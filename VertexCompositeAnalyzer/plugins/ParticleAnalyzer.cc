@@ -178,6 +178,7 @@ private:
   const std::vector<UInt_t> genPdgIdV_;
   std::map<std::string, bool> addInfo_;
   std::set<int> sourceId_, genPdgId_;
+  std::vector<std::string> dedxInfo_;
 
   HLTPrescaleProvider hltPrescaleProvider_;
   std::vector<std::vector<int> > l1PrescaleTable_;
@@ -1368,7 +1369,7 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
   // generated particle information
   if (isMC_)
   {
-    if (!cand.hasUserInt("isGenMatched")) { addGenParticle(*const_cast<pat::GenericParticle*>(&cand), cand.p4(), genParticlesToMatch_); } 
+    if (!cand.hasUserInt("isGenMatched")) { addGenParticle(*const_cast<pat::GenericParticle*>(&cand), cand.p4(), genParticlesToMatch_); }
     const auto& genPar = cand.genParticleRef();
     info.add("genIdx", fillGenParticleInfo(genPar, idx));
     info.add("matchGEN", genPar.isNonnull());
@@ -1548,7 +1549,12 @@ ParticleAnalyzer::fillTrackInfo(const pat::GenericParticle& cand, const UShort_t
   info.add("xyDCASignificance", getFloat(cand, "dxySig"));
 
   // dEdx information
-  if (addInfo_.at("dEdx")) info.add("dEdxHarmonic2", getFloat(cand, "dEdx"));
+  if (addInfo_.at("dEdxs")) {
+    for (const auto input : dedxInfo_) {
+      std::string dedxName = "dEdx_" + input;
+      info.add(dedxName, getFloat(cand, dedxName));
+    }
+  }
 
   // push data and return index
   info.pushData(cand);
@@ -2313,9 +2319,10 @@ ParticleAnalyzer::loadConfiguration(const edm::ParameterSet& config, const edm::
     addInfo_["track"] = pid.threeCharge()!=0;
   }
 
-  if (!addInfo_["dEdx"] && config.existsAs<edm::InputTag>("dedxHarmonic2"))
+  if (!addInfo_["dEdxs"] && config.existsAs<std::vector<std::string>>("dEdxInputs"))
   {
-    addInfo_["dEdx"] = config.getParameter<edm::InputTag>("dedxHarmonic2").label()!="";
+    dedxInfo_ = config.getParameter<std::vector<std::string> >("dEdxInputs");
+    addInfo_["dEdxs"] = dedxInfo_.size();
   }
 
   if (!addInfo_["mva"] && config.existsAs<edm::InputTag>("mva"))

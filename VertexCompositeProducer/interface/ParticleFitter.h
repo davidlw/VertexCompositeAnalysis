@@ -164,7 +164,7 @@ class ParticleDaughter {
   void addData(pat::GenericParticle& c, const pat::MuonRef& p, const bool& embedInfo);
   void addData(pat::GenericParticle& c, const pat::ElectronRef& p, const bool& embedInfo);
   void setMVA (pat::GenericParticle& c, const size_t& i, const edm::Handle<std::vector<float> >& m);
-  void setDeDx(pat::GenericParticle& c, const edm::Handle<edm::ValueMap<reco::DeDxData> >& m);
+  void setDeDx(pat::GenericParticle& c, const std::map<std::string, edm::Handle<edm::ValueMap<reco::DeDxData> > >& m);
   void addMuonL1Info(pat::GenericParticle& c, const edm::Handle<pat::TriggerObjectStandAloneMatch>& m);
 
   int pdgId_;
@@ -179,8 +179,9 @@ class ParticleDaughter {
 
   edm::EDGetTokenT<pat::GenericParticleCollection> token_source_;
   edm::EDGetTokenT<std::vector<float> >            token_mva_;
-  edm::EDGetTokenT<edm::ValueMap<reco::DeDxData> > token_dedx_;
   edm::EDGetTokenT<pat::TriggerObjectStandAloneMatch> token_muonL1Info_;
+
+  std::map<std::string, edm::EDGetTokenT<edm::ValueMap<reco::DeDxData> > > tokens_dedx_;
 };
 
 
