@@ -278,7 +278,6 @@ void ParticleFitter::makeCandidates()
     bool hasDuplicate = false;
     ParticleSet finalStateColl;
     for (const auto& dau : daughters) {
-      //if (dau.hasUserData("daughters") && !isUniqueDaughter(daughters, dau)) { hasDuplicate = true; break; }
       if (!isUniqueDaughter(finalStateColl, dau)) { hasDuplicate = true; break; }
     }
     if (hasDuplicate) continue;

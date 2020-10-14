@@ -38,7 +38,6 @@ process.kShort = generalParticles.clone(
     preMassSelection = cms.string(""),
     finalSelection = cms.string( " "),
 
-    dedxHarmonic2 = cms.InputTag('dedxHarmonic2'),
     dEdxInputs = cms.vstring('dedxHarmonic2', 'dedxPixelHarmonic2'),
 
     # daughter information
@@ -65,7 +64,6 @@ process.LambdaC = generalParticles.clone(
     preMassSelection = cms.string("abs(charge)==1"),
     finalSelection = cms.string(''),
 
-    dedxHarmonic2 = cms.InputTag('dedxHarmonic2'),
     dEdxInputs = cms.vstring('dedxHarmonic2', 'dedxPixelHarmonic2'),
 
     # daughter information
