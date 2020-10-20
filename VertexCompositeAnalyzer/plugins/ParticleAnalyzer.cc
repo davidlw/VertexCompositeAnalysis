@@ -860,7 +860,7 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
     {
       objCol = std::vector<std::string>(triggerEvent->getObjects().size());
       const auto& cK = triggerEvent->collectionKeys();
-      for (size_t i=1; i<cK.size(); i++)
+      for (size_t i=0; i<cK.size(); i++)
       {
         const auto& coll = triggerEvent->collectionTag(i).encode();
         // add default limits
@@ -882,7 +882,7 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
         // store trigger matching information
         matchData_[coll].setInfo(coll, maxDeltaR, maxDeltaPtRel, maxDeltaEta, maxDeltaPhi);
         // fill trigger object - collection map
-        for (size_t j=cK[i-1]; j<cK[i]; j++) { objCol[j] = coll; }
+        for (size_t j=(i<1?0:cK[i-1]); j<cK[i]; j++) { objCol[j] = coll; }
       }
     }
     // extract trigger information
@@ -1017,7 +1017,7 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
           const auto& i = triggerEvent->collectionIndex(col);
           const auto& cK = triggerEvent->collectionKeys();
           const auto& triggerObjects = triggerEvent->getObjects();
-          for (size_t j=cK[i>0?i-1:0]; j<cK[i]; j++)
+          for (size_t j=(i<1?0:cK[i-1]); j<cK[i]; j++)
           {
             triggerObjectMap_[col][j] = triggerObjects[j];
             triggerObjectMap_[col][j].setCollection(col);
