@@ -33,5 +33,5 @@ generalParticles = cms.EDProducer("ParticleProducer",
     jets = cms.InputTag(''),
     conversions = cms.InputTag(''),
     mva = cms.InputTag(''),
-    dedxHarmonic2 = cms.InputTag(''),
+    dEdxInputs = cms.vstring(),
 )
