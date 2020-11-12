@@ -154,7 +154,6 @@ process.generalRhoCandidatesNew.mva = cms.InputTag("generalTracks","MVAValues") 
 # tree producer
 from VertexCompositeAnalysis.VertexCompositeAnalyzer.particle_tree_cff import particleAna
 process.generalanaNew = particleAna.clone(
-    saveTree = False,
   recoParticles = cms.InputTag("generalRhoCandidatesNew"),
   triggerInfo = cms.untracked.VPSet([
     cms.PSet(path = cms.string('HLT_HIMinimumBias_*')), # Minimum bias
@@ -200,7 +199,7 @@ process.rhorereco_step = cms.Path(process.eventFilter_HM * process.ntrkFilterRho
 
 # Define the output
 process.TFileService = cms.Service("TFileService",
-                                       fileName = cms.string('rhoana_ntuple_PbPb2018.root')
+                                       fileName = cms.string('rhoana_tree_PbPb2018.root')
                                   )
 
 process.output_HM = cms.OutputModule("PoolOutputModule",
