@@ -32,8 +32,8 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
 #process.options.numberOfStreams=cms.untracked.uint32(0)
 
 # DEBUG
-process.MessageLogger.cerr.threshold = "DEBUG"
-process.MessageLogger.debugModules = ["ntrkFilterD0"]
+#process.MessageLogger.cerr.threshold = "DEBUG"
+#process.MessageLogger.debugModules = ["ntrkFilterD0"]
 
 # Set the global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
@@ -183,8 +183,8 @@ process.ntrkFilterD0 = process.ntrkFilter.clone(
       useCent = cms.untracked.bool(False),
       vtxSortByTrkSize = cms.untracked.bool(False),
       nTracksVMap = cms.InputTag('nTracksD0'),
-      nMultMin = cms.untracked.int32(0), # >=
-      nMultMax = cms.untracked.int32(200), # <
+      #nMultMin = cms.untracked.int32(0), # >=
+      #nMultMax = cms.untracked.int32(200), # <
     )
 
 process.ntrkFilterD0_seq = cms.Sequence(process.nTracksD0 * process.ntrkFilterD0)

@@ -14,6 +14,7 @@
 ParticleFitter::ParticleFitter(const edm::ParameterSet& theParameters, edm::ConsumesCollector && iC) :
   pdgId_(theParameters.getParameter<int>("pdgId")),
   doSwap_(theParameters.getParameter<bool>("doSwap")),
+  vtxSortByTrkSize_(theParameters.getParameter<bool>("vtxSortByTrkSize")),
   preSelection_(theParameters.getParameter<std::string>("preSelection")),
   preMassSelection_(theParameters.getParameter<std::string>("preMassSelection")),
   pocaSelection_(theParameters.getParameter<std::string>("pocaSelection")),
@@ -144,8 +145,10 @@ void ParticleFitter::setVertex(const edm::Event& iEvent)
       vertexRefMap_[tp] = reco::VertexRef(vertexHandle, iVtx);
     }
   }
-  auto byTracksSize = [] (const reco::Vertex& v1, const reco::Vertex& v2) -> bool { return v1.tracksSize() > v2.tracksSize(); };
-  std::sort(priVertices_.begin(), priVertices_.end(), byTracksSize);
+  if (vtxSortByTrkSize_) {
+    auto byTracksSize = [] (const reco::Vertex& v1, const reco::Vertex& v2) -> bool { return v1.tracksSize() > v2.tracksSize(); };
+    std::sort(priVertices_.begin(), priVertices_.end(), byTracksSize);
+  }
   // set the primary vertex
   const auto beamSpotVertex = reco::Vertex(beamSpotHandle->position(), beamSpotHandle->rotatedCovariance3D());
   vertex_ = (priVertices_.empty() ? beamSpotVertex : priVertices_[0]);

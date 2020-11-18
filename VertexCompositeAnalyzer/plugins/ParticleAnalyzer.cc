@@ -190,7 +190,7 @@ private:
   TTree* tree_ = 0;
   TTree* ntuple_ = 0;
 
-  bool isMC_;
+  bool isMC_, vtxSortByTrkSize_;
   reco::Vertex vertex_;
   reco::Particle::Point genVertex_;
   reco::VertexCollection vertices_;
@@ -771,8 +771,10 @@ ParticleAnalyzer::getEventData(const edm::Event& iEvent, const edm::EventSetup& 
       vertices_.push_back(pv);
     }
   }
-  auto byTracksSize = [] (const reco::Vertex& v1, const reco::Vertex& v2) -> bool { return v1.tracksSize() > v2.tracksSize(); };
-  std::sort(vertices_.begin(), vertices_.end(), byTracksSize);
+  if (vtxSortByTrkSize_) {
+    auto byTracksSize = [] (const reco::Vertex& v1, const reco::Vertex& v2) -> bool { return v1.tracksSize() > v2.tracksSize(); };
+    std::sort(vertices_.begin(), vertices_.end(), byTracksSize);
+  }
   if (vertices_.empty())
   {
     edm::Handle<reco::BeamSpot> beamspot;
@@ -2314,6 +2316,13 @@ void
 ParticleAnalyzer::loadConfiguration(const edm::ParameterSet& config, const edm::Run& iRun)
 {
   if (config.empty()) return;
+
+  if (config.existsAs<bool>("vtxSortByTrkSize"))
+  {
+    vtxSortByTrkSize_ = config.getParameter<bool>("vtxSortByTrkSize");
+  } else {
+    vtxSortByTrkSize_ = true;
+  }
 
   HepPDT::ParticleID pid;
   if (config.existsAs<int>("pdgId"))

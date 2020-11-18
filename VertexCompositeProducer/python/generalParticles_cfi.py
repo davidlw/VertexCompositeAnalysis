@@ -4,6 +4,7 @@ generalParticles = cms.EDProducer("ParticleProducer",
 
     pdgId = cms.int32(0),
     doSwap = cms.bool(False),
+    vtxSortByTrkSize = cms.bool(True),
 
     # particle selection
     preSelection = cms.string(""),
