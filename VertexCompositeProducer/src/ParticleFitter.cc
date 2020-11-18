@@ -347,8 +347,8 @@ void ParticleFitter::swapDaughters(DoubleMap& swapDauColls, const pat::GenericPa
       const auto& per = perColl[i];
       const auto& sourceID1 = (dau.hasUserInt("sourceID") ? dau.userInt("sourceID") : 0);
       const auto& sourceID2 = (per.hasUserInt("sourceID") ? per.userInt("sourceID") : 0);
-      if (sourceID1!=sourceID2) break;
-      if (sourceID1==0 && !ParticleComparator().isParticleEqual(dau, per)) break;
+      if (sourceID1!=sourceID2 || sourceID1==0) break; // sourceID == 0 means that the daughter has PID, not necessary to swap it with another
+      if (abs(dau.pdgId()) == abs(per.pdgId())) break; // if the swapped daughter is identical to the original one, not necessary to swap
       if (cand.charge()!=0 && dau.charge()!=per.charge()) break;
       swapDauColl.push_back(per.mass());
       p4 += math::XYZTLorentzVector(dau.px(), dau.py(), dau.pz(), std::sqrt(dau.p4().P2()+per.massSqr()));
@@ -963,6 +963,7 @@ void ParticleDaughter::addData(pat::GenericParticle& c, const reco::PFCandidateR
   c.setTrack(p->trackRef(), embedInfo);
   if (embedInfo) c.addUserData<reco::TrackRef>("trackRef", p->trackRef());
   c.addUserData<reco::PFCandidate>("src", *p);
+  c.addUserInt("sourceID", 2);
 };
 
 
