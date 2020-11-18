@@ -66,7 +66,7 @@ class MultFilter : public edm::stream::EDFilter<> {
       edm::ValueMap<int> nTracksVMap_;
       int nMultMin_, nMultMax_;
 
-      bool useCent_;
+      bool useCent_, vtxSortByTrkSize_ ;
       const edm::EDGetTokenT<reco::Centrality> tok_centSrc_;
       const edm::EDGetTokenT<int> tok_centBin_;
       int centBinMin_, centBinMax_;
@@ -89,6 +89,7 @@ MultFilter::MultFilter(const edm::ParameterSet& iConfig) :
   nMultMin_(iConfig.getUntrackedParameter<int>("nMultMin", 0)),
   nMultMax_(iConfig.getUntrackedParameter<int>("nMultMax", std::numeric_limits<int>::max())),
   useCent_(iConfig.getUntrackedParameter<bool>("useCent", false)),
+  vtxSortByTrkSize_(iConfig.getUntrackedParameter<bool>("vtxSortByTrkSize", true)),
   tok_centSrc_(consumes<reco::Centrality>(iConfig.getUntrackedParameter<edm::InputTag>("centrality"))),
   tok_centBin_(consumes<int>(iConfig.getUntrackedParameter<edm::InputTag>("centralityBin"))),
   centBinMin_(iConfig.getUntrackedParameter<int>("centBinMin", 0)),
@@ -117,27 +118,46 @@ MultFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   edm::Handle<reco::VertexCollection> vertexHandle;
   iEvent.getByToken(tok_offlinePV_, vertexHandle);
-  edm::Handle<edm::ValueMap<int> > nTracksVMap;
-  iEvent.getByToken(tok_nTracksVMap_, nTracksVMap);
+
+  if (!vtxSortByTrkSize_ && useCent_)
+    throw(cms::Exception("Config")
+        << "hicentrality producer make use of the vertex with the highest multiplicity, not the one with leading pt2!");
 
   if (!useCent_) {
     // do not use centrality
+    edm::Handle<edm::ValueMap<int> > nTracksVMap;
+    iEvent.getByToken(tok_nTracksVMap_, nTracksVMap);
+
     if (nTracksVMap.isValid() ) { nTracksVMap_ = *nTracksVMap; }
     else {
+      LogDebug("MultFilter") <<  "nTracksVMap is invalid" << std::endl;;
       return false;
     }
 
-    bool isFail = true;
     if (vertexHandle.isValid() && vertexHandle->size()) {
+      std::vector<reco::VertexRef> vertexRefs;
+      vertexRefs.reserve( vertexHandle->size() );
       for (size_t ivtx=0; ivtx<vertexHandle->size(); ivtx++) {
-        reco::VertexRef vtxRef(vertexHandle, ivtx);
-        const auto& ntrk = nTracksVMap_[vtxRef];
-        if (ntrk >= nMultMin_ && ntrk < nMultMax_) {
-          isFail = false;
-          break;
-        }
+        vertexRefs.push_back( reco::VertexRef( vertexHandle, ivtx ) );
       }
-      if (isFail) return false;
+      if (vtxSortByTrkSize_) {
+        auto byTracksSize = [] (const reco::VertexRef& v1, const reco::VertexRef& v2) -> bool { return v1->tracksSize() > v2->tracksSize(); };
+        std::sort(vertexRefs.begin(), vertexRefs.end(), byTracksSize);
+      }
+      const auto& ntrk = nTracksVMap_[ vertexRefs.at(0) ];
+      if (ntrk < nMultMin_ || ntrk >= nMultMax_) {
+        LogDebug("MultFilter") << std::boolalpha
+          << "UseCent=False, vtxSortByTrkSize="
+          << vtxSortByTrkSize_ << ", Ntrk: " << ntrk
+          << ", nMultMin: "<< nMultMin_ << ", nMultMax: " << nMultMax_
+          << ", Failed"<< std::endl;
+        return false;
+      }
+      LogDebug("MultFilter") << std::boolalpha
+        << "UseCent=False, vtxSortByTrkSize="
+        << vtxSortByTrkSize_ << ", Ntrk: " << ntrk
+        << ", nMultMin: "<< nMultMin_ << ", nMultMax: " << nMultMax_
+        << ", pass"<< std::endl;
     } else {
       return false;
     }
@@ -226,6 +246,7 @@ MultFilter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   desc.addUntracked<int>("nMultMin", 0)->setComment(">=");
   desc.addUntracked<int>("nMultMax", std::numeric_limits<int>::max())->setComment("<");
   desc.addUntracked<bool>("useCent", false);
+  desc.addUntracked<bool>("vtxSortByTrkSize", true);
   desc.addUntracked<edm::InputTag>("centrality", edm::InputTag("hiCentrality"));
   desc.addUntracked<edm::InputTag>("centralityBin", edm::InputTag("centralityBin","HFtowers"));
   desc.addUntracked<int>("centBinMin", 0)->setComment(">=");

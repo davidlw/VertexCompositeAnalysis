@@ -31,6 +31,10 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
 #process.options.numberOfThreads=cms.untracked.uint32(8)
 #process.options.numberOfStreams=cms.untracked.uint32(0)
 
+# DEBUG
+process.MessageLogger.cerr.threshold = "DEBUG"
+process.MessageLogger.debugModules = ["ntrkFilterD0"]
+
 # Set the global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 process.GlobalTag.globaltag = cms.string('103X_dataRun2_Prompt_fixEcalADCToGeV_v2')
@@ -160,7 +164,7 @@ process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.particle_tree_cff"
 process.particleAnaNew = process.particleAna.clone(
   recoParticles = cms.InputTag("generalD0CandidatesNew"),
   centralityBin = cms.untracked.InputTag("centralityBin","HFtowers"),
-  #eventFilterResults = cms.untracked.InputTag("TriggerResults::D0PbPb2018SKIM"),
+  eventFilterResults = cms.untracked.InputTag("TriggerResults::D0PbPb2018SKIM"),
   selectEvents = cms.string("eventFilter_HM_step")
 )
 
@@ -171,28 +175,38 @@ process.load("VertexCompositeAnalysis.VertexCompositeProducer.OfflinePrimaryVert
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.collisionEventSelection_cff')
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.hfCoincFilter_cff')
 
+process.load('VertexCompositeAnalysis.VertexCompositeProducer.ntrkUtils_cff')
 
 # Define the event selection sequence
+process.nTracksD0 = process.nTracks.clone()
+process.ntrkFilterD0 = process.ntrkFilter.clone(
+      useCent = cms.untracked.bool(False),
+      vtxSortByTrkSize = cms.untracked.bool(False),
+      nTracksVMap = cms.InputTag('nTracksD0'),
+      nMultMin = cms.untracked.int32(0), # >=
+      nMultMax = cms.untracked.int32(200), # <
+    )
+
+process.ntrkFilterD0_seq = cms.Sequence(process.nTracksD0 * process.ntrkFilterD0)
+
 process.eventFilter_HM = cms.Sequence(
     process.offlinePrimaryVerticesRecovery *
     process.hfCoincFilter2Th4 *
     process.primaryVertexFilter *
     process.clusterCompatibilityFilter
 )
-process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
+process.eventFilter_HM_step = cms.Path( process.eventFilter_HM * process.ntrkFilterD0_seq)
 
 # Define the analysis steps
 process.pcentandep_step = cms.Path(process.eventFilter_HM * process.cent_seq * process.evtplane_seq * process.lumi_seq)
-process.d0rereco_step = cms.Path(process.eventFilter_HM * process.generalD0CandidatesNew)
+process.d0rereco_step = cms.Path(process.eventFilter_HM * process.ntrkFilterD0_seq * process.generalD0CandidatesNew)
 
 # Define the output
 process.TFileService = cms.Service("TFileService",
                                        fileName = cms.string('d0ana_PbPb2018.root')
                                   )
 
-process.load("VertexCompositeAnalysis.VertexCompositeProducer.ppanalysisSkimContentD0_cff")
 process.output_HM = cms.OutputModule("PoolOutputModule",
-    outputCommands = process.analysisSkimContent.outputCommands,
     fileName = cms.untracked.string('PbPb2018_SKIM_AOD.root'),
     SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eventFilter_HM_step')),
     dataset = cms.untracked.PSet(
@@ -202,12 +216,12 @@ process.output_HM = cms.OutputModule("PoolOutputModule",
 
 process.particleAna_step = cms.EndPath( process.particleAnaNewSeq )
 
-
-process.output_HM.outputCommands = cms.untracked.vstring(#'drop *',
-      'keep *_generalD0CandidatesNew__D0PbPb2018SKIM',
+process.output_HM.outputCommands = cms.untracked.vstring('drop *',
+      'keep *_generalD0CandidatesNew_*_D0PbPb2018SKIM',
       'keep *_offlinePrimaryVerticesRecovery_*_*',
       'keep *_hiEvtPlane_*_*',
       'keep *_centralityBin_*_*',
+      'keep *_nTracksD0__D0PbPb2018SKIM',
       'keep *_hiCentrality_*_D0PbPb2018SKIM',
 )
 process.output_HM_step = cms.EndPath(process.output_HM)

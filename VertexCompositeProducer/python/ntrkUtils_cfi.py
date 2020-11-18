@@ -7,7 +7,7 @@ nTracks = cms.EDProducer('NTrackVertexMapper',
 
 ntrkFilter = cms.EDFilter('MultFilter',
   primaryVertices = cms.InputTag('offlinePrimaryVertices'),
-  nTracksVMap = cms.InputTag('generalParticles', 'nTracks'),
+  nTracksVMap = cms.InputTag('nTracks'),
   nMultMin = cms.untracked.int32(0), # >=
   nMultMax = cms.untracked.int32(2147483647), # <
   useCent = cms.untracked.bool(False),
