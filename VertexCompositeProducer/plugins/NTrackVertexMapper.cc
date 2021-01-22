@@ -45,7 +45,7 @@ void NTrackVertexMapper::produce(edm::Event& iEvent, const edm::EventSetup& iSet
   std::vector<int> vtxNTrk((vertexHandle.isValid() ? vertexHandle->size() : 0), 0);
 
   // loop over general tracks
-  if (vertexHandle.isValid() && trackHandle.isValid() && vertexHandle->size()>1) {
+  if (vertexHandle.isValid() && trackHandle.isValid() && vertexHandle->size()) {
     for (const auto& trk : *trackHandle) {
       if (!trk.quality(reco::TrackBase::highPurity)) continue;
       if (trk.pt() <= 0.4 || std::abs(trk.eta()) >= 2.4) continue;

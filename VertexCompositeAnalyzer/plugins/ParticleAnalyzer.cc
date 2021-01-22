@@ -180,6 +180,7 @@ private:
   const std::vector<UInt_t> genPdgIdV_;
   std::map<std::string, bool> addInfo_;
   std::set<int> sourceId_, genPdgId_;
+  std::vector<std::string> dedxInfo_;
 
   HLTPrescaleProvider hltPrescaleProvider_;
   std::vector<std::vector<int> > l1PrescaleTable_;
@@ -189,7 +190,7 @@ private:
   TTree* tree_ = 0;
   TTree* ntuple_ = 0;
 
-  bool isMC_;
+  bool isMC_, vtxSortByTrkSize_;
   reco::Vertex vertex_;
   reco::Particle::Point genVertex_;
   reco::VertexCollection vertices_;
@@ -770,8 +771,10 @@ ParticleAnalyzer::getEventData(const edm::Event& iEvent, const edm::EventSetup& 
       vertices_.push_back(pv);
     }
   }
-  auto byTracksSize = [] (const reco::Vertex& v1, const reco::Vertex& v2) -> bool { return v1.tracksSize() > v2.tracksSize(); };
-  std::sort(vertices_.begin(), vertices_.end(), byTracksSize);
+  if (vtxSortByTrkSize_) {
+    auto byTracksSize = [] (const reco::Vertex& v1, const reco::Vertex& v2) -> bool { return v1.tracksSize() > v2.tracksSize(); };
+    std::sort(vertices_.begin(), vertices_.end(), byTracksSize);
+  }
   if (vertices_.empty())
   {
     edm::Handle<reco::BeamSpot> beamspot;
@@ -860,7 +863,7 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
     {
       objCol = std::vector<std::string>(triggerEvent->getObjects().size());
       const auto& cK = triggerEvent->collectionKeys();
-      for (size_t i=1; i<cK.size(); i++)
+      for (size_t i=0; i<cK.size(); i++)
       {
         const auto& coll = triggerEvent->collectionTag(i).encode();
         // add default limits
@@ -882,7 +885,7 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
         // store trigger matching information
         matchData_[coll].setInfo(coll, maxDeltaR, maxDeltaPtRel, maxDeltaEta, maxDeltaPhi);
         // fill trigger object - collection map
-        for (size_t j=cK[i-1]; j<cK[i]; j++) { objCol[j] = coll; }
+        for (size_t j=(i<1?0:cK[i-1]); j<cK[i]; j++) { objCol[j] = coll; }
       }
     }
     // extract trigger information
@@ -1017,7 +1020,7 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
           const auto& i = triggerEvent->collectionIndex(col);
           const auto& cK = triggerEvent->collectionKeys();
           const auto& triggerObjects = triggerEvent->getObjects();
-          for (size_t j=cK[i>0?i-1:0]; j<cK[i]; j++)
+          for (size_t j=(i<1?0:cK[i-1]); j<cK[i]; j++)
           {
             triggerObjectMap_[col][j] = triggerObjects[j];
             triggerObjectMap_[col][j].setCollection(col);
@@ -1379,7 +1382,7 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
   // generated particle information
   if (isMC_)
   {
-    if (!cand.hasUserInt("isGenMatched")) { addGenParticle(*const_cast<pat::GenericParticle*>(&cand), cand.p4(), genParticlesToMatch_); } 
+    if (!cand.hasUserInt("isGenMatched")) { addGenParticle(*const_cast<pat::GenericParticle*>(&cand), cand.p4(), genParticlesToMatch_); }
     const auto& genPar = cand.genParticleRef();
     info.add("genIdx", fillGenParticleInfo(genPar, idx));
     info.add("matchGEN", genPar.isNonnull());
@@ -1559,7 +1562,12 @@ ParticleAnalyzer::fillTrackInfo(const pat::GenericParticle& cand, const UShort_t
   info.add("xyDCASignificance", getFloat(cand, "dxySig"));
 
   // dEdx information
-  if (addInfo_.at("dEdx")) info.add("dEdxHarmonic2", getFloat(cand, "dEdx"));
+  if (addInfo_.at("dEdxs")) {
+    for (const auto input : dedxInfo_) {
+      std::string dedxName = "dEdx_" + input;
+      info.add(dedxName, getFloat(cand, dedxName));
+    }
+  }
 
   // push data and return index
   info.pushData(cand);
@@ -2309,6 +2317,13 @@ ParticleAnalyzer::loadConfiguration(const edm::ParameterSet& config, const edm::
 {
   if (config.empty()) return;
 
+  if (config.existsAs<bool>("vtxSortByTrkSize"))
+  {
+    vtxSortByTrkSize_ = config.getParameter<bool>("vtxSortByTrkSize");
+  } else {
+    vtxSortByTrkSize_ = true;
+  }
+
   HepPDT::ParticleID pid;
   if (config.existsAs<int>("pdgId"))
   {
@@ -2328,9 +2343,10 @@ ParticleAnalyzer::loadConfiguration(const edm::ParameterSet& config, const edm::
     addInfo_["track"] = pid.threeCharge()!=0;
   }
 
-  if (!addInfo_["dEdx"] && config.existsAs<edm::InputTag>("dedxHarmonic2"))
+  if (!addInfo_["dEdxs"] && config.existsAs<std::vector<std::string>>("dEdxInputs"))
   {
-    addInfo_["dEdx"] = config.getParameter<edm::InputTag>("dedxHarmonic2").label()!="";
+    dedxInfo_ = config.getParameter<std::vector<std::string> >("dEdxInputs");
+    addInfo_["dEdxs"] = dedxInfo_.size();
   }
 
   if (!addInfo_["mva"] && config.existsAs<edm::InputTag>("mva"))

@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 from Configuration.StandardSequences.Eras import eras
-process = cms.Process('D0PbPb2018SKIM',eras.Run2_2018_pp_on_AA)
+process = cms.Process('LambdaCPbPb2018SKIM',eras.Run2_2018_pp_on_AA)
 
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
@@ -9,31 +9,18 @@ process.load('Configuration.StandardSequences.Reconstruction_cff')
 process.load("CondCore.CondDB.CondDB_cfi")
 process.load('Configuration.EventContent.EventContent_cff')
 
+
 # Limit the output messages
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 
-process.options = cms.untracked.PSet(
-    wantSummary = cms.untracked.bool( True ),
-)
-
+# Define the input source
 process.source = cms.Source("PoolSource",
-   fileNames = cms.untracked.vstring(
-###'/store/hidata/HIRun2018A/HIMinimumBias1/AOD/PromptReco-v1/000/326/577/00000/532A6440-350D-2446-89FB-3CA9E8335E4F.root'
-##'/store/hidata/HIRun2018A/HIMinimumBias6/AOD/04Apr2019-v1/70012/FEB2298F-D3AA-5A41-A999-02AEC7648569.root'
-'file:output_numEvent100.root'
-#'root://cmsxrootd.fnal.gov//store/hidata/HIRun2018A/HISingleMuon/AOD/04Apr2019-v1/270003/21A8A05E-B3C5-4445-A76E-1433602ED7FF.root'
-   ),
+    fileNames = cms.untracked.vstring('file:output_numEvent100.root'),
 )
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
 
-#Setup FWK for multithreaded
-#process.options.numberOfThreads=cms.untracked.uint32(8)
-#process.options.numberOfStreams=cms.untracked.uint32(0)
-
-# DEBUG
-#process.MessageLogger.cerr.threshold = "DEBUG"
-#process.MessageLogger.debugModules = ["ntrkFilterD0"]
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
 
 # Set the global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
@@ -99,114 +86,107 @@ process.lumiInfo = cms.EDProducer('LumiProducerFromBrilcalc',
                                   doBunchByBunch = cms.bool(False))
 process.lumi_seq = cms.Sequence(process.lumiInfo)
 
+# Add the VertexComposite producer
+from VertexCompositeAnalysis.VertexCompositeProducer.generalParticles_cff import generalParticles
 
-# D0 candidate rereco
-process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalParticles_cff")
-process.generalD0CandidatesNew = process.generalParticles.clone(
-    pdgId = cms.int32(421),
-    doSwap = cms.bool(True),
-    width = cms.double(0.15),
+process.kShort = generalParticles.clone(
+    pdgId = cms.int32(310),
+    charge = cms.int32(0),
+    doSwap = cms.bool(False),
+    width = cms.double(0.2),
 
-    preSelection = cms.string(""
-       "charge==0"
-       "&& userFloat('dauPtSum') >= 1.6 && userFloat('dauEtaDiff') <= 1.0"
-       ),
-    pocaSelection = cms.string(""
-       "userFloat('bestMass') >= 1.71 && userFloat('bestMass') <= 2.02 && pt >= 1.0"
-       "&& userFloat('dca') >= 0 && userFloat('dca') <= 9999."
-       ),
-    postSelection = cms.string(""
-       "userFloat('vertexProb') >= 0.02"
-       "&& userFloat('normChi2') <= 9999.0"
-       ),
-    finalSelection = cms.string(""
-       "userFloat('rVtxMag') >= 0.0 && userFloat('rVtxSig') >= 2.0"
-       "&& userFloat('lVtxMag') >= 0.0 && userFloat('lVtxSig') >= 3.0"
-       "&& cos(userFloat('angle3D')) >= -2.0 && cos(userFloat('angle2D')) >= -2.0"
-       "&& abs(userFloat('angle3D')) <= 0.2 && abs(userFloat('angle2D')) <= 0.2"
-       "&& abs(rapidity) < 2.0"
-       ),
-    #dEdxInputs = cms.vstring('dedxHarmonic2', 'dedxPixelHarmonic2'),
-#
+    preSelection = cms.string(""),
+    pocaSelection = cms.string("pt >= 1.0 && abs(rapidity) < 2.4"),
+    postSelection = cms.string(""),
+    preMassSelection = cms.string(""),
+    finalSelection = cms.string( "abs(userFloat('angle3D'))<0.2 && abs(userFloat('lVtxSig'))>2.5 && cos(userFloat('angle3D'))>0.99999"),
+
+    dEdxInputs = cms.vstring('dedxHarmonic2', 'dedxPixelHarmonic2'),
+
     # daughter information
     daughterInfo = cms.VPSet([
-        cms.PSet(pdgId = cms.int32(321), charge = cms.int32(-1),
-           selection = cms.string(
-              "pt>1.0 && abs(eta)<2.4"
-              "&& quality('highPurity') && ptError/pt<0.1"
+        cms.PSet(pdgId = cms.int32(211), charge = cms.int32(-1),
+              selection = cms.string(
+              "pt>0.4 && abs(eta)<2.4"
+              "&& quality('loose')"" && ptError/pt<0.1"
+              "&& normalizedChi2<7.0"
               "&& (normalizedChi2/hitPattern.trackerLayersWithMeasurement)<0.18"
-              "&& numberOfValidHits >=11"
-              ),
-           finalSelection = cms.string(''
-              'abs(userFloat("dzSig")) < 3.0 && abs(userFloat("dxySig")) < 3.0'
-              '&& (track.algo!=6 || userFloat("mva")>=0.98)'
-              )
-           ),
+              "&& numberOfValidHits >=4"),
+              finalSelection = cms.string( "(track.algo!=6 || userFloat('mva')>=0.98)")
+            ),
         cms.PSet(pdgId = cms.int32(211), charge = cms.int32(+1),
-           selection = cms.string(
-              "pt>1.0 && abs(eta)<2.4"
-              "&& quality('highPurity') && ptError/pt<0.1"
+              selection = cms.string(
+              "pt>0.4 && abs(eta)<2.4"
+              "&& quality('loose')"" && ptError/pt<0.1"
+              "&& normalizedChi2<7.0"
               "&& (normalizedChi2/hitPattern.trackerLayersWithMeasurement)<0.18"
-              "&& numberOfValidHits >=11"
-              ),
-           finalSelection = cms.string(''
-              'abs(userFloat("dzSig")) < 3.0 && abs(userFloat("dxySig")) < 3.0'
-              '&& (track.algo!=6 || userFloat("mva")>=0.98)'
-              )
-           )
-    ])
-  )
-process.generalD0CandidatesNew.mva = cms.InputTag("generalTracks","MVAValues") ###cesar:to change iter6 tracking mva cut
-
-# tree producer
-
-process.load("VertexCompositeAnalysis.VertexCompositeAnalyzer.particle_tree_cff")
-process.particleAnaNew = process.particleAna.clone(
-  recoParticles = cms.InputTag("generalD0CandidatesNew"),
-  centralityBin = cms.untracked.InputTag("centralityBin","HFtowers"),
-  eventFilterResults = cms.untracked.InputTag("TriggerResults::D0PbPb2018SKIM"),
-  selectEvents = cms.string("eventFilter_HM_step")
+              "&& numberOfValidHits >=4"),
+              finalSelection = cms.string( "(track.algo!=6 || userFloat('mva')>=0.98)")
+            ),
+    ]),
 )
+process.kShort.mva = cms.InputTag("generalTracks","MVAValues") ###cesar:to change iter6 tracking mva cut
 
-process.particleAnaNewSeq = cms.Sequence(process.particleAnaNew)
+process.LambdaC = generalParticles.clone(
+    pdgId = cms.int32(4122),
+    doSwap = cms.bool(False),
+    preSelection = cms.string("pt>5.0 && mass < 2.4 && mass>2.1"),
+    preMassSelection = cms.string("abs(charge)==1"),
+    finalSelection = cms.string(''),
+
+    dEdxInputs = cms.vstring('dedxHarmonic2', 'dedxPixelHarmonic2'),
+
+    # daughter information
+    daughterInfo = cms.VPSet([
+        cms.PSet(pdgId = cms.int32(310), source = cms.InputTag('kShort'), selection = cms.string('')),
+        cms.PSet(pdgId = cms.int32(2212), #charge = cms.int32(+1),
+          selection = cms.string("pt>0.4 && abs(eta)<2.4"
+              "&& quality('highPurity') && ptError/pt<0.1"
+              "&& normalizedChi2<7.0"
+              "&& (normalizedChi2/hitPattern.trackerLayersWithMeasurement)<0.18"
+              "&& numberOfValidHits >=11"),
+            finalSelection = cms.string("abs(userFloat('dzSig')) < 3 && abs(userFloat('dxySig')) < 3"
+              "&& (track.algo!=6 || userFloat('mva')>=0.98)"
+            )),
+    ]),
+)
+process.LambdaC.mva = cms.InputTag("generalTracks","MVAValues") ###cesar:to change iter6 tracking mva cut
 
 # Add PbPb collision event selection
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.OfflinePrimaryVerticesRecovery_cfi")
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.collisionEventSelection_cff')
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.hfCoincFilter_cff')
 
-process.load('VertexCompositeAnalysis.VertexCompositeProducer.ntrkUtils_cff')
-
 # Define the event selection sequence
-process.nTracksD0 = process.nTracks.clone()
-process.ntrkFilterD0 = process.ntrkFilter.clone(
-      useCent = cms.untracked.bool(False),
-      vtxSortByTrkSize = cms.untracked.bool(False),
-      nTracksVMap = cms.InputTag('nTracksD0'),
-      #nMultMin = cms.untracked.int32(0), # >=
-      #nMultMax = cms.untracked.int32(200), # <
-    )
-
-process.ntrkFilterD0_seq = cms.Sequence(process.nTracksD0 * process.ntrkFilterD0)
-
 process.eventFilter_HM = cms.Sequence(
     process.offlinePrimaryVerticesRecovery *
     process.hfCoincFilter2Th4 *
     process.primaryVertexFilter *
     process.clusterCompatibilityFilter
 )
-process.eventFilter_HM_step = cms.Path( process.eventFilter_HM * process.ntrkFilterD0_seq)
+process.eventFilter_HM_step = cms.Path( process.eventFilter_HM )
 
 # Define the analysis steps
 process.pcentandep_step = cms.Path(process.eventFilter_HM * process.cent_seq * process.evtplane_seq * process.lumi_seq)
-process.d0rereco_step = cms.Path(process.eventFilter_HM * process.ntrkFilterD0_seq * process.generalD0CandidatesNew)
+process.rereco_step = cms.Path(process.eventFilter_HM * process.kShort * process.LambdaC)
+
+# Add the VertexComposite tree
+from VertexCompositeAnalysis.VertexCompositeAnalyzer.particle_tree_cff import particleAna
+process.lambdacAna = particleAna.clone(
+  recoParticles = cms.InputTag("LambdaC"),
+  addSource    = cms.untracked.bool(False),
+  saveTree = cms.untracked.bool(False),
+  centralityBin = cms.untracked.InputTag("centralityBin","HFtowers"),
+  selectEvents = cms.string("eventFilter_HM_step")
+)
+process.particleAnaNewSeq = cms.Sequence(process.lambdacAna)
 
 # Define the output
-process.TFileService = cms.Service("TFileService",
-                                       fileName = cms.string('d0ana_PbPb2018.root')
-                                  )
+process.TFileService = cms.Service("TFileService", fileName = cms.string('lambdacana.root'))
 
+process.load("VertexCompositeAnalysis.VertexCompositeProducer.ppanalysisSkimContentD0_cff")
 process.output_HM = cms.OutputModule("PoolOutputModule",
+    outputCommands = process.analysisSkimContent.outputCommands,
     fileName = cms.untracked.string('PbPb2018_SKIM_AOD.root'),
     SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eventFilter_HM_step')),
     dataset = cms.untracked.PSet(
@@ -214,24 +194,23 @@ process.output_HM = cms.OutputModule("PoolOutputModule",
     )
 )
 
-process.particleAna_step = cms.EndPath( process.particleAnaNewSeq )
-
-process.output_HM.outputCommands = cms.untracked.vstring('drop *',
-      'keep *_generalD0CandidatesNew_*_D0PbPb2018SKIM',
+process.output_HM.outputCommands = cms.untracked.vstring(#'drop *',
+      'keep *_LambdaC__LambdaCPbPb2018SKIM',
       'keep *_offlinePrimaryVerticesRecovery_*_*',
       'keep *_hiEvtPlane_*_*',
       'keep *_centralityBin_*_*',
-      'keep *_nTracksD0__D0PbPb2018SKIM',
-      'keep *_hiCentrality_*_D0PbPb2018SKIM',
+      'keep *_hiCentrality_*_LambdaCPbPb2018SKIM',
 )
+
 process.output_HM_step = cms.EndPath(process.output_HM)
 
+process.particleAna_step = cms.EndPath( process.particleAnaNewSeq )
 
 # Define the process schedule
 process.schedule = cms.Schedule(
     process.eventFilter_HM_step,
     process.pcentandep_step,
-    process.d0rereco_step,
+    process.rereco_step,
     process.output_HM_step,
     process.particleAna_step
 )
