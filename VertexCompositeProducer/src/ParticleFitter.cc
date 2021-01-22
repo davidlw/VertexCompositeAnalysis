@@ -960,9 +960,9 @@ void ParticleDaughter::addData(pat::GenericParticle& c, const reco::PFCandidateR
 void ParticleDaughter::addData(pat::GenericParticle& c, const pat::MuonRef& p, const bool& embedInfo)
 {
   auto track = p->track();
-  if (!track.id().isValid() && p->originalObjectRef().isAvailable()) {
+  if (!track.id().isValid() && p->originalObjectRef().id().isValid() && p->originalObjectRef().isAvailable() && dynamic_cast<const reco::Muon*>(p->originalObject())) {
     const auto& t = dynamic_cast<const reco::Muon*>(p->originalObject())->track();
-    if (t.isNonnull() && t.isAvailable()) { track = t; }
+    if (t.isNonnull() && t.id().isValid() && t.isAvailable()) { track = t; }
   }
   c.setTrack(track, embedInfo);
   if (embedInfo && track.id().isValid()) c.addUserData<reco::TrackRef>("trackRef", track);
