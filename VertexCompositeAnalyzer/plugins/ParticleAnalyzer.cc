@@ -446,6 +446,7 @@ private:
       for (const auto& d : data_.uintVM()  ) { uintVVM_[d.first].push_back(d.second);   }
       for (const auto& d : data_.floatVM() ) { floatVVM_[d.first].push_back(d.second);  }
       parM_[par] = size_++;
+      data_.clear();
     };
 
     void copyData(Container& data, const size_t& i, const std::string& n="") const
@@ -462,8 +463,6 @@ private:
     };
 
     // clear
-    void clearTemp() { data_.clear(); }
-
     void clear()
     {
       size_ = 0;
@@ -1255,7 +1254,6 @@ ParticleAnalyzer::fillTriggerObjectInfo(const pat::TriggerObjectStandAlone& obj,
 
   // push data and return index
   info.pushData(obj);
-  info.clearTemp();
   return idx;
 }
 
@@ -1422,7 +1420,6 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
     }
   }
 
-  info.clearTemp();
   // return index
   return idx;
 }
@@ -1575,7 +1572,6 @@ ParticleAnalyzer::fillTrackInfo(const pat::GenericParticle& cand, const UShort_t
 
   // push data and return index
   info.pushData(cand);
-  info.clearTemp(); 
   return idx;
 }
 
@@ -1726,7 +1722,6 @@ ParticleAnalyzer::fillMuonInfo(const pat::GenericParticle& cand, const UShort_t&
 
   // push data and return index
   info.pushData(cand);
-  info.clearTemp();
   return idx;
 };
 
@@ -1773,7 +1768,6 @@ ParticleAnalyzer::fillElectronInfo(const pat::GenericParticle& cand, const UShor
 
   // push data and return index
   info.pushData(cand);
-  info.clearTemp();
   return idx;
 };
 
@@ -1831,7 +1825,6 @@ ParticleAnalyzer::fillPhotonInfo(const pat::GenericParticle& cand, const UShort_
 
   // push data and return index
   info.pushData(cand);
-  info.clearTemp();
   return idx;
 };
 
@@ -1891,7 +1884,6 @@ ParticleAnalyzer::fillJetInfo(const pat::GenericParticle& cand, const UShort_t& 
 
   // push data and return index
   info.pushData(cand);
-  info.clearTemp();
   return idx;
 };
 
@@ -1925,7 +1917,6 @@ ParticleAnalyzer::fillTauInfo(const pat::GenericParticle& cand, const UShort_t& 
 
   // push data and return index
   info.pushData(cand);
-  info.clearTemp();
   return idx;
 };
 
@@ -1960,7 +1951,6 @@ ParticleAnalyzer::fillPFCandidateInfo(const pat::GenericParticle& cand, const US
 
   // push data and return index
   info.pushData(cand);
-  info.clearTemp();
   return idx;
 };
 
@@ -2082,7 +2072,6 @@ ParticleAnalyzer::fillGenParticleInfo(const reco::GenParticleRef& candR, const U
     if (momIdx!=USHRT_MAX) { info.push(idx, "momIdx", momIdx); }
   }
 
-  info.clearTemp();
   // return index
   return idx;
 }
