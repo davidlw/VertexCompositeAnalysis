@@ -446,6 +446,7 @@ private:
       for (const auto& d : data_.uintVM()  ) { uintVVM_[d.first].push_back(d.second);   }
       for (const auto& d : data_.floatVM() ) { floatVVM_[d.first].push_back(d.second);  }
       parM_[par] = size_++;
+      data_.clear();
     };
 
     void copyData(Container& data, const size_t& i, const std::string& n="") const
@@ -1580,11 +1581,12 @@ ParticleAnalyzer::fillSourceInfo(const pat::GenericParticle& cand, const UShort_
 {
   // fill source information
   const auto pdgId = std::abs(cand.pdgId());
-  if      (pdgId<=6 ) { return fillJetInfo(cand, candIdx, force);      }
-  else if (pdgId==11) { return fillElectronInfo(cand, candIdx, force); }
-  else if (pdgId==13) { return fillMuonInfo(cand, candIdx, force);     }
-  else if (pdgId==15) { return fillTauInfo(cand, candIdx, force);      }
-  else if (pdgId==22) { return fillPhotonInfo(cand, candIdx, force);   }
+  if      (pdgId==0 ) { return fillPFCandidateInfo(cand, candIdx, force); }
+  else if (pdgId<=6 ) { return fillJetInfo(cand, candIdx, force);         }
+  else if (pdgId==11) { return fillElectronInfo(cand, candIdx, force);    }
+  else if (pdgId==13) { return fillMuonInfo(cand, candIdx, force);        }
+  else if (pdgId==15) { return fillTauInfo(cand, candIdx, force);         }
+  else if (pdgId==22) { return fillPhotonInfo(cand, candIdx, force);      }
   // if pdgId not matched, use PF candidates
   return fillPFCandidateInfo(cand, candIdx, force);
 }
