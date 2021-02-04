@@ -54,6 +54,8 @@
 #include "TrackingTools/IPTools/interface/IPTools.h"
 #include "HepPDT/ParticleID.hh"
 
+#include "ParticleContainer.h"
+
 //
 // constants, enums and typedefs
 //
@@ -84,19 +86,17 @@ private:
   virtual void addParticleToNtuple(const size_t&, const std::pair<int, int>&);
   virtual void fillNTuple();
 
-  UShort_t fillTriggerObjectInfo(const pat::TriggerObjectStandAlone&, const UShort_t&, const bool&, const UShort_t& candIdx=USHRT_MAX);
-  UShort_t fillRecoParticleInfo(const pat::GenericParticle&, const UShort_t& momIdx=USHRT_MAX);
-  UShort_t fillTrackInfo(const pat::GenericParticle&, const UShort_t&, const bool& force=false);
-  UShort_t fillSourceInfo(const pat::GenericParticle&, const UShort_t&, const bool& force=false);
-  UShort_t fillMuonInfo(const pat::GenericParticle& cand, const UShort_t&, const bool& force=false);
-  UShort_t fillElectronInfo(const pat::GenericParticle& cand, const UShort_t&, const bool& force=false);
-  UShort_t fillPhotonInfo(const pat::GenericParticle& cand, const UShort_t&, const bool& force=false);
-  UShort_t fillJetInfo(const pat::GenericParticle& cand, const UShort_t&, const bool& force=false);
-  UShort_t fillTauInfo(const pat::GenericParticle& cand, const UShort_t&, const bool& force=false);
-  UShort_t fillPFCandidateInfo(const pat::GenericParticle& cand, const UShort_t&, const bool& force=false);
-  UShort_t fillGenParticleInfo(const reco::GenParticleRef&, const UShort_t& candIdx=USHRT_MAX, const bool& force=false);
-
-  typedef std::map<std::string, std::vector<size_t> > TriggerIndexMap;
+  UShort_t fillTriggerObjectInfo(const pat::TriggerObjectStandAlone&, const UShort_t&, const bool&, const UInt_t& candIdx=UINT_MAX);
+  UInt_t   fillRecoParticleInfo(const pat::GenericParticle&, const UInt_t& momIdx=UINT_MAX);
+  UShort_t fillTrackInfo(const pat::GenericParticle&, const UInt_t&, const bool& force=false);
+  UShort_t fillSourceInfo(const pat::GenericParticle&, const UInt_t&, const bool& force=false);
+  UShort_t fillMuonInfo(const pat::GenericParticle&, const UInt_t&, const bool& force=false);
+  UShort_t fillElectronInfo(const pat::GenericParticle&, const UInt_t&, const bool& force=false);
+  UShort_t fillPhotonInfo(const pat::GenericParticle&, const UInt_t&, const bool& force=false);
+  UShort_t fillJetInfo(const pat::GenericParticle&, const UInt_t&, const bool& force=false);
+  UShort_t fillTauInfo(const pat::GenericParticle&, const UInt_t&, const bool& force=false);
+  UShort_t fillPFCandidateInfo(const pat::GenericParticle&, const UInt_t&, const bool& force=false);
+  UShort_t fillGenParticleInfo(const reco::GenParticleRef&, const UInt_t& candIdx=UINT_MAX, const bool& force=false);
 
   void initParticleInfo(const std::string&, const int& pId=0);
   void addTriggerObject(pat::GenericParticle&);
@@ -199,442 +199,6 @@ private:
   edm::ValueMap<int> nTracksVMap_;
 
   const std::set<int> SOURCEPDG_ = {0,1,2,3,4,5,6,11,13,15,22};
-
-  // containers
-  class Container
-  {
-   public:
-    Container() {};
-    ~Container() {};
-
-    // getters
-    std::map<std::string, bool     > boolM()   const { return boolM_;   };
-    std::map<std::string, Char_t   > charM()   const { return charM_;   };
-    std::map<std::string, short    > shortM()  const { return shortM_;  };
-    std::map<std::string, int      > intM()    const { return intM_;    };
-    std::map<std::string, UChar_t  > ucharM()  const { return ucharM_;  };
-    std::map<std::string, UShort_t > ushortM() const { return ushortM_; };
-    std::map<std::string, UInt_t   > uintM()   const { return uintM_;   };
-    std::map<std::string, float    > floatM()  const { return floatM_;  };
-    std::map<std::string, std::vector<bool>     > boolVM()   const { return boolVM_;   };
-    std::map<std::string, std::vector<Char_t>   > charVM()   const { return charVM_;   };
-    std::map<std::string, std::vector<short>    > shortVM()  const { return shortVM_;  };
-    std::map<std::string, std::vector<int>      > intVM()    const { return intVM_;    };
-    std::map<std::string, std::vector<UChar_t>  > ucharVM()  const { return ucharVM_;  };
-    std::map<std::string, std::vector<UShort_t> > ushortVM() const { return ushortVM_; };
-    std::map<std::string, std::vector<UInt_t>   > uintVM()   const { return uintVM_;   };
-    std::map<std::string, std::vector<float>    > floatVM()  const { return floatVM_;  };
-
-    // setters
-    template <class T>
-    void add(const std::string& n, const T&        v) = delete; // avoid implicit conversion
-    void add(const std::string& n, const bool&     v) { boolM_[n]   = v; };
-    void add(const std::string& n, const Char_t&   v) { charM_[n]   = v; };
-    void add(const std::string& n, const short&    v) { shortM_[n]  = v; };
-    void add(const std::string& n, const int&      v) { intM_[n]    = v; };
-    void add(const std::string& n, const UChar_t&  v) { ucharM_[n]  = v; };
-    void add(const std::string& n, const UShort_t& v) { ushortM_[n] = v; };
-    void add(const std::string& n, const UInt_t&   v) { uintM_[n]   = v; };
-    void add(const std::string& n, const float&    v) { floatM_[n]  = v; };
-    void add(const std::string& n, const double&   v) { floatM_[n]  = v; };
-    void add(const std::string& n, const std::vector<bool>&     v) { boolVM_[n]   = v; };
-    void add(const std::string& n, const std::vector<Char_t>&   v) { charVM_[n]   = v; };
-    void add(const std::string& n, const std::vector<short>&    v) { shortVM_[n]  = v; };
-    void add(const std::string& n, const std::vector<int>&      v) { intVM_[n]    = v; };
-    void add(const std::string& n, const std::vector<UChar_t>&  v) { ucharVM_[n]  = v; };
-    void add(const std::string& n, const std::vector<UShort_t>& v) { ushortVM_[n] = v; };
-    void add(const std::string& n, const std::vector<UInt_t>&   v) { uintVM_[n]   = v; };
-    void add(const std::string& n, const std::vector<float>&    v) { floatVM_[n]  = v; };
-
-    template <class T>
-    void push(const std::string& n, const T&        v, const bool& c=0) = delete; // avoid implicit conversion
-    void push(const std::string& n, const bool&     v, const bool& c=0) { boolVM_[n].push_back(v);  };
-    void push(const std::string& n, const Char_t&   v, const bool& c=0) { if(!c || v!=CHAR_MAX ) charVM_[n].push_back(v);   };
-    void push(const std::string& n, const short&    v, const bool& c=0) { if(!c || v!=SHRT_MAX ) shortVM_[n].push_back(v);  };
-    void push(const std::string& n, const int&      v, const bool& c=0) { if(!c || v!=INT_MAX  ) intVM_[n].push_back(v);    };
-    void push(const std::string& n, const UChar_t&  v, const bool& c=0) { if(!c || v!=UCHAR_MAX) ucharVM_[n].push_back(v);  };
-    void push(const std::string& n, const UShort_t& v, const bool& c=0) { if(!c || v!=USHRT_MAX) ushortVM_[n].push_back(v); };
-    void push(const std::string& n, const UInt_t&   v, const bool& c=0) { if(!c || v!=UINT_MAX ) uintVM_[n].push_back(v);   };
-    void push(const std::string& n, const float&    v, const bool& c=0) { floatVM_[n].push_back(v); };
-    void push(const std::string& n, const double&   v, const bool& c=0) { push(n, float(v), c); }
-
-    void copyData(Container& data, const std::string& n="") const
-    {
-      for (const auto& d : boolM_   ) { data.add(n+d.first, d.second); }
-      for (const auto& d : charM_   ) { data.add(n+d.first, d.second); }
-      for (const auto& d : shortM_  ) { data.add(n+d.first, d.second); }
-      for (const auto& d : intM_    ) { data.add(n+d.first, d.second); }
-      for (const auto& d : ucharM_  ) { data.add(n+d.first, d.second); }
-      for (const auto& d : ushortM_ ) { data.add(n+d.first, d.second); }
-      for (const auto& d : uintM_   ) { data.add(n+d.first, d.second); }
-      for (const auto& d : floatM_  ) { data.add(n+d.first, d.second); }
-      for (const auto& d : boolVM_  ) { for (uint i=0; i<d.second.size(); i++) { data.add(n+d.first+Form("%u",i), d.second[i]); } }
-      for (const auto& d : charVM_  ) { for (uint i=0; i<d.second.size(); i++) { data.add(n+d.first+Form("%u",i), d.second[i]); } }
-      for (const auto& d : shortVM_ ) { for (uint i=0; i<d.second.size(); i++) { data.add(n+d.first+Form("%u",i), d.second[i]); } }
-      for (const auto& d : intVM_   ) { for (uint i=0; i<d.second.size(); i++) { data.add(n+d.first+Form("%u",i), d.second[i]); } }
-      for (const auto& d : ucharVM_ ) { for (uint i=0; i<d.second.size(); i++) { data.add(n+d.first+Form("%u",i), d.second[i]); } }
-      for (const auto& d : ushortVM_) { for (uint i=0; i<d.second.size(); i++) { data.add(n+d.first+Form("%u",i), d.second[i]); } }
-      for (const auto& d : uintVM_  ) { for (uint i=0; i<d.second.size(); i++) { data.add(n+d.first+Form("%u",i), d.second[i]); } }
-      for (const auto& d : floatVM_ ) { for (uint i=0; i<d.second.size(); i++) { data.add(n+d.first+Form("%u",i), d.second[i]); } }
-    };
-
-    // clear
-    void clear()
-    {
-      for (auto& d : boolM_   ) { d.second = false; }
-      for (auto& d : charM_   ) { d.second = -99;   }
-      for (auto& d : shortM_  ) { d.second = -99;   }
-      for (auto& d : intM_    ) { d.second = -99;   }
-      for (auto& d : ucharM_  ) { d.second = 0;     }
-      for (auto& d : ushortM_ ) { d.second = 0;     }
-      for (auto& d : uintM_   ) { d.second = 0;     }
-      for (auto& d : floatM_  ) { d.second = -99.9; }
-      for (auto& d : boolVM_  ) { d.second.clear(); }
-      for (auto& d : charVM_  ) { d.second.clear(); }
-      for (auto& d : shortVM_ ) { d.second.clear(); }
-      for (auto& d : intVM_   ) { d.second.clear(); }
-      for (auto& d : ucharVM_ ) { d.second.clear(); }
-      for (auto& d : ushortVM_) { d.second.clear(); }
-      for (auto& d : uintVM_  ) { d.second.clear(); }
-      for (auto& d : floatVM_ ) { d.second.clear(); }
-    };
-
-    template <class T>
-    void erase(std::map<std::string, T>& c, const std::string& n)
-    {
-      for (const auto& it : std::map<std::string, T>(c))
-      {
-        const bool has = it.first.find(n)!=std::string::npos;
-        if (has) { c.erase(it.first); }
-      }
-    };
-
-    void erase(const std::string& n, const std::vector<std::string>& tv)
-    {
-      for (const auto& t : tv)
-      {
-        if      (t=="bool"   ) erase(boolM_, n);
-        else if (t=="uchar"  ) erase(ucharM_, n);
-        else if (t=="char"   ) erase(charM_, n);
-        else if (t=="ushort" ) erase(ushortM_, n);
-        else if (t=="short"  ) erase(shortM_, n);
-        else if (t=="uint"   ) erase(uintM_, n);
-        else if (t=="int"    ) erase(intM_, n);
-        else if (t=="float"  ) erase(floatM_, n);
-        else if (t=="boolV"  ) erase(boolVM_, n);
-        else if (t=="ucharV" ) erase(ucharVM_, n);
-        else if (t=="charV"  ) erase(charVM_, n);
-        else if (t=="ushortV") erase(ushortVM_, n);
-        else if (t=="shortV" ) erase(shortVM_, n);
-        else if (t=="uintV"  ) erase(uintVM_, n);
-        else if (t=="intV"   ) erase(intVM_, n);
-        else if (t=="floatV" ) erase(floatVM_, n);
-      }
-    };
-
-    // tree initializer
-    void initTree(TTree& tree, const std::string& n="")
-    {
-      for (auto& d : boolM_   ) { tree.Branch((n+d.first).c_str(), &d.second, (d.first+"/O").c_str()); }
-      for (auto& d : ucharM_  ) { tree.Branch((n+d.first).c_str(), &d.second, (d.first+"/b").c_str()); }
-      for (auto& d : charM_   ) { tree.Branch((n+d.first).c_str(), &d.second, (d.first+"/B").c_str()); }
-      for (auto& d : ushortM_ ) { tree.Branch((n+d.first).c_str(), &d.second, (d.first+"/s").c_str()); }
-      for (auto& d : shortM_  ) { tree.Branch((n+d.first).c_str(), &d.second, (d.first+"/S").c_str()); }
-      for (auto& d : uintM_   ) { tree.Branch((n+d.first).c_str(), &d.second, (d.first+"/i").c_str()); }
-      for (auto& d : intM_    ) { tree.Branch((n+d.first).c_str(), &d.second, (d.first+"/I").c_str()); }
-      for (auto& d : floatM_  ) { tree.Branch((n+d.first).c_str(), &d.second, (d.first+"/F").c_str()); }
-      for (auto& d : boolVM_  ) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : charVM_  ) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : shortVM_ ) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : intVM_   ) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : ucharVM_ ) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : ushortVM_) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : uintVM_  ) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : floatVM_ ) { tree.Branch((n+d.first).c_str(), &d.second); }
-    };
-
-   private:
-    std::map<std::string, bool     > boolM_;
-    std::map<std::string, Char_t   > charM_;
-    std::map<std::string, short    > shortM_;
-    std::map<std::string, int      > intM_;
-    std::map<std::string, UChar_t  > ucharM_;
-    std::map<std::string, UShort_t > ushortM_;
-    std::map<std::string, UInt_t   > uintM_;
-    std::map<std::string, float    > floatM_;
-    std::map<std::string, std::vector<bool>     > boolVM_;
-    std::map<std::string, std::vector<Char_t>   > charVM_;
-    std::map<std::string, std::vector<short>    > shortVM_;
-    std::map<std::string, std::vector<int>      > intVM_;
-    std::map<std::string, std::vector<UChar_t>  > ucharVM_;
-    std::map<std::string, std::vector<UShort_t> > ushortVM_;
-    std::map<std::string, std::vector<UInt_t>   > uintVM_;
-    std::map<std::string, std::vector<float>    > floatVM_;
-  };
-
-  class ParticleContainer
-  {
-   public:
-    ParticleContainer() : size_(0) {};
-    ~ParticleContainer() {};
-
-    // getters
-    size_t size() const { return size_; };
-    bool getIndex(size_t& index, const reco::Candidate& cand) const
-    {
-      index = size_;
-      const auto& parIt = parM_.find(getPar(cand));
-      if (parIt==parM_.end()) return false;
-      index = parIt->second;
-      return true;
-    };
-
-    template <class T>
-    T        get(const size_t& i, const std::string& n, const T&        d) const = delete; // avoid implicit conversion
-    bool     get(const size_t& i, const std::string& n, const bool&     d) const { return (i < size_ ? boolVM_.at(n)[i]   : d); };
-    int      get(const size_t& i, const std::string& n, const Int_t&    d) const { return (i < size_ ? intVM_.at(n)[i]    : d); };
-    UChar_t  get(const size_t& i, const std::string& n, const UChar_t&  d) const { return (i < size_ ? ucharVM_.at(n)[i]  : d); };
-    UShort_t get(const size_t& i, const std::string& n, const UShort_t& d) const { return (i < size_ ? ushortVM_.at(n)[i] : d); };
-    std::vector<UShort_t> get(const size_t& i, const std::string& n, const std::vector<UShort_t>& d) const { return (i < size_ ? ushortVVM_.at(n)[i] : d); };
-
-    // setters
-    template <class T>
-    void add(const std::string& n, const T& v) { data_.add(n, v); };
-
-    template <class T>
-    void add(const size_t& i, const std::string& n, const T&        v) = delete; // avoid implicit conversion
-    void add(const size_t& i, const std::string& n, const bool&     v) { if (i < size_) { boolVM_[n][i]   = v; } else { add(n, v); } };
-    void add(const size_t& i, const std::string& n, const UShort_t& v) { if (i < size_) { ushortVM_[n][i] = v; } else { add(n, v); } };
-
-    template <class T>
-    void push(const std::string& n, const T& v, const bool& c=0) { data_.push(n, v, c); };
-
-    template <class T>
-    void pushBack(std::vector<std::vector<T> >& c, const size_t& i, const std::string& n, const T& v) {
-      if (i>=c.size()) throw std::logic_error(Form("Invalid index %lu for %s", i, n.c_str()));
-      c[i].push_back(v);
-    };
-
-    template <class T>
-    void pushV(const size_t& i, const std::string& n, const T&        v, const bool& c=0) = delete; // avoid implicit conversion
-    void pushV(const size_t& i, const std::string& n, const UChar_t&  v, const bool& c=0) { if(!c || v!=UCHAR_MAX) pushBack(ucharVVM_[n], i, n, v);  };
-    void pushV(const size_t& i, const std::string& n, const UShort_t& v, const bool& c=0) { if(!c || v!=USHRT_MAX) pushBack(ushortVVM_[n], i, n, v); };
-    void pushV(const size_t& i, const std::string& n, const UInt_t&   v, const bool& c=0) { if(!c || v!=UINT_MAX ) pushBack(uintVVM_[n], i, n, v);   };
-    void pushV(const size_t& i, const std::string& n, const float&    v, const bool& c=0) { pushBack(floatVVM_[n], i, n, v); };
-    void pushV(const size_t& i, const std::string& n, const double&   v, const bool& c=0) { pushV(i, n, float(v), c); };
-    template <class T>
-    void push(const size_t& i, const std::string& n, const T& v, const bool& c=0) { (i < size_ ? pushV(i, n, v, c) : push(n, v, c)); }
-
-    void pushData(const reco::Candidate& cand)
-    { 
-      const auto par = getPar(cand);
-      if (parM_.find(par)!=parM_.end()) { throw std::logic_error("[ERROR] Particle already present"); }
-      for (const auto& d : data_.boolM()   ) { boolVM_[d.first].push_back(d.second);    }
-      for (const auto& d : data_.charM()   ) { charVM_[d.first].push_back(d.second);    }
-      for (const auto& d : data_.shortM()  ) { shortVM_[d.first].push_back(d.second);   }
-      for (const auto& d : data_.intM()    ) { intVM_[d.first].push_back(d.second);     }
-      for (const auto& d : data_.ucharM()  ) { ucharVM_[d.first].push_back(d.second);   }
-      for (const auto& d : data_.ushortM() ) { ushortVM_[d.first].push_back(d.second);  }
-      for (const auto& d : data_.uintM()   ) { uintVM_[d.first].push_back(d.second);    }
-      for (const auto& d : data_.floatM()  ) { floatVM_[d.first].push_back(d.second);   }
-      for (const auto& d : data_.boolVM()  ) { boolVVM_[d.first].push_back(d.second);   }
-      for (const auto& d : data_.charVM()  ) { charVVM_[d.first].push_back(d.second);   }
-      for (const auto& d : data_.shortVM() ) { shortVVM_[d.first].push_back(d.second);  }
-      for (const auto& d : data_.intVM()   ) { intVVM_[d.first].push_back(d.second);    }
-      for (const auto& d : data_.ucharVM() ) { ucharVVM_[d.first].push_back(d.second);  }
-      for (const auto& d : data_.ushortVM()) { ushortVVM_[d.first].push_back(d.second); }
-      for (const auto& d : data_.uintVM()  ) { uintVVM_[d.first].push_back(d.second);   }
-      for (const auto& d : data_.floatVM() ) { floatVVM_[d.first].push_back(d.second);  }
-      parM_[par] = size_++;
-      data_.clear();
-    };
-
-    void copyData(Container& data, const size_t& i, const std::string& n="") const
-    {
-      for (const auto& d : boolVM_   ) { data.add(n+d.first, (i<size_ ? d.second[i] : false));        }
-      for (const auto& d : charVM_   ) { data.add(n+d.first, (i<size_ ? d.second[i] : char(-99)));    }
-      for (const auto& d : shortVM_  ) { data.add(n+d.first, (i<size_ ? d.second[i] : short(-99)));   }
-      for (const auto& d : intVM_    ) { data.add(n+d.first, (i<size_ ? d.second[i] : int(-99)));     }
-      for (const auto& d : ucharVM_  ) { data.add(n+d.first, (i<size_ ? d.second[i] : UChar_t(0)));   }
-      for (const auto& d : ushortVM_ ) { data.add(n+d.first, (i<size_ ? d.second[i] : UShort_t(0)));  }
-      for (const auto& d : uintVM_   ) { data.add(n+d.first, (i<size_ ? d.second[i] : UInt_t(0)));    }
-      for (const auto& d : floatVM_  ) { data.add(n+d.first, (i<size_ ? d.second[i] : float(-99.9))); }
-      for (const auto& d : floatVVM_ ) { for (uint j=0; i<size_ && j<d.second[i].size(); j++) { data.add(n+d.first+Form("%u",j), d.second[i][j]); } }
-    };
-
-    // clear
-    void clear()
-    {
-      size_ = 0;
-      data_.clear();
-      parM_.clear();
-      for (auto& d : boolVM_   ) { d.second.clear(); }
-      for (auto& d : charVM_   ) { d.second.clear(); }
-      for (auto& d : shortVM_  ) { d.second.clear(); }
-      for (auto& d : intVM_    ) { d.second.clear(); }
-      for (auto& d : ucharVM_  ) { d.second.clear(); }
-      for (auto& d : ushortVM_ ) { d.second.clear(); }
-      for (auto& d : uintVM_   ) { d.second.clear(); }
-      for (auto& d : floatVM_  ) { d.second.clear(); }
-      for (auto& d : boolVVM_  ) { d.second.clear(); }
-      for (auto& d : charVVM_  ) { d.second.clear(); }
-      for (auto& d : shortVVM_ ) { d.second.clear(); }
-      for (auto& d : intVVM_   ) { d.second.clear(); }
-      for (auto& d : ucharVVM_ ) { d.second.clear(); }
-      for (auto& d : ushortVVM_) { d.second.clear(); }
-      for (auto& d : uintVVM_  ) { d.second.clear(); }
-      for (auto& d : floatVVM_ ) { d.second.clear(); }
-    };
-
-    // tree initializer
-    void initTree(TTree& tree, const std::string& n="")
-    {
-      for (auto& d : boolVM_   ) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : charVM_   ) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : shortVM_  ) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : intVM_    ) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : ucharVM_  ) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : ushortVM_ ) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : uintVM_   ) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : floatVM_  ) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : boolVVM_  ) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : charVVM_  ) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : shortVVM_ ) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : intVVM_   ) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : ucharVVM_ ) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : ushortVVM_) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : uintVVM_  ) { tree.Branch((n+d.first).c_str(), &d.second); }
-      for (auto& d : floatVVM_ ) { tree.Branch((n+d.first).c_str(), &d.second); }
-    };
-
-   private:
-    typedef std::tuple<float, float, float, float, char, int> Particle;
-
-    Particle getPar(const reco::Candidate& cand) const
-    {
-      return Particle(cand.pt(), cand.eta(), cand.phi(), cand.mass(), cand.charge(), cand.pdgId());
-    };
-
-    size_t size_;
-    Container data_;
-    std::map<Particle, size_t> parM_;
-    std::map<std::string, std::vector<bool>     > boolVM_;
-    std::map<std::string, std::vector<Char_t>   > charVM_;
-    std::map<std::string, std::vector<short>    > shortVM_;
-    std::map<std::string, std::vector<int>      > intVM_;
-    std::map<std::string, std::vector<UChar_t>  > ucharVM_;
-    std::map<std::string, std::vector<UShort_t> > ushortVM_;
-    std::map<std::string, std::vector<UInt_t>   > uintVM_;
-    std::map<std::string, std::vector<float>    > floatVM_;
-    std::map<std::string, std::vector<std::vector<bool> >     > boolVVM_;
-    std::map<std::string, std::vector<std::vector<Char_t> >   > charVVM_;
-    std::map<std::string, std::vector<std::vector<short> >    > shortVVM_;
-    std::map<std::string, std::vector<std::vector<int> >      > intVVM_;
-    std::map<std::string, std::vector<std::vector<UChar_t> >  > ucharVVM_;
-    std::map<std::string, std::vector<std::vector<UShort_t> > > ushortVVM_;
-    std::map<std::string, std::vector<std::vector<UInt_t> >   > uintVVM_;
-    std::map<std::string, std::vector<std::vector<float> >    > floatVVM_;
-  };
-  typedef std::map<std::string, ParticleContainer> ParticleContainerMap;
-
-  class TriggerInfo
-  {
-   public:
-    TriggerInfo() : triggerIndex_(-1), filterIndex_(-1), minN_(0), hltPDs_(0),
-                    validPrescale_(0), validLumi_(0), hltPrescale_(0), l1Prescale_(0),
-                    triggerName_(""), filterName_(""), triggerBit_({}), filterObjects_({}),
-                    recordLumi_(0), totalLumi_(0)
-    {
-    };
-    ~TriggerInfo() {};
-
-    // getters
-    int                  triggerIndex()  const { return triggerIndex_;  }
-    int                  filterIndex()   const { return filterIndex_;   }
-    int                  minN()          const { return minN_;          }
-    bool                 validPrescale() const { return validPrescale_; }
-    UShort_t             hltPrescale()   const { return hltPrescale_;   }
-    UShort_t             l1Prescale()    const { return l1Prescale_;    }
-    UChar_t              hltPDs()        const { return hltPDs_;        }
-    std::string          triggerName()   const { return triggerName_;   }
-    std::string          filterName()    const { return filterName_;    }
-    std::array<bool,4>   triggerBit()    const { return triggerBit_;    }
-    bool                 triggerBit(const size_t& i) const { return (i<triggerBit_.size() ? triggerBit_[i] : false); }
-    TriggerIndexMap      filterObjects() const { return filterObjects_; }
-    bool                 validLumi()     const { return validLumi_;     }
-    float                recordLumi()    const { return recordLumi_;    }
-    float                totalLumi()     const { return totalLumi_;     }
-
-    // setters
-    void setInfo(const int& triggerIndex, const int& filterIndex,
-                 const std::string& triggerName, const std::string& filterName, const int& minN,
-                 const bool& validPrescale, const UShort_t& hltPrescale, const UShort_t& l1Prescale,
-                 const UChar_t& hltPDs, const std::array<bool,4>& bit, const TriggerIndexMap& filterObjects)
-    {
-      triggerIndex_  = triggerIndex;
-      filterIndex_   = filterIndex;
-      triggerName_   = triggerName;
-      filterName_    = filterName;
-      minN_          = minN;
-      validPrescale_ = validPrescale;
-      hltPrescale_   = hltPrescale;
-      l1Prescale_    = l1Prescale;
-      hltPDs_        = hltPDs;
-      triggerBit_    = bit;
-      filterObjects_ = filterObjects;
-    }
-
-    void setLumiInfo(const double& recordLumi, const double& totalLumi)
-    {
-      recordLumi_ = recordLumi;
-      totalLumi_  = totalLumi;
-      validLumi_  = true;
-    };
-
-   private:
-    int triggerIndex_, filterIndex_, minN_;
-    UChar_t hltPDs_;
-    bool validPrescale_, validLumi_;
-    UShort_t hltPrescale_, l1Prescale_;
-    std::string triggerName_, filterName_;
-    std::array<bool,4> triggerBit_;
-    TriggerIndexMap filterObjects_;
-    float recordLumi_, totalLumi_;
-  };
-  typedef std::vector<TriggerInfo> TriggerContainer;
-
-  class MatchInfo
-  {
-   public:
-    MatchInfo() : collection_(""), maxDeltaR_(0), maxDeltaPtRel_(0),
-                  maxDeltaEta_(0), maxDeltaPhi_(0)
-    {
-    };
-    ~MatchInfo() {};
-
-    // getters
-    std::string collection()    const { return collection_;    }
-    double      maxDeltaR()     const { return maxDeltaR_;     }
-    double      maxDeltaPtRel() const { return maxDeltaPtRel_; }
-    double      maxDeltaEta()   const { return maxDeltaEta_;   }
-    double      maxDeltaPhi()   const { return maxDeltaPhi_;   }
-
-    // setters
-    void setInfo(const std::string& collection, const double& maxDeltaR, const double& maxDeltaPtRel,
-                 const double& maxDeltaEta, const double& maxDeltaPhi)
-    {
-      collection_    = collection;
-      maxDeltaR_     = maxDeltaR;
-      maxDeltaPtRel_ = maxDeltaPtRel;
-      maxDeltaEta_   = maxDeltaEta;
-      maxDeltaPhi_   = maxDeltaPhi;
-    };
-
-   private:
-    std::string collection_;
-    double maxDeltaR_, maxDeltaPtRel_, maxDeltaEta_, maxDeltaPhi_;
-  };
-  typedef std::map<std::string, MatchInfo> MatchContainer;
 
   // class container attributes
   Container eventInfo_, ntupleInfo_;
@@ -1219,7 +783,7 @@ ParticleAnalyzer::initParticleInfo(const std::string& type, const int& pId)
 
 
 UShort_t
-ParticleAnalyzer::fillTriggerObjectInfo(const pat::TriggerObjectStandAlone& obj, const UShort_t& trigIdx, const bool& pass, const UShort_t& candIdx)
+ParticleAnalyzer::fillTriggerObjectInfo(const pat::TriggerObjectStandAlone& obj, const UShort_t& trigIdx, const bool& pass, const UInt_t& candIdx)
 {
   if (triggerData_.empty() || !addInfo_.at("trgObj")) return USHRT_MAX;
 
@@ -1276,8 +840,8 @@ ParticleAnalyzer::fillRecoParticleInfo(const edm::Event& iEvent)
 }
 
 
-UShort_t
-ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const UShort_t& momIdx)
+UInt_t
+ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const UInt_t& momIdx)
 {
   // fill reconstructed particle information
   auto& info = particleInfo_["cand"];
@@ -1292,7 +856,7 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
     info.add(index, "momMatchGEN", true);
     info.add(index, "momMatchIdx", momIdx);
   }
-  const auto& idx = getUShort(index);
+  const auto& idx = getUInt(index);
   // return if already added
   if (found) return idx;
 
@@ -1394,7 +958,7 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
   }
 
   // initialize daughter information
-  info.add("dauIdx", std::vector<UShort_t>());
+  info.add("dauIdx", std::vector<UInt_t>());
   info.add("pTDau", std::vector<float>());
   info.add("etaDau", std::vector<float>());
   info.add("phiDau", std::vector<float>());
@@ -1534,7 +1098,7 @@ ParticleAnalyzer::addTriggerObject(pat::GenericParticle& cand, const math::XYZTL
 
 
 UShort_t
-ParticleAnalyzer::fillTrackInfo(const pat::GenericParticle& cand, const UShort_t& candIdx, const bool& force)
+ParticleAnalyzer::fillTrackInfo(const pat::GenericParticle& cand, const UInt_t& candIdx, const bool& force)
 {
   const bool hasTrack = cand.track().isNonnull();
   if (!force && !hasTrack) return USHRT_MAX;
@@ -1542,15 +1106,15 @@ ParticleAnalyzer::fillTrackInfo(const pat::GenericParticle& cand, const UShort_t
   // fill track information
   auto& info = particleInfo_["trk"];
 
+  const auto& track = (hasTrack ? *cand.track() : reco::Track());
+
   // add input information
   size_t index;
-  const bool found = info.getIndex(index, cand);
+  const bool found = info.getIndex(index, track);
   info.push(index, "candIdx", candIdx, true);
   const auto& idx = getUShort(index);
   // return if already added
   if (found) return idx;
-
-  const auto& track = (hasTrack ? *cand.track() : reco::Track());
 
   // general information
   info.add("isHP", track.quality(reco::TrackBase::highPurity));
@@ -1571,13 +1135,13 @@ ParticleAnalyzer::fillTrackInfo(const pat::GenericParticle& cand, const UShort_t
   }
 
   // push data and return index
-  info.pushData(cand);
+  info.pushData(track);
   return idx;
 }
 
 
 UShort_t
-ParticleAnalyzer::fillSourceInfo(const pat::GenericParticle& cand, const UShort_t& candIdx, const bool& force)
+ParticleAnalyzer::fillSourceInfo(const pat::GenericParticle& cand, const UInt_t& candIdx, const bool& force)
 {
   // fill source information
   const auto pdgId = std::abs(cand.pdgId());
@@ -1593,7 +1157,7 @@ ParticleAnalyzer::fillSourceInfo(const pat::GenericParticle& cand, const UShort_
 
 
 UShort_t
-ParticleAnalyzer::fillMuonInfo(const pat::GenericParticle& cand, const UShort_t& candIdx, const bool& force)
+ParticleAnalyzer::fillMuonInfo(const pat::GenericParticle& cand, const UInt_t& candIdx, const bool& force)
 {
   const bool hasSrc = (std::abs(cand.pdgId())==13 && cand.hasUserData("src") && cand.userData<pat::Muon>("src"));
   if (!force && !hasSrc) return USHRT_MAX;
@@ -1601,16 +1165,17 @@ ParticleAnalyzer::fillMuonInfo(const pat::GenericParticle& cand, const UShort_t&
   // fill muon information
   auto& info = particleInfo_["muon"];
 
+  const auto& muon = (hasSrc ? *cand.userData<pat::Muon>("src") : pat::Muon());
+
   // add input information
   size_t index;
-  const bool found = info.getIndex(index, cand);
-  info.push(index, "candIdx", candIdx, true);
+  const bool found = info.getIndex(index, muon);
+  info.add(index, "candIdx", candIdx);
   const auto& idx = getUShort(index);
   // return if already added
   if (found) return idx;
 
   const auto& vertex = (cand.hasUserData("primaryVertex") ? *cand.userData<reco::Vertex>("primaryVertex") : vertex_).position();
-  const auto& muon   = (hasSrc ? *cand.userData<pat::Muon>("src") : pat::Muon());
   const auto& gTrack = muon.globalTrack();
   const auto& iTrack = muon.innerTrack();
   const auto& mTrack = muon.muonBestTrack();
@@ -1669,6 +1234,7 @@ ParticleAnalyzer::fillMuonInfo(const pat::GenericParticle& cand, const UShort_t&
   // hybrid soft ID HIN PAG Run 2 PbPb
   info.add("isTracker", muon.isTrackerMuon());
   const auto hybridmuon = (
+                           muon.isTrackerMuon() &&
                            muon.isGlobalMuon() &&
                            iTrack.isNonnull() &&
                            iTrack->hitPattern().trackerLayersWithMeasurement() > 5 &&
@@ -1676,8 +1242,8 @@ ParticleAnalyzer::fillMuonInfo(const pat::GenericParticle& cand, const UShort_t&
                            std::abs(iTrack->dxy(vertex)) < 0.3 &&
                            std::abs(iTrack->dz(vertex)) < 20.
                           );
-  info.add("hybridSoftID", hybridmuon);    
-                                          
+  info.add("hybridSoftID", hybridmuon);
+
   // muon extra information
   info.add("nMatches", getUChar(muon.numberOfMatches()));
   info.add("hadMax", muon.calEnergy().hadMax);
@@ -1721,13 +1287,13 @@ ParticleAnalyzer::fillMuonInfo(const pat::GenericParticle& cand, const UShort_t&
   }
 
   // push data and return index
-  info.pushData(cand);
+  info.pushData(muon);
   return idx;
-};
+}
 
 
 UShort_t
-ParticleAnalyzer::fillElectronInfo(const pat::GenericParticle& cand, const UShort_t& candIdx, const bool& force)
+ParticleAnalyzer::fillElectronInfo(const pat::GenericParticle& cand, const UInt_t& candIdx, const bool& force)
 {
   const bool hasSrc = (std::abs(cand.pdgId())==11 && cand.hasUserData("src") && cand.userData<pat::Electron>("src"));
   if (!force && !hasSrc) return USHRT_MAX;
@@ -1735,16 +1301,17 @@ ParticleAnalyzer::fillElectronInfo(const pat::GenericParticle& cand, const UShor
   // fill electron information
   auto& info = particleInfo_["elec"];
 
+  const auto& electron = (hasSrc ? *cand.userData<pat::Electron>("src") : pat::Electron());
+
   // add input information
   size_t index;
-  const bool found = info.getIndex(index, cand);
-  info.push(index, "candIdx", candIdx, true);
+  const bool found = info.getIndex(index, electron);
+  info.add(index, "candIdx", candIdx);
   const auto& idx = getUShort(index);
   // return if already added
   if (found) return idx;
 
   const auto& vertex = (cand.hasUserData("primaryVertex") ? *cand.userData<reco::Vertex>("primaryVertex") : vertex_);
-  const auto& electron = (hasSrc ? *cand.userData<pat::Electron>("src") : pat::Electron());
   const auto& sCluster = (electron.core().isNonnull() ? electron.superCluster() : reco::SuperClusterRef());
   const auto& gsfTrack = (electron.core().isNonnull() ? electron.gsfTrack() : reco::GsfTrackRef());
 
@@ -1767,24 +1334,29 @@ ParticleAnalyzer::fillElectronInfo(const pat::GenericParticle& cand, const UShor
   info.add("nLostHits", getChar(gsfTrack.isNonnull() ? gsfTrack->numberOfLostHits() : -1));
 
   // push data and return index
-  info.pushData(cand);
+  info.pushData(electron);
   return idx;
-};
+}
 
 
 UShort_t
-ParticleAnalyzer::fillPhotonInfo(const pat::GenericParticle& cand, const UShort_t& candIdx, const bool& force)
+ParticleAnalyzer::fillPhotonInfo(const pat::GenericParticle& cand, const UInt_t& candIdx, const bool& force)
 { 
-  const bool hasSrc = cand.hasUserData("src") && ((cand.pdgId()==22 && cand.userData<pat::Photon>("src")) || (cand.pdgId()==-22 && cand.userData<reco::Conversion>("src")));
+  const bool hasSrc = cand.hasUserData("src") && ((cand.pdgId()== 22 && cand.userData<pat::Photon>("src")) || 
+                                                  (cand.pdgId()==-22 && cand.userData<reco::Conversion>("src")));
   if (!force && !hasSrc) return USHRT_MAX;
 
   // fill photon information
   auto& info = particleInfo_["pho"];
 
+  const auto& photon = (hasSrc && cand.pdgId()==22 ? *cand.userData<pat::Photon>("src") : pat::Photon());
+
   // add input information
   size_t index;
-  const bool found = info.getIndex(index, cand);
-  info.push(index, "candIdx", candIdx, true);
+  bool found;
+  if (cand.pdgId()==22) found = info.getIndex(index, photon);
+  else found = info.getIndex(index, cand);
+  info.add(index, "candIdx", candIdx);
   const auto& idx = getUShort(index);
   // return if already added
   if (found) return idx;
@@ -1792,7 +1364,6 @@ ParticleAnalyzer::fillPhotonInfo(const pat::GenericParticle& cand, const UShort_
 
   if (cand.pdgId()==22)
   {
-    const auto& photon   = (hasSrc ? *cand.userData<pat::Photon>("src") : pat::Photon());
     const auto& phoIso   = cand.userData<reco::HIPhotonIsolation>("iso");
     const auto& sCluster = (photon.photonCore().isNonnull() ? photon.superCluster() : reco::SuperClusterRef());
 
@@ -1813,7 +1384,7 @@ ParticleAnalyzer::fillPhotonInfo(const pat::GenericParticle& cand, const UShort_
   }
   else if (cand.pdgId()==-22)
   {
-    const auto& photon = (hasSrc ? *cand.userData<reco::Conversion>("src") : reco::Conversion());
+    const auto& photon = (hasSrc && cand.pdgId()==-22 ? *cand.userData<reco::Conversion>("src") : reco::Conversion());
 
     // converted photon information
     info.add("nTracks", photon.nTracks());
@@ -1824,13 +1395,14 @@ ParticleAnalyzer::fillPhotonInfo(const pat::GenericParticle& cand, const UShort_
   }
 
   // push data and return index
-  info.pushData(cand);
+  if (cand.pdgId()==22) info.pushData(photon);
+  else info.pushData(cand);
   return idx;
-};
+}
 
 
 UShort_t
-ParticleAnalyzer::fillJetInfo(const pat::GenericParticle& cand, const UShort_t& candIdx, const bool& force)
+ParticleAnalyzer::fillJetInfo(const pat::GenericParticle& cand, const UInt_t& candIdx, const bool& force)
 {
   const bool hasSrc = (std::abs(cand.pdgId())<=6 && cand.hasUserData("src") && cand.userData<pat::Jet>("src"));
   if (!force && !hasSrc) return USHRT_MAX;
@@ -1838,15 +1410,16 @@ ParticleAnalyzer::fillJetInfo(const pat::GenericParticle& cand, const UShort_t& 
   // fill jet information
   auto& info = particleInfo_["jet"];
 
+  const auto& jet = (hasSrc ? *cand.userData<pat::Jet>("src") : pat::Jet());
+
   // add input information
   size_t index;
-  const bool found = info.getIndex(index, cand);
+  const bool found = info.getIndex(index, jet);
   info.push(index, "candIdx", candIdx, true);
   const auto& idx = getUShort(index);
   // return if already added
   if (found) return idx;
 
-  const auto& jet = (hasSrc ? *cand.userData<pat::Jet>("src") : pat::Jet());
   const bool hasJEC = jet.jecSetsAvailable();
   const auto& rawP4 = (hasJEC ? jet.correctedJet("Uncorrected") : pat::Jet());
   const auto& l2P4 = (hasJEC ? jet.correctedJet("L2Relative") : pat::Jet());
@@ -1883,13 +1456,13 @@ ParticleAnalyzer::fillJetInfo(const pat::GenericParticle& cand, const UShort_t& 
   info.add("bTagging", bTag);
 
   // push data and return index
-  info.pushData(cand);
+  info.pushData(jet);
   return idx;
-};
+}
 
 
 UShort_t
-ParticleAnalyzer::fillTauInfo(const pat::GenericParticle& cand, const UShort_t& candIdx, const bool& force)
+ParticleAnalyzer::fillTauInfo(const pat::GenericParticle& cand, const UInt_t& candIdx, const bool& force)
 {
   const bool hasSrc = (std::abs(cand.pdgId())==15 && cand.hasUserData("src") && cand.userData<pat::Tau>("src"));
   if (!force && !hasSrc) return USHRT_MAX; 
@@ -1897,15 +1470,15 @@ ParticleAnalyzer::fillTauInfo(const pat::GenericParticle& cand, const UShort_t& 
   // fill tau information
   auto& info = particleInfo_["tau"];
 
+  const auto& tau = (hasSrc ? *cand.userData<pat::Tau>("src") : pat::Tau());
+
   // add input information
   size_t index;
-  const bool found = info.getIndex(index, cand);
-  info.push(index, "candIdx", candIdx, true);
+  const bool found = info.getIndex(index, tau);
+  info.add(index, "candIdx", candIdx);
   const auto& idx = getUShort(index);
   // return if already added
   if (found) return idx;
-
-  const auto& tau = (hasSrc ? *cand.userData<pat::Tau>("src") : pat::Tau());
 
   // tau ID information
   UInt_t selector = 0;
@@ -1916,13 +1489,13 @@ ParticleAnalyzer::fillTauInfo(const pat::GenericParticle& cand, const UShort_t& 
   info.add("isPF", tau.isPFTau());
 
   // push data and return index
-  info.pushData(cand);
+  info.pushData(tau);
   return idx;
-};
+}
 
 
 UShort_t
-ParticleAnalyzer::fillPFCandidateInfo(const pat::GenericParticle& cand, const UShort_t& candIdx, const bool& force)
+ParticleAnalyzer::fillPFCandidateInfo(const pat::GenericParticle& cand, const UInt_t& candIdx, const bool& force)
 {
   const bool hasSrc = (cand.hasUserData("src") && cand.userData<reco::PFCandidate>("src"));
   if (!force && !hasSrc) return USHRT_MAX;
@@ -1930,15 +1503,15 @@ ParticleAnalyzer::fillPFCandidateInfo(const pat::GenericParticle& cand, const US
   // fill jet information
   auto& info = particleInfo_["pf"];
 
+  const auto& pfCand = (hasSrc ? *cand.userData<reco::PFCandidate>("src") : reco::PFCandidate());
+
   // add input information
   size_t index;
-  const bool found = info.getIndex(index, cand);
+  const bool found = info.getIndex(index, pfCand);
   info.push(index, "candIdx", candIdx, true);
   const auto& idx = getUShort(index);
   // return if already added
   if (found) return idx;
-
-  const auto& pfCand = (hasSrc ? *cand.userData<reco::PFCandidate>("src") : reco::PFCandidate());
 
   // general information
   info.add("id", getUChar(pfCand.particleId()));
@@ -1950,9 +1523,9 @@ ParticleAnalyzer::fillPFCandidateInfo(const pat::GenericParticle& cand, const US
   info.add("rawHcalE", pfCand.rawHcalEnergy());
 
   // push data and return index
-  info.pushData(cand);
+  info.pushData(pfCand);
   return idx;
-};
+}
 
 
 void
@@ -1997,7 +1570,7 @@ ParticleAnalyzer::fillGenParticleInfo(const edm::Event& iEvent)
 
 
 UShort_t
-ParticleAnalyzer::fillGenParticleInfo(const reco::GenParticleRef& candR, const UShort_t& candIdx, const bool& force)
+ParticleAnalyzer::fillGenParticleInfo(const reco::GenParticleRef& candR, const UInt_t& candIdx, const bool& force)
 {
   const bool hasGen = candR.isNonnull() && contain(genParticlesToKeep_, candR);
   if (!force && !hasGen) return USHRT_MAX;
@@ -2220,7 +1793,7 @@ ParticleAnalyzer::addParticleToNtuple(const size_t& i, const std::pair<int, int>
   for (const auto& p : particleInfo_)
   {
     auto idx = UShort_t(-1);
-    if      (p.first=="cand") { idx = i; }
+    if      (p.first=="cand") { p.second.copyData(ntupleInfo_, UInt_t(i), "cand_"+label); }
     else if (p.first=="trig") { idx = cand.get(i, "trigIdx", idx); }
     else if (p.first=="gen" ) { idx = cand.get(i, "genIdx",  idx); }
     else if (p.first=="trk" ) { idx = cand.get(i, "trkIdx",  idx); }
@@ -2229,9 +1802,9 @@ ParticleAnalyzer::addParticleToNtuple(const size_t& i, const std::pair<int, int>
     else if (p.first=="muon" && pdgId==13) { idx = cand.get(i, "srcIdx",  idx); }
     else if (p.first=="tau"  && pdgId==15) { idx = cand.get(i, "srcIdx",  idx); }
     else if (p.first=="pho"  && pdgId==22) { idx = cand.get(i, "srcIdx",  idx); }
-    if (p.first=="cand" || p.first=="trig" || p.first=="gen" || p.first=="trk" || idx<USHRT_MAX)
+    if (p.first=="trig" || p.first=="gen" || p.first=="trk" || idx<USHRT_MAX)
     {
-      p.second.copyData(ntupleInfo_, idx, (p.first+"_"+label));
+      p.second.copyData(ntupleInfo_, idx, p.first+"_"+label);
     }
   }
   // remove meaningless variables
@@ -2253,7 +1826,7 @@ ParticleAnalyzer::addParticleToNtuple(const size_t& i, const std::pair<int, int>
     }
   }
   // add daughter information
-  const auto& dauIdx = cand.get(i, "dauIdx", std::vector<UShort_t>());
+  const auto& dauIdx = cand.get(i, "dauIdx", std::vector<UInt_t>());
   for (size_t iDau=0; iDau<dauIdx.size(); iDau++)
   {
     addParticleToNtuple(dauIdx[iDau], {dau.first+1, iDau});
