@@ -231,7 +231,7 @@ class ParticleFitter {
 
  private:
   int pdgId_;
-  bool doSwap_, matchVertex_;
+  bool doSwap_, matchVertex_, vtxSortByTrkSize_;
   double mass_, width_;
   std::vector<UInt_t> fitAlgoV_;
   std::vector<double> puMap_;

@@ -188,7 +188,7 @@ private:
   TTree* tree_ = 0;
   TTree* ntuple_ = 0;
 
-  bool isMC_;
+  bool isMC_, vtxSortByTrkSize_;
   reco::Vertex vertex_;
   reco::Particle::Point genVertex_;
   reco::VertexCollection vertices_;
@@ -444,6 +444,7 @@ private:
       for (const auto& d : data_.uintVM()  ) { uintVVM_[d.first].push_back(d.second);   }
       for (const auto& d : data_.floatVM() ) { floatVVM_[d.first].push_back(d.second);  }
       parM_[par] = size_++;
+      data_.clear();
     };
 
     void copyData(Container& data, const size_t& i, const std::string& n="") const
@@ -768,8 +769,10 @@ ParticleAnalyzer::getEventData(const edm::Event& iEvent, const edm::EventSetup& 
       vertices_.push_back(pv);
     }
   }
-  auto byTracksSize = [] (const reco::Vertex& v1, const reco::Vertex& v2) -> bool { return v1.tracksSize() > v2.tracksSize(); };
-  std::sort(vertices_.begin(), vertices_.end(), byTracksSize);
+  if (vtxSortByTrkSize_) {
+    auto byTracksSize = [] (const reco::Vertex& v1, const reco::Vertex& v2) -> bool { return v1.tracksSize() > v2.tracksSize(); };
+    std::sort(vertices_.begin(), vertices_.end(), byTracksSize);
+  }
   if (vertices_.empty())
   {
     edm::Handle<reco::BeamSpot> beamspot;
@@ -1567,11 +1570,12 @@ ParticleAnalyzer::fillSourceInfo(const pat::GenericParticle& cand, const UShort_
 {
   // fill source information
   const auto pdgId = std::abs(cand.pdgId());
-  if      (pdgId<=6 ) { return fillJetInfo(cand, candIdx, force);      }
-  else if (pdgId==11) { return fillElectronInfo(cand, candIdx, force); }
-  else if (pdgId==13) { return fillMuonInfo(cand, candIdx, force);     }
-  else if (pdgId==15) { return fillTauInfo(cand, candIdx, force);      }
-  else if (pdgId==22) { return fillPhotonInfo(cand, candIdx, force);   }
+  if      (pdgId==0 ) { return fillPFCandidateInfo(cand, candIdx, force); }
+  else if (pdgId<=6 ) { return fillJetInfo(cand, candIdx, force);         }
+  else if (pdgId==11) { return fillElectronInfo(cand, candIdx, force);    }
+  else if (pdgId==13) { return fillMuonInfo(cand, candIdx, force);        }
+  else if (pdgId==15) { return fillTauInfo(cand, candIdx, force);         }
+  else if (pdgId==22) { return fillPhotonInfo(cand, candIdx, force);      }
   // if pdgId not matched, use PF candidates
   return fillPFCandidateInfo(cand, candIdx, force);
 }
@@ -2299,6 +2303,13 @@ void
 ParticleAnalyzer::loadConfiguration(const edm::ParameterSet& config, const edm::Run& iRun)
 {
   if (config.empty()) return;
+
+  if (config.existsAs<bool>("vtxSortByTrkSize"))
+  {
+    vtxSortByTrkSize_ = config.getParameter<bool>("vtxSortByTrkSize");
+  } else {
+    vtxSortByTrkSize_ = true;
+  }
 
   HepPDT::ParticleID pid;
   if (config.existsAs<int>("pdgId"))
