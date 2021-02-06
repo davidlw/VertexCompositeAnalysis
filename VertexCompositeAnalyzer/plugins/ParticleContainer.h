@@ -209,10 +209,10 @@ class ParticleContainer
   const T        get(const size_t& i, const std::vector<T>& v, const T& d) const { return (i < size_ ? v[i] : d); };
   template <class T>
   const T        get(const size_t& i, const std::string& n, const T&        d) const = delete; // avoid implicit conversion
-  const bool     get(const size_t& i, const std::string& n, const bool&     d) const { return get(i, boolVM_.at(n),   d); };
-  const int      get(const size_t& i, const std::string& n, const Int_t&    d) const { return get(i, intVM_.at(n),    d); };
-  const UChar_t  get(const size_t& i, const std::string& n, const UChar_t&  d) const { return get(i, ucharVM_.at(n),  d); };
-  const UShort_t get(const size_t& i, const std::string& n, const UShort_t& d) const { return get(i, ushortVM_.at(n), d); };
+  const bool     get(const size_t& i, const std::string& n, const bool&     d) const { return (i < size_ ? boolVM_.at(n)[i]   : d); };
+  const int      get(const size_t& i, const std::string& n, const Int_t&    d) const { return (i < size_ ? intVM_.at(n)[i]    : d); };
+  const UChar_t  get(const size_t& i, const std::string& n, const UChar_t&  d) const { return (i < size_ ? ucharVM_.at(n)[i]  : d); };
+  const UShort_t get(const size_t& i, const std::string& n, const UShort_t& d) const { return (i < size_ ? ushortVM_.at(n)[i] : d); };
   const std::vector<UShort_t> get(const size_t& i, const std::string& n, const std::vector<UShort_t>& d) const { return (i < size_ ? ushortVVM_.at(n)[i] : d); };
   const std::vector<UInt_t  > get(const size_t& i, const std::string& n, const std::vector<UInt_t  >& d) const { return (i < size_ ? uintVVM_.at(n)[i]   : d); };
 
