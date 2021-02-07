@@ -66,14 +66,13 @@ struct lessForTrack{
    }
 };
 struct lessForCandidate{
-   bool operator() (const reco::CompositeCandidate& trk1, const reco::CompositeCandidate& trk2)
+   bool operator() (const reco::CompositeCandidate& x, const reco::CompositeCandidate& y)
    {
-      if (isLess(trk1.pt(), trk2.pt())) return true;
-      else if (isEqual(trk1.pt(), trk2.pt()) && isLess(trk1.eta(), trk2.eta()))  return true;
-      else if (isEqual(trk1.pt(), trk2.pt()) && isEqual(trk1.eta(), trk2.eta()) && isLess(trk1.phi(), trk2.phi()))  return true;
-      else if (isEqual(trk1.pt(), trk2.pt()) && isEqual(trk1.eta(), trk2.eta()) && isEqual(trk1.phi(), trk2.phi()) && isLess(trk1.charge(), trk2.charge())) return true;
-      else if (isEqual(trk1.pt(), trk2.pt()) && isEqual(trk1.eta(), trk2.eta()) && isEqual(trk1.phi(), trk2.phi()) && isEqual(trk1.charge(), trk2.charge()) && isLess(trk1.mass(), trk2.mass())) return true;
-      return false;
+      return (isLess(x.mass(), y.mass()) || 
+            (isEqual(x.mass(), y.mass()) && isLess(x.charge(), y.charge())) || 
+            (isEqual(x.mass(), y.mass()) && isEqual(x.charge(), y.charge()) && isLess(x.pt(), y.pt())) || 
+            (isEqual(x.mass(), y.mass()) && isEqual(x.charge(), y.charge()) && isEqual(x.pt(), y.pt()) && isLess(x.eta(), y.eta())) || 
+            (isEqual(x.mass(), y.mass()) && isEqual(x.charge(), y.charge()) && isEqual(x.pt(), y.pt()) && isEqual(x.eta(), y.eta()) && isLess(x.phi(), y.phi())));
    }
 };
 // yousen-end
