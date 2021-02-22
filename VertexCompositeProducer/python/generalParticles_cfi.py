@@ -4,6 +4,7 @@ generalParticles = cms.EDProducer("ParticleProducer",
 
     pdgId = cms.int32(0),
     doSwap = cms.bool(False),
+    vtxSortByTrkSize = cms.bool(True),
 
     # particle selection
     preSelection = cms.string(""),
@@ -33,5 +34,5 @@ generalParticles = cms.EDProducer("ParticleProducer",
     jets = cms.InputTag(''),
     conversions = cms.InputTag(''),
     mva = cms.InputTag(''),
-    dedxHarmonic2 = cms.InputTag(''),
+    dEdxInputs = cms.vstring(),
 )

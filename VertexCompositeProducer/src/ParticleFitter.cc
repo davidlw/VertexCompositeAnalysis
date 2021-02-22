@@ -14,6 +14,7 @@
 ParticleFitter::ParticleFitter(const edm::ParameterSet& theParameters, edm::ConsumesCollector && iC) :
   pdgId_(theParameters.getParameter<int>("pdgId")),
   doSwap_(theParameters.getParameter<bool>("doSwap")),
+  vtxSortByTrkSize_(theParameters.getParameter<bool>("vtxSortByTrkSize")),
   preSelection_(theParameters.getParameter<std::string>("preSelection")),
   preMassSelection_(theParameters.getParameter<std::string>("preMassSelection")),
   pocaSelection_(theParameters.getParameter<std::string>("pocaSelection")),
@@ -144,8 +145,10 @@ void ParticleFitter::setVertex(const edm::Event& iEvent)
       vertexRefMap_[tp] = reco::VertexRef(vertexHandle, iVtx);
     }
   }
-  auto byTracksSize = [] (const reco::Vertex& v1, const reco::Vertex& v2) -> bool { return v1.tracksSize() > v2.tracksSize(); };
-  std::sort(priVertices_.begin(), priVertices_.end(), byTracksSize);
+  if (vtxSortByTrkSize_) {
+    auto byTracksSize = [] (const reco::Vertex& v1, const reco::Vertex& v2) -> bool { return v1.tracksSize() > v2.tracksSize(); };
+    std::sort(priVertices_.begin(), priVertices_.end(), byTracksSize);
+  }
   // set the primary vertex
   const auto beamSpotVertex = reco::Vertex(beamSpotHandle->position(), beamSpotHandle->rotatedCovariance3D());
   vertex_ = (priVertices_.empty() ? beamSpotVertex : priVertices_[0]);
@@ -347,8 +350,8 @@ void ParticleFitter::swapDaughters(DoubleMap& swapDauColls, const pat::GenericPa
       const auto& per = perColl[i];
       const auto& sourceID1 = (dau.hasUserInt("sourceID") ? dau.userInt("sourceID") : 0);
       const auto& sourceID2 = (per.hasUserInt("sourceID") ? per.userInt("sourceID") : 0);
-      if (sourceID1!=sourceID2) break;
-      if (sourceID1==0 && !ParticleComparator().isParticleEqual(dau, per)) break;
+      if (sourceID1!=sourceID2 || sourceID1==0) break; // sourceID == 0 means that the daughter has PID, not necessary to swap it with another
+      if (abs(dau.pdgId()) == abs(per.pdgId())) break; // if the swapped daughter is identical to the original one, not necessary to swap
       if (cand.charge()!=0 && dau.charge()!=per.charge()) break;
       swapDauColl.push_back(per.mass());
       p4 += math::XYZTLorentzVector(dau.px(), dau.py(), dau.pz(), std::sqrt(dau.p4().P2()+per.massSqr()));
@@ -805,7 +808,6 @@ void ParticleDaughter::fillInfo(const edm::ParameterSet& pSet, const edm::Parame
       tokens_dedx_.insert( std::make_pair(input, iC.consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag(input))));
     }
   }
-
   if (std::abs(pdgId_)==13 && (!pSet.existsAs<bool>("propToMuon") || pSet.getParameter<bool>("propToMuon"))) {
     conf_.addParameter("useSimpleGeometry", (pSet.existsAs<bool>("useSimpleGeometry") ? pSet.getParameter<bool>("useSimpleGeometry") : true)); // default: true
     conf_.addParameter("useTrack", (pSet.existsAs<std::string>("useTrack") ? pSet.getParameter<std::string>("useTrack") : "none")); // default: none
@@ -964,16 +966,23 @@ void ParticleDaughter::addData(pat::GenericParticle& c, const reco::PFCandidateR
   c.setTrack(p->trackRef(), embedInfo);
   if (embedInfo) c.addUserData<reco::TrackRef>("trackRef", p->trackRef());
   c.addUserData<reco::PFCandidate>("src", *p);
+  c.addUserInt("sourceID", 2);
 };
 
 
 void ParticleDaughter::addData(pat::GenericParticle& c, const pat::MuonRef& p, const bool& embedInfo)
 {
   auto track = p->track();
+  if (!track.id().isValid() && p->originalObjectRef().id().isValid() && p->originalObjectRef().isAvailable() && dynamic_cast<const reco::Muon*>(p->originalObject())) {
+    const auto& t = dynamic_cast<const reco::Muon*>(p->originalObject())->track();
+    if (t.isNonnull() && t.id().isValid() && t.isAvailable()) { track = t; }
+  }
+  /*
   if (!track.id().isValid() && p->originalObjectRef().isAvailable()) {
     const auto& t = dynamic_cast<const reco::Muon*>(p->originalObject())->track();
     if (t.isNonnull() && t.isAvailable()) { track = t; }
   }
+  */
   c.setTrack(track, embedInfo);
   if (embedInfo && track.id().isValid()) c.addUserData<reco::TrackRef>("trackRef", track);
   c.addUserData<pat::Muon>("src", *p);
@@ -1007,6 +1016,7 @@ void ParticleDaughter::setMVA(pat::GenericParticle& c, const size_t& i, const ed
     c.addUserFloat("mva", mvaColl->at(i));
   }
 };
+
 
 void ParticleDaughter::setDeDx(pat::GenericParticle& c,
     const std::map<std::string, edm::Handle<edm::ValueMap<reco::DeDxData> > >& dEdxMaps)
