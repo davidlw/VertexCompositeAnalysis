@@ -190,10 +190,12 @@ void ParticleFitter::fillDaughters(const edm::Event& iEvent, const edm::EventSet
 
 pat::GenericParticleRef ParticleFitter::addDaughter(const pat::GenericParticleRef& daughter)
 {
-  const auto& particle = *daughter;
-  const ParticleTuple tuple(particle.pt(), particle.eta(), particle.phi(), particle.mass(), particle.charge());
+  const auto& p = *daughter;
+  const ParticleTuple tuple(p.pt(), p.eta(), p.phi(), p.mass(), p.charge());
   auto& ref = particleRefMap_[tuple];
   if (ref.isNonnull()) { return ref; }
+  daughterColl_.push_back(p);
+  const auto& particle = daughterColl_.back();
   if (particle.hasUserData("daughters")) {
     auto& daughters = *const_cast<pat::GenericParticleRefVector*>(particle.userData<pat::GenericParticleRefVector>("daughters"));
     pat::GenericParticleRefVector dauColl(dauProd_.id());
@@ -205,15 +207,13 @@ pat::GenericParticleRef ParticleFitter::addDaughter(const pat::GenericParticleRe
     auto& priVtx = *const_cast<reco::VertexRef*>(particle.userData<reco::VertexRef>("primaryVertex"));
     priVtx = getVertexRef(*priVtx);
   }
-  daughterColl_.push_back(particle);
   ref = pat::GenericParticleRef(dauProd_, daughterColl_.size()-1);
   return ref;
 };
 
 
-bool ParticleFitter::isUniqueDaughter(ParticleRefSet& set, const pat::GenericParticleRef& dauR)
+bool ParticleFitter::isUniqueDaughter(ParticleRefSet& set, const pat::GenericParticleRef& dau)
 {
-  const auto& dau = (dauR.isAvailable() ? dauR : pat::GenericParticleRef(dauR.id(), &daughterColl_[dauR.key()], dauR.key()));
   if (dau->hasUserData("daughters")) {
     const auto& gDauColl = *dau->userData<pat::GenericParticleRefVector>("daughters");
     for (const auto& gDau : gDauColl) {
