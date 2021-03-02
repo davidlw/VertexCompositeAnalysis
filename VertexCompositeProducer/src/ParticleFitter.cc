@@ -211,8 +211,9 @@ pat::GenericParticleRef ParticleFitter::addDaughter(const pat::GenericParticleRe
 };
 
 
-bool ParticleFitter::isUniqueDaughter(ParticleRefSet& set, const pat::GenericParticleRef& dau)
+bool ParticleFitter::isUniqueDaughter(ParticleRefSet& set, const pat::GenericParticleRef& dauR)
 {
+  const auto& dau = (dauR.isAvailable() ? dauR : pat::GenericParticleRef(dauR.id(), &daughterColl_[dauR.key()], dauR.key()));
   if (dau->hasUserData("daughters")) {
     const auto& gDauColl = *dau->userData<pat::GenericParticleRefVector>("daughters");
     for (const auto& gDau : gDauColl) {
