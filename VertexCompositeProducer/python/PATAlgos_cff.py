@@ -44,3 +44,72 @@ def doPATMuons(process):
 
     # Make a sequence
     process.patMuonSequence = cms.Sequence( process.patMuons )
+
+def changeToMiniAOD(process):
+
+    process.patTriggerFull = cms.EDProducer("PATTriggerObjectStandAloneUnpacker",
+        patTriggerObjectsStandAlone = cms.InputTag('slimmedPatTrigger'),
+        triggerResults              = cms.InputTag('TriggerResults::HLT'),
+        unpackFilterLabels          = cms.bool(True)
+    )
+    process.load('PhysicsTools.PatAlgos.slimming.unpackedTracksAndVertices_cfi')
+    process.eventFilter.insert(0, process.unpackedTracksAndVertices)
+
+    if hasattr(process, "patMuons"):
+        process.load('VertexCompositeAnalysis.VertexCompositeProducer.unpackedMuons_cfi')
+        process.patMuons = process.unpackedMuons.clone()
+
+    from HLTrigger.Configuration.CustomConfigs import MassReplaceInputTag
+    process = MassReplaceInputTag(process,"offlinePrimaryVertices","unpackedTracksAndVertices")
+    process = MassReplaceInputTag(process,"generalTracks","unpackedTracksAndVertices")
+
+
+
+def changeToMiniAODMC(process):
+
+    process.patTriggerFull = cms.EDProducer("PATTriggerObjectStandAloneUnpacker",
+        patTriggerObjectsStandAlone = cms.InputTag('slimmedPatTrigger'),
+        triggerResults              = cms.InputTag('TriggerResults::HLT'),
+        unpackFilterLabels          = cms.bool(True)
+    )
+    process.load('PhysicsTools.PatAlgos.slimming.unpackedTracksAndVertices_cfi')
+    process.load('GeneratorInterface.RivetInterface.mergedGenParticles_cfi')
+    eventFilters = [ process.unpackedTracksAndVertices , process.mergedGenParticles ]
+    for P in eventFilters:
+        process.eventFilter.insert(0, P)
+
+    if hasattr(process, "patMuons"):
+        process.load('VertexCompositeAnalysis.VertexCompositeProducer.unpackedMuons_cfi')
+        process.patMuons = process.unpackedMuons.clone()
+
+    from HLTrigger.Configuration.CustomConfigs import MassReplaceInputTag
+    process = MassReplaceInputTag(process,"offlinePrimaryVertices","unpackedTracksAndVertices")
+    process = MassReplaceInputTag(process,"generalTracks","unpackedTracksAndVertices")
+    process = MassReplaceInputTag(process,"genParticles","mergedGenParticles")
+    
+
+
+def changeToMiniAODJet(process):
+
+    process.patTriggerFull = cms.EDProducer("PATTriggerObjectStandAloneUnpacker",
+        patTriggerObjectsStandAlone = cms.InputTag('slimmedPatTrigger'),
+        triggerResults              = cms.InputTag('TriggerResults::HLT'),
+        unpackFilterLabels          = cms.bool(True)
+    )
+
+    process.packedJetCSPFCandidates = cms.EDProducer("PATJetConstituentSelector",
+        src = cms.InputTag('slimmedJets'),
+        cut = cms.string('') #pt>500 && abs(eta)<2.0')
+    )
+
+    process.load('PhysicsTools.PatAlgos.slimming.unpackedTracksAndVertices_cfi')
+    process.unpackedTracksAndVertices.packedCandidates = cms.InputTag("packedJetCSPFCandidates")
+
+    eventFilters = [ process.unpackedTracksAndVertices , process.packedJetCSPFCandidates ]
+#    eventFilters = [ process.packedJetCSPFCandidates ]
+    for P in eventFilters:
+        process.eventFilter.insert(0, P)
+
+    from HLTrigger.Configuration.CustomConfigs import MassReplaceInputTag
+    process = MassReplaceInputTag(process,"offlinePrimaryVertices","unpackedTracksAndVertices")
+    process = MassReplaceInputTag(process,"generalTracks","unpackedTracksAndVertices")

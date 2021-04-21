@@ -1,8 +1,12 @@
 <use name="FWCore/Framework"/>
+<use name="FWCore/ParameterSet"/>
+<use name="CommonTools/UtilAlgos"/>
 <use name="DataFormats/HeavyIonEvent"/>
 <use name="DataFormats/VertexReco"/>
 <use name="DataFormats/HepMCCandidate"/>
 <use name="DataFormats/Luminosity"/>
+<use name="DataFormats/JetReco"/>
+<use name="DataFormats/PatCandidates"/>
 <use name="RecoVertex/PrimaryVertexProducer"/>
 <use name="TrackingTools/Records"/>
 <use name="CalibFormats/HcalObjects"/>

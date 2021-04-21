@@ -1,3 +1,152 @@
 import FWCore.ParameterSet.Config as cms
 
 from VertexCompositeAnalysis.VertexCompositeProducer.generalParticles_cfi import *
+
+generalLambdaCandidatesNew = generalParticles.clone(
+    pdgId = cms.int32(3122),
+    mass = cms.double(1.115683),
+    charge = cms.int32(0),
+    doSwap = cms.bool(True),
+    width = cms.double(0.03),
+    vtxSortByTrkSize = cms.bool(False),
+
+    preSelection = cms.string(""
+       "charge==0"
+       ),
+    pocaSelection = cms.string(""
+       "pt > 0."
+       "&& userFloat('dca') > 0 && userFloat('dca') < 0.5"
+       ),
+    postSelection = cms.string(""
+       "userFloat('normChi2') < 7.0"
+       ),
+    finalSelection = cms.string(""
+       "userFloat('lVtxSig') > 2.5"
+       "&& cos(userFloat('angle3D')) > 0.5"
+       "&& abs(rapidity) < 2.4"
+       ),
+#
+    # daughter information
+    daughterInfo = cms.VPSet([
+        cms.PSet(pdgId = cms.int32(211), charge = cms.int32(-1),
+           selection = cms.string(
+              "pt>0.0 && abs(eta)<2.4"
+              "&& quality('loose')"
+              ),
+           finalSelection = cms.string(''
+              'abs(userFloat("dzSig")) > 1.0 && abs(userFloat("dxySig")) > 1.0'
+              )
+           ),
+        cms.PSet(pdgId = cms.int32(2212), charge = cms.int32(+1),
+           selection = cms.string(
+              "pt>0.0 && abs(eta)<2.4"
+              "&& quality('loose')"
+              ),
+           finalSelection = cms.string(''
+              'abs(userFloat("dzSig")) > 1.0 && abs(userFloat("dzSig")) < 20000. && abs(userFloat("dxySig")) > 1.0 && abs(userFloat("dxySig")) < 20000.'
+              )
+           )
+    ])
+  )
+
+generalKshortCandidatesNew = generalParticles.clone(
+    pdgId = cms.int32(310),
+    mass = cms.double(0.497611),
+    charge = cms.int32(0),
+    doSwap = cms.bool(False),
+    width = cms.double(0.05),
+    vtxSortByTrkSize = cms.bool(False),
+
+    preSelection = cms.string(""
+       "charge==0"
+       ),
+    pocaSelection = cms.string(""
+       "pt > 0."
+       "&& userFloat('dca') > 0 && userFloat('dca') < 0.5"
+       ),
+    postSelection = cms.string(""
+       "userFloat('normChi2') < 7.0"
+       ),
+    finalSelection = cms.string(""
+       "userFloat('lVtxSig') > 2.5"
+       "&& cos(userFloat('angle3D')) > 0.997"
+       "&& abs(rapidity) < 2.4"
+       ),
+#
+    # daughter information
+    daughterInfo = cms.VPSet([
+        cms.PSet(pdgId = cms.int32(211), charge = cms.int32(-1),
+           selection = cms.string(
+              "pt>0.0 && abs(eta)<2.4"
+              "&& quality('loose')"
+              ),
+           finalSelection = cms.string(''
+              'abs(userFloat("dzSig")) > 1.0 && abs(userFloat("dxySig")) > 1.0'
+              )
+           ),
+        cms.PSet(pdgId = cms.int32(211), charge = cms.int32(+1),
+           selection = cms.string(
+              "pt>0.0 && abs(eta)<2.4"
+              "&& quality('loose')"
+              ),
+           finalSelection = cms.string(''
+              'abs(userFloat("dzSig")) > 1.0 && abs(userFloat("dzSig")) < 20000. && abs(userFloat("dxySig")) > 1.0 && abs(userFloat("dxySig")) < 20000.'
+              )
+           )
+    ])
+  )
+
+generalXiCandidatesNew = generalParticles.clone(
+
+    mass = cms.double(1.32171),
+    charge = cms.int32(1),
+    width = cms.double(0.05),
+    pdgId = cms.int32(3312),
+    doSwap = cms.bool(False),
+    vtxSortByTrkSize = cms.bool(False),
+
+    preMassSelection = cms.string("abs(charge)==1"),
+
+    postSelection = cms.string(""
+       "userFloat('normChi2') < 7.0"
+       ),
+
+    finalSelection = cms.string(""
+       "userFloat('lVtxSig') > 3." 
+       "&& cos(userFloat('angle3D')) > -1"
+       "&& abs(rapidity) < 2.4"
+     ),
+
+#    dEdxInputs = cms.vstring('dedxHarmonic2', 'dedxPixelHarmonic2'),
+
+    # daughter information
+    daughterInfo = cms.VPSet([
+        cms.PSet(pdgId = cms.int32(3122), source = cms.InputTag('generalLambdaCandidatesNew'), finalSelection = cms.string("userFloat('lVtxSig') > 5.0")),
+        cms.PSet(pdgId = cms.int32(211), #charge = cms.int32(+1),
+          selection = cms.string("pt>0. && abs(eta)<2.4"
+              "&& quality('loose')"
+              ),
+          finalSelection = cms.string(''
+              'abs(userFloat("dzSig")) > 5.0 && abs(userFloat("dzSig")) < 20000. && abs(userFloat("dxySig")) > 5.0 && abs(userFloat("dxySig")) < 20000.'
+          )
+        ),
+    ])
+)
+
+generalOmegaCandidatesNew = generalXiCandidatesNew.clone(
+    pdgId = cms.int32(3334),
+    mass = cms.double(1.67245),
+
+    # daughter information
+    daughterInfo = cms.VPSet([
+        cms.PSet(pdgId = cms.int32(3122), source = cms.InputTag('generalLambdaCandidatesNew'), finalSelection = cms.string("userFloat('lVtxSig') > 5.0")),
+        cms.PSet(pdgId = cms.int32(321), #charge = cms.int32(+1),
+          selection = cms.string("pt>0. && abs(eta)<2.4"
+              "&& quality('loose')"
+              ),
+          finalSelection = cms.string(''
+              'abs(userFloat("dzSig")) > 5.0 && abs(userFloat("dzSig")) < 20000. && abs(userFloat("dxySig")) > 5.0 && abs(userFloat("dxySig")) < 20000.'
+          )
+        ),
+    ])
+)
