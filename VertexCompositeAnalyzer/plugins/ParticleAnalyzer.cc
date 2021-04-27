@@ -175,6 +175,7 @@ private:
   const std::vector<std::string> eventFilters_;
   const std::string selectEvents_;
   const bool saveTree_;
+  const bool autoFillPdgId_;
   const int maxGenIter_;
   const double maxGenDeltaR_, maxGenDeltaPtRel_;
   const std::vector<UInt_t> genPdgIdV_;
@@ -673,6 +674,7 @@ ParticleAnalyzer::ParticleAnalyzer(const edm::ParameterSet& iConfig) :
   eventFilters_(iConfig.getUntrackedParameter<std::vector<std::string> >("eventFilterNames")),
   selectEvents_(iConfig.getParameter<std::string>("selectEvents")),
   saveTree_(iConfig.getUntrackedParameter<bool>("saveTree", true)),
+  autoFillPdgId_(iConfig.getUntrackedParameter<bool>("autoFillPdgId", true)),
   maxGenIter_(iConfig.getUntrackedParameter<int>("maxGenIter", 0)),
   maxGenDeltaR_(iConfig.getUntrackedParameter<double>("maxGenDeltaR", 0.03)),
   maxGenDeltaPtRel_(iConfig.getUntrackedParameter<double>("maxGenDeltaPtRel", 0.5)),
@@ -813,7 +815,9 @@ ParticleAnalyzer::getEventData(const edm::Event& iEvent, const edm::EventSetup& 
       if (p->isLastCopy() && passGenStatus(p) && contain(genPdgId_, std::abs(p->pdgId())))
       {
         const auto& mom = (p->status()==1 ? findGenMother(p) : reco::GenParticleRef());
-        if (mom.isNull() || contain(genPdgId_, std::abs(mom->pdgId())))
+        if (mom.isNull() || contain(genPdgId_, std::abs(mom->pdgId())) ||
+            (contain(genPdgId_, std::abs(p->pdgId())) && std::abs(p->pdgId()) != 2212 && std::abs(p->pdgId()) != 211 && std::abs(p->pdgId()) != 321)
+            )
         {
           genParticlesToMatch_.push_back(p);
         }
@@ -2330,7 +2334,7 @@ ParticleAnalyzer::loadConfiguration(const edm::ParameterSet& config, const edm::
     pid = HepPDT::ParticleID(config.getParameter<int>("pdgId"));
     if (SOURCEPDG_.find(pid.abspid())!=SOURCEPDG_.end()) { sourceId_.insert(pid.pid()); }
     if (genPdgId_.empty()) { std::copy(genPdgIdV_.begin(), genPdgIdV_.end(), std::inserter(genPdgId_, genPdgId_.end())); }
-    genPdgId_.insert(pid.pid());
+    if (autoFillPdgId_) genPdgId_.insert(pid.pid());
   }
 
   if (!addInfo_["source"])
