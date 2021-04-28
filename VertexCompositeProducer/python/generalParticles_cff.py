@@ -30,7 +30,7 @@ generalLambdaCandidatesNew = generalParticles.clone(
     daughterInfo = cms.VPSet([
         cms.PSet(pdgId = cms.int32(211), charge = cms.int32(-1),
            selection = cms.string(
-              "pt>0.0 && abs(eta)<2.4"
+              "pt>20.0 && abs(eta)<2.4"
               "&& quality('loose')"
               ),
            finalSelection = cms.string(''
@@ -39,7 +39,7 @@ generalLambdaCandidatesNew = generalParticles.clone(
            ),
         cms.PSet(pdgId = cms.int32(2212), charge = cms.int32(+1),
            selection = cms.string(
-              "pt>0.0 && abs(eta)<2.4"
+              "pt>20.0 && abs(eta)<2.4"
               "&& quality('loose')"
               ),
            finalSelection = cms.string(''
@@ -77,7 +77,7 @@ generalKshortCandidatesNew = generalParticles.clone(
     daughterInfo = cms.VPSet([
         cms.PSet(pdgId = cms.int32(211), charge = cms.int32(-1),
            selection = cms.string(
-              "pt>0.0 && abs(eta)<2.4"
+              "pt>20.0 && abs(eta)<2.4"
               "&& quality('loose')"
               ),
            finalSelection = cms.string(''
@@ -86,7 +86,7 @@ generalKshortCandidatesNew = generalParticles.clone(
            ),
         cms.PSet(pdgId = cms.int32(211), charge = cms.int32(+1),
            selection = cms.string(
-              "pt>0.0 && abs(eta)<2.4"
+              "pt>20.0 && abs(eta)<2.4"
               "&& quality('loose')"
               ),
            finalSelection = cms.string(''
@@ -123,7 +123,7 @@ generalXiCandidatesNew = generalParticles.clone(
     daughterInfo = cms.VPSet([
         cms.PSet(pdgId = cms.int32(3122), source = cms.InputTag('generalLambdaCandidatesNew'), finalSelection = cms.string("userFloat('lVtxSig') > 5.0")),
         cms.PSet(pdgId = cms.int32(211), #charge = cms.int32(+1),
-          selection = cms.string("pt>0. && abs(eta)<2.4"
+          selection = cms.string("pt>20. && abs(eta)<2.4"
               "&& quality('loose')"
               ),
           finalSelection = cms.string(''
@@ -141,7 +141,7 @@ generalOmegaCandidatesNew = generalXiCandidatesNew.clone(
     daughterInfo = cms.VPSet([
         cms.PSet(pdgId = cms.int32(3122), source = cms.InputTag('generalLambdaCandidatesNew'), finalSelection = cms.string("userFloat('lVtxSig') > 5.0")),
         cms.PSet(pdgId = cms.int32(321), #charge = cms.int32(+1),
-          selection = cms.string("pt>0. && abs(eta)<2.4"
+          selection = cms.string("pt>20. && abs(eta)<2.4"
               "&& quality('loose')"
               ),
           finalSelection = cms.string(''

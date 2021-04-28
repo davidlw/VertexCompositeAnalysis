@@ -114,3 +114,37 @@ def changeToMiniAODJet(process):
     from HLTrigger.Configuration.CustomConfigs import MassReplaceInputTag
     process = MassReplaceInputTag(process,"offlinePrimaryVertices","unpackedTracksAndVertices")
     process = MassReplaceInputTag(process,"generalTracks","unpackedTracksAndVertices")
+
+def changeToMiniAODJetMC(process):
+
+    process.patTriggerFull = cms.EDProducer("PATTriggerObjectStandAloneUnpacker",
+        patTriggerObjectsStandAlone = cms.InputTag('slimmedPatTrigger'),
+        triggerResults              = cms.InputTag('TriggerResults::HLT'),
+        unpackFilterLabels          = cms.bool(True)
+    )
+
+    process.packedJetCSPFCandidates = cms.EDProducer("PATJetConstituentSelector",
+        src = cms.InputTag('slimmedJets'),
+        cut = cms.string('') #pt>500 && abs(eta)<2.0')
+    )
+
+    process.packedGenJetPFCandidates = cms.EDProducer("PATGenJetConstituentSelector",
+        src = cms.InputTag('slimmedGenJetsAK8'),
+        cut = cms.string('') #pt>500 && abs(eta)<2.0')
+    )
+
+    process.load('PhysicsTools.PatAlgos.slimming.unpackedTracksAndVertices_cfi')
+    process.unpackedTracksAndVertices.packedCandidates = cms.InputTag("packedJetCSPFCandidates")
+
+    process.load('VertexCompositeAnalysis.VertexCompositeAnalyzer.mergedGenParticles_cfi')
+    process.mergedGenParticles.inputPacked = cms.InputTag("packedGenJetPFCandidates")
+
+    eventFilters = [ process.unpackedTracksAndVertices , process.packedJetCSPFCandidates, process.mergedGenParticles, process.packedGenJetPFCandidates ]
+#    eventFilters = [ process.packedJetCSPFCandidates ]
+    for P in eventFilters:
+        process.eventFilter.insert(0, P)
+
+    from HLTrigger.Configuration.CustomConfigs import MassReplaceInputTag
+    process = MassReplaceInputTag(process,"offlinePrimaryVertices","unpackedTracksAndVertices")
+    process = MassReplaceInputTag(process,"generalTracks","unpackedTracksAndVertices")
+    process = MassReplaceInputTag(process,"genParticles","mergedGenParticles")

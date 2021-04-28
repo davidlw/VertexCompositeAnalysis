@@ -15,16 +15,17 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring('file:/eos/cms/store/group/phys_heavyions/flowcorr/QCD_Pt_470to600_TuneCP5_13TeV_pythia8/Ak8Jet500Skim_QCDPt470_Pythia8_UL18/210128_140537/0000/ppRun2UL_MINIAOD_10.root'),
 )
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(20000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2000))
 
 # Set the global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-process.GlobalTag.globaltag = cms.string('106X_upgrade2018_realistic_v11')
+process.GlobalTag.globaltag = cms.string('106X_dataRun2_v32')
 
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalParticles_cff")
 
 # tree producer
 from VertexCompositeAnalysis.VertexCompositeAnalyzer.particle_tree_cff import particleAna_mc
+
 process.lambdaana = particleAna_mc.clone(
   recoParticles = cms.InputTag("generalLambdaCandidatesNew"),
   triggerInfo = cms.untracked.VPSet([
@@ -65,20 +66,20 @@ process.hltFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
 process.hltFilter.andOr = cms.bool(True)
 process.hltFilter.throw = cms.bool(False)
 process.hltFilter.HLTPaths = [
-    'HLT_AK8PFJet500_v*',
+    'HLT_AK8PFJet500_v*', 
     ]
 
 # Define the event selection sequence
 process.eventFilter = cms.Sequence(
-    process.hltFilter
+    process.hltFilter 
 )
 process.eventFilter_step = cms.Path( process.eventFilter )
 
 # Define the analysis steps
-process.v0rereco_step = cms.Path(process.eventFilter
+process.v0rereco_step = cms.Path(process.eventFilter 
                                * process.generalLambdaCandidatesNew
                                * process.generalKshortCandidatesNew
-                               * process.generalXiCandidatesNew
+                               * process.generalXiCandidatesNew 
                                * process.generalOmegaCandidatesNew
                                )
 
@@ -111,5 +112,5 @@ process.schedule = cms.Schedule(
     process.output_step
 )
 
-from VertexCompositeAnalysis.VertexCompositeProducer.PATAlgos_cff import changeToMiniAODMC
-changeToMiniAODMC(process)
+from VertexCompositeAnalysis.VertexCompositeProducer.PATAlgos_cff import changeToMiniAODJetMC
+changeToMiniAODJetMC(process)

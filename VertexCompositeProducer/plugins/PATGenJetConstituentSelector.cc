@@ -18,11 +18,11 @@
 class PATGenJetConstituentSelector : public edm::stream::EDProducer<> {
 public:
 
-  using JetsOutput = std::vector<pat::Jet>;
+  using JetsOutput = std::vector<reco::GenJet>;
   using ConstituentsOutput = std::vector<pat::PackedGenParticle>;
   
   PATGenJetConstituentSelector(edm::ParameterSet const& params) :
-    srcToken_{consumes<edm::View<pat::Jet>>(params.getParameter<edm::InputTag>("src"))},
+    srcToken_{consumes<edm::View<reco::GenJet>>(params.getParameter<edm::InputTag>("src"))},
     selector_{params.getParameter<std::string>("cut")}
   {
 //    produces<JetsOutput>();
@@ -48,7 +48,7 @@ public:
     auto jets = std::make_unique<JetsOutput>();
     auto candsOut = std::make_unique<ConstituentsOutput>();
 
-    edm::Handle<edm::View<pat::Jet>> h_jets;
+    edm::Handle<edm::View<reco::GenJet>> h_jets;
     iEvent.getByToken(srcToken_, h_jets);
     
     // Now set the Ptrs with the orphan handles.
@@ -75,8 +75,8 @@ public:
   }
 
 private:
-  edm::EDGetTokenT<edm::View<pat::Jet>> const srcToken_;
-  StringCutObjectSelector<pat::Jet> const selector_;
+  edm::EDGetTokenT<edm::View<reco::GenJet>> const srcToken_;
+  StringCutObjectSelector<reco::GenJet> const selector_;
 };
 
 DEFINE_FWK_MODULE(PATGenJetConstituentSelector);
