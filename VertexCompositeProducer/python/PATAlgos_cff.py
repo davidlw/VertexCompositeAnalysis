@@ -73,7 +73,8 @@ def changeToMiniAODMC(process):
         unpackFilterLabels          = cms.bool(True)
     )
     process.load('PhysicsTools.PatAlgos.slimming.unpackedTracksAndVertices_cfi')
-    process.load('GeneratorInterface.RivetInterface.mergedGenParticles_cfi')
+    #process.load('GeneratorInterface.RivetInterface.mergedGenParticles_cfi')
+    process.load('VertexCompositeAnalysis.VertexCompositeAnalyzer.mergedGenParticles_cfi')
     eventFilters = [ process.unpackedTracksAndVertices , process.mergedGenParticles ]
     for P in eventFilters:
         process.eventFilter.insert(0, P)
@@ -86,7 +87,7 @@ def changeToMiniAODMC(process):
     process = MassReplaceInputTag(process,"offlinePrimaryVertices","unpackedTracksAndVertices")
     process = MassReplaceInputTag(process,"generalTracks","unpackedTracksAndVertices")
     process = MassReplaceInputTag(process,"genParticles","mergedGenParticles")
-    
+
 
 
 def changeToMiniAODJet(process):
