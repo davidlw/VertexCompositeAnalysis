@@ -21,7 +21,7 @@ process.source = cms.Source("PoolSource",
 
 # Set the global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-process.GlobalTag.globaltag = cms.string('106X_dataRun2_v32')
+process.GlobalTag.globaltag = cms.string('106X_upgrade2018_realistic_v11')
 
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalParticles_cff")
 
