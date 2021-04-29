@@ -8,14 +8,16 @@ process.load('Configuration.StandardSequences.Reconstruction_cff')
 
 # Limit the output messages
 process.load('FWCore.MessageService.MessageLogger_cfi')
-process.MessageLogger.cerr.FwkReport.reportEvery = 200
+process.MessageLogger.cerr.FwkReport.reportEvery = 2000
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 
 # Define the input source
 process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring('file:/eos/cms/store/group/phys_heavyions/flowcorr/QCD_Pt_470to600_TuneCP5_13TeV_pythia8/Ak8Jet500Skim_QCDPt470_Pythia8_UL18/210128_140537/0000/ppRun2UL_MINIAOD_10.root'),
+        #fileNames = cms.untracked.vstring('/store/mc/RunIISummer19UL16MiniAODAPV/QCD_Pt-470to600_MuEnrichedPt5_TuneCP5_13TeV_pythia8/MINIAODSIM/106X_mcRun2_asymptotic_preVFP_v8-v2/110000/08AABB56-4041-B941-8852-CE946F763411.root')
+        eventsToProcess = cms.untracked.VEventRange("1:12532213-1:12532300"),
 )
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2000))
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
 # Set the global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
@@ -33,7 +35,6 @@ process.lambdaana = particleAna_mc.clone(
   ]),
   selectEvents = cms.string("eventFilter_step"),
 
-  genParticles = cms.untracked.InputTag("mergedGenParticles"),
 #  addSource    = cms.untracked.bool(False),
   autoFillPdgId = cms.untracked.bool(False),
   genParInJet = cms.untracked.bool(True),

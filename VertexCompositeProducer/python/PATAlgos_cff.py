@@ -123,47 +123,24 @@ def changeToMiniAODJetMC(process):
         unpackFilterLabels          = cms.bool(True)
     )
 
-    process.packedGenJetPFCandidatePtrs = cms.EDProducer("GenJetPackedConstituentPtrSelector",
+    process.unpackedGenJetPFCandidate = cms.EDProducer("PATGenJetConstituentSelector",
         src = cms.InputTag('slimmedGenJetsAK8'),
         cut = cms.string('') #pt>500 && abs(eta)<2.0')
     )
 
-    process.packedGenJetPFCandidateObjs = cms.EDProducer("GenJetConstituentPackedPtrToObj",
-        src = cms.InputTag('packedGenJetPFCandidatePtrs','constituents')
-    )
-
-# two alternatives to retrieve slimedJets
-    #process.packedPatJetPFCandidatePtrs = cms.EDProducer("PatJetConstituentPtrSelector",
-        #src = cms.InputTag('slimmedJets'),
-        #cut = cms.string('') #pt>500 && abs(eta)<2.0')
-    #)
-
-    #process.packedPatJetPFCandidateObjs = cms.EDProducer("PatJetConstituentPackedPtrToObj",
-        #src = cms.InputTag('packedPatJetPFCandidatePtrs','constituents')
-    #)
-
-    process.packedPatJetPFCandidatePtrs = cms.EDProducer("PatJetConstituentSelector",
+    process.packedJetCSPFCandidates = cms.EDProducer("PATJetConstituentSelector",
         src = cms.InputTag('slimmedJets'),
         cut = cms.string('') #pt>500 && abs(eta)<2.0')
     )
 
-    process.packedPatJetPFCandidateObjs = cms.EDProducer("PatJetConstituentPackedFwdToObj",
-        src = cms.InputTag('packedPatJetPFCandidatePtrs','constituents')
-    )
-
     process.load('PhysicsTools.PatAlgos.slimming.unpackedTracksAndVertices_cfi')
-    process.unpackedTracksAndVertices.packedCandidates = cms.InputTag("packedPatJetPFCandidateObjs", "constituents")
+    process.unpackedTracksAndVertices.packedCandidates = cms.InputTag("packedJetCSPFCandidates")
 
-    process.load('VertexCompositeAnalysis.VertexCompositeAnalyzer.mergedGenParticles_cfi')
-    process.mergedGenParticles.inputPruned = cms.InputTag("") # set it empty if pruned collection is undesired
-    process.mergedGenParticles.inputPacked = cms.InputTag("packedGenJetPFCandidateObjs", "constituents")
-
-    eventFilters = [ process.unpackedTracksAndVertices, process.packedPatJetPFCandidateObjs, process.packedPatJetPFCandidatePtrs,
-        process.mergedGenParticles, process.packedGenJetPFCandidateObjs, process.packedGenJetPFCandidatePtrs]
+    eventFilters = [ process.unpackedTracksAndVertices, process.packedJetCSPFCandidates, process.unpackedGenJetPFCandidate]
     for P in eventFilters:
         process.eventFilter.insert(0, P)
 
     from HLTrigger.Configuration.CustomConfigs import MassReplaceInputTag
     process = MassReplaceInputTag(process,"offlinePrimaryVertices","unpackedTracksAndVertices")
     process = MassReplaceInputTag(process,"generalTracks","unpackedTracksAndVertices")
-    process = MassReplaceInputTag(process,"genParticles","mergedGenParticles")
+    process = MassReplaceInputTag(process,"genParticles","unpackedGenJetPFCandidate")
