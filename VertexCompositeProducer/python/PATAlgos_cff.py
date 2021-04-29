@@ -123,24 +123,43 @@ def changeToMiniAODJetMC(process):
         unpackFilterLabels          = cms.bool(True)
     )
 
-    process.packedJetCSPFCandidates = cms.EDProducer("PATJetConstituentSelector",
-        src = cms.InputTag('slimmedJets'),
-        cut = cms.string('') #pt>500 && abs(eta)<2.0')
-    )
-
-    process.packedGenJetPFCandidates = cms.EDProducer("PATGenJetConstituentSelector",
+    process.packedGenJetPFCandidatePtrs = cms.EDProducer("GenJetPackedConstituentPtrSelector",
         src = cms.InputTag('slimmedGenJetsAK8'),
         cut = cms.string('') #pt>500 && abs(eta)<2.0')
     )
 
+    process.packedGenJetPFCandidateObjs = cms.EDProducer("GenJetConstituentPackedPtrToObj",
+        src = cms.InputTag('packedGenJetPFCandidatePtrs','constituents')
+    )
+
+# two alternatives to retrieve slimedJets
+    #process.packedPatJetPFCandidatePtrs = cms.EDProducer("PatJetConstituentPtrSelector",
+        #src = cms.InputTag('slimmedJets'),
+        #cut = cms.string('') #pt>500 && abs(eta)<2.0')
+    #)
+
+    #process.packedPatJetPFCandidateObjs = cms.EDProducer("PatJetConstituentPackedPtrToObj",
+        #src = cms.InputTag('packedPatJetPFCandidatePtrs','constituents')
+    #)
+
+    process.packedPatJetPFCandidatePtrs = cms.EDProducer("PatJetConstituentSelector",
+        src = cms.InputTag('slimmedJets'),
+        cut = cms.string('') #pt>500 && abs(eta)<2.0')
+    )
+
+    process.packedPatJetPFCandidateObjs = cms.EDProducer("PatJetConstituentPackedFwdToObj",
+        src = cms.InputTag('packedPatJetPFCandidatePtrs','constituents')
+    )
+
     process.load('PhysicsTools.PatAlgos.slimming.unpackedTracksAndVertices_cfi')
-    process.unpackedTracksAndVertices.packedCandidates = cms.InputTag("packedJetCSPFCandidates")
+    process.unpackedTracksAndVertices.packedCandidates = cms.InputTag("packedPatJetPFCandidateObjs", "constituents")
 
     process.load('VertexCompositeAnalysis.VertexCompositeAnalyzer.mergedGenParticles_cfi')
-    process.mergedGenParticles.inputPacked = cms.InputTag("packedGenJetPFCandidates")
+    process.mergedGenParticles.inputPruned = cms.InputTag("") # set it empty if pruned collection is undesired
+    process.mergedGenParticles.inputPacked = cms.InputTag("packedGenJetPFCandidateObjs", "constituents")
 
-    eventFilters = [ process.unpackedTracksAndVertices , process.packedJetCSPFCandidates, process.mergedGenParticles, process.packedGenJetPFCandidates ]
-#    eventFilters = [ process.packedJetCSPFCandidates ]
+    eventFilters = [ process.unpackedTracksAndVertices, process.packedPatJetPFCandidateObjs, process.packedPatJetPFCandidatePtrs,
+        process.mergedGenParticles, process.packedGenJetPFCandidateObjs, process.packedGenJetPFCandidatePtrs]
     for P in eventFilters:
         process.eventFilter.insert(0, P)
 

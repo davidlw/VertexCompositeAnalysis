@@ -28,6 +28,8 @@ void MergedGenParticleProducerRice::produce(edm::Event& event, const edm::EventS
   edm::Handle<edm::View<pat::PackedGenParticle> > packed_handle;
   event.getByToken(input_packed_, packed_handle);
 
+  size_t pruned_handle_size = pruned_handle.isValid() ? pruned_handle->size() : 0;
+
   // First determine which packed particles are also still in the pruned collection
   // so that we can skip them later
   std::map<pat::PackedGenParticle const*, reco::GenParticle const*> st1_dup_map;
@@ -36,7 +38,7 @@ void MergedGenParticleProducerRice::produce(edm::Event& event, const edm::EventS
   // This index will be the same in the merged collection.
   std::map<reco::Candidate const*, std::size_t> pruned_idx_map;
 
-  for (unsigned int i = 0; i < pruned_handle->size(); ++i) {
+  for (unsigned int i = 0; i < pruned_handle_size; ++i) {
     reco::GenParticle const& src = pruned_handle->at(i);
     pruned_idx_map[&src] = i;
     if (src.status() != 1) continue;
@@ -71,11 +73,11 @@ void MergedGenParticleProducerRice::produce(edm::Event& event, const edm::EventS
   }
 
   // At this point we know what the size of the merged GenParticle will be so we can create it
-  const unsigned int n = pruned_handle->size() + (packed_handle->size() - st1_dup_map.size()) + nPhotonsFromPrunedHadron;
+  const unsigned int n = pruned_handle_size + (packed_handle->size() - st1_dup_map.size()) + nPhotonsFromPrunedHadron;
   auto cands = std::unique_ptr<reco::GenParticleCollection>(new reco::GenParticleCollection(n));
 
   // First copy in all the pruned candidates
-  for (unsigned i = 0; i < pruned_handle->size(); ++i) {
+  for (unsigned i = 0; i < pruned_handle_size; ++i) {
     reco::GenParticle const& old_cand = pruned_handle->at(i);
     reco::GenParticle & new_cand = cands->at(i);
     new_cand = reco::GenParticle(pruned_handle->at(i));
@@ -91,7 +93,7 @@ void MergedGenParticleProducerRice::produce(edm::Event& event, const edm::EventS
   }
 
   // Now copy in the packed candidates that are not already in the pruned
-  for (unsigned i = 0, idx = pruned_handle->size(); i < packed_handle->size(); ++i) {
+  for (unsigned i = 0, idx = pruned_handle_size; i < packed_handle->size(); ++i) {
     pat::PackedGenParticle const& pk = packed_handle->at(i);
     if (st1_dup_map.count(&pk)) continue;
     reco::GenParticle & new_cand = cands->at(idx);
@@ -119,6 +121,7 @@ void MergedGenParticleProducerRice::produce(edm::Event& event, const edm::EventS
     // Connect to mother from pruned particles
     reco::GenParticle & daughter = cands->at(idx);
     for (unsigned m = 0; m < pk.numberOfMothers(); ++m) {
+      if (!pruned_handle.isValid()) break;
       daughter.addMother(reco::GenParticleRef(ref, pruned_idx_map.at(pk.mother(m))));
       // Since the packed candidates drop the vertex position we'll take this from the mother
       if (m == 0) {

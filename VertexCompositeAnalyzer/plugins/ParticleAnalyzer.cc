@@ -176,6 +176,7 @@ private:
   const std::string selectEvents_;
   const bool saveTree_;
   const bool autoFillPdgId_;
+  const bool genParInJet_;
   const int maxGenIter_;
   const double maxGenDeltaR_, maxGenDeltaPtRel_;
   const std::vector<UInt_t> genPdgIdV_;
@@ -675,6 +676,7 @@ ParticleAnalyzer::ParticleAnalyzer(const edm::ParameterSet& iConfig) :
   selectEvents_(iConfig.getParameter<std::string>("selectEvents")),
   saveTree_(iConfig.getUntrackedParameter<bool>("saveTree", true)),
   autoFillPdgId_(iConfig.getUntrackedParameter<bool>("autoFillPdgId", true)),
+  genParInJet_(iConfig.getUntrackedParameter<bool>("genParInJet", false)),
   maxGenIter_(iConfig.getUntrackedParameter<int>("maxGenIter", 0)),
   maxGenDeltaR_(iConfig.getUntrackedParameter<double>("maxGenDeltaR", 0.03)),
   maxGenDeltaPtRel_(iConfig.getUntrackedParameter<double>("maxGenDeltaPtRel", 0.5)),
@@ -812,7 +814,7 @@ ParticleAnalyzer::getEventData(const edm::Event& iEvent, const edm::EventSetup& 
         nGenTracks += 1;
       }
       // add generated particles for reco-gen matching
-      if (p->isLastCopy() && passGenStatus(p) && contain(genPdgId_, std::abs(p->pdgId())))
+      if ((genParInJet_ || p->isLastCopy()) && passGenStatus(p) && contain(genPdgId_, std::abs(p->pdgId())))
       {
         const auto& mom = (p->status()==1 ? findGenMother(p) : reco::GenParticleRef());
         if (mom.isNull() || contain(genPdgId_, std::abs(mom->pdgId())) ||
