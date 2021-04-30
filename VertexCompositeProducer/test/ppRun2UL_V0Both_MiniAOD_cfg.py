@@ -14,8 +14,8 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 # Define the input source
 process.source = cms.Source("PoolSource",
 #        fileNames = cms.untracked.vstring('root://xrootd-cms.infn.it///store/data/Run2018C/JetHT/MINIAOD/12Nov2019_UL2018_rsb-v1/10000/015CDDF7-DBCB-094D-861E-54F73012741A.root'),
-#        fileNames = cms.untracked.vstring('file:/eos/cms/store/group/phys_heavyions/flowcorr/JetHT/Ak8Jet500Skim_JetHT_Run2018D/210123_050442/0000/ppRun2UL_MINIAOD_17.root'),
-        fileNames = cms.untracked.vstring('file:/eos/cms/store/group/phys_heavyions/flowcorr/QCD_Pt_470to600_TuneCP5_13TeV_pythia8/Ak8Jet500Skim_QCDPt470_Pythia8_UL18/210128_140537/0000/ppRun2UL_MINIAOD_10.root'),
+        fileNames = cms.untracked.vstring('file:/eos/cms/store/group/phys_heavyions/flowcorr/JetHT/Ak8Jet500Skim_JetHT_Run2018D/210123_050442/0000/ppRun2UL_MINIAOD_17.root'),
+#        fileNames = cms.untracked.vstring('file:/eos/cms/store/group/phys_heavyions/flowcorr/QCD_Pt_470to600_TuneCP5_13TeV_pythia8/Ak8Jet500Skim_QCDPt470_Pythia8_UL18/210128_140537/0000/ppRun2UL_MINIAOD_10.root'),
 )
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2000))
 
@@ -30,7 +30,7 @@ from VertexCompositeAnalysis.VertexCompositeAnalyzer.particle_tree_cff import pa
 process.lambdaana = particleAna.clone(
   recoParticles = cms.InputTag("generalLambdaCandidatesNew"),
   triggerInfo = cms.untracked.VPSet([
-    cms.PSet(path = cms.string('HLT_AK8PFJet500_v*')), 
+    cms.PSet(path = cms.string('HLT_AK8PFJet500_v*')),
   ]),
   selectEvents = cms.string("eventFilter_step"),
 )
@@ -57,20 +57,20 @@ process.hltFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
 process.hltFilter.andOr = cms.bool(True)
 process.hltFilter.throw = cms.bool(False)
 process.hltFilter.HLTPaths = [
-    'HLT_AK8PFJet500_v*', 
+    'HLT_AK8PFJet500_v*',
     ]
 
 # Define the event selection sequence
 process.eventFilter = cms.Sequence(
-    process.hltFilter 
+    process.hltFilter
 )
 process.eventFilter_step = cms.Path( process.eventFilter )
 
 # Define the analysis steps
-process.v0rereco_step = cms.Path(process.eventFilter 
+process.v0rereco_step = cms.Path(process.eventFilter
                                * process.generalLambdaCandidatesNew
                                * process.generalKshortCandidatesNew
-                               * process.generalXiCandidatesNew 
+                               * process.generalXiCandidatesNew
                                * process.generalOmegaCandidatesNew
                                )
 
@@ -99,8 +99,8 @@ process.output_step = cms.EndPath(process.output)
 process.schedule = cms.Schedule(
     process.eventFilter_step,
     process.v0rereco_step,
-    process.generalana_step
-#    process.output_step
+    process.generalana_step,
+    process.output_step
 )
 
 from VertexCompositeAnalysis.VertexCompositeProducer.PATAlgos_cff import changeToMiniAOD
