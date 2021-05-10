@@ -448,6 +448,8 @@ private:
       for (const auto& d : data_.uintVM()  ) { uintVVM_[d.first].push_back(d.second);   }
       for (const auto& d : data_.floatVM() ) { floatVVM_[d.first].push_back(d.second);  }
       parM_[par] = size_++;
+
+      data_.clear();
     };
 
     void copyData(Container& data, const size_t& i, const std::string& n="") const

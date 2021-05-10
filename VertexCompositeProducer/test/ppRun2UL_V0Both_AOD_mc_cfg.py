@@ -13,26 +13,29 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 
 # Define the input source
 process.source = cms.Source("PoolSource",
-#        fileNames = cms.untracked.vstring('root://xrootd-cms.infn.it///store/data/Run2018C/JetHT/MINIAOD/12Nov2019_UL2018_rsb-v1/10000/015CDDF7-DBCB-094D-861E-54F73012741A.root'),
-        fileNames = cms.untracked.vstring('file:/eos/cms/store/group/phys_heavyions/flowcorr/JetHT/Ak8Jet500Skim_JetHT_Run2018D/210123_050442/0000/ppRun2UL_MINIAOD_17.root'),
-#        fileNames = cms.untracked.vstring('file:/eos/cms/store/group/phys_heavyions/flowcorr/QCD_Pt_470to600_TuneCP5_13TeV_pythia8/Ak8Jet500Skim_QCDPt470_Pythia8_UL18/210128_140537/0000/ppRun2UL_MINIAOD_10.root'),
+        fileNames = cms.untracked.vstring('file:/eos/cms/store/group/phys_heavyions/flowcorr/QCD_Pt_470to600_TuneCP5_13TeV_pythia8/Ak8Jet500Skim_QCDPt470_Pythia8_UL18_AOD/210430_163312/0000/ppRun2UL_MINIAOD_1.root'),
 )
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))
 
 # Set the global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-process.GlobalTag.globaltag = cms.string('106X_dataRun2_v32')
+process.GlobalTag.globaltag = cms.string('106X_upgrade2018_realistic_v11')
 
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.generalParticles_cff")
 
 # tree producer
-from VertexCompositeAnalysis.VertexCompositeAnalyzer.particle_tree_cff import particleAna
-process.lambdaana = particleAna.clone(
+from VertexCompositeAnalysis.VertexCompositeAnalyzer.particle_tree_cff import particleAna_mc
+process.lambdaana = particleAna_mc.clone(
   recoParticles = cms.InputTag("generalLambdaCandidatesNew"),
   triggerInfo = cms.untracked.VPSet([
-    cms.PSet(path = cms.string('HLT_AK8PFJet500_v*')), 
+    cms.PSet(path = cms.string('HLT_AK8PFJet500_v*')),
   ]),
   selectEvents = cms.string("eventFilter_step"),
+
+#  addSource    = cms.untracked.bool(False),
+  autoFillPdgId = cms.untracked.bool(False),
+  genPdgId     = cms.untracked.vuint32([3122]),
+#  saveTree = cms.untracked.bool(False)
 )
 
 process.kshortana = process.lambdaana.clone(
@@ -47,6 +50,10 @@ process.omegaana = process.lambdaana.clone(
   recoParticles = cms.InputTag("generalOmegaCandidatesNew")
 )
 
+process.kshortana.genPdgId = cms.untracked.vuint32([310])
+process.xiana.genPdgId = cms.untracked.vuint32([3312])
+process.omegaana.genPdgId = cms.untracked.vuint32([3334])
+
 process.generalanaNewSeq = cms.Sequence(process.lambdaana * process.kshortana * process.xiana * process.omegaana)
 process.generalana_step = cms.EndPath( process.generalanaNewSeq )
 
@@ -57,40 +64,36 @@ process.hltFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
 process.hltFilter.andOr = cms.bool(True)
 process.hltFilter.throw = cms.bool(False)
 process.hltFilter.HLTPaths = [
-    'HLT_AK8PFJet500_v*', 
+    'HLT_AK8PFJet500_v*',
     ]
 
 # Define the event selection sequence
 process.eventFilter = cms.Sequence(
-    process.hltFilter 
+    process.hltFilter
 )
 process.eventFilter_step = cms.Path( process.eventFilter )
 
 # Define the analysis steps
-process.v0rereco_step = cms.Path(process.eventFilter 
+process.v0rereco_step = cms.Path(process.eventFilter
                                * process.generalLambdaCandidatesNew
                                * process.generalKshortCandidatesNew
-                               * process.generalXiCandidatesNew 
+                               * process.generalXiCandidatesNew
                                * process.generalOmegaCandidatesNew
                                )
 
-#process.generalLambdaCandidatesNew.fitAlgo = cms.vuint32([3])
-#process.generalKshortCandidatesNew.fitAlgo = cms.vuint32([3])
-#process.generalXiCandidatesNew.fitAlgo = cms.vuint32([3])
-#process.generalOmegaCandidatesNew.fitAlgo = cms.vuint32([3])
-process.generalLambdaCandidatesNew.fitAlgo = cms.vuint32([0])
-process.generalKshortCandidatesNew.fitAlgo = cms.vuint32([0])
-process.generalXiCandidatesNew.fitAlgo = cms.vuint32([0])
-process.generalOmegaCandidatesNew.fitAlgo = cms.vuint32([0])
+process.generalLambdaCandidatesNew.fitAlgo = cms.vuint32([3])
+process.generalKshortCandidatesNew.fitAlgo = cms.vuint32([3])
+process.generalXiCandidatesNew.fitAlgo = cms.vuint32([3])
+process.generalOmegaCandidatesNew.fitAlgo = cms.vuint32([3])
 
 # Define the output
-process.TFileService = cms.Service("TFileService", fileName = cms.string('v0ana.root'))
+process.TFileService = cms.Service("TFileService", fileName = cms.string('v0ana_mc.root'))
 
 process.output = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('ppRun2UL_SKIM_MINIAOD.root'),
+    fileName = cms.untracked.string('ppRun2UL_SKIM_AOD.root'),
     SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('eventFilter_step')),
     dataset = cms.untracked.PSet(
-      dataTier = cms.untracked.string('MINIAOD')
+      dataTier = cms.untracked.string('AOD')
     )
 )
 process.output.outputCommands = cms.untracked.vstring('drop *',
@@ -104,8 +107,8 @@ process.schedule = cms.Schedule(
     process.eventFilter_step,
     process.v0rereco_step,
     process.generalana_step,
-    process.output_step
+#    process.output_step
 )
 
-from VertexCompositeAnalysis.VertexCompositeProducer.PATAlgos_cff import changeToMiniAOD
-changeToMiniAOD(process)
+#from VertexCompositeAnalysis.VertexCompositeProducer.PATAlgos_cff import changeToMiniAODMC
+#changeToMiniAODMC(process)

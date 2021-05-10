@@ -124,13 +124,13 @@ def changeToMiniAODJetMC(process):
     )
 
     process.unpackedGenJetPFCandidate = cms.EDProducer("PATGenJetConstituentSelector",
-        src = cms.InputTag('slimmedGenJetsAK8'),
-        cut = cms.string('') #pt>500 && abs(eta)<2.0')
+        src = cms.InputTag('slimmedGenJets'),
+        cut = cms.string('pt>500 && abs(eta)<1.6')
     )
 
     process.packedJetCSPFCandidates = cms.EDProducer("PATJetConstituentSelector",
         src = cms.InputTag('slimmedJets'),
-        cut = cms.string('') #pt>500 && abs(eta)<2.0')
+        cut = cms.string('pt>500 && abs(eta)<1.6')
     )
 
     process.load('PhysicsTools.PatAlgos.slimming.unpackedTracksAndVertices_cfi')
