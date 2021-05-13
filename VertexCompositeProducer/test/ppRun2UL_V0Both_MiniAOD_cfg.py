@@ -30,7 +30,7 @@ from VertexCompositeAnalysis.VertexCompositeAnalyzer.particle_tree_cff import pa
 process.lambdaana = particleAna.clone(
   recoParticles = cms.InputTag("generalLambdaCandidatesNew"),
   triggerInfo = cms.untracked.VPSet([
-    cms.PSet(path = cms.string('HLT_AK8PFJet500_v*')), 
+    cms.PSet(path = cms.string('HLT_AK8PFJet500_v*')),
   ]),
   selectEvents = cms.string("eventFilter_step"),
 )
@@ -57,20 +57,20 @@ process.hltFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
 process.hltFilter.andOr = cms.bool(True)
 process.hltFilter.throw = cms.bool(False)
 process.hltFilter.HLTPaths = [
-    'HLT_AK8PFJet500_v*', 
+    'HLT_AK8PFJet500_v*',
     ]
 
 # Define the event selection sequence
 process.eventFilter = cms.Sequence(
-    process.hltFilter 
+    process.hltFilter
 )
 process.eventFilter_step = cms.Path( process.eventFilter )
 
 # Define the analysis steps
-process.v0rereco_step = cms.Path(process.eventFilter 
+process.v0rereco_step = cms.Path(process.eventFilter
                                * process.generalLambdaCandidatesNew
                                * process.generalKshortCandidatesNew
-                               * process.generalXiCandidatesNew 
+                               * process.generalXiCandidatesNew
                                * process.generalOmegaCandidatesNew
                                )
 
