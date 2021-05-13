@@ -21,8 +21,8 @@ generalLambdaCandidatesNew = generalParticles.clone(
        "userFloat('normChi2') < 7.0"
        ),
     finalSelection = cms.string(""
-       "userFloat('lVtxSig') > 2.5"
-       "&& cos(userFloat('angle3D')) > 0.5"
+       "userFloat('lVtxSig') > 4.5"
+       "&& cos(userFloat('angle3D')) > 0.997"
        "&& abs(rapidity) < 2.4"
        ),
 #
@@ -34,7 +34,7 @@ generalLambdaCandidatesNew = generalParticles.clone(
               "&& quality('loose')"
               ),
            finalSelection = cms.string(''
-              'abs(userFloat("dzSig")) > 1.0 && abs(userFloat("dxySig")) > 1.0'
+              'abs(userFloat("dzSig")) > 2.0 && abs(userFloat("dxySig")) > 2.0'
  #             '&& abs(userFloat("dzSig")) < 50.0 && abs(userFloat("dxySig")) < 50.0'
               )
            ),
@@ -44,7 +44,7 @@ generalLambdaCandidatesNew = generalParticles.clone(
               "&& quality('loose')"
               ),
            finalSelection = cms.string(''
-              'abs(userFloat("dzSig")) > 1.0 && abs(userFloat("dxySig")) > 1.0'
+              'abs(userFloat("dzSig")) > 2.0 && abs(userFloat("dxySig")) > 2.0'
 #              '&& abs(userFloat("dzSig")) < 50.0 && abs(userFloat("dxySig")) < 50.0'
               )
            )
@@ -70,7 +70,7 @@ generalKshortCandidatesNew = generalParticles.clone(
        "userFloat('normChi2') < 7.0"
        ),
     finalSelection = cms.string(""
-       "userFloat('lVtxSig') > 2.5"
+       "userFloat('lVtxSig') > 4.5"
        "&& cos(userFloat('angle3D')) > 0.997"
        "&& abs(rapidity) < 2.4"
        ),
@@ -83,7 +83,7 @@ generalKshortCandidatesNew = generalParticles.clone(
               "&& quality('loose')"
               ),
            finalSelection = cms.string(''
-              'abs(userFloat("dzSig")) > 1.0 && abs(userFloat("dxySig")) > 1.0'
+              'abs(userFloat("dzSig")) > 2.0 && abs(userFloat("dxySig")) > 2.0'
 #              '&& abs(userFloat("dzSig")) < 50.0 && abs(userFloat("dxySig")) < 50.0'
               )
            ),
@@ -93,7 +93,7 @@ generalKshortCandidatesNew = generalParticles.clone(
               "&& quality('loose')"
               ),
            finalSelection = cms.string(''
-              'abs(userFloat("dzSig")) > 1.0 && abs(userFloat("dxySig")) > 1.0'
+              'abs(userFloat("dzSig")) > 2.0 && abs(userFloat("dxySig")) > 2.0'
 #              '&& abs(userFloat("dzSig")) < 50.0 && abs(userFloat("dxySig")) < 50.0'
               )
            )
@@ -116,8 +116,8 @@ generalXiCandidatesNew = generalParticles.clone(
        ),
 
     finalSelection = cms.string(""
-       "userFloat('lVtxSig') > 3." # 3 
-       "&& cos(userFloat('angle3D')) > -1"
+       "userFloat('lVtxSig') > 2." # 3 
+       "&& cos(userFloat('angle3D')) > 0.9999"
        "&& abs(rapidity) < 2.4"
      ),
 
@@ -131,7 +131,7 @@ generalXiCandidatesNew = generalParticles.clone(
               "&& quality('loose')"
               ),
           finalSelection = cms.string(''
-              'abs(userFloat("dzSig")) > 5.0 && abs(userFloat("dxySig")) > 5.0'
+              'abs(userFloat("dzSig")) > 4.0 && abs(userFloat("dxySig")) > 4.0'
 #              '&& abs(userFloat("dzSig")) < 10.0 && abs(userFloat("dxySig")) < 10.0'
           )
         ),
@@ -150,7 +150,7 @@ generalOmegaCandidatesNew = generalXiCandidatesNew.clone(
               "&& quality('loose')"
               ),
           finalSelection = cms.string(''
-              'abs(userFloat("dzSig")) > 5.0 && abs(userFloat("dxySig")) > 5.0'
+              'abs(userFloat("dzSig")) > 4.0 && abs(userFloat("dxySig")) > 4.0'
 #              '&& abs(userFloat("dzSig")) < 10.0 && abs(userFloat("dxySig")) < 10.0'
           )
         ),

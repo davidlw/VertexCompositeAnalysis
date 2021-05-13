@@ -18,7 +18,7 @@ config.JobType.pluginName = 'Analysis'
 config.section_('Data')
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'FileBased'
-config.Data.totalUnits = 500
+#config.Data.totalUnits = 500
 #config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/Legacy_2018/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
 config.Data.publication = False
 config.JobType.allowUndistributedCMSSW = True
@@ -47,7 +47,7 @@ dataMap = {
 
 ## Submit the PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeTree_'+key+'_V0_20210430v1'
+    config.General.requestName = 'VertexCompositeTree_'+key+'_V0_20210513v1'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]

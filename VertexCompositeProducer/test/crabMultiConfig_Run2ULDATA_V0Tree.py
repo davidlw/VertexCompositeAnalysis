@@ -18,7 +18,7 @@ config.JobType.pluginName = 'Analysis'
 config.section_('Data')
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'LumiBased'
-config.Data.totalUnits = 10
+config.Data.totalUnits = 1000
 config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/Legacy_2018/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
 config.Data.publication = False
 config.JobType.allowUndistributedCMSSW = True
@@ -42,12 +42,13 @@ def submit(config):
 #############################################################################################
 
 dataMap = {
-            "JetHT_Run2018D": { "PD": "/JetHT/Run2018D-12Nov2019_UL2018_rsb-v1/MINIAOD", "Units": 2, "Memory": 1800, "RunTime": 1400, "PSet": "ppRun2UL_V0Both_MiniAOD_cfg.py" },
+#            "JetHT_Run2018D": { "PD": "/JetHT/Run2018D-12Nov2019_UL2018_rsb-v1/MINIAOD", "Units": 2, "Memory": 1800, "RunTime": 1400, "PSet": "ppRun2UL_V0Both_MiniAOD_cfg.py" },
+            "JetHT_Run2018D_AOD": { "PD": "/JetHT/Run2018D-12Nov2019_UL2018_rsb-v1/AOD", "Units": 2, "Memory": 2500, "RunTime": 2100, "PSet": "ppRun2UL_V0Both_AOD_cfg.py" },
             }
 
 ## Submit the PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeTree_'+key+'_V0_20200122_test3'
+    config.General.requestName = 'VertexCompositeTree_'+key+'_V0_20200513_test1'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]
