@@ -18,7 +18,7 @@ config.JobType.pluginName = 'Analysis'
 config.section_('Data')
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'FileBased'
-#config.Data.totalUnits = 500
+#config.Data.totalUnits = 5
 #config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/Legacy_2018/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
 config.Data.publication = False
 config.JobType.allowUndistributedCMSSW = True
@@ -42,13 +42,16 @@ def submit(config):
 #############################################################################################
 
 dataMap = {
-            "QCDPt470_Pythia8_UL18": { "PD": "/QCD_Pt_470to600_TuneCP5_13TeV_pythia8/RunIISummer19UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM", "Units": 1, "Memory": 2500, "RunTime": 2100, "PSet": "ppRun2UL_V0Both_AOD_mc_cfg.py" },
-            }
+            "QCDPt470_Pythia8_UL18": { "PD": "/QCD_Pt_470to600_TuneCP5_13TeV_pythia8/RunIISummer19UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM", "SD": "/QCD_Pt_470to600_TuneCP5_13TeV_pythia8/RunIISummer19UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM", "Units": 1, "Memory": 4500, "RunTime": 2100, "PSet": "ppRun2UL_V0Both_AOD_mc_cfg.py" },
+#            "QCDPt470_Pythia8_UL18": { "PD": "/QCD_Pt_470to600_TuneCP5_13TeV_pythia8/RunIISummer19UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM", "Units": 10, "Memory": 3500, "RunTime": 2100, "PSet": "ppRun2UL_V0Both_AOD_mc_cfg.py" },
+           }
 
 ## Submit the PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'VertexCompositeTree_'+key+'_V0_20210513v1'
+    config.General.requestName = 'VertexCompositeTree_'+key+'_V0_20210810v1'
+#    config.General.requestName = 'VertexCompositeTree_'+key+'_V0_test'
     config.Data.inputDataset = val["PD"]
+    config.Data.secondaryInputDataset = val["SD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]
     config.JobType.maxJobRuntimeMin = val["RunTime"]

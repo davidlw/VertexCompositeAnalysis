@@ -1,0 +1,2 @@
+#split -l40 -d -a 3 filelist_v0.txt batch/list_v0_
+split -l10 -d -a 3 filelistMC_v0.txt batch/listMC_v0_

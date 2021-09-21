@@ -6,7 +6,7 @@ generalLambdaCandidatesNew = generalParticles.clone(
     pdgId = cms.int32(3122),
     mass = cms.double(1.115683),
     charge = cms.int32(0),
-    doSwap = cms.bool(True),
+    doSwap = cms.bool(False),
     width = cms.double(0.03),
     vtxSortByTrkSize = cms.bool(False),
 
@@ -22,7 +22,7 @@ generalLambdaCandidatesNew = generalParticles.clone(
        ),
     finalSelection = cms.string(""
        "userFloat('lVtxSig') > 4.5"
-       "&& cos(userFloat('angle3D')) > 0.997"
+       "&& cos(userFloat('angle3D')) > 0.999"
        "&& abs(rapidity) < 2.4"
        ),
 #
@@ -35,7 +35,6 @@ generalLambdaCandidatesNew = generalParticles.clone(
               ),
            finalSelection = cms.string(''
               'abs(userFloat("dzSig")) > 2.0 && abs(userFloat("dxySig")) > 2.0'
- #             '&& abs(userFloat("dzSig")) < 50.0 && abs(userFloat("dxySig")) < 50.0'
               )
            ),
         cms.PSet(pdgId = cms.int32(2212), charge = cms.int32(+1),
@@ -45,11 +44,35 @@ generalLambdaCandidatesNew = generalParticles.clone(
               ),
            finalSelection = cms.string(''
               'abs(userFloat("dzSig")) > 2.0 && abs(userFloat("dxySig")) > 2.0'
-#              '&& abs(userFloat("dzSig")) < 50.0 && abs(userFloat("dxySig")) < 50.0'
               )
            )
     ])
   )
+
+generalAntiLambdaCandidatesNew = generalLambdaCandidatesNew.clone(
+
+    # daughter information
+    daughterInfo = cms.VPSet([
+        cms.PSet(pdgId = cms.int32(211), charge = cms.int32(+1),
+           selection = cms.string(
+              "pt>0.0 && abs(eta)<2.4"
+              "&& quality('loose')"
+              ),
+           finalSelection = cms.string(''
+              'abs(userFloat("dzSig")) > 2.0 && abs(userFloat("dxySig")) > 2.0'
+              )
+           ),
+        cms.PSet(pdgId = cms.int32(2212), charge = cms.int32(-1),
+           selection = cms.string(
+              "pt>0.0 && abs(eta)<2.4"
+              "&& quality('loose')"
+              ),
+           finalSelection = cms.string(''
+              'abs(userFloat("dzSig")) > 2.0 && abs(userFloat("dxySig")) > 2.0'
+              )
+           )
+    ])
+)
 
 generalKshortCandidatesNew = generalParticles.clone(
     pdgId = cms.int32(310),
@@ -71,7 +94,7 @@ generalKshortCandidatesNew = generalParticles.clone(
        ),
     finalSelection = cms.string(""
        "userFloat('lVtxSig') > 4.5"
-       "&& cos(userFloat('angle3D')) > 0.997"
+       "&& cos(userFloat('angle3D')) > 0.999"
        "&& abs(rapidity) < 2.4"
        ),
 #
@@ -117,7 +140,7 @@ generalXiCandidatesNew = generalParticles.clone(
 
     finalSelection = cms.string(""
        "userFloat('lVtxSig') > 2." # 3 
-       "&& cos(userFloat('angle3D')) > 0.9999"
+       "&& cos(userFloat('angle3D')) > 0.9995"
        "&& abs(rapidity) < 2.4"
      ),
 
@@ -125,13 +148,30 @@ generalXiCandidatesNew = generalParticles.clone(
 
     # daughter information
     daughterInfo = cms.VPSet([
-        cms.PSet(pdgId = cms.int32(3122), source = cms.InputTag('generalLambdaCandidatesNew'), finalSelection = cms.string("userFloat('lVtxSig') > 5.0")), # 5
-        cms.PSet(pdgId = cms.int32(211), #charge = cms.int32(+1),
+        cms.PSet(pdgId = cms.int32(3122), source = cms.InputTag('generalLambdaCandidatesNew'), finalSelection = cms.string("userFloat('lVtxSig') > 3.0")), # 5
+        cms.PSet(pdgId = cms.int32(211), charge = cms.int32(-1),
           selection = cms.string("pt>0. && abs(eta)<2.4"
               "&& quality('loose')"
               ),
           finalSelection = cms.string(''
-              'abs(userFloat("dzSig")) > 4.0 && abs(userFloat("dxySig")) > 4.0'
+              'abs(userFloat("dzSig")) > 2.0 && abs(userFloat("dxySig")) > 2.0'
+#              '&& abs(userFloat("dzSig")) < 10.0 && abs(userFloat("dxySig")) < 10.0'
+          )
+        ),
+    ])
+)
+
+generalAntiXiCandidatesNew = generalXiCandidatesNew.clone(
+
+    # daughter information
+    daughterInfo = cms.VPSet([
+        cms.PSet(pdgId = cms.int32(3122), source = cms.InputTag('generalAntiLambdaCandidatesNew'), finalSelection = cms.string("userFloat('lVtxSig') > 3.0")), # 5
+        cms.PSet(pdgId = cms.int32(211), charge = cms.int32(+1),
+          selection = cms.string("pt>0. && abs(eta)<2.4"
+              "&& quality('loose')"
+              ),
+          finalSelection = cms.string(''
+              'abs(userFloat("dzSig")) > 2.0 && abs(userFloat("dxySig")) > 2.0'
 #              '&& abs(userFloat("dzSig")) < 10.0 && abs(userFloat("dxySig")) < 10.0'
           )
         ),
@@ -144,13 +184,30 @@ generalOmegaCandidatesNew = generalXiCandidatesNew.clone(
 
     # daughter information
     daughterInfo = cms.VPSet([
-        cms.PSet(pdgId = cms.int32(3122), source = cms.InputTag('generalLambdaCandidatesNew'), finalSelection = cms.string("userFloat('lVtxSig') > 5.0")), # 5
-        cms.PSet(pdgId = cms.int32(321), #charge = cms.int32(+1),
+        cms.PSet(pdgId = cms.int32(3122), source = cms.InputTag('generalLambdaCandidatesNew'), finalSelection = cms.string("userFloat('lVtxSig') > 3.0")), # 5
+        cms.PSet(pdgId = cms.int32(321), charge = cms.int32(-1),
           selection = cms.string("pt>0. && abs(eta)<2.4"
               "&& quality('loose')"
               ),
           finalSelection = cms.string(''
-              'abs(userFloat("dzSig")) > 4.0 && abs(userFloat("dxySig")) > 4.0'
+              'abs(userFloat("dzSig")) > 2.0 && abs(userFloat("dxySig")) > 2.0'
+#              '&& abs(userFloat("dzSig")) < 10.0 && abs(userFloat("dxySig")) < 10.0'
+          )
+        ),
+    ])
+)
+
+generalAntiOmegaCandidatesNew = generalOmegaCandidatesNew.clone(
+
+    # daughter information
+    daughterInfo = cms.VPSet([
+        cms.PSet(pdgId = cms.int32(3122), source = cms.InputTag('generalAntiLambdaCandidatesNew'), finalSelection = cms.string("userFloat('lVtxSig') > 3.0")), # 5
+        cms.PSet(pdgId = cms.int32(321), charge = cms.int32(+1),
+          selection = cms.string("pt>0. && abs(eta)<2.4"
+              "&& quality('loose')"
+              ),
+          finalSelection = cms.string(''
+              'abs(userFloat("dzSig")) > 2.0 && abs(userFloat("dxySig")) > 2.0'
 #              '&& abs(userFloat("dzSig")) < 10.0 && abs(userFloat("dxySig")) < 10.0'
           )
         ),
