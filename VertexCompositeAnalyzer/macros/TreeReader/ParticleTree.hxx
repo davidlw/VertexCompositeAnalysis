@@ -198,5 +198,4 @@ class ParticleTree {
     TBranch        *b_trk_zDCASignificance;   //!
     TBranch        *b_trk_candIdx;   //!
 };
-
 #endif
