@@ -541,6 +541,20 @@ RefCountedKinematicTree ParticleFitter::fitVertex(const ParticleInfo& parInfo, c
   // return fit result
   return res;
 };
+
+
+FreeTrajectoryState ParticleFitter::getFTS(const pat::GenericParticle& p)
+{
+  GlobalTrajectoryParameters pars(GlobalPoint(p.vx(), p.vy(), p.vz()), GlobalVector(p.px(), p.py(), p.pz()), p.charge(), bFieldHandle_.product());
+  if (p.hasUserData("kinematicParametersError")) {
+    const auto& error = p.userData<KinematicParametersError>("kinematicParametersError")->matrix().Sub<AlgebraicSymMatrix66>(0,0);
+    return FreeTrajectoryState(pars, CartesianTrajectoryError(error));
+  }
+  else if (p.track().isNonnull()) {
+    return FreeTrajectoryState(pars, CurvilinearTrajectoryError(p.track()->covariance()));
+  }
+  return FreeTrajectoryState(pars);
+};
   
 
 bool ParticleFitter::fitCandidate(pat::GenericParticle& cand, const GenericParticleRefCollection& dauColl)
@@ -565,7 +579,7 @@ bool ParticleFitter::fitCandidate(pat::GenericParticle& cand, const GenericParti
       tracks[0] = {reco::TransientTrack(*daughter.track(), magField), daughter.mass()};
     }
     else if (daughter.hasUserData("kinematicParametersError")) {
-      tracks[0] = {reco::TransientTrack(), daughter.mass()};
+      tracks.emplace_back(TransientTrackFromFTSFactory().build(getFTS(daughter)), daughter.mass());
     }
     if (tracks[0].second>=0.) {
       daughters.push_back({tracks, iDau});
@@ -608,7 +622,7 @@ bool ParticleFitter::fitCandidate(pat::GenericParticle& cand, const GenericParti
   std::map<size_t, std::vector<size_t> > dauParIdx;
   for (const auto& d : daughters) {
     const auto& daughter = *dauColl[d.second];
-    if (d.first[0].first.isValid()) {
+    if (d.first[0].first.isValid() && d.first[0].first.ndof()>0) {
       for (const auto& t : d.first) {
         if (!t.first.isValid() || !t.first.impactPointTSCP().isValid()) return false;
         float chi = 0., ndf = 0., width = daughter.userFloat("width");
@@ -695,11 +709,7 @@ void ParticleFitter::matchPrimaryVertex(pat::GenericParticle& cand, const TransT
   const auto& vtxProb = (cand.hasUserFloat("vertexProb") ? cand.userFloat("vertexProb") : 1.f);
   if (matchVertex_ && priVertices_.size()>1 && vtxProb>thr) {
     // compute free trajectory state
-    if (!fts.hasError() && cand.hasUserData("kinematicParametersError")) {
-      const auto& kinError = *cand.userData<KinematicParametersError>("kinematicParametersError");
-      const auto& kinPars = KinematicParameters(cand.vx(), cand.vy(), cand.vz(), cand.px(), cand.py(), cand.pz(), cand.mass());
-      fts = KinematicState(kinPars, kinError, cand.charge(), bFieldHandle_.product()).freeTrajectoryState();
-    }
+    if (!fts.hasError()) fts = getFTS(cand);
     // extrapolate trajectory to beam spot
     GlobalPoint pca;
     if (fts.hasError()) {

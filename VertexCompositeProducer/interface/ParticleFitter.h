@@ -208,6 +208,7 @@ class ParticleFitter {
   void matchPrimaryVertex(pat::GenericParticle& cand, const TransTrackColl& tracks={}, FreeTrajectoryState fts={}, const double& thr=1.E-9);
   RefCountedKinematicTree fitVertex(const ParticleInfo& parInfo, const int& fitAlgo, GlobalPoint decP, const reco::Vertex& priVtx={});
   RefCountedKinematicTree fitVertex(const ParticleInfo& parInfo, const int& fitAlgo);
+  FreeTrajectoryState getFTS(const pat::GenericParticle& cand);
 
   void setVtxProd(const reco::VertexRefProd& prod) { vtxProd_ = prod; };
   void setDauProd(const GenericParticleRefProd& prod) { dauProd_ = prod; };

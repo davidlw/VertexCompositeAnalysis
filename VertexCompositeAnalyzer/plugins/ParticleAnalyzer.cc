@@ -52,6 +52,7 @@
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 #include "TrackingTools/IPTools/interface/IPTools.h"
+#include "TrackingTools/PatternTools/interface/trackingParametersAtClosestApproachToBeamSpot.h"
 #include "HepPDT/ParticleID.hh"
 
 #include "ParticleContainer.h"
@@ -196,6 +197,7 @@ private:
   reco::VertexCollection vertices_;
   reco::GenParticleRefVector genParticlesToKeep_, genParticlesToMatch_;
   const MagneticField* magField_;
+  reco::BeamSpot beamSpot_;
   edm::ValueMap<int> nTracksVMap_;
 
   const std::set<int> SOURCEPDG_ = {0,1,2,3,4,5,6,11,13,15,22};
@@ -321,6 +323,11 @@ ParticleAnalyzer::getEventData(const edm::Event& iEvent, const edm::EventSetup& 
   iSetup.get<IdealMagneticFieldRecord>().get(bFieldHandle);
   magField_ = bFieldHandle.product();
 
+  // beamspot information
+  edm::Handle<reco::BeamSpot> bsHandle;
+  iEvent.getByToken(tok_offlineBS_, bsHandle);
+  beamSpot_ = *bsHandle;
+
   // nTracks value map
   edm::Handle<edm::ValueMap<int> > nTracksVMap;
   iEvent.getByToken(tok_nTracksVMap_, nTracksVMap);
@@ -342,9 +349,7 @@ ParticleAnalyzer::getEventData(const edm::Event& iEvent, const edm::EventSetup& 
   }
   if (vertices_.empty())
   {
-    edm::Handle<reco::BeamSpot> beamspot;
-    iEvent.getByToken(tok_offlineBS_, beamspot);
-    vertex_ = reco::Vertex(beamspot->position(), beamspot->rotatedCovariance3D());
+    vertex_ = reco::Vertex(beamSpot_.position(), beamSpot_.rotatedCovariance3D());
   }
   else { vertex_ = vertices_[0]; }
 
@@ -1134,6 +1139,13 @@ ParticleAnalyzer::fillTrackInfo(const pat::GenericParticle& cand, const UInt_t& 
     }
   }
 
+  // track information
+  std::vector<float> parV, covV;
+  for (const auto& p : track.parameters()) parV.push_back(p);
+  for (size_t i=0; i<5; i++) for (size_t j=0; j<=i; j++) covV.push_back(track.covariance(i,j));
+  info.add("trackParameters", parV);
+  info.add("trackCovariance", covV);
+
   // push data and return index
   info.pushData(track);
   return idx;
@@ -1618,6 +1630,15 @@ ParticleAnalyzer::fillGenParticleInfo(const reco::GenParticleRef& candR, const U
   info.add("angle2D", angle2D);
   info.add("decayLength3D", dl3D);
   info.add("decayLength2D", dl2D);
+
+  // gen track information
+  std::vector<float> parV;
+  if (hasGen)
+  {
+    const auto& sPar = reco::trackingParametersAtClosestApproachToBeamSpot(Basic3DVector<double>(cand.vertex()), Basic3DVector<double>(cand.momentum()), cand.charge(), *magField_, beamSpot_).second;
+    for (const auto& p : sPar) parV.push_back(p);
+  }
+  info.add("trackParameters", parV);
 
   // initialize daughter and mother information
   info.add("dauIdx", std::vector<UShort_t>());
