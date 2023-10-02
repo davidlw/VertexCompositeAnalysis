@@ -63,6 +63,7 @@
 #include "MuonAnalysis/MuonAssociators/interface/PropagateToMuon.h"
 #include "CommonTools/UtilAlgos/interface/StringCutObjectSelector.h"
 #include "HepPDT/ParticleID.hh"
+#include "boost/functional/hash.hpp"
 
 #include "combinations.hpp"
 
@@ -78,10 +79,6 @@ struct ParticleComparator {
   {
     return !isEqual(x, y) && x < y;
   }
-  const bool isParticleEqual(const pat::GenericParticle& x, const pat::GenericParticle& y) const
-  {
-    return (isEqual(x.pt(), y.pt()) && isEqual(x.eta(), y.eta()) && isEqual(x.phi(), y.phi()) && isEqual(x.charge(), y.charge()));
-  }
   const bool isParticleLess(const pat::GenericParticle& x, const pat::GenericParticle& y) const
   {
     return (isLess(x.pt(), y.pt()) ||
@@ -89,9 +86,9 @@ struct ParticleComparator {
             (isEqual(x.pt(), y.pt()) && isEqual(x.eta(), y.eta()) && isLess(x.phi(), y.phi())) ||
             (isEqual(x.pt(), y.pt()) && isEqual(x.eta(), y.eta()) && isEqual(x.phi(), y.phi()) && isLess(x.charge(), y.charge())));
   }
-  inline bool operator()(const pat::GenericParticle& x, const pat::GenericParticle& y) const
+  inline bool operator()(const pat::GenericParticleRef& x, const pat::GenericParticleRef& y) const
   {
-    return isParticleLess(x, y);
+    return x.isNonnull() && y.isNonnull() && isParticleLess(*x, *y);
   }
 };
 
@@ -99,16 +96,13 @@ struct ParticleComparator {
 struct ParticleMassComparator : ParticleComparator {
   inline bool operator()(const pat::GenericParticle& x, const pat::GenericParticle& y) const
   {
-    return (isParticleLess(x, y) ||
-            (isParticleEqual(x, y) && isLess(x.mass(), y.mass())));
-  }
-};
-struct ParticleTreeComparator : ParticleComparator {
-  inline bool operator()(const pat::GenericParticle& x, const pat::GenericParticle& y) const
-  {
     return (isLess(x.mass(), y.mass()) ||
             (isEqual(x.mass(), y.mass()) && isLess(x.charge(), y.charge())) ||
             (isEqual(x.mass(), y.mass()) && isEqual(x.charge(), y.charge()) && isParticleLess(x, y)));
+  }
+  inline bool operator()(const pat::GenericParticleRef& x, const pat::GenericParticleRef& y) const
+  {
+    return x.isNonnull() && y.isNonnull() && operator()(*x, *y);
   }
 };
 
@@ -125,8 +119,9 @@ const std::map<uint, double> MASS_ = {
 const std::map<uint, float> WIDTH_ = {{211, 3.5E-7f}, {321, 1.6E-5f}, {2212, 1.6E-5f}};
 
 
-typedef std::set<pat::GenericParticle, ParticleComparator> ParticleSet;
+typedef std::set<pat::GenericParticleRef, ParticleComparator> ParticleRefSet;
 typedef std::set<pat::GenericParticle, ParticleMassComparator> ParticleMassSet;
+typedef std::vector<pat::GenericParticleRef> GenericParticleRefCollection;
 
 
 class ParticleDaughter {
@@ -140,6 +135,7 @@ class ParticleDaughter {
   const double& mass() const { return mass_; }
   const float& width() const { return width_; }
   const pat::GenericParticleCollection& particles() const { return particles_; }
+  const GenericParticleRefCollection& particlesRef() const { return particlesRef_; }
   const bool useSource() const { return !token_source_.isUninitialized(); }
   
   template <class T>
@@ -152,6 +148,7 @@ class ParticleDaughter {
   void clear(std::vector<T>& v) { std::vector<T>().swap(v); };
 
   pat::GenericParticleCollection particles_;
+  GenericParticleRefCollection particlesRef_;
 
  private:
   template <class T>
@@ -198,15 +195,16 @@ class ParticleFitter {
   typedef std::tuple<float, float, float, size_t, bool> VertexTuple;
   typedef std::tuple<float, float, float, float, signed char> ParticleTuple;
   typedef std::tuple<KinParColl, TransTrackColl, std::map<ParticleTuple, size_t> > ParticleInfo;
+  struct ParticleTupleHash { size_t operator()(const ParticleTuple& x) const { return boost::hash_value(x); } };
 
   const reco::VertexCollection& vertices() const { return vertices_; };
-  const pat::GenericParticleCollection& particles() const { return candidates_; };
-  const pat::GenericParticleCollection& daughters() const { return particles_; };
+  const pat::GenericParticleCollection& candidates() const { return candidates_; };
+  const pat::GenericParticleCollection& daughters() const { return daughterColl_; };
   const bool hasNoDaughters() const { return daughters_.empty(); };
 
   reco::VertexRef getVertexRef(const reco::Vertex& vertex);
   math::XYZTLorentzVector getP4(const GlobalVector& p, const double& m);
-  pat::GenericParticleRef addParticle(const pat::GenericParticle& particle);
+  pat::GenericParticleRef addDaughter(const pat::GenericParticleRef& daughter);
   void matchPrimaryVertex(pat::GenericParticle& cand, const TransTrackColl& tracks={}, FreeTrajectoryState fts={}, const double& thr=1.E-9);
   RefCountedKinematicTree fitVertex(const ParticleInfo& parInfo, const int& fitAlgo, GlobalPoint decP, const reco::Vertex& priVtx={});
   RefCountedKinematicTree fitVertex(const ParticleInfo& parInfo, const int& fitAlgo);
@@ -218,12 +216,12 @@ class ParticleFitter {
   void getNTracks(const edm::Event& iEvent);
   void addParticles(ParticleDaughter& d, const edm::Event& iEvent);
   void fillDaughters(const edm::Event& iEvent, const edm::EventSetup& iSetup);
-  bool isUniqueDaughter(ParticleSet& set, const pat::GenericParticle& dau);
+  bool isUniqueDaughter(ParticleRefSet& set, const pat::GenericParticleRef& dau);
   void makeCandidates();
-  void swapDaughters(DoubleMap& swapDauColls, const pat::GenericParticle& cand, const pat::GenericParticleCollection& dauColl);
+  void swapDaughters(DoubleMap& swapDauColls, const pat::GenericParticle& cand, const GenericParticleRefCollection& dauColl);
   void setBestMass(pat::GenericParticle& cand, const DoubleMap& swapDauColls);
   void addSwapCandidates(pat::GenericParticleCollection& swapCandColl, const pat::GenericParticle& cand, const DoubleMap& swapDauColls);
-  bool fitCandidate(pat::GenericParticle& cand, const pat::GenericParticleCollection& dauColl);
+  bool fitCandidate(pat::GenericParticle& cand, const GenericParticleRefCollection& dauColl);
   void addExtraInfo(pat::GenericParticle& cand);
   void fitAll(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   void clear();
@@ -240,9 +238,10 @@ class ParticleFitter {
   reco::Vertex beamSpot2D_, vertex_;
   reco::VertexCollection vertices_, priVertices_;
   std::vector<ParticleDaughter> daughters_;
-  pat::GenericParticleCollection candidates_, particles_;
+  pat::GenericParticleCollection candidates_, daughterColl_;
   std::map<VertexTuple, reco::VertexRef> vertexRefMap_;
   std::map<ParticleTuple, pat::GenericParticleRef> particleRefMap_;
+  std::array<edm::ParameterSet, 6> algoConf_;
 
   reco::VertexRefProd vtxProd_;
   GenericParticleRefProd dauProd_;
@@ -260,11 +259,11 @@ class ParticleFitter {
   edm::EDGetTokenT<pat::JetCollection> token_jets_;
   edm::EDGetTokenT<reco::ConversionCollection> token_convPhotons_;
 
-  StringCutObjectSelector<pat::GenericParticle, true> preSelection_;
-  StringCutObjectSelector<pat::GenericParticle, true> preMassSelection_;
-  StringCutObjectSelector<pat::GenericParticle, true> pocaSelection_;
-  StringCutObjectSelector<pat::GenericParticle, true> postSelection_;
-  StringCutObjectSelector<pat::GenericParticle, true> finalSelection_;
+  StringCutObjectSelector<pat::GenericParticle, false> preSelection_;
+  StringCutObjectSelector<pat::GenericParticle, false> preMassSelection_;
+  StringCutObjectSelector<pat::GenericParticle, false> pocaSelection_;
+  StringCutObjectSelector<pat::GenericParticle, false> postSelection_;
+  StringCutObjectSelector<pat::GenericParticle, false> finalSelection_;
 };
 
 

@@ -44,22 +44,23 @@ ParticleProducer::~ParticleProducer()
 // producer method
 void ParticleProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  pat::GenericParticleCollection particles;
+  const pat::GenericParticleCollection* candidates(0);
   // set primary vertex
   fitter_.setVtxProd(iEvent.getRefBeforePut<reco::VertexCollection>("vertices"));
   fitter_.setVertex(iEvent);
-  // extract particles
+  // extract candidates
   if (fitter_.hasNoDaughters()) {
-    // consider particle as daughter
+    // consider candidates as daughter
+    daughter_.init(iSetup);
     fitter_.addParticles(daughter_, iEvent);
-    particles = daughter_.particles();
+    candidates = &daughter_.particles();
   }
   else {
     // set daughters product
     fitter_.setDauProd(iEvent.getRefBeforePut<pat::GenericParticleCollection>("daughters"));
     // fit particles
     fitter_.fitAll(iEvent, iSetup);
-    particles = fitter_.particles();
+    candidates = &fitter_.candidates();
   }
   // store daughters
   if (!fitter_.hasNoDaughters()) {
@@ -74,7 +75,7 @@ void ParticleProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
     iEvent.put(std::move(vertices), "vertices");
   }
   // store particles
-  auto output = std::make_unique<pat::GenericParticleCollection>(particles);
+  auto output = std::make_unique<pat::GenericParticleCollection>(*candidates);
   output->shrink_to_fit();
   iEvent.put(std::move(output));
   // clear

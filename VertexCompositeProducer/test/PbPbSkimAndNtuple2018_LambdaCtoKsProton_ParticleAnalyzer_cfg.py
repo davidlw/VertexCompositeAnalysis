@@ -20,7 +20,7 @@ process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring('file:output_numEvent100.root'),
 )
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(4))
 
 # Set the global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
@@ -96,10 +96,10 @@ process.kShort = generalParticles.clone(
     width = cms.double(0.2),
 
     preSelection = cms.string(""),
-    pocaSelection = cms.string("pt >= 1.0 && abs(rapidity) < 2.4"),
+    pocaSelection = cms.string("pt >= 0.0 && abs(rapidity) < 2.4"),
     postSelection = cms.string(""),
     preMassSelection = cms.string(""),
-    finalSelection = cms.string( "abs(userFloat('angle3D'))<0.2 && abs(userFloat('lVtxSig'))>2.5 && cos(userFloat('angle3D'))>0.99999"),
+    finalSelection = cms.string( "abs(userFloat('angle3D'))<0.2 && abs(userFloat('lVtxSig'))>2.5"),
 
     dEdxInputs = cms.vstring('dedxHarmonic2', 'dedxPixelHarmonic2'),
 
@@ -110,27 +110,20 @@ process.kShort = generalParticles.clone(
               "pt>0.4 && abs(eta)<2.4"
               "&& quality('loose')"" && ptError/pt<0.1"
               "&& normalizedChi2<7.0"
-              "&& (normalizedChi2/hitPattern.trackerLayersWithMeasurement)<0.18"
-              "&& numberOfValidHits >=4"),
-              finalSelection = cms.string( "(track.algo!=6 || userFloat('mva')>=0.98)")
+              "&& numberOfValidHits >=4")
             ),
         cms.PSet(pdgId = cms.int32(211), charge = cms.int32(+1),
               selection = cms.string(
               "pt>0.4 && abs(eta)<2.4"
               "&& quality('loose')"" && ptError/pt<0.1"
               "&& normalizedChi2<7.0"
-              "&& (normalizedChi2/hitPattern.trackerLayersWithMeasurement)<0.18"
-              "&& numberOfValidHits >=4"),
-              finalSelection = cms.string( "(track.algo!=6 || userFloat('mva')>=0.98)")
+              "&& numberOfValidHits >=4")
             ),
     ]),
 )
-process.kShort.mva = cms.InputTag("generalTracks","MVAValues") ###cesar:to change iter6 tracking mva cut
-
 process.LambdaC = generalParticles.clone(
     pdgId = cms.int32(4122),
     doSwap = cms.bool(False),
-    preSelection = cms.string("pt>5.0 && mass < 2.4 && mass>2.1"),
     preMassSelection = cms.string("abs(charge)==1"),
     finalSelection = cms.string(''),
 
@@ -143,14 +136,10 @@ process.LambdaC = generalParticles.clone(
           selection = cms.string("pt>0.4 && abs(eta)<2.4"
               "&& quality('highPurity') && ptError/pt<0.1"
               "&& normalizedChi2<7.0"
-              "&& (normalizedChi2/hitPattern.trackerLayersWithMeasurement)<0.18"
               "&& numberOfValidHits >=11"),
-            finalSelection = cms.string("abs(userFloat('dzSig')) < 3 && abs(userFloat('dxySig')) < 3"
-              "&& (track.algo!=6 || userFloat('mva')>=0.98)"
-            )),
+          finalSelection = cms.string("abs(userFloat('dzSig')) < 3 && abs(userFloat('dxySig')) < 3")),
     ]),
 )
-process.LambdaC.mva = cms.InputTag("generalTracks","MVAValues") ###cesar:to change iter6 tracking mva cut
 
 # Add PbPb collision event selection
 process.load("VertexCompositeAnalysis.VertexCompositeProducer.OfflinePrimaryVerticesRecovery_cfi")
