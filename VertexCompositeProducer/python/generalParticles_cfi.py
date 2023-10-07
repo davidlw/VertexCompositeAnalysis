@@ -3,6 +3,7 @@ import FWCore.ParameterSet.Config as cms
 generalParticles = cms.EDProducer("ParticleProducer",
 
     pdgId = cms.int32(0),
+    width = cms.double(-1),
     doSwap = cms.bool(False),
     vtxSortByTrkSize = cms.bool(True),
 
@@ -14,9 +15,7 @@ generalParticles = cms.EDProducer("ParticleProducer",
     finalSelection = cms.string(""),
 
     # daughter information
-    daughterInfo = cms.VPSet([
-        cms.PSet(pdgId = cms.int32(0), charge = cms.int32(0), selection = cms.string("")),
-    ]),
+    daughterInfo = cms.VPSet(),
 
     # general settingss
     fitAlgo = cms.vuint32([0]),

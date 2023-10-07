@@ -9,6 +9,7 @@ particleAna = cms.EDAnalyzer('ParticleAnalyzer',
   nTracksVMap = cms.untracked.InputTag("generalParticles:nTracks"),
 
   # trigger information
+  stageL1Trigger = cms.uint32(2),
   triggerResults = cms.untracked.InputTag("TriggerResults::HLT"),
   triggerEvent   = cms.untracked.InputTag("hltTriggerSummaryAOD::HLT"),
   triggerInfo = cms.untracked.VPSet([

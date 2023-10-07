@@ -9,7 +9,10 @@
 <use name="DataFormats/HLTReco"/>
 <use name="TrackingTools/TransientTrack"/>
 <use name="TrackingTools/IPTools"/>
-<use name="RecoHI/HiCentralityAlgos"/>
+<use name="DataFormats/HeavyIonEvent"/>
+<use name="MagneticField/Records"/>
+<use name="CondFormats/GBRForest"/>
+<use name="SimDataFormats/GeneratorProducts"/>
 <use name="HLTrigger/HLTcore"/>
 <use name="heppdt"/>
 <flags EDM_PLUGIN="1"/>

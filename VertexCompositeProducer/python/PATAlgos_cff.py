@@ -30,6 +30,7 @@ def doPATMuons(process):
         embedPFCandidate = cms.bool(False),
         embedPfEcalEnergy = cms.bool(False),
         # extra information
+        addInverseBeta = cms.bool(False),
         addEfficiencies = cms.bool(False),
         addResolutions = cms.bool(False),
         userIsolation = cms.PSet(),
@@ -44,6 +45,49 @@ def doPATMuons(process):
 
     # Make a sequence
     process.patMuonSequence = cms.Sequence( process.patMuons )
+
+
+def doPATElectrons(process):
+    # Check if sequence already ran
+    if hasattr(process, 'patElectrons'): return
+
+    # Make PAT Electrons
+    from PhysicsTools.PatAlgos.producersLayer1.electronProducer_cfi import patElectrons
+    process.patElectrons = patElectrons.clone(
+        electronSource = cms.InputTag('lowPtGsfElectrons'),
+        # track information
+        embedTrack                  = cms.bool(True),
+        embedGsfElectronCore        = cms.bool(True),
+        embedGsfTrack               = cms.bool(True),
+        embedSuperCluster           = cms.bool(True),
+        embedSeedCluster            = cms.bool(True),
+        embedBasicClusters          = cms.bool(True),
+        embedPreshowerClusters      = cms.bool(False),
+        embedRecHits                = cms.bool(False),
+        # high level information
+        embedHighLevelSelection = cms.bool(False),
+        # gen information
+        addGenMatch = cms.bool(False),
+        embedGenMatch = cms.bool(False),
+        # PF information
+        embedPflowSuperCluster      = cms.bool(False),
+        embedPflowBasicClusters     = cms.bool(False),
+        embedPflowPreshowerClusters = cms.bool(False),
+        embedPFCandidate            = cms.bool(False),
+        # extra information
+        addMVAVariables         = cms.bool(False),
+        isoDeposits             = cms.PSet(),
+        isolationValues         = cms.PSet(),
+        isolationValuesNoPFId   = cms.PSet(),
+    )
+
+    patElectrons.userData.userInts.src    = []
+    patElectrons.userData.userFloats.src  = []
+    patElectrons.userData.userCands.src   = []
+    patElectrons.userData.userClasses.src = []
+
+    # Make a sequence
+    process.patElectronSequence = cms.Sequence( process.patElectrons )
 
 
 def changeToMiniAOD(process):

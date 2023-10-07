@@ -18,7 +18,7 @@
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/Run.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -60,7 +60,7 @@
 // class decleration
 //
 
-class EventInfoTreeProducer : public edm::EDAnalyzer {
+class EventInfoTreeProducer : public edm::one::EDAnalyzer<edm::one::WatchRuns> {
 public:
   explicit EventInfoTreeProducer(const edm::ParameterSet&);
   ~EventInfoTreeProducer();
@@ -68,6 +68,7 @@ public:
 private:
   virtual void beginJob();
   virtual void beginRun(const edm::Run&, const edm::EventSetup&);
+  virtual void endRun(const edm::Run&, const edm::EventSetup&) {};
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
   virtual void fillRECO(const edm::Event&, const edm::EventSetup&);
   virtual void endJob() ;
@@ -84,7 +85,7 @@ private:
   uint  runNb;
   uint  eventNb;
   uint  lsNb;
-  short trigPrescale[MAXTRG];
+  float trigPrescale[MAXTRG];
   short centrality;
   int   Ntrkoffline;
   int   NtrkHP;
@@ -230,7 +231,7 @@ EventInfoTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSetup&
       std::vector<ushort> trgIdxFound;
       for(ushort trgIdx=0; trgIdx<triggerNames.size(); trgIdx++)
       {
-        if(triggerNames.triggerName(trgIdx).find(trigName)!=std::string::npos && triggerResults->wasrun(trgIdx)) { trgIdxFound.push_back(trgIdx); }
+        if(triggerNames.triggerName(trgIdx).find(trigName)!=std::string::npos && triggerResults->wasrun(trgIdx)) { trgIdxFound.emplace_back(trgIdx); }
       }
       short triggerIndex = -1;
       if(trgIdxFound.size()>1)
@@ -244,10 +245,10 @@ EventInfoTreeProducer::fillRECO(const edm::Event& iEvent, const edm::EventSetup&
       bool isTriggerFired = false;
       if(triggerResults->accept(triggerIndex)) isTriggerFired = true;
       //Get the trigger prescale
-      int prescaleValue = -1;
+      float prescaleValue = -1;
       if(hltPrescaleProvider_.hltConfigProvider().inited() && hltPrescaleProvider_.prescaleSet(iEvent,iSetup)>=0)
       {
-        const auto& presInfo = hltPrescaleProvider_.prescaleValuesInDetail(iEvent, iSetup, triggerNames.triggerName(triggerIndex));
+        const auto& presInfo = hltPrescaleProvider_.prescaleValuesInDetail<double>(iEvent, iSetup, triggerNames.triggerName(triggerIndex));
         const auto& hltPres = presInfo.second;
         const short& l1Pres = ((presInfo.first.size()==1) ? presInfo.first.at(0).second : ((presInfo.first.size()>1) ? 1 : -1));
         prescaleValue = hltPres*l1Pres;
@@ -373,7 +374,7 @@ EventInfoTreeProducer::initTree()
     EventInfoNtuple->Branch("ephfpSumW",&ephfpSumW,"ephfpSumW/F");
     EventInfoNtuple->Branch("ephfmSumW",&ephfmSumW,"ephfmSumW/F");
   }
-  EventInfoNtuple->Branch("trigPrescale",trigPrescale,Form("trigPrescale[%d]/S",NTRG_));
+  EventInfoNtuple->Branch("trigPrescale",trigPrescale,Form("trigPrescale[%d]/F",NTRG_));
   EventInfoNtuple->Branch("trigHLT",trigHLT,Form("trigHLT[%d]/O",NTRG_));
   EventInfoNtuple->Branch("evtSel",evtSel,Form("evtSel[%d]/O",NSEL_));
 }

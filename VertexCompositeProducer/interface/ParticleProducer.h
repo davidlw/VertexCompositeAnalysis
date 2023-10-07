@@ -19,7 +19,7 @@
 #define VertexCompositeAnalysis__Particle_PRODUCER_H
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDProducer.h"
+#include "FWCore/Framework/interface/one/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -28,7 +28,7 @@
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "VertexCompositeAnalysis/VertexCompositeProducer/interface/ParticleFitter.h"
 
-class ParticleProducer : public edm::EDProducer {
+class ParticleProducer : public edm::one::EDProducer<> {
 public:
   explicit ParticleProducer(const edm::ParameterSet&);
   ~ParticleProducer();

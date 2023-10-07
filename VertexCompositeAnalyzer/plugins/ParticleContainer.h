@@ -366,10 +366,9 @@ class ParticleContainer
 class TriggerInfo
 {
  public:
-  TriggerInfo() : triggerIndex_(-1), filterIndex_(-1), minN_(0), hltPDs_(0),
-                  validPrescale_(0), validLumi_(0), hltPrescale_(0), l1Prescale_(0),
-                  triggerName_(""), filterName_(""), triggerBit_({}), filterObjects_({}),
-                  recordLumi_(0), totalLumi_(0)
+  TriggerInfo() : triggerIndex_(-1), filterIndex_(-1), minN_(0), validPrescale_(0),
+                  validLumi_(0), hltPrescale_(0), l1Prescale_(0), triggerName_(""),
+                  filterName_(""), triggerBit_({}), filterObjects_({}), recordLumi_(0), totalLumi_(0)
   {
   };
   ~TriggerInfo() {};
@@ -379,9 +378,8 @@ class TriggerInfo
   const int&                  filterIndex()   const { return filterIndex_;   }
   const int&                  minN()          const { return minN_;          }
   const bool&                 validPrescale() const { return validPrescale_; }
-  const UShort_t&             hltPrescale()   const { return hltPrescale_;   }
-  const UShort_t&             l1Prescale()    const { return l1Prescale_;    }
-  const UChar_t&              hltPDs()        const { return hltPDs_;        }
+  const float&                hltPrescale()   const { return hltPrescale_;   }
+  const float&                l1Prescale()    const { return l1Prescale_;    }
   const std::string&          triggerName()   const { return triggerName_;   }
   const std::string&          filterName()    const { return filterName_;    }
   const std::array<bool,4>&   triggerBit()    const { return triggerBit_;    }
@@ -394,8 +392,8 @@ class TriggerInfo
   // setters
   void setInfo(const int& triggerIndex, const int& filterIndex,
                const std::string& triggerName, const std::string& filterName, const int& minN,
-               const bool& validPrescale, const UShort_t& hltPrescale, const UShort_t& l1Prescale,
-               const UChar_t& hltPDs, const std::array<bool,4>& bit, const TriggerIndexMap& filterObjects)
+               const bool& validPrescale, const float& hltPrescale, const float& l1Prescale,
+               const std::array<bool,4>& bit, const TriggerIndexMap& filterObjects)
   {
     triggerIndex_  = triggerIndex;
     filterIndex_   = filterIndex;
@@ -405,12 +403,11 @@ class TriggerInfo
     validPrescale_ = validPrescale;
     hltPrescale_   = hltPrescale;
     l1Prescale_    = l1Prescale;
-    hltPDs_        = hltPDs;
     triggerBit_    = bit;
     filterObjects_ = filterObjects;
   }
 
-  void setLumiInfo(const double& recordLumi, const double& totalLumi)
+  void setLumiInfo(const float& recordLumi, const float& totalLumi)
   {
     recordLumi_ = recordLumi;
     totalLumi_  = totalLumi;
@@ -419,9 +416,8 @@ class TriggerInfo
 
  private:
   int triggerIndex_, filterIndex_, minN_;
-  UChar_t hltPDs_;
   bool validPrescale_, validLumi_;
-  UShort_t hltPrescale_, l1Prescale_;
+  float hltPrescale_, l1Prescale_;
   std::string triggerName_, filterName_;
   std::array<bool, 4> triggerBit_;
   TriggerIndexMap filterObjects_;

@@ -9,4 +9,5 @@
 <use name="CommonTools/CandUtils"/>
 <use name="MuonAnalysis/MuonAssociators"/>
 <use name="heppdt"/>
+<use name="CondFormats/GBRForest"/>
 <flags EDM_PLUGIN="1"/>

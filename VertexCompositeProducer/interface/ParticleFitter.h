@@ -60,7 +60,7 @@
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 #include "TrackingTools/PatternTools/interface/ClosestApproachInRPhi.h"
 
-#include "MuonAnalysis/MuonAssociators/interface/PropagateToMuon.h"
+#include "MuonAnalysis/MuonAssociators/interface/PropagateToMuonSetup.h"
 #include "CommonTools/UtilAlgos/interface/StringCutObjectSelector.h"
 #include "HepPDT/ParticleID.hh"
 #include "boost/functional/hash.hpp"
@@ -111,10 +111,11 @@ const std::map<uint, double> MASS_ = {
   {0, -1.}, // default
   {11, 0.000511}, {13, 0.10565837}, {15, 1.77686}, // leptons
   {23, 91.188}, {24, 80.38}, // bosons
-  {211, 0.13957018}, {310, 0.497614}, {321, 0.493677}, {333, 1.019445}, // light and strange mesons
+  {113, 0.77526}, {211, 0.13957018}, {310, 0.497614}, {321, 0.493677}, {333, 1.019445}, // light and strange mesons
   {411, 1.86962}, {421, 1.86484}, {431, 1.96847}, {511, 5.27929}, // charmed and bottom mesons
   {443, 3.096900}, {100443, 3.68609}, {553, 9.4603}, {100553, 10.0233}, {200553, 10.3552}, // quarkonia
-  {2212, 0.938272013}, {3122, 1.115683}, {3312, 1.32171}, {3334, 1.67245}, {4122, 2.28646} // baryons
+  {2212, 0.938272013}, {3122, 1.115683}, {3312, 1.32171}, {3334, 1.67245}, {4122, 2.28646}, // baryons
+  {3872, 3.87169} // exotic hadrons
 };
 const std::map<uint, float> WIDTH_ = {{211, 3.5E-7f}, {321, 1.6E-5f}, {2212, 1.6E-5f}};
 
@@ -171,8 +172,8 @@ class ParticleDaughter {
   std::string selection_;
   std::string finalSelection_;
 
-  edm::ParameterSet conf_;
-  PropagateToMuon* propToMuon_;
+  PropagateToMuonSetup* propToMuonSetup_;
+  PropagateToMuon propToMuon_;
 
   edm::EDGetTokenT<pat::GenericParticleCollection> token_source_;
   edm::EDGetTokenT<std::vector<float> >            token_mva_;
@@ -246,6 +247,7 @@ class ParticleFitter {
   reco::VertexRefProd vtxProd_;
   GenericParticleRefProd dauProd_;
 
+  edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> bField_esToken_;
   edm::ESHandle<MagneticField> bFieldHandle_;
 
   edm::EDGetTokenT<reco::BeamSpot> token_beamSpot_;
