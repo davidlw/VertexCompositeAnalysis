@@ -21,7 +21,7 @@ def doPATMuons(process):
         embedTpfmsMuon = cms.bool(False),
         embedDytMuon = cms.bool(False),
         # high level information
-        embedHighLevelSelection = cms.bool(False),
+        embedHighLevelSelection = cms.bool(True),
         # gen information
         addGenMatch = cms.bool(False),
         embedGenMatch = cms.bool(False),

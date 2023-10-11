@@ -687,48 +687,55 @@ ParticleAnalyzer::fillEventInfo(const edm::Event& iEvent)
   const auto& zdcDigis = iEvent.getHandle(tok_zdcDigiSrc_);
   if (zdcDigis.isValid())
   {
-    std::array<std::array<float, 24>, 3> chargefC;
-    for (size_t i=0; i<24; i++) {
-      const auto& digi = static_cast<const QIE10DataFrame>((*zdcDigis)[i]);
-      for (int j=1; j<3; j++)
-        chargefC[j][i] = QWAna::ZDC2018::QIE10_regular_fC[digi[j].adc()][digi[j].capid()];
+    float ZDCMinus(-1), ZDCPlus(-1);
+    if (!zdcDigis->empty()) {
+      std::array<std::array<float, 24>, 3> chargefC{{}};
+      for (size_t i=0; i<24; i++) {
+        const auto& digi = static_cast<const QIE10DataFrame>((*zdcDigis)[i]);
+        for (int j=1; j<3; j++)
+          chargefC[j][i] = QWAna::ZDC2018::QIE10_regular_fC[digi[j].adc()][digi[j].capid()];
+      }
+      // Very preliminary calibration
+      float sumcEMP(0), sumcEMN(0), sumcHDP(0), sumcHDN(0);
+      // 2023 EM: idet = 0-5 and 12-16
+      for (size_t im=0; im<5; im++) {
+        const auto& ip = im + 12;
+        sumcEMN += (chargefC[2][im] - chargefC[1][im]);
+        sumcEMP += (chargefC[2][ip] - chargefC[1][ip]);
+      }
+      // 2023 HAD: idet = 8-11 and 20-23
+      for (size_t im=8; im<12; im++) {
+        const auto& ip = im + 12;
+        sumcHDN += (chargefC[2][im] - chargefC[1][im]);
+        sumcHDP += (chargefC[2][ip] - chargefC[1][ip]);
+      }
+      ZDCMinus = (sumcEMN * 0.1 + sumcHDN) * 0.5031;
+      ZDCPlus  = (sumcEMP * 0.1 + sumcHDP) * 0.9397;
     }
-    // Very preliminary calibration
-    float sumcEMP(0), sumcEMN(0), sumcHDP(0), sumcHDN(0);
-    // 2023 EM: idet = 0-5 and 12-16
-    for (size_t im=0; im<5; im++) {
-      const auto& ip = im + 12;
-      sumcEMN += (chargefC[2][im] - chargefC[1][im]);
-      sumcEMP += (chargefC[2][ip] - chargefC[1][ip]);
-    }
-    // 2023 HAD: idet = 8-11 and 20-23
-    for (size_t im=8; im<12; im++) {
-      const auto& ip = im + 12;
-      sumcHDN += (chargefC[2][im] - chargefC[1][im]);
-      sumcHDP += (chargefC[2][ip] - chargefC[1][ip]);
-    }
-    eventInfo_.add("ZDCMinus", (sumcEMN * 0.1 + sumcHDN) * 0.5031);
-    eventInfo_.add("ZDCPlus",  (sumcEMP * 0.1 + sumcHDP) * 0.9397);
+    eventInfo_.add("ZDCMinus", ZDCMinus);
+    eventInfo_.add("ZDCPlus",  ZDCPlus);
   }
 
   // fill PF information
+  float PFHFmaxEPlus(-1), PFHFmaxEMinus(-1), PFHFsumETPlus(0), PFHFsumETMinus(0);
   const auto& pfCandidates = iEvent.getHandle(tok_pfCandSrc_);
   if (pfCandidates.isValid())
   {
-    float PFHFmaxETPlus(-1), PFHFmaxETMinus(-1), PFHFsumETPlus(-1), PFHFsumETMinus(-1);
+    //float PFHFmaxEPlus(-1), PFHFmaxEMinus(-1), PFHFsumETPlus(0), PFHFsumETMinus(0);
     for (const auto& pf : *pfCandidates) {
+      if (pf.particleId() < 6) continue;
+      (pf.eta() > 0 ? PFHFsumETPlus : PFHFsumETMinus) += pf.pt();
       const auto aeta = std::abs(pf.eta());
-      if (pf.particleId() < 6 || aeta < 3.0 || aeta > 6.0) continue;
-      if (pf.eta() > 0 && PFHFmaxETPlus < pf.energy())
-        PFHFmaxETPlus = pf.energy();
-      if (pf.eta() < 0 && PFHFmaxETMinus < pf.energy())
-        PFHFmaxETMinus = pf.energy();
-      (pf.eta() > 0 ? PFHFsumETPlus : PFHFsumETMinus) += pf.energy();
+      if (aeta < 3.0 || aeta > 6.0) continue;
+      if (pf.eta() > 0 && PFHFmaxEPlus < pf.energy())
+        PFHFmaxEPlus = pf.energy();
+      if (pf.eta() < 0 && PFHFmaxEMinus < pf.energy())
+        PFHFmaxEMinus = pf.energy();
     }
     eventInfo_.add("PFHFsumETPlus", PFHFsumETPlus);
     eventInfo_.add("PFHFsumETMinus", PFHFsumETMinus);
-    eventInfo_.add("PFHFmaxETPlus", PFHFmaxETPlus);
-    eventInfo_.add("PFHFmaxETMinus", PFHFmaxETMinus);
+    eventInfo_.add("PFHFmaxEPlus", PFHFmaxEPlus);
+    eventInfo_.add("PFHFmaxEMinus", PFHFmaxEMinus);
   }
 }
 
