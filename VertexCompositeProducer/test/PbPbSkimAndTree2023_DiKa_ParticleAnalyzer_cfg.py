@@ -16,7 +16,7 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 
 # Define the input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring("file:/eos/cms/store/group/phys_heavyions/anstahll/CERN/PbPb2023/SKIM/HIGHBETASTAR/SKIM_AOD_HIGHBETASTAR_HIForward0_HIRun2023A_2023_10_10/reco_RAW2DIGI_L1Reco_RECO_HIGHBETASTAR_83.root"),
+    fileNames = cms.untracked.vstring("file:/eos/cms/store/group/phys_heavyions/anstahll/CERN/PbPb2023/SKIM/HBS/HIForward0/SKIM_AOD_HIGHBETASTAR_HIForward0_HIRun2023A_2023_10_13/231013_081452/0000/reco_RAW2DIGI_L1Reco_RECO_HIGHBETASTAR_73.root"),
 )
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
@@ -53,8 +53,8 @@ process.cent_seq = cms.Sequence(process.centralityBin)
 from VertexCompositeAnalysis.VertexCompositeProducer.generalParticles_cff import generalParticles
 
 # DiKa selection
-kaonSelection = cms.string("(pt > 0.0 && abs(eta) < 3.0) && quality(\"highPurity\")")
-kaonFinalSelection = cms.string("abs(userFloat(\"dzSig\"))<3.0 && abs(userFloat(\"dxySig\"))<3.0")
+kaonSelection = cms.string("")#(pt > 0.0 && abs(eta) < 3.0) && quality(\"highPurity\")")
+kaonFinalSelection = cms.string("")#abs(userFloat(\"dzSig\"))<3.0 && abs(userFloat(\"dxySig\"))<3.0")
 diKaSelection = cms.string("charge==0")
 process.diKa = generalParticles.clone(
     pdgId = cms.int32(333),
@@ -64,27 +64,31 @@ process.diKa = generalParticles.clone(
         cms.PSet(pdgId = cms.int32(321), charge = cms.int32(+1), selection = kaonSelection, finalSelection = kaonFinalSelection),
         cms.PSet(pdgId = cms.int32(321), charge = cms.int32(-1), selection = kaonSelection, finalSelection = kaonFinalSelection),
     ]),
+    dEdxInputs = cms.vstring('dedxHarmonic2', 'dedxPixelHarmonic2')
 )
 process.oneDiKa = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("diKa"), minNumber = cms.uint32(1))
 
 # Add diKa event selection
 process.twoTracks = cms.EDFilter("TrackCountFilter", src = cms.InputTag("generalTracks"), minNumber = cms.uint32(2))
+process.hpTracks = cms.EDFilter("TrackSelector", src = cms.InputTag("generalTracks"), cut = cms.string("quality(\"highPurity\")"))
+process.hpCands = cms.EDProducer("ChargedCandidateProducer", src = cms.InputTag("hpTracks"), particleType = cms.string('pi+'))
+process.maxTwoHPCands = cms.EDFilter("PATCandViewCountFilter", src = cms.InputTag("hpCands"), minNumber = cms.uint32(0), maxNumber = cms.uint32(2))
 process.goodTracks = cms.EDFilter("TrackSelector",
             src = cms.InputTag("generalTracks"),
             cut = kaonSelection,
             )
+process.twoGoodTracks = cms.EDFilter("TrackCountFilter", src = cms.InputTag("goodTracks"), minNumber = cms.uint32(2))
 process.goodKaons = cms.EDProducer("ChargedCandidateProducer",
             src = cms.InputTag("goodTracks"),
             particleType = cms.string('pi+')
             )
-process.maxTwoGoodKaons = cms.EDFilter("PATCandViewCountFilter", src = cms.InputTag("goodKaons"), minNumber = cms.uint32(0), maxNumber = cms.uint32(2))
 process.goodDiKaons = cms.EDProducer("CandViewShallowCloneCombiner",
             cut = diKaSelection,
             checkCharge = cms.bool(False),
             decay = cms.string('goodKaons@+ goodKaons@-')
             )
 process.oneGoodDiKa = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("goodDiKaons"), minNumber = cms.uint32(1))
-process.diKaEvtSel = cms.Sequence(process.twoTracks * process.goodTracks * process.goodKaons * process.maxTwoGoodKaons * process.goodDiKaons * process.oneGoodDiKa)
+process.diKaEvtSel = cms.Sequence(process.twoTracks * process.hpTracks * process.hpCands * process.maxTwoHPCands * process.goodTracks * process.twoGoodTracks * process.goodKaons * process.goodDiKaons * process.oneGoodDiKa)
 
 # Add trigger selection
 import HLTrigger.HLTfilters.hltHighLevel_cfi
@@ -128,31 +132,18 @@ process.diKaAna = particleAna.clone(
       'Flag_colEvtSel',
       'Flag_hfCoincFilter2Th4',
       'Flag_primaryVertexFilter',
-      'Flag_hfPosFilterNTh3',
-      'Flag_hfNegFilterNTh3',
-      'Flag_hfPosFilterNTh4',
-      'Flag_hfNegFilterNTh4',
-      'Flag_hfPosFilterNTh5',
-      'Flag_hfNegFilterNTh5',
-      'Flag_hfPosFilterNTh6',
-      'Flag_hfNegFilterNTh6',
-      'Flag_hfPosFilterNTh7',
-      'Flag_hfNegFilterNTh7',
-      'Flag_hfPosFilterNTh8',
-      'Flag_hfNegFilterNTh8',
-      'Flag_hfPosFilterNTh7p3',
-      'Flag_hfNegFilterNTh7p6'
   ),
   triggerInfo = cms.untracked.VPSet([
+    # UPC low pT triggers
+    cms.PSet(path = cms.string('HLT_HIUPC_ZeroBias_SinglePixelTrackLowPt_MaxPixelCluster400_v*')),
+    cms.PSet(path = cms.string('HLT_HIUPC_ZDC1nOR_SinglePixelTrackLowPt_MaxPixelCluster400_v*')),
     # UPC zero bias triggers
     cms.PSet(path = cms.string('HLT_HIZeroBias_v*')),
     cms.PSet(path = cms.string('HLT_HIZeroBias_HighRate_v*')),
     cms.PSet(path = cms.string('HLT_HIUPC_ZeroBias_SinglePixelTrack_MaxPixelTrack_v*')),
-    cms.PSet(path = cms.string('HLT_HIUPC_ZeroBias_SinglePixelTrackLowPt_MaxPixelCluster400_v*')),
     cms.PSet(path = cms.string('HLT_HIUPC_ZeroBias_MinPixelCluster400_MaxPixelCluster10000_v*')),
     # UPC ZDC triggers
     cms.PSet(path = cms.string('HLT_HIUPC_ZDC1nOR_SinglePixelTrack_MaxPixelTrack_v*')),
-    cms.PSet(path = cms.string('HLT_HIUPC_ZDC1nOR_SinglePixelTrackLowPt_MaxPixelCluster400_v*')),
     cms.PSet(path = cms.string('HLT_HIUPC_ZDC1nOR_MinPixelCluster400_MaxPixelCluster10000_v*')),
   ]),
 )
@@ -172,28 +163,8 @@ process.schedule = cms.Schedule(
 process.Flag_colEvtSel = cms.Path(process.eventFilter_HM * process.colEvtSel)
 process.Flag_hfCoincFilter2Th4 = cms.Path(process.eventFilter_HM * process.hfCoincFilter2Th4)
 process.Flag_primaryVertexFilter = cms.Path(process.eventFilter_HM * process.primaryVertexFilter)
-process.Flag_hfPosFilterNTh3 = cms.Path(process.eventFilter_HM * process.hfPosFilterNTh3_seq)
-process.Flag_hfPosFilterNTh4 = cms.Path(process.eventFilter_HM * process.hfPosFilterNTh4_seq)
-process.Flag_hfPosFilterNTh5 = cms.Path(process.eventFilter_HM * process.hfPosFilterNTh5_seq)
-process.Flag_hfPosFilterNTh6 = cms.Path(process.eventFilter_HM * process.hfPosFilterNTh6_seq)
-process.Flag_hfPosFilterNTh7 = cms.Path(process.eventFilter_HM * process.hfPosFilterNTh7_seq)
-process.Flag_hfPosFilterTh8 = cms.Path(process.eventFilter_HM * process.hfPosFilterTh8_seq)
-process.Flag_hfPosFilterNTh8 = cms.Path(process.eventFilter_HM * process.hfPosFilterNTh8_seq)
-process.Flag_hfPosFilterNTh7p3 = cms.Path(process.eventFilter_HM * process.hfPosFilterNTh7p3_seq)
-process.Flag_hfPosFilterNTh200 = cms.Path(process.eventFilter_HM * process.hfPosFilterNTh200_seq)
-process.Flag_hfNegFilterNTh3 = cms.Path(process.eventFilter_HM * process.hfNegFilterNTh3_seq)
-process.Flag_hfNegFilterNTh4 = cms.Path(process.eventFilter_HM * process.hfNegFilterNTh4_seq)
-process.Flag_hfNegFilterNTh5 = cms.Path(process.eventFilter_HM * process.hfNegFilterNTh5_seq)
-process.Flag_hfNegFilterNTh6 = cms.Path(process.eventFilter_HM * process.hfNegFilterNTh6_seq)
-process.Flag_hfNegFilterNTh7 = cms.Path(process.eventFilter_HM * process.hfNegFilterNTh7_seq)
-process.Flag_hfNegFilterTh8 = cms.Path(process.eventFilter_HM * process.hfNegFilterTh8_seq)
-process.Flag_hfNegFilterNTh8 = cms.Path(process.eventFilter_HM * process.hfNegFilterNTh8_seq)
-process.Flag_hfNegFilterNTh7p6 = cms.Path(process.eventFilter_HM * process.hfNegFilterNTh7p6_seq)
-process.Flag_hfNegFilterNTh200 = cms.Path(process.eventFilter_HM * process.hfNegFilterNTh200_seq)
 
-eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter2Th4 , process.Flag_primaryVertexFilter, process.Flag_hfPosFilterNTh3, process.Flag_hfNegFilterNTh3,process.Flag_hfPosFilterNTh4,
-                     process.Flag_hfNegFilterNTh4, process.Flag_hfPosFilterNTh5, process.Flag_hfNegFilterNTh5, process.Flag_hfPosFilterNTh6, process.Flag_hfNegFilterNTh6, process.Flag_hfPosFilterNTh7, process.Flag_hfNegFilterNTh7,
-                     process.Flag_hfPosFilterTh8, process.Flag_hfPosFilterNTh8, process.Flag_hfNegFilterTh8, process.Flag_hfNegFilterNTh8, process.Flag_hfPosFilterNTh7p3, process.Flag_hfNegFilterNTh7p6 ]
+eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter2Th4 , process.Flag_primaryVertexFilter ]
 
 process.eventFilter_HM = cms.Sequence(
     process.hltFilter *
