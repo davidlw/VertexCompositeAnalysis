@@ -3,10 +3,12 @@
   <class name="pat::UserHolder<pat::Electron>" />
   <class name="pat::UserHolder<pat::Jet>" />
   <class name="pat::UserHolder<pat::Tau>" />
+  <class name="pat::UserHolder<pat::Photon>" />
   <class name="pat::UserHolder<reco::PFCandidate>" />
   <class name="pat::UserHolder<std::vector<math::XYZTLorentzVector> >" />
   <class name="pat::UserHolder<pat::GenericParticleRefVector>" />
   <class name="KinematicParametersError" />
   <class name="pat::UserHolder<KinematicParametersError>" />
   <class name="pat::UserHolder<reco::TrackRef>" />
+  <class name="pat::UserHolder<reco::Conversion>" />
 </lcgdict>

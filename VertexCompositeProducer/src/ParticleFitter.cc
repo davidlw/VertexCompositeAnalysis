@@ -22,13 +22,14 @@ ParticleFitter::ParticleFitter(const edm::ParameterSet& theParameters, edm::Cons
   finalSelection_(theParameters.getParameter<std::string>("finalSelection"))
 {
   // get candidate information
+  const auto pdgId = std::abs(pdgId_);
   if (theParameters.existsAs<double>("mass")) {
     mass_ = theParameters.getParameter<double>("mass");
   }
-  else if (MASS_.find(pdgId_)!=MASS_.end()) {
-    mass_ = MASS_.at(pdgId_);
+  else if (MASS_.find(pdgId)!=MASS_.end()) {
+    mass_ = MASS_.at(pdgId);
   }
-  else { throw std::logic_error(Form("[ERROR] No mass parameter provided for candidate with pdgId: %d", pdgId_)); }
+  else { mass_ = -1; }
   if (doSwap_ && mass_<0.) { throw std::logic_error("[ERROR] Can't swap with undefined input mass!"); }
   width_ = mass_*0.15;;
   if (theParameters.existsAs<double>("width")) {
@@ -196,6 +197,7 @@ pat::GenericParticleRef ParticleFitter::addDaughter(const pat::GenericParticleRe
   auto& ref = particleRefMap_[tuple];
   if (ref.isNonnull()) { return ref; }
   daughterColl_.emplace_back(p);
+  const auto dauIdx = daughterColl_.size() - 1;
   const auto& particle = daughterColl_.back();
   if (particle.hasUserData("daughters")) {
     auto& daughters = *const_cast<pat::GenericParticleRefVector*>(particle.userData<pat::GenericParticleRefVector>("daughters"));
@@ -208,7 +210,7 @@ pat::GenericParticleRef ParticleFitter::addDaughter(const pat::GenericParticleRe
     auto& priVtx = *const_cast<reco::VertexRef*>(particle.userData<reco::VertexRef>("primaryVertex"));
     priVtx = getVertexRef(*priVtx);
   }
-  ref = pat::GenericParticleRef(dauProd_, daughterColl_.size()-1);
+  ref = pat::GenericParticleRef(dauProd_, dauIdx);
   return ref;
 };
 
@@ -623,18 +625,7 @@ bool ParticleFitter::fitCandidate(pat::GenericParticle& cand, const GenericParti
   std::map<size_t, std::vector<size_t> > dauParIdx;
   for (const auto& d : daughters) {
     const auto& daughter = *dauColl[d.second];
-    if (d.first[0].first.isValid() && d.first[0].first.numberOfValidHits()>0) {
-      for (const auto& t : d.first) {
-        if (!t.first.isValid() || !t.first.impactPointTSCP().isValid()) return false;
-        float chi = 0., ndf = 0., width = daughter.userFloat("width");
-        std::get<0>(parInfo).emplace_back(KinematicParticleFactoryFromTransientTrack().particle(t.first, t.second, chi, ndf, width));
-        std::get<1>(parInfo).emplace_back(t.first);
-        const ParticleTuple tuple(t.first.track().px(), t.first.track().py(), t.first.track().pz(), 0, t.first.charge());
-        std::get<2>(parInfo)[tuple] = std::get<0>(parInfo).size()-1;
-        dauParIdx[d.second].emplace_back(std::get<0>(parInfo).size()-1);
-      }
-    }
-    else if (daughter.hasUserData("kinematicParametersError")) {
+    if (daughter.hasUserData("kinematicParametersError")) {
       const auto& kinError = *daughter.userData<KinematicParametersError>("kinematicParametersError");
       const auto& kinPars = KinematicParameters(daughter.vx(), daughter.vy(), daughter.vz(), daughter.px(), daughter.py(), daughter.pz(), daughter.mass());
       const auto& kinState = KinematicState(kinPars, kinError, daughter.charge(), magField);
@@ -644,6 +635,17 @@ bool ParticleFitter::fitCandidate(pat::GenericParticle& cand, const GenericParti
       const ParticleTuple tuple(daughter.px(), daughter.py(), daughter.pz(), 0, daughter.charge());
       std::get<2>(parInfo)[tuple] = std::get<0>(parInfo).size()-1;
       dauParIdx[d.second].emplace_back(std::get<0>(parInfo).size()-1);
+    }
+    else if (d.first[0].first.isValid() && d.first[0].first.numberOfValidHits()>0) {
+      for (const auto& t : d.first) {
+        if (!t.first.isValid() || !t.first.impactPointTSCP().isValid()) return false;
+        float chi = 0., ndf = 0., width = daughter.userFloat("width");
+        std::get<0>(parInfo).emplace_back(KinematicParticleFactoryFromTransientTrack().particle(t.first, t.second, chi, ndf, width));
+        std::get<1>(parInfo).emplace_back(t.first);
+        const ParticleTuple tuple(t.first.track().px(), t.first.track().py(), t.first.track().pz(), 0, t.first.charge());
+        std::get<2>(parInfo)[tuple] = std::get<0>(parInfo).size()-1;
+        dauParIdx[d.second].emplace_back(std::get<0>(parInfo).size()-1);
+      }
     }
   }
   if (dauParIdx.size()<2) return false;
@@ -775,7 +777,7 @@ ParticleDaughter::ParticleDaughter()
 {
   pdgId_ = 0;
   charge_ = -99;
-  mass_ = 0.;
+  mass_ = -1.;
   width_ = 0.;
   selection_ = "";
   finalSelection_ = "";
@@ -813,18 +815,18 @@ void ParticleDaughter::fillInfo(const edm::ParameterSet& pSet, const edm::Parame
   if (pSet.existsAs<int>("charge")) {
     charge_ = pSet.getParameter<int>("charge");
   }
+  const auto pdgId = std::abs(pdgId_);
   if (pSet.existsAs<double>("mass")) {
     mass_ = pSet.getParameter<double>("mass");
   }
-  else if (MASS_.find(pdgId_)!=MASS_.end()) {
-    mass_ = MASS_.at(pdgId_);
+  else if (MASS_.find(pdgId)!=MASS_.end()) {
+    mass_ = MASS_.at(pdgId);
   }
-  else { throw std::logic_error(Form("[ERROR] No mass parameter provided for daughter with pdgId: %d", pdgId_)); }
   if (pSet.existsAs<double>("width")) {
     width_ = pSet.getParameter<double>("width");
   }
-  else if (WIDTH_.find(pdgId_)!=WIDTH_.end()) {
-    width_ = WIDTH_.at(pdgId_);
+  else if (WIDTH_.find(pdgId)!=WIDTH_.end()) {
+    width_ = WIDTH_.at(pdgId);
   }
   else { width_ = mass_*1e-6; }
   if (pSet.existsAs<std::string>("selection")) {
@@ -845,7 +847,7 @@ void ParticleDaughter::fillInfo(const edm::ParameterSet& pSet, const edm::Parame
       tokens_dedx_.insert( std::make_pair(input, iC.consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag(input))));
     }
   }
-  if (std::abs(pdgId_)==13 && (pSet.existsAs<bool>("propToMuon") && pSet.getParameter<bool>("propToMuon"))) {
+  if (std::abs(pdgId)==13 && (pSet.existsAs<bool>("propToMuon") && pSet.getParameter<bool>("propToMuon"))) {
     edm::ParameterSet conf;
     conf.addParameter("useSimpleGeometry", (pSet.existsAs<bool>("useSimpleGeometry") ? pSet.getParameter<bool>("useSimpleGeometry") : true)); // default: true
     conf.addParameter("useTrack", (pSet.existsAs<std::string>("useTrack") ? pSet.getParameter<std::string>("useTrack") : "none")); // default: none
@@ -870,88 +872,78 @@ template <class T>
 void ParticleDaughter::addParticles(const edm::Event& event, const edm::EDGetTokenT<std::vector<T> >& token, const reco::Vertex& vertex, const bool embedInfo)
 {
   // extract input collections
-  edm::Handle<std::vector<T> > handle;
-  if (!token.isUninitialized()) event.getByToken(token, handle);
+  const auto& handle = event.getHandle(token);
   std::map<std::string, edm::Handle<edm::ValueMap<reco::DeDxData> > > dEdxMaps;
   for (const auto& tokenMap : tokens_dedx_) {
-    if (!tokenMap.second.isUninitialized()) {
-      edm::Handle<edm::ValueMap<reco::DeDxData> > dEdxMapTemp;
-      event.getByToken(tokenMap.second, dEdxMapTemp);
-      dEdxMaps.insert ( std::make_pair( tokenMap.first, dEdxMapTemp) );
-    }
+    dEdxMaps.emplace(tokenMap.first, event.getHandle(tokenMap.second));
   }
-  edm::Handle<std::vector<float> > mvaColl;
-  if (!token_mva_.isUninitialized()) event.getByToken(token_mva_, mvaColl);
+  const auto& mvaColl = event.getHandle(token_mva_);
   // set selections
   StringCutObjectSelector<T, true> selection(selection_);
   StringCutObjectSelector<pat::GenericParticle, true> finalSelection(finalSelection_);
   // add particles
-  if (handle.isValid()) {
-    ParticleMassSet particles;
-    for (size_t i=0; i<handle->size(); i++) {
-      const auto& p = edm::Ref<std::vector<T> >(handle, i);
-      if (!selection(*p)) continue;
-      pat::GenericParticle cand;
-      addInfo(cand, *p);
-      if (charge_!=-99 && cand.charge()!=charge_) continue;
-      cand.setPdgId(pdgId_);
-      cand.setStatus(1);
-      addData(cand, p, embedInfo);
-      if (cand.track().isNonnull()) {
-        const auto& trk = *cand.track();
-        const float dz = trk.dz(vertex.position());
-        const float dxy = trk.dxy(vertex.position());
-        const float dzerror  = std::sqrt(trk.dzError()*trk.dzError()+vertex.zError()*vertex.zError());
-        const float dxyerror = std::sqrt(trk.d0Error()*trk.d0Error()+vertex.xError()*vertex.yError());
-        cand.addUserFloat("dz", dz);
-        cand.addUserFloat("dxy", dxy);
-        cand.addUserFloat("dzSig", dz/dzerror);
-        cand.addUserFloat("dxySig", dxy/dxyerror);
-      }
-      else if (cand.charge()!=0) continue; // ignore if charged particle has no track
-      cand.addUserFloat("width", width_);
-      setDeDx(cand, dEdxMaps);
-      setMVA(cand, i, mvaColl);
-      if (finalSelection(cand)) {
-        particles.insert(cand);
-      }
+  ParticleMassSet particles;
+  for (size_t i=0; i<handle->size(); i++) {
+    const auto& p = edm::Ref<std::vector<T> >(handle, i);
+    if (!selection(*p)) continue;
+    pat::GenericParticle cand;
+    addInfo(cand, *p);
+    if (charge_!=-99 && cand.charge()!=charge_) continue;
+    cand.setPdgId(pdgId_);
+    cand.setStatus(1);
+    addData(cand, p, embedInfo);
+    if (cand.track().isNonnull()) {
+      const auto& trk = *cand.track();
+      const float dz = trk.dz(vertex.position());
+      const float dxy = trk.dxy(vertex.position());
+      const float dzerror  = std::sqrt(trk.dzError()*trk.dzError()+vertex.zError()*vertex.zError());
+      const float dxyerror = std::sqrt(trk.d0Error()*trk.d0Error()+vertex.xError()*vertex.yError());
+      cand.addUserFloat("dz", dz);
+      cand.addUserFloat("dxy", dxy);
+      cand.addUserFloat("dzSig", dz/dzerror);
+      cand.addUserFloat("dxySig", dxy/dxyerror);
     }
-    particles_.assign(particles.begin(), particles.end());
-    particlesRef_.resize(particles_.size());
-    for (size_t i=0; i<particles_.size(); i++) { particlesRef_[i] = pat::GenericParticleRef(&particles_, i); }
+    else if (cand.charge()!=0) continue; // ignore if charged particle has no track
+    cand.addUserFloat("width", width_);
+    setDeDx(cand, dEdxMaps);
+    setMVA(cand, i, mvaColl);
+    if (finalSelection(cand)) {
+      particles.insert(cand);
+    }
   }
+  particles_.assign(particles.begin(), particles.end());
+  particlesRef_.resize(particles_.size());
+  for (size_t i=0; i<particles_.size(); i++) { particlesRef_[i] = pat::GenericParticleRef(&particles_, i); }
 };
 
 
 void ParticleDaughter::addParticles(const edm::Event& event)
 {
-  edm::Handle<pat::GenericParticleCollection> handle;
-  event.getByToken(token_source_, handle);
+  const auto& source = event.get(token_source_);
   StringCutObjectSelector<pat::GenericParticle, true> selection(selection_);
   StringCutObjectSelector<pat::GenericParticle, true> finalSelection(finalSelection_);
-  if (handle.isValid()) {
-    ParticleMassSet particles;
-    for (const auto& p : *handle) {
-      if (!selection(p)) continue;
-      pat::GenericParticle cand(p);
-      if (charge_!=-99 && cand.charge()!=charge_) continue;
-      if (cand.hasUserData("daughters")) {
-        cand.setStatus(2);
-      }
-      if (finalSelection(cand)) {
-        particles.insert(cand);
-      }
+  ParticleMassSet particles;
+  for (const auto& p : source) {
+    if (!selection(p)) continue;
+    pat::GenericParticle cand(p);
+    if (charge_!=-99 && cand.charge()!=charge_) continue;
+    if (cand.hasUserData("daughters")) {
+      cand.setStatus(2);
     }
-    particles_.assign(particles.begin(), particles.end());
-    particlesRef_.resize(particles_.size());
-    for (size_t i=0; i<particles_.size(); i++) { particlesRef_[i] = pat::GenericParticleRef(&particles_, i); }
+    if (finalSelection(cand)) {
+      particles.insert(cand);
+    }
   }
+  particles_.assign(particles.begin(), particles.end());
+  particlesRef_.resize(particles_.size());
+  for (size_t i=0; i<particles_.size(); i++) { particlesRef_[i] = pat::GenericParticleRef(&particles_, i); }
 };
 
 
 template <class T>
 void ParticleDaughter::addInfo(pat::GenericParticle& c, const T& p)
 {
+  if (mass_<0) { throw std::logic_error(Form("[ERROR] Mass not set for particle %d !", pdgId_)); }
   const auto p4 = math::PtEtaPhiMLorentzVector(p.pt(), p.eta(), p.phi(), mass_);
   c.setP4(p4);
   c.setCharge(p.charge());
@@ -986,7 +978,7 @@ void ParticleDaughter::addInfo(pat::GenericParticle& c, const reco::Conversion& 
   c.setP4(p4);
   c.setCharge(charge);
   c.setVertex(vtx.position());
-  c.setTracks(trackRefs, true);
+  //c.setTracks(trackRefs, true); // CONVERSION TRACK FIT DOES NOT WORK
 };
 
 
