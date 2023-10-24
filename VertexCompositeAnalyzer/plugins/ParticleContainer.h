@@ -283,6 +283,33 @@ class ParticleContainer
     for (const auto& d : floatVVM_ ) { for (uint j=0; i<size_ && j<d.second[i].size(); j++) { data.add(n+d.first+Form("%u",j), d.second[i][j]); } }
   };
 
+  // check
+  template <class T>
+  void check(const std::vector<T>& c, const std::string& n) const
+  {
+    if (c.size() != size_) { throw std::logic_error(Form("[ERROR] Container %s has wrong size: %lu != %lu", n.c_str(), c.size(), size_)); }
+  }
+
+  void check(const std::string& n) const
+  {
+    for (auto& d : boolVM_   ) { check(d.second, n+"_"+d.first); }
+    for (auto& d : charVM_   ) { check(d.second, n+"_"+d.first); }
+    for (auto& d : shortVM_  ) { check(d.second, n+"_"+d.first); }
+    for (auto& d : intVM_    ) { check(d.second, n+"_"+d.first); }
+    for (auto& d : ucharVM_  ) { check(d.second, n+"_"+d.first); }
+    for (auto& d : ushortVM_ ) { check(d.second, n+"_"+d.first); }
+    for (auto& d : uintVM_   ) { check(d.second, n+"_"+d.first); }
+    for (auto& d : floatVM_  ) { check(d.second, n+"_"+d.first); }
+    for (auto& d : boolVVM_  ) { check(d.second, n+"_"+d.first); }
+    for (auto& d : charVVM_  ) { check(d.second, n+"_"+d.first); }
+    for (auto& d : shortVVM_ ) { check(d.second, n+"_"+d.first); }
+    for (auto& d : intVVM_   ) { check(d.second, n+"_"+d.first); }
+    for (auto& d : ucharVVM_ ) { check(d.second, n+"_"+d.first); }
+    for (auto& d : ushortVVM_) { check(d.second, n+"_"+d.first); }
+    for (auto& d : uintVVM_  ) { check(d.second, n+"_"+d.first); }
+    for (auto& d : floatVVM_ ) { check(d.second, n+"_"+d.first); }
+  }
+
   // clear
   void clear()
   {

@@ -52,6 +52,7 @@ particleAna = cms.EDAnalyzer('ParticleAnalyzer',
 )
 
 particleAna_mc = particleAna.clone(
+  selectEvents = cms.string(""),
   # generated information
   genParticles = cms.untracked.InputTag("genParticles"),
   genInfo      = cms.untracked.InputTag("generator"),

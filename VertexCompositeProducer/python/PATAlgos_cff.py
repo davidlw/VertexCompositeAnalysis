@@ -38,10 +38,10 @@ def doPATMuons(process):
         isolationValues = cms.PSet(),
     )
 
-    patMuons.userData.userInts.src    = []
-    patMuons.userData.userFloats.src  = []
-    patMuons.userData.userCands.src   = []
-    patMuons.userData.userClasses.src = []
+    process.patMuons.userData.userInts.src    = []
+    process.patMuons.userData.userFloats.src  = []
+    process.patMuons.userData.userCands.src   = []
+    process.patMuons.userData.userClasses.src = []
 
     # Make a sequence
     process.patMuonSequence = cms.Sequence( process.patMuons )
@@ -54,7 +54,7 @@ def doPATElectrons(process):
     # Make PAT Electrons
     from PhysicsTools.PatAlgos.producersLayer1.electronProducer_cfi import patElectrons
     process.patElectrons = patElectrons.clone(
-        electronSource = cms.InputTag('lowPtGsfElectrons'),
+        electronSource = cms.InputTag('gedGsfElectrons'),
         # track information
         embedTrack                  = cms.bool(True),
         embedGsfElectronCore        = cms.bool(True),
@@ -65,7 +65,7 @@ def doPATElectrons(process):
         embedPreshowerClusters      = cms.bool(False),
         embedRecHits                = cms.bool(False),
         # high level information
-        embedHighLevelSelection = cms.bool(False),
+        embedHighLevelSelection = cms.bool(True),
         # gen information
         addGenMatch = cms.bool(False),
         embedGenMatch = cms.bool(False),
@@ -81,13 +81,53 @@ def doPATElectrons(process):
         isolationValuesNoPFId   = cms.PSet(),
     )
 
-    patElectrons.userData.userInts.src    = []
-    patElectrons.userData.userFloats.src  = []
-    patElectrons.userData.userCands.src   = []
-    patElectrons.userData.userClasses.src = []
+    process.patElectrons.userData.userInts.src    = []
+    process.patElectrons.userData.userFloats.src  = []
+    process.patElectrons.userData.userCands.src   = []
+    process.patElectrons.userData.userClasses.src = []
+
+    process.patLowPtElectrons = process.patElectrons.clone(electronSource = cms.InputTag('lowPtGsfElectrons'))
 
     # Make a sequence
-    process.patElectronSequence = cms.Sequence( process.patElectrons )
+    process.patElectronSequence = cms.Sequence( process.patElectrons * process.patLowPtElectrons )
+
+
+def doPATPhotons(process):
+    # Check if sequence already ran
+    if hasattr(process, 'patPhotons'): return
+
+    # Make PAT Electrons
+    from PhysicsTools.PatAlgos.producersLayer1.photonProducer_cfi import patPhotons
+    process.patPhotons = patPhotons.clone(
+        photonSource = cms.InputTag('gedPhotons'),
+        electronSource = cms.InputTag('gedGsfElectrons'),
+        # photon information
+        embedSuperCluster           = cms.bool(True),
+        embedSeedCluster            = cms.bool(True),
+        embedBasicClusters          = cms.bool(True),
+        embedPreshowerClusters      = cms.bool(True),
+        embedRecHits                = cms.bool(True),
+        saveRegressionData          = cms.bool(True),
+        # high level information
+        addPhotonID                 = cms.bool(False),
+        # gen information
+        addGenMatch = cms.bool(False),
+        embedGenMatch = cms.bool(False),
+        # PF information
+        addPFClusterIso             = cms.bool(False),
+        addPuppiIsolation           = cms.bool(False),
+        # extra information
+        isoDeposits             = cms.PSet(),
+        userIsolation           = dict()
+    )
+
+    process.patPhotons.userData.userInts.src    = []
+    process.patPhotons.userData.userFloats.src  = []
+    process.patPhotons.userData.userCands.src   = []
+    process.patPhotons.userData.userClasses.src = []
+
+    # Make a sequence
+    process.patPhotonSequence = cms.Sequence( process.patPhotons )
 
 
 def changeToMiniAOD(process):

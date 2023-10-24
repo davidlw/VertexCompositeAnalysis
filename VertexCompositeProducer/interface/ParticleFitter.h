@@ -108,7 +108,6 @@ struct ParticleMassComparator : ParticleComparator {
 
 
 const std::map<uint, double> MASS_ = {
-  {0, -1.}, // default
   {11, 0.000511}, {13, 0.10565837}, {15, 1.77686}, // leptons
   {22, 0}, {23, 91.188}, {24, 80.38}, // bosons
   {113, 0.77526}, {211, 0.13957018}, {310, 0.497614}, {321, 0.493677}, {333, 1.019445}, // light and strange mesons

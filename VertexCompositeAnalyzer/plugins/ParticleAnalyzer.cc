@@ -123,7 +123,7 @@ private:
 
   bool isCompatible(const reco::Candidate& p1, const reco::Candidate& p2) const
   {
-    return ((p1.status()==1)==(p2.status()==1) && p1.charge()==p2.charge() && (p1.status()==1 ? std::abs(p1.pdgId())==std::abs(p2.pdgId()) : true));
+    return ((p1.status()==1)==(p2.status()==1) && p1.charge()==p2.charge() && ((p1.status()==1 && p2.pdgId()!=0) ? std::abs(p1.pdgId())==std::abs(p2.pdgId()) : true));
   }
   double deltaPt(const double& pT1, const double& pT2) const
   {
@@ -309,6 +309,10 @@ ParticleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   fillRecoParticleInfo(iEvent);
   fillGenParticleInfo(iEvent);
 
+  // check information
+  for (const auto& p : particleInfo_)
+    p.second.check(p.first);
+
   // fill tree or ntuple
   if (saveTree_)
   {
@@ -386,9 +390,9 @@ ParticleAnalyzer::getEventData(const edm::Event& iEvent, const edm::EventSetup& 
         nGenTracks += 1;
       }
       // add generated particles for reco-gen matching
-      if (p->isLastCopy() && passGenStatus(p) && contain(genPdgId_, std::abs(p->pdgId())))
+      if (p->isLastCopy() && passGenStatus(p) && ((genPdgId_.empty() || *genPdgId_.begin()!=0) ? contain(genPdgId_, std::abs(p->pdgId())) : true))
       {
-        const auto& mom = (p->status()==1 ? findGenMother(p) : reco::GenParticleRef());
+        const auto& mom = ((p->status()==1 && genPdgId_.size()>1) ? findGenMother(p) : reco::GenParticleRef());
         if (mom.isNull() || contain(genPdgId_, std::abs(mom->pdgId())))
         {
           genParticlesToMatch_.push_back(p);
@@ -1394,28 +1398,27 @@ ParticleAnalyzer::fillElectronInfo(const pat::GenericParticle& cand, const UInt_
 
 UShort_t
 ParticleAnalyzer::fillPhotonInfo(const pat::GenericParticle& cand, const UInt_t& candIdx, const bool& force)
-{ 
-  const bool hasSrc = cand.hasUserData("src") && ((cand.pdgId()== 22 && cand.userData<pat::Photon>("src")) || 
-                                                  (cand.pdgId()==-22 && cand.userData<reco::Conversion>("src")));
-  if (!force && !hasSrc) return USHRT_MAX;
+{
+  const bool hasPhoton = (cand.hasUserData("src") && cand.userData<pat::Photon>("src"));
+  const bool hasConver = (cand.hasUserData("src") && cand.userData<reco::Conversion>("src"));
+  if (!force && !hasPhoton && !hasConver) return USHRT_MAX;
 
   // fill photon information
   auto& info = particleInfo_["pho"];
 
-  const auto& photon = (hasSrc && cand.pdgId()==22 ? *cand.userData<pat::Photon>("src") : pat::Photon());
+  const auto& photon = (hasPhoton ? *cand.userData<pat::Photon>("src") : pat::Photon());
 
   // add input information
   size_t index;
   bool found;
-  if (cand.pdgId()==22) found = info.getIndex(index, photon);
+  if (hasPhoton) found = info.getIndex(index, photon);
   else found = info.getIndex(index, cand);
   info.add(index, "candIdx", candIdx);
   const auto& idx = getUShort(index, "pho_idx");
   // return if already added
   if (found) return idx;
   
-
-  if (cand.pdgId()==22)
+  if (hasPhoton)
   {
     const auto& phoIso   = cand.userData<reco::HIPhotonIsolation>("iso");
     const auto& sCluster = (photon.photonCore().isNonnull() ? photon.superCluster() : reco::SuperClusterRef());
@@ -1435,9 +1438,9 @@ ParticleAnalyzer::fillPhotonInfo(const pat::GenericParticle& cand, const UInt_t&
     info.add("ecalClusterIsoR3", (phoIso ? phoIso->ecalClusterIsoR3() : 99.9));
     info.add("hcalRechitIsoR3", (phoIso ? phoIso->hcalRechitIsoR3() : 99.9));
   }
-  else if (cand.pdgId()==-22)
+  else if (hasConver)
   {
-    const auto& photon = (hasSrc && cand.pdgId()==-22 ? *cand.userData<reco::Conversion>("src") : reco::Conversion());
+    const auto& photon = (hasConver ? *cand.userData<reco::Conversion>("src") : reco::Conversion());
 
     // converted photon information
     info.add("nTracks", photon.nTracks());
@@ -1448,7 +1451,7 @@ ParticleAnalyzer::fillPhotonInfo(const pat::GenericParticle& cand, const UInt_t&
   }
 
   // push data and return index
-  if (cand.pdgId()==22) info.pushData(photon);
+  if (hasPhoton) info.pushData(photon);
   else info.pushData(cand);
   return idx;
 }
@@ -1870,7 +1873,7 @@ ParticleAnalyzer::addParticleToNtuple(const size_t& i, const std::pair<int, int>
   // remove meaningless variables
   if (!ntuple_)
   {
-    // detectable particles such as pions do not have decay info 
+    // detectable particles such as pions do not have decay info
     if (cand.get(i, "status", UChar_t(1))==1)
     {
       ntupleInfo_.erase(label+"decayLength", {"float", "floatV"});
@@ -1901,8 +1904,8 @@ ParticleAnalyzer::fillNTuple(const bool& fill)
   const auto& cand = particleInfo_["cand"];
   for (size_t i=0; i<cand.size(); i++)
   {
-    const auto status = cand.get(i, "status", UChar_t(0));
-    if (status!=3) continue;
+    const auto hasMom = not cand.get(i, "momIdx", std::vector<UShort_t>()).empty();
+    if (hasMom) continue;
     // clear
     ntupleInfo_.clear();
     // copy event information
@@ -1962,10 +1965,11 @@ ParticleAnalyzer::loadConfiguration(const edm::ParameterSet& config, const edm::
   HepPDT::ParticleID pid;
   if (config.existsAs<int>("pdgId"))
   {
-    pid = HepPDT::ParticleID(config.getParameter<int>("pdgId"));
-    if (SOURCEPDG_.find(pid.abspid())!=SOURCEPDG_.end()) { sourceId_.insert(pid.pid()); }
+    const auto absPdgId = std::abs(config.getParameter<int>("pdgId"));
+    if (SOURCEPDG_.find(absPdgId)!=SOURCEPDG_.end()) { sourceId_.insert(absPdgId); }
     if (genPdgId_.empty()) { std::copy(genPdgIdV_.begin(), genPdgIdV_.end(), std::inserter(genPdgId_, genPdgId_.end())); }
-    genPdgId_.insert(pid.pid());
+    genPdgId_.insert(absPdgId);
+    pid = HepPDT::ParticleID(absPdgId);
   }
 
   if (!addInfo_["source"])
