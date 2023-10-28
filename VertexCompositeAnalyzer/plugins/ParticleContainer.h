@@ -206,15 +206,25 @@ class ParticleContainer
   };
 
   template <class T>
+  void check(const std::map<std::string, std::vector<T>>& m, const std::string& n, const size_t& i) const {
+    if (i >= size_) return;
+    if (m.find(n)==m.end()) throw std::logic_error("[ERROR] Key "+n+" not found in map!");
+    if (i>=m.at(n).size() ) throw std::logic_error(Form("[ERROR] Invalid index %lu >= %lu for key %s !", i, m.at(n).size(), n.c_str()));
+  }
+
+  template <class T>
   const T        get(const size_t& i, const std::vector<T>& v, const T& d) const { return (i < size_ ? v[i] : d); };
   template <class T>
   const T        get(const size_t& i, const std::string& n, const T&        d) const = delete; // avoid implicit conversion
-  const bool     get(const size_t& i, const std::string& n, const bool&     d) const { return (i < size_ ? boolVM_.at(n)[i]   : d); };
-  const int      get(const size_t& i, const std::string& n, const Int_t&    d) const { return (i < size_ ? intVM_.at(n)[i]    : d); };
-  const UChar_t  get(const size_t& i, const std::string& n, const UChar_t&  d) const { return (i < size_ ? ucharVM_.at(n)[i]  : d); };
-  const UShort_t get(const size_t& i, const std::string& n, const UShort_t& d) const { return (i < size_ ? ushortVM_.at(n)[i] : d); };
-  const std::vector<UShort_t> get(const size_t& i, const std::string& n, const std::vector<UShort_t>& d) const { return (i < size_ ? ushortVVM_.at(n)[i] : d); };
-  const std::vector<UInt_t  > get(const size_t& i, const std::string& n, const std::vector<UInt_t  >& d) const { return (i < size_ ? uintVVM_.at(n)[i]   : d); };
+  const bool     get(const size_t& i, const std::string& n, const bool&     d) const { check(boolVM_,   n, i); return (i < size_ ? boolVM_.at(n)[i]   : d); };
+  const int      get(const size_t& i, const std::string& n, const Int_t&    d) const { check(intVM_,    n, i); return (i < size_ ? intVM_.at(n)[i]    : d); };
+  const UChar_t  get(const size_t& i, const std::string& n, const UChar_t&  d) const { check(ucharVM_,  n, i); return (i < size_ ? ucharVM_.at(n)[i]  : d); };
+  const UShort_t get(const size_t& i, const std::string& n, const UShort_t& d) const { check(ushortVM_, n, i); return (i < size_ ? ushortVM_.at(n)[i] : d); };
+  const std::vector<UShort_t> get(const size_t& i, const std::string& n, const std::vector<UShort_t>& d) const { check(ushortVVM_, n, i); return (i < size_ ? ushortVVM_.at(n)[i] : d); };
+  const std::vector<UInt_t  > get(const size_t& i, const std::string& n, const std::vector<UInt_t  >& d) const { check(uintVVM_,   n, i); return (i < size_ ? uintVVM_.at(n)[i]   : d); };
+
+  const bool hasUShortV(const std::string& n) const { return ushortVVM_.find(n)!=ushortVVM_.end(); };
+  const bool hasUIntV  (const std::string& n) const { return uintVVM_.find(n)!=uintVVM_.end();     };
 
   // setters
   template <class T>

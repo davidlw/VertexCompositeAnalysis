@@ -883,6 +883,7 @@ void ParticleDaughter::addParticles(const edm::Event& event, const edm::EDGetTok
   StringCutObjectSelector<pat::GenericParticle, true> finalSelection(finalSelection_);
   // add particles
   ParticleMassSet particles;
+  if (handle.isValid()) { // DEBUG REMOVE cout
   for (size_t i=0; i<handle->size(); i++) {
     const auto& p = edm::Ref<std::vector<T> >(handle, i);
     if (!selection(*p)) continue;
@@ -910,6 +911,7 @@ void ParticleDaughter::addParticles(const edm::Event& event, const edm::EDGetTok
     if (finalSelection(cand)) {
       particles.insert(cand);
     }
+  }
   }
   particles_.assign(particles.begin(), particles.end());
   particlesRef_.resize(particles_.size());
@@ -992,6 +994,7 @@ void ParticleDaughter::addData(pat::GenericParticle& c, const edm::Ref<std::vect
 void ParticleDaughter::addData(pat::GenericParticle& c, const reco::TrackRef& p, const bool& embedInfo)
 {
   c.setTrack(p, embedInfo);
+  if (embedInfo) c.addUserData<reco::TrackRef>("trackRef", p);
   c.addUserInt("sourceID", 1);
 };
 
@@ -1000,6 +1003,7 @@ void ParticleDaughter::addData(pat::GenericParticle& c, const reco::PFCandidateR
 {
   if (c.pdgId()==0) { c.setPdgId(p->pdgId()); }
   c.setTrack(p->trackRef(), embedInfo);
+  if (embedInfo) c.addUserData<reco::TrackRef>("trackRef", p->trackRef());
   c.addUserData<reco::PFCandidate>("src", *p);
   c.addUserInt("sourceID", 2);
 };
@@ -1013,6 +1017,7 @@ void ParticleDaughter::addData(pat::GenericParticle& c, const pat::MuonRef& p, c
     if (t.isNonnull() && t.id().isValid() && t.isAvailable()) { track = t; }
   }
   c.setTrack(track, embedInfo);
+  if (embedInfo && track.id().isValid()) c.addUserData<reco::TrackRef>("trackRef", track);
   c.addUserData<pat::Muon>("src", *p);
   // propagate inner track to 2nd muon station (for L1 trigger matching)
   if (!p->hasUserInt("prop") && propToMuonSetup_ && track.isNonnull()) {
@@ -1049,7 +1054,7 @@ void ParticleDaughter::setMVA(pat::GenericParticle& c, const size_t& i, const ed
 void ParticleDaughter::setDeDx(pat::GenericParticle& c,
     const std::map<std::string, edm::Handle<edm::ValueMap<reco::DeDxData> > >& dEdxMaps)
 {
-  const auto& track = c.track();
+  const auto& track = (c.hasUserData("trackRef") ? *c.userData<reco::TrackRef>("trackRef") : c.track());
   if (track.isNull()) return;
   for (const auto& dEdxMapPair : dEdxMaps) {
     const auto& dEdxMap = dEdxMapPair.second;

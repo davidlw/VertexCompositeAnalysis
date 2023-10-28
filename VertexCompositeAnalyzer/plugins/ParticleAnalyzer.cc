@@ -310,8 +310,29 @@ ParticleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   fillGenParticleInfo(iEvent);
 
   // check information
-  for (const auto& p : particleInfo_)
+  const auto& cand_size = particleInfo_.at("cand").size();
+  for (const auto& p : particleInfo_) {
     p.second.check(p.first);
+    if (p.first!="cand") {
+      const std::string n = ((p.first=="gen" || p.first=="trk") ? p.first+"Idx" : "srcIdx");
+      const auto& s = p.second.size();
+      if (p.second.hasUIntV("candIdx"))
+        for (size_t i=0; i<s; i++)
+          for (const auto& v : p.second.get(i, "candIdx", std::vector<UInt_t>({UINT_MAX})))
+            if (v>=cand_size) throw std::logic_error(Form("[ERROR] Invalid cand index in %s (%ld, %ld): %d >= %ld", p.first.c_str(), i, s, v, cand_size));
+      if (particleInfo_.at("cand").hasUShortV(n))
+        for (size_t i=0; i<cand_size; i++)
+          for (const auto& v : particleInfo_.at("cand").get(i, n, std::vector<UShort_t>({54321})))
+            if (v!=USHRT_MAX && v>=s) throw std::logic_error(Form("[ERROR] Invalid %s index in cand (%ld, %ld): %d >= %ld", p.first.c_str(), i, cand_size, v, s));
+    }
+    else {
+      for (const auto& c : {"dauIdx", "momIdx"})
+        if (p.second.hasUIntV(c))
+          for (size_t i=0; i<cand_size; i++)
+            for (const auto& v : p.second.get(i, c, std::vector<UInt_t>({987654321})))
+              if (v!=UINT_MAX && v>=cand_size) throw std::logic_error(Form("[ERROR] Invalid %s in %s (%ld): %d >= %ld", c, p.first.c_str(), i, v, cand_size));
+    }
+  }
 
   // fill tree or ntuple
   if (saveTree_)
@@ -1159,7 +1180,8 @@ ParticleAnalyzer::fillTrackInfo(const pat::GenericParticle& cand, const UInt_t& 
   // add input information
   size_t index;
   const bool found = info.getIndex(index, track);
-  info.push(index, "candIdx", candIdx, true);
+  if (force || candIdx!=UINT_MAX)
+    info.push(index, "candIdx", candIdx, true);
   const auto& idx = getUShort(index, "trk_idx");
   // return if already added
   if (found) return idx;
@@ -1202,14 +1224,14 @@ ParticleAnalyzer::fillSourceInfo(const pat::GenericParticle& cand, const UInt_t&
 {
   // fill source information
   const auto pdgId = std::abs(cand.pdgId());
-  if      (pdgId==0 ) { return fillPFCandidateInfo(cand, candIdx, force); }
+  if      (pdgId==0 ) { return USHRT_MAX; }
   else if (pdgId<=6 ) { return fillJetInfo(cand, candIdx, force);         }
   else if (pdgId==11) { return fillElectronInfo(cand, candIdx, force);    }
   else if (pdgId==13) { return fillMuonInfo(cand, candIdx, force);        }
   else if (pdgId==15) { return fillTauInfo(cand, candIdx, force);         }
   else if (pdgId==22) { return fillPhotonInfo(cand, candIdx, force);      }
-  // if pdgId not matched, use PF candidates
-  return fillPFCandidateInfo(cand, candIdx, force);
+  else if (cand.charge()==0) { return fillPFCandidateInfo(cand, candIdx, force); }
+  return USHRT_MAX;
 }
 
 
@@ -1418,7 +1440,7 @@ ParticleAnalyzer::fillPhotonInfo(const pat::GenericParticle& cand, const UInt_t&
   // return if already added
   if (found) return idx;
   
-  if (hasPhoton)
+  if (hasPhoton || (force && cand.pdgId()==22))
   {
     const auto& phoIso   = cand.userData<reco::HIPhotonIsolation>("iso");
     const auto& sCluster = (photon.photonCore().isNonnull() ? photon.superCluster() : reco::SuperClusterRef());
@@ -1438,7 +1460,7 @@ ParticleAnalyzer::fillPhotonInfo(const pat::GenericParticle& cand, const UInt_t&
     info.add("ecalClusterIsoR3", (phoIso ? phoIso->ecalClusterIsoR3() : 99.9));
     info.add("hcalRechitIsoR3", (phoIso ? phoIso->hcalRechitIsoR3() : 99.9));
   }
-  else if (hasConver)
+  else if (hasConver || (force && cand.pdgId()==-22))
   {
     const auto& photon = (hasConver ? *cand.userData<reco::Conversion>("src") : reco::Conversion());
 
@@ -1564,7 +1586,8 @@ ParticleAnalyzer::fillPFCandidateInfo(const pat::GenericParticle& cand, const UI
   // add input information
   size_t index;
   const bool found = info.getIndex(index, pfCand);
-  info.push(index, "candIdx", candIdx, true);
+  if (force || candIdx!=UINT_MAX)
+    info.push(index, "candIdx", candIdx, true);
   const auto& idx = getUShort(index, "pf_idx");
   // return if already added
   if (found) return idx;
@@ -1637,7 +1660,8 @@ ParticleAnalyzer::fillGenParticleInfo(const reco::GenParticleRef& candR, const U
   // add input information
   size_t index;
   const bool found = info.getIndex(index, cand);
-  info.push(index, "candIdx", candIdx, true);
+  if (force || candIdx!=UINT_MAX)
+    info.push(index, "candIdx", candIdx, true);
   const auto& idx = getUShort(index, "gen_idx");
   // return if already added
   if (found) return idx;
@@ -1675,7 +1699,7 @@ ParticleAnalyzer::fillGenParticleInfo(const reco::GenParticleRef& candR, const U
 
   // gen track information
   std::vector<float> parV;
-  if (hasGen)
+  if (hasGen && cand.charge()!=0 && std::abs(cand.eta())<5)
   {
     const auto& sPar = reco::trackingParametersAtClosestApproachToBeamSpot(Basic3DVector<double>(cand.vertex()), Basic3DVector<double>(cand.momentum()), cand.charge(), *magField_, beamSpot_).second;
     for (const auto& p : sPar) parV.emplace_back(p);
@@ -1695,7 +1719,7 @@ ParticleAnalyzer::fillGenParticleInfo(const reco::GenParticleRef& candR, const U
     for (size_t iDau=0; iDau<cand.numberOfDaughters(); iDau++)
     {
       const auto& dau = findGenDaughter(candR, iDau);
-      const auto& dauIdx = fillGenParticleInfo(dau, idx);
+      const auto& dauIdx = fillGenParticleInfo(dau);
       if (dauIdx!=USHRT_MAX) { info.push(idx, "dauIdx", dauIdx); }
     }
   }
@@ -1704,7 +1728,7 @@ ParticleAnalyzer::fillGenParticleInfo(const reco::GenParticleRef& candR, const U
   if (cand.numberOfMothers()>0)
   {
     const auto& mom = findGenMother(candR);
-    const auto& momIdx = fillGenParticleInfo(mom, idx);
+    const auto& momIdx = fillGenParticleInfo(mom);
     if (momIdx!=USHRT_MAX) { info.push(idx, "momIdx", momIdx); }
   }
 
@@ -1969,7 +1993,7 @@ ParticleAnalyzer::loadConfiguration(const edm::ParameterSet& config, const edm::
     if (SOURCEPDG_.find(absPdgId)!=SOURCEPDG_.end()) { sourceId_.insert(absPdgId); }
     if (genPdgId_.empty()) { std::copy(genPdgIdV_.begin(), genPdgIdV_.end(), std::inserter(genPdgId_, genPdgId_.end())); }
     genPdgId_.insert(absPdgId);
-    pid = HepPDT::ParticleID(absPdgId);
+    pid = HepPDT::ParticleID(absPdgId!=0 ? absPdgId : 211);
   }
 
   if (!addInfo_["source"])

@@ -25,7 +25,7 @@ generalParticles = cms.EDProducer("ParticleProducer",
     # input collections
     primaryVertices = cms.InputTag('offlinePrimaryVertices'),
     tracks = cms.InputTag('generalTracks'),
-    muons = cms.InputTag('patMuons'),
+    muons = cms.InputTag(''),
     electrons = cms.InputTag(''),
     taus = cms.InputTag(''),
     photons = cms.InputTag(''),
