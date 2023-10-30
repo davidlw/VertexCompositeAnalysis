@@ -833,13 +833,13 @@ void ParticleDaughter::fillInfo(const edm::ParameterSet& pSet, const edm::Parame
     token_source_ = iC.consumes<pat::GenericParticleCollection>(pSet.getParameter<edm::InputTag>("source"));
     source_id_ = Token::GenericParticle;
   }
-  else if (pSet.existsAs<unsigned int>("source")) {
-    const auto& sid = pSet.getParameter<unsigned int>("source");
+  else if (pSet.existsAs<unsigned int>("sourceId")) {
+    const auto& sid = pSet.getParameter<unsigned int>("sourceId");
     if (sid>Token::Jet) { throw std::logic_error(Form("[ERROR] Source ID %u is not valid!", sid)); }
     source_id_ = Token(sid);
   }
   if (source_id_==Token::Unknown) {
-    getSourceId(source_id_, pdgId_, config);
+    getSourceId(source_id_, pdgId_, config, pSet);
   }
   const auto& mvaSet = (pSet.existsAs<edm::InputTag>("mva") ? pSet : config);
   if (mvaSet.existsAs<edm::InputTag>("mva")) {

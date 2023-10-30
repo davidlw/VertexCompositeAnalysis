@@ -125,13 +125,22 @@ typedef std::set<pat::GenericParticle, ParticleMassComparator> ParticleMassSet;
 typedef std::vector<pat::GenericParticleRef> GenericParticleRefCollection;
 
 
-inline void getSourceId(Token& sid, const UInt_t& pid, const edm::ParameterSet& c) {
-  if      (pid==0 ) { sid = c.getParameter<edm::InputTag>("pfParticles").label().empty() ? Token::Track : Token::ParticleFlow; }
-  else if (pid<=6 ) { sid = Token::Jet; }
+inline void getSourceId(Token& sid, const UInt_t& pid, const edm::ParameterSet& c, const edm::ParameterSet& s) {
+  if (c.existsAs<edm::InputTag>("source") || s.existsAs<edm::InputTag>("source")) {
+    sid = Token::GenericParticle;
+  }
+  else if (pid>0 && pid<=6) { sid = Token::Jet; }
   else if (pid==11) { sid = Token::Electron; }
   else if (pid==13) { sid = Token::Muon; }
   else if (pid==15) { sid = Token::Tau; }
-  else if (pid==22) { sid = c.getParameter<edm::InputTag>("photons").label().empty() ? Token::Conversion : Token::Photon; }
+  else if (pid==22) {
+    const bool usePhoton = c.existsAs<edm::InputTag>("photons") && !c.getParameter<edm::InputTag>("photons").label().empty();
+    sid = usePhoton ? Token::Photon : Token::Conversion;
+  }
+  else {
+    const bool usePF = c.existsAs<edm::InputTag>("pfParticles") && !c.getParameter<edm::InputTag>("pfParticles").label().empty();
+    sid = usePF ? Token::ParticleFlow : Token::Track;
+  }
 }
 
 

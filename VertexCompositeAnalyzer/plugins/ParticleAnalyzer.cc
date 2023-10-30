@@ -2021,12 +2021,15 @@ ParticleAnalyzer::loadConfiguration(const edm::ParameterSet& config, const edm::
   }
 
   Token sid(Token::Unknown);
-  if (config.existsAs<UInt_t>("source"))
+  if (!config.existsAs<std::vector<edm::ParameterSet> >("daughterInfo"))
   {
-    sid = Token(config.getParameter<UInt_t>("source"));
-  }
-  if (sid==Token::Unknown) {
-    getSourceId(sid, pdgId, config);
+    if (config.existsAs<UInt_t>("sourceId"))
+    {
+      sid = Token(config.getParameter<UInt_t>("sourceId"));
+    }
+    if (sid==Token::Unknown) {
+      getSourceId(sid, pdgId, config, config);
+    }
   }
   if (sid>=Token::ParticleFlow) {
     sourceId_.insert(sid);
