@@ -35,36 +35,42 @@ process.GlobalTag.globaltag = cms.string('132X_mcRun3_2023_realistic_HI_v5')
 from VertexCompositeAnalysis.VertexCompositeProducer.generalParticles_cff import generalParticles
 
 process.muons = generalParticles.clone(
-    pdgId = cms.int32(13),
+    pdgId = cms.uint32(13),
     muons = cms.InputTag('patMuons')
 )
 
 process.electrons = generalParticles.clone(
-    pdgId = cms.int32(11),
+    pdgId = cms.uint32(11),
     electrons = cms.InputTag('patElectrons')
 )
 
 process.lowPtElectrons = generalParticles.clone(
-    pdgId = cms.int32(11),
+    pdgId = cms.uint32(11),
     electrons = cms.InputTag('patLowPtElectrons')
 )
 
 process.photons = generalParticles.clone(
-    pdgId = cms.int32(22),
+    pdgId = cms.uint32(22),
     photons = cms.InputTag('patPhotons')
 )
 
 process.convertedPhotons = generalParticles.clone(
-    pdgId = cms.int32(-22),
+    pdgId = cms.uint32(22),
     conversions = cms.InputTag('allConversions')
 )
 
 process.tracks = generalParticles.clone(
-    tracks = cms.InputTag('generalTracks')
+    tracks = cms.InputTag('generalTracks'),
+    dEdxInputs = cms.vstring('dedxHarmonic2', 'dedxPixelHarmonic2')
 )
 
 process.pixelTracks = generalParticles.clone(
     tracks = cms.InputTag('hiConformalPixelTracks')
+)
+
+process.pfCandidates = generalParticles.clone(
+    pfParticles = cms.InputTag('particleFlow'),
+    tracks = cms.InputTag('')
 )
 
 # Add PAT objects
@@ -81,7 +87,7 @@ process.colEvtSel = cms.Sequence(process.hiClusterCompatibility * process.primar
 process.muon_step = cms.Path(process.patMuonSequence * process.muons)
 process.electron_step = cms.Path(process.patElectronSequence * process.electrons * process.lowPtElectrons)
 process.photon_step = cms.Path(process.patPhotonSequence * process.photons * process.convertedPhotons)
-process.track_step = cms.Path(process.tracks * process.pixelTracks)
+process.track_step = cms.Path(process.tracks * process.pixelTracks * process.pfCandidates)
 
 # Add the Particle tree
 from VertexCompositeAnalysis.VertexCompositeAnalyzer.particle_tree_cff import particleAna_mc
@@ -129,9 +135,15 @@ process.pixelTrackAna = particleAna_mc.clone(
   maxGenDeltaPtRel = cms.untracked.double(0.5),
 )
 
+process.pfAna = particleAna_mc.clone(
+  recoParticles = cms.InputTag("pfCandidates"),
+  maxGenDeltaR = cms.untracked.double(0.03),
+  maxGenDeltaPtRel = cms.untracked.double(0.5),
+)
+
 # Define the output
 process.TFileService = cms.Service("TFileService", fileName = cms.string('obj_ana_mc.root'))
-process.p = cms.EndPath(process.muonAna * process.elecAna * process.lowPtElecAna * process.phoAna * process.convAna * process.trackAna * process.pixelTrackAna)
+process.p = cms.EndPath(process.muonAna * process.elecAna * process.lowPtElecAna * process.phoAna * process.convAna * process.trackAna * process.pixelTrackAna * process.pfAna)
 
 # Add fix for SuperChic
 process.genParticles = cms.EDProducer('GenParticleSuperChicFixer', genPars = cms.InputTag('genParticles::SIM'))

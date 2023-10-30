@@ -56,6 +56,7 @@
 #include "VertexCompositeAnalysis/VertexCompositeProducer/interface/QWZDC2018Helper.h"
 #include "HepPDT/ParticleID.hh"
 
+#include "VertexCompositeAnalysis/VertexCompositeProducer/interface/ParticleFitter.h"
 #include "ParticleContainer.h"
 
 //
@@ -88,6 +89,7 @@ private:
   virtual void initNTuple();
   virtual void addParticleToNtuple(const size_t&, const std::pair<int, int>&);
   virtual void fillNTuple(const bool& fill=true);
+  virtual void check();
 
   UShort_t fillTriggerObjectInfo(const pat::TriggerObjectStandAlone&, const UShort_t&, const bool&, const UInt_t& candIdx=UINT_MAX);
   UInt_t   fillRecoParticleInfo(const pat::GenericParticle&, const UInt_t& momIdx=UINT_MAX);
@@ -96,12 +98,13 @@ private:
   UShort_t fillMuonInfo(const pat::GenericParticle&, const UInt_t&, const bool& force=false);
   UShort_t fillElectronInfo(const pat::GenericParticle&, const UInt_t&, const bool& force=false);
   UShort_t fillPhotonInfo(const pat::GenericParticle&, const UInt_t&, const bool& force=false);
+  UShort_t fillConversionInfo(const pat::GenericParticle&, const UInt_t&, const bool& force=false);
   UShort_t fillJetInfo(const pat::GenericParticle&, const UInt_t&, const bool& force=false);
   UShort_t fillTauInfo(const pat::GenericParticle&, const UInt_t&, const bool& force=false);
   UShort_t fillPFCandidateInfo(const pat::GenericParticle&, const UInt_t&, const bool& force=false);
   UShort_t fillGenParticleInfo(const reco::GenParticleRef&, const UInt_t& candIdx=UINT_MAX, const bool& force=false);
 
-  void initParticleInfo(const std::string&, const int& pId=0);
+  void initParticleInfo(const std::string&, const Token& sid=Token::Unknown);
   void addTriggerObject(pat::GenericParticle&);
   bool addTriggerObject(pat::GenericParticle&, const math::XYZTLorentzVector&, const TriggerIndexMap&, const std::string&, const std::string&, const int&);
   bool addGenParticle(pat::GenericParticle&, const math::XYZTLorentzVector&, const reco::GenParticleRefVector&);
@@ -109,6 +112,7 @@ private:
   reco::GenParticleRef findGenDaughter(const reco::GenParticleRef&, const size_t&);
   reco::GenParticleRef findGenMother(const reco::GenParticleRef&);
 
+  int   getInt  (const pat::GenericParticle& c, const std::string& n, const int&   d=-99  ) const { return (c.hasUserInt(n)   ? c.userInt(n)   : d); }
   float getFloat(const pat::GenericParticle& c, const std::string& n, const float& d=-99.9) const { return (c.hasUserFloat(n) ? c.userFloat(n) : d); }
   template <class T> Char_t   getChar  (const T& n, const std::string& p) const { if (!(n >= CHAR_MIN && n < CHAR_MAX )) { throw(cms::Exception("Overflow")<<p<<" invalid char: "  <<n); }; return Char_t(n);   }
   template <class T> UChar_t  getUChar (const T& n, const std::string& p) const { if (!(n >= 0        && n < UCHAR_MAX)) { throw(cms::Exception("Overflow")<<p<<" invalid uchar: " <<n); }; return UChar_t(n);  }
@@ -185,7 +189,8 @@ private:
   const double maxGenDeltaR_, maxGenDeltaPtRel_;
   const std::vector<UInt_t> genPdgIdV_;
   std::map<std::string, bool> addInfo_;
-  std::set<int> sourceId_, genPdgId_;
+  std::set<Token> sourceId_;
+  std::set<UInt_t> genPdgId_;
   std::vector<std::string> dedxInfo_;
 
   HLTPrescaleProvider hltPrescaleProvider_;
@@ -205,8 +210,6 @@ private:
   const MagneticField* magField_;
   reco::BeamSpot beamSpot_;
   edm::ValueMap<int> nTracksVMap_;
-
-  const std::set<int> SOURCEPDG_ = {0,1,2,3,4,5,6,11,13,15,22};
 
   // class container attributes
   Container eventInfo_, ntupleInfo_;
@@ -310,29 +313,7 @@ ParticleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   fillGenParticleInfo(iEvent);
 
   // check information
-  const auto& cand_size = particleInfo_.at("cand").size();
-  for (const auto& p : particleInfo_) {
-    p.second.check(p.first);
-    if (p.first!="cand") {
-      const std::string n = ((p.first=="gen" || p.first=="trk") ? p.first+"Idx" : "srcIdx");
-      const auto& s = p.second.size();
-      if (p.second.hasUIntV("candIdx"))
-        for (size_t i=0; i<s; i++)
-          for (const auto& v : p.second.get(i, "candIdx", std::vector<UInt_t>({UINT_MAX})))
-            if (v>=cand_size) throw std::logic_error(Form("[ERROR] Invalid cand index in %s (%ld, %ld): %d >= %ld", p.first.c_str(), i, s, v, cand_size));
-      if (particleInfo_.at("cand").hasUShortV(n))
-        for (size_t i=0; i<cand_size; i++)
-          for (const auto& v : particleInfo_.at("cand").get(i, n, std::vector<UShort_t>({54321})))
-            if (v!=USHRT_MAX && v>=s) throw std::logic_error(Form("[ERROR] Invalid %s index in cand (%ld, %ld): %d >= %ld", p.first.c_str(), i, cand_size, v, s));
-    }
-    else {
-      for (const auto& c : {"dauIdx", "momIdx"})
-        if (p.second.hasUIntV(c))
-          for (size_t i=0; i<cand_size; i++)
-            for (const auto& v : p.second.get(i, c, std::vector<UInt_t>({987654321})))
-              if (v!=UINT_MAX && v>=cand_size) throw std::logic_error(Form("[ERROR] Invalid %s in %s (%ld): %d >= %ld", c, p.first.c_str(), i, v, cand_size));
-    }
-  }
+  check();
 
   // fill tree or ntuple
   if (saveTree_)
@@ -824,7 +805,7 @@ ParticleAnalyzer::fillTriggerInfo(const edm::Event& iEvent)
 
 
 void
-ParticleAnalyzer::initParticleInfo(const std::string& type, const int& pId)
+ParticleAnalyzer::initParticleInfo(const std::string& type, const Token& sid)
 {
   // return if already initialized
   if (particleInfo_.find(type)!=particleInfo_.end()) return;
@@ -834,7 +815,7 @@ ParticleAnalyzer::initParticleInfo(const std::string& type, const int& pId)
   else if (type=="gen"  && !isMC_) return;
   else if (type=="src"  && !addInfo_.at("source")) return;
   // proceed to initialize with dummy value
-  pat::GenericParticle cand; cand.setPdgId(pId);
+  pat::GenericParticle cand; cand.addUserInt("sourceId", sid);
   if      (type=="cand") fillRecoParticleInfo(pat::GenericParticle(), 0);
   else if (type=="trig") fillTriggerObjectInfo(pat::TriggerObjectStandAlone(), 0, 0, 0);
   else if (type=="gen" ) fillGenParticleInfo(reco::GenParticleRef(), 0, true);
@@ -902,7 +883,7 @@ ParticleAnalyzer::fillRecoParticleInfo(const edm::Event& iEvent)
     // initialize reconstructed particle containers
     initParticleInfo("cand");
     initParticleInfo("trk");
-    for (const auto& pId : sourceId_) { initParticleInfo("src", pId); }
+    for (const auto& sid : sourceId_) { initParticleInfo("src", sid); }
     // loop over reconstructed particles
     for (const auto& cand : *particles) { fillRecoParticleInfo(cand); }
   }
@@ -939,6 +920,7 @@ ParticleAnalyzer::fillRecoParticleInfo(const pat::GenericParticle& cand, const U
   info.add("charge", getChar(cand.charge(), "cand_charge"));
   info.add("pdgId", cand.pdgId());
   info.add("status", getUChar(cand.status(), "cand_status"));
+  info.add("sourceId", getUChar(getInt(cand, "sourceId", Token::Unknown), "cand_sourceId"));
 
   // decay vertex information
   info.add("vtxChi2", getFloat(cand, "normChi2", -1.));
@@ -1223,14 +1205,14 @@ UShort_t
 ParticleAnalyzer::fillSourceInfo(const pat::GenericParticle& cand, const UInt_t& candIdx, const bool& force)
 {
   // fill source information
-  const auto pdgId = std::abs(cand.pdgId());
-  if      (pdgId==0 ) { return USHRT_MAX; }
-  else if (pdgId<=6 ) { return fillJetInfo(cand, candIdx, force);         }
-  else if (pdgId==11) { return fillElectronInfo(cand, candIdx, force);    }
-  else if (pdgId==13) { return fillMuonInfo(cand, candIdx, force);        }
-  else if (pdgId==15) { return fillTauInfo(cand, candIdx, force);         }
-  else if (pdgId==22) { return fillPhotonInfo(cand, candIdx, force);      }
-  else if (cand.charge()==0) { return fillPFCandidateInfo(cand, candIdx, force); }
+  const auto& sid = getInt(cand, "sourceId", Token::Unknown);
+  if      (sid==Token::ParticleFlow) { return fillPFCandidateInfo(cand, candIdx, force); }
+  else if (sid==Token::Electron    ) { return fillElectronInfo(cand, candIdx, force);    }
+  else if (sid==Token::Muon        ) { return fillMuonInfo(cand, candIdx, force);        }
+  else if (sid==Token::Tau         ) { return fillTauInfo(cand, candIdx, force);         }
+  else if (sid==Token::Photon      ) { return fillPhotonInfo(cand, candIdx, force);      }
+  else if (sid==Token::Conversion  ) { return fillConversionInfo(cand, candIdx, force);  }
+  else if (sid==Token::Jet         ) { return fillJetInfo(cand, candIdx, force);         }
   return USHRT_MAX;
 }
 
@@ -1238,7 +1220,7 @@ ParticleAnalyzer::fillSourceInfo(const pat::GenericParticle& cand, const UInt_t&
 UShort_t
 ParticleAnalyzer::fillMuonInfo(const pat::GenericParticle& cand, const UInt_t& candIdx, const bool& force)
 {
-  const bool hasSrc = (std::abs(cand.pdgId())==13 && cand.hasUserData("src") && cand.userData<pat::Muon>("src"));
+  const bool hasSrc = (cand.hasUserData("src") && cand.userData<pat::Muon>("src"));
   if (!force && !hasSrc) return USHRT_MAX;
 
   // fill muon information
@@ -1374,7 +1356,7 @@ ParticleAnalyzer::fillMuonInfo(const pat::GenericParticle& cand, const UInt_t& c
 UShort_t
 ParticleAnalyzer::fillElectronInfo(const pat::GenericParticle& cand, const UInt_t& candIdx, const bool& force)
 {
-  const bool hasSrc = (std::abs(cand.pdgId())==11 && cand.hasUserData("src") && cand.userData<pat::Electron>("src"));
+  const bool hasSrc = (cand.hasUserData("src") && cand.userData<pat::Electron>("src"));
   if (!force && !hasSrc) return USHRT_MAX;
 
   // fill electron information
@@ -1421,60 +1403,74 @@ ParticleAnalyzer::fillElectronInfo(const pat::GenericParticle& cand, const UInt_
 UShort_t
 ParticleAnalyzer::fillPhotonInfo(const pat::GenericParticle& cand, const UInt_t& candIdx, const bool& force)
 {
-  const bool hasPhoton = (cand.hasUserData("src") && cand.userData<pat::Photon>("src"));
-  const bool hasConver = (cand.hasUserData("src") && cand.userData<reco::Conversion>("src"));
-  if (!force && !hasPhoton && !hasConver) return USHRT_MAX;
+  const bool hasSrc = (cand.hasUserData("src") && cand.userData<pat::Photon>("src"));
+  if (!force && !hasSrc) return USHRT_MAX;
 
   // fill photon information
   auto& info = particleInfo_["pho"];
 
-  const auto& photon = (hasPhoton ? *cand.userData<pat::Photon>("src") : pat::Photon());
+  const auto& photon = (hasSrc ? *cand.userData<pat::Photon>("src") : pat::Photon());
 
   // add input information
   size_t index;
-  bool found;
-  if (hasPhoton) found = info.getIndex(index, photon);
-  else found = info.getIndex(index, cand);
+  const bool found = info.getIndex(index, photon);
   info.add(index, "candIdx", candIdx);
   const auto& idx = getUShort(index, "pho_idx");
   // return if already added
   if (found) return idx;
   
-  if (hasPhoton || (force && cand.pdgId()==22))
-  {
-    const auto& phoIso   = cand.userData<reco::HIPhotonIsolation>("iso");
-    const auto& sCluster = (photon.photonCore().isNonnull() ? photon.superCluster() : reco::SuperClusterRef());
+  const auto& phoIso   = cand.userData<reco::HIPhotonIsolation>("iso");
+  const auto& sCluster = (photon.photonCore().isNonnull() ? photon.superCluster() : reco::SuperClusterRef());
 
-    // photon information
-    info.add("sigmaIEtaIEta", photon.full5x5_sigmaIetaIeta());
-    info.add("hoverE", photon.hadronicOverEm());
+  // photon information
+  info.add("sigmaIEtaIEta", photon.full5x5_sigmaIetaIeta());
+  info.add("hoverE", photon.hadronicOverEm());
 
-    // super cluster information
-    info.add("sCEta", (sCluster.isNonnull() ? sCluster->eta() : -99.9));
-    info.add("sCPhi", (sCluster.isNonnull() ? sCluster->phi() : -99.9));
+  // super cluster information
+  info.add("sCEta", (sCluster.isNonnull() ? sCluster->eta() : -99.9));
+  info.add("sCPhi", (sCluster.isNonnull() ? sCluster->phi() : -99.9));
 
-    // photon isolation information
-    info.add("swissCrx", (phoIso ? phoIso->swissCrx() : -99.9));
-    info.add("seedTime", (phoIso ? phoIso->seedTime() : -99.9));
-    info.add("trackIsoR3PtCut20", (phoIso ? phoIso->trackIsoR3PtCut20() : 99.9));
-    info.add("ecalClusterIsoR3", (phoIso ? phoIso->ecalClusterIsoR3() : 99.9));
-    info.add("hcalRechitIsoR3", (phoIso ? phoIso->hcalRechitIsoR3() : 99.9));
-  }
-  else if (hasConver || (force && cand.pdgId()==-22))
-  {
-    const auto& photon = (hasConver ? *cand.userData<reco::Conversion>("src") : reco::Conversion());
-
-    // converted photon information
-    info.add("nTracks", photon.nTracks());
-
-    UInt_t quality = 0;
-    for (size_t i=0; i<12; i++) { quality += (photon.quality(reco::Conversion::ConversionQuality(i)) ? 1U<<i : 0); }
-    info.add("quality", quality);
-  }
+  // photon isolation information
+  info.add("swissCrx", (phoIso ? phoIso->swissCrx() : -99.9));
+  info.add("seedTime", (phoIso ? phoIso->seedTime() : -99.9));
+  info.add("trackIsoR3PtCut20", (phoIso ? phoIso->trackIsoR3PtCut20() : 99.9));
+  info.add("ecalClusterIsoR3", (phoIso ? phoIso->ecalClusterIsoR3() : 99.9));
+  info.add("hcalRechitIsoR3", (phoIso ? phoIso->hcalRechitIsoR3() : 99.9));
 
   // push data and return index
-  if (hasPhoton) info.pushData(photon);
-  else info.pushData(cand);
+  info.pushData(photon);
+  return idx;
+}
+
+
+UShort_t
+ParticleAnalyzer::fillConversionInfo(const pat::GenericParticle& cand, const UInt_t& candIdx, const bool& force)
+{
+  const bool hasSrc = (cand.hasUserData("src") && cand.userData<reco::Conversion>("src"));
+  if (!force && !hasSrc) return USHRT_MAX;
+
+  // fill conversion information
+  auto& info = particleInfo_["conv"];
+
+  const auto& conversion = (hasSrc ? *cand.userData<reco::Conversion>("src") : reco::Conversion());
+
+  // add input information
+  size_t index;
+  const bool found = info.getIndex(index, cand);
+  info.add(index, "candIdx", candIdx);
+  const auto& idx = getUShort(index, "conv_idx");
+  // return if already added
+  if (found) return idx;
+
+  // converted photon information
+  info.add("nTracks", conversion.nTracks());
+
+  UInt_t quality = 0;
+  for (size_t i=0; i<12; i++) { quality += (conversion.quality(reco::Conversion::ConversionQuality(i)) ? 1U<<i : 0); }
+  info.add("quality", quality);
+
+  // push data and return index
+  info.pushData(cand);
   return idx;
 }
 
@@ -1482,7 +1478,7 @@ ParticleAnalyzer::fillPhotonInfo(const pat::GenericParticle& cand, const UInt_t&
 UShort_t
 ParticleAnalyzer::fillJetInfo(const pat::GenericParticle& cand, const UInt_t& candIdx, const bool& force)
 {
-  const bool hasSrc = (std::abs(cand.pdgId())<=6 && cand.hasUserData("src") && cand.userData<pat::Jet>("src"));
+  const bool hasSrc = (cand.hasUserData("src") && cand.userData<pat::Jet>("src"));
   if (!force && !hasSrc) return USHRT_MAX;
 
   // fill jet information
@@ -1542,7 +1538,7 @@ ParticleAnalyzer::fillJetInfo(const pat::GenericParticle& cand, const UInt_t& ca
 UShort_t
 ParticleAnalyzer::fillTauInfo(const pat::GenericParticle& cand, const UInt_t& candIdx, const bool& force)
 {
-  const bool hasSrc = (std::abs(cand.pdgId())==15 && cand.hasUserData("src") && cand.userData<pat::Tau>("src"));
+  const bool hasSrc = (cand.hasUserData("src") && cand.userData<pat::Tau>("src"));
   if (!force && !hasSrc) return USHRT_MAX; 
 
   // fill tau information
@@ -1844,7 +1840,7 @@ ParticleAnalyzer::initTree()
   eventInfo_.initTree(*tree_);
 
   // add particle branches
-  for (const auto& p : std::vector<std::string>({"cand", "trk", "elec", "muon", "tau", "pho", "jet", "pf", "gen", "trig"}))
+  for (const auto& p : std::vector<std::string>({"cand", "trk", "elec", "muon", "tau", "pho", "conv", "jet", "pf", "gen", "trig"}))
   {
     if (particleInfo_.find(p)!=particleInfo_.end())
     {
@@ -1868,7 +1864,7 @@ void
 ParticleAnalyzer::addParticleToNtuple(const size_t& i, const std::pair<int, int>& dau)
 {
   const auto& cand = particleInfo_["cand"];
-  const auto pdgId = std::abs(cand.get(i, "pdgId", int(0)));
+  const auto sid = cand.get(i, "sourceId", UChar_t(0));
   // define label
   std::string label;
   if (dau.first>0)
@@ -1884,11 +1880,12 @@ ParticleAnalyzer::addParticleToNtuple(const size_t& i, const std::pair<int, int>
     else if (p.first=="trig") { idx = cand.get(i, "trigIdx", idx); }
     else if (p.first=="gen" ) { idx = cand.get(i, "genIdx",  idx); }
     else if (p.first=="trk" ) { idx = cand.get(i, "trkIdx",  idx); }
-    else if (p.first=="jet"  && pdgId<=6 ) { idx = cand.get(i, "srcIdx",  idx); }
-    else if (p.first=="elec" && pdgId==11) { idx = cand.get(i, "srcIdx",  idx); }
-    else if (p.first=="muon" && pdgId==13) { idx = cand.get(i, "srcIdx",  idx); }
-    else if (p.first=="tau"  && pdgId==15) { idx = cand.get(i, "srcIdx",  idx); }
-    else if (p.first=="pho"  && pdgId==22) { idx = cand.get(i, "srcIdx",  idx); }
+    else if (p.first=="jet"  && sid==Token::Jet       ) { idx = cand.get(i, "srcIdx",  idx); }
+    else if (p.first=="elec" && sid==Token::Electron  ) { idx = cand.get(i, "srcIdx",  idx); }
+    else if (p.first=="muon" && sid==Token::Muon      ) { idx = cand.get(i, "srcIdx",  idx); }
+    else if (p.first=="tau"  && sid==Token::Tau       ) { idx = cand.get(i, "srcIdx",  idx); }
+    else if (p.first=="pho"  && sid==Token::Photon    ) { idx = cand.get(i, "srcIdx",  idx); }
+    else if (p.first=="conv" && sid==Token::Conversion) { idx = cand.get(i, "srcIdx",  idx); }
     if (p.first=="trig" || p.first=="gen" || p.first=="trk" || idx<USHRT_MAX)
     {
       p.second.copyData(ntupleInfo_, idx, p.first+"_"+label);
@@ -1928,8 +1925,8 @@ ParticleAnalyzer::fillNTuple(const bool& fill)
   const auto& cand = particleInfo_["cand"];
   for (size_t i=0; i<cand.size(); i++)
   {
-    const auto hasMom = not cand.get(i, "momIdx", std::vector<UShort_t>()).empty();
-    if (hasMom) continue;
+    const auto status = cand.get(i, "status", UChar_t(0));
+    if (status!=3) continue;
     // clear
     ntupleInfo_.clear();
     // copy event information
@@ -1947,6 +1944,35 @@ ParticleAnalyzer::fillNTuple(const bool& fill)
     }
     // fill ntuple
     if (fill) ntuple_->Fill();
+  }
+}
+
+
+void
+ParticleAnalyzer::check()
+{
+  const auto& cand_size = particleInfo_.at("cand").size();
+  for (const auto& p : particleInfo_) {
+    p.second.check(p.first);
+    if (p.first!="cand") {
+      const std::string n = ((p.first=="gen" || p.first=="trk") ? p.first+"Idx" : "srcIdx");
+      const auto& s = p.second.size();
+      if (p.second.hasUIntV("candIdx"))
+        for (size_t i=0; i<s; i++)
+          for (const auto& v : p.second.get(i, "candIdx", std::vector<UInt_t>({UINT_MAX})))
+            if (v>=cand_size) throw std::logic_error(Form("[ERROR] Invalid cand index in %s (%ld, %ld): %d >= %ld", p.first.c_str(), i, s, v, cand_size));
+      if (particleInfo_.at("cand").hasUShortV(n))
+        for (size_t i=0; i<cand_size; i++)
+          for (const auto& v : particleInfo_.at("cand").get(i, n, std::vector<UShort_t>({54321})))
+            if (v!=USHRT_MAX && v>=s) throw std::logic_error(Form("[ERROR] Invalid %s index in cand (%ld, %ld): %d >= %ld", p.first.c_str(), i, cand_size, v, s));
+    }
+    else {
+      for (const auto& c : {"dauIdx", "momIdx"})
+        if (p.second.hasUIntV(c))
+          for (size_t i=0; i<cand_size; i++)
+            for (const auto& v : p.second.get(i, c, std::vector<UInt_t>({987654321})))
+              if (v!=UINT_MAX && v>=cand_size) throw std::logic_error(Form("[ERROR] Invalid %s in %s (%ld): %d >= %ld", c, p.first.c_str(), i, v, cand_size));
+    }
   }
 }
 
@@ -1986,24 +2012,34 @@ ParticleAnalyzer::loadConfiguration(const edm::ParameterSet& config, const edm::
     vtxSortByTrkSize_ = true;
   }
 
-  HepPDT::ParticleID pid;
-  if (config.existsAs<int>("pdgId"))
+  UInt_t pdgId(0);
+  if (config.existsAs<UInt_t>("pdgId"))
   {
-    const auto absPdgId = std::abs(config.getParameter<int>("pdgId"));
-    if (SOURCEPDG_.find(absPdgId)!=SOURCEPDG_.end()) { sourceId_.insert(absPdgId); }
+    pdgId = config.getParameter<UInt_t>("pdgId");
     if (genPdgId_.empty()) { std::copy(genPdgIdV_.begin(), genPdgIdV_.end(), std::inserter(genPdgId_, genPdgId_.end())); }
-    genPdgId_.insert(absPdgId);
-    pid = HepPDT::ParticleID(absPdgId!=0 ? absPdgId : 211);
+    genPdgId_.insert(pdgId);
+  }
+
+  Token sid(Token::Unknown);
+  if (config.existsAs<UInt_t>("source"))
+  {
+    sid = Token(config.getParameter<UInt_t>("source"));
+  }
+  if (sid==Token::Unknown) {
+    getSourceId(sid, pdgId, config);
+  }
+  if (sid>=Token::ParticleFlow) {
+    sourceId_.insert(sid);
   }
 
   if (!addInfo_["source"])
   {
-    addInfo_["source"] = sourceId_.size()>0;
+    addInfo_["source"] = !sourceId_.empty();
   }
 
   if (!addInfo_["track"])
   {
-    addInfo_["track"] = pid.threeCharge()!=0;
+    addInfo_["track"] = (sid>=Token::Track && sid<=Token::Muon);
   }
 
   if (!addInfo_["dEdxs"] && config.existsAs<std::vector<std::string>>("dEdxInputs"))
@@ -2017,7 +2053,7 @@ ParticleAnalyzer::loadConfiguration(const edm::ParameterSet& config, const edm::
     addInfo_["mva"] = config.getParameter<edm::InputTag>("mva").label()!="";
   }
 
-  if (!addInfo_["muonL1"] && std::abs(pid.pid())==13)
+  if (!addInfo_["muonL1"] && sid==Token::Muon)
   {
     addInfo_["muonL1"] = (!config.existsAs<bool>("propToMuon") || config.getParameter<bool>("propToMuon"));
   }

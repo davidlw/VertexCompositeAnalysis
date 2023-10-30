@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 generalParticles = cms.EDProducer("ParticleProducer",
 
-    pdgId = cms.int32(0),
+    pdgId = cms.uint32(0),
     width = cms.double(-1),
     doSwap = cms.bool(False),
     vtxSortByTrkSize = cms.bool(True),

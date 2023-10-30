@@ -12,9 +12,23 @@
 
 // ParticleFitter: constructor and (empty) destructor
 ParticleFitter::ParticleFitter(const edm::ParameterSet& theParameters, edm::ConsumesCollector && iC) :
-  pdgId_(theParameters.getParameter<int>("pdgId")),
+  pdgId_(theParameters.getParameter<unsigned int>("pdgId")),
   doSwap_(theParameters.getParameter<bool>("doSwap")),
+  matchVertex_(theParameters.getParameter<bool>("matchVertex")),
   vtxSortByTrkSize_(theParameters.getParameter<bool>("vtxSortByTrkSize")),
+  fitAlgoV_(theParameters.getParameter<std::vector<UInt_t> >("fitAlgo")),
+  puMap_(matchVertex_ ? theParameters.getParameter<std::vector<double> >("puMap") : std::vector<double>()),
+  bField_esToken_(iC.esConsumes<MagneticField, IdealMagneticFieldRecord>()),
+  token_beamSpot_(iC.consumes<reco::BeamSpot>(edm::InputTag("offlineBeamSpot"))),
+  token_vertices_(iC.consumes<reco::VertexCollection>(theParameters.getParameter<edm::InputTag>("primaryVertices"))),
+  token_tracks_(iC.consumes<reco::TrackCollection>(theParameters.getParameter<edm::InputTag>("tracks"))),
+  token_pfParticles_(iC.consumes<reco::PFCandidateCollection>(theParameters.getParameter<edm::InputTag>("pfParticles"))),
+  token_electrons_(iC.consumes<pat::ElectronCollection>(theParameters.getParameter<edm::InputTag>("electrons"))),
+  token_muons_(iC.consumes<pat::MuonCollection>(theParameters.getParameter<edm::InputTag>("muons"))),
+  token_taus_(iC.consumes<pat::TauCollection>(theParameters.getParameter<edm::InputTag>("taus"))),
+  token_photons_(iC.consumes<pat::PhotonCollection>(theParameters.getParameter<edm::InputTag>("photons"))),
+  token_convPhotons_(iC.consumes<reco::ConversionCollection>(theParameters.getParameter<edm::InputTag>("conversions"))),
+  token_jets_(iC.consumes<pat::JetCollection>(theParameters.getParameter<edm::InputTag>("jets"))),
   preSelection_(theParameters.getParameter<std::string>("preSelection")),
   preMassSelection_(theParameters.getParameter<std::string>("preMassSelection")),
   pocaSelection_(theParameters.getParameter<std::string>("pocaSelection")),
@@ -22,19 +36,18 @@ ParticleFitter::ParticleFitter(const edm::ParameterSet& theParameters, edm::Cons
   finalSelection_(theParameters.getParameter<std::string>("finalSelection"))
 {
   // get candidate information
-  const auto pdgId = std::abs(pdgId_);
   if (theParameters.existsAs<double>("mass")) {
     mass_ = theParameters.getParameter<double>("mass");
   }
-  else if (MASS_.find(pdgId)!=MASS_.end()) {
-    mass_ = MASS_.at(pdgId);
+  else if (MASS_.find(pdgId_)!=MASS_.end()) {
+    mass_ = MASS_.at(pdgId_);
   }
   else { mass_ = -1; }
   if (doSwap_ && mass_<0.) { throw std::logic_error("[ERROR] Can't swap with undefined input mass!"); }
-  width_ = mass_*0.15;;
   if (theParameters.existsAs<double>("width")) {
     width_ = theParameters.getParameter<double>("width");
   }
+  else { width_ = mass_*0.15; }
 
   // get daughter information
   const auto daughterVPset = theParameters.getParameter<std::vector<edm::ParameterSet> >("daughterInfo");
@@ -42,26 +55,6 @@ ParticleFitter::ParticleFitter(const edm::ParameterSet& theParameters, edm::Cons
   for (size_t i=0; i<daughterVPset.size(); i++) {
     daughters_[i].fillInfo(daughterVPset[i], theParameters, iC);
   }
-
-  // get general settings
-  fitAlgoV_ = theParameters.getParameter<std::vector<UInt_t> >("fitAlgo");
-  matchVertex_ = theParameters.getParameter<bool>("matchVertex");
-  if (matchVertex_) {
-    puMap_ = theParameters.getParameter<std::vector<double> >("puMap");
-  }
-
-  // get input tags
-  bField_esToken_ = iC.esConsumes<MagneticField, IdealMagneticFieldRecord>();
-  token_beamSpot_ = iC.consumes<reco::BeamSpot>(edm::InputTag("offlineBeamSpot"));
-  token_vertices_ = iC.consumes<reco::VertexCollection>(theParameters.getParameter<edm::InputTag>("primaryVertices"));
-  token_electrons_ = iC.consumes<pat::ElectronCollection>(theParameters.getParameter<edm::InputTag>("electrons"));
-  token_muons_ = iC.consumes<pat::MuonCollection>(theParameters.getParameter<edm::InputTag>("muons"));
-  token_taus_ = iC.consumes<pat::TauCollection>(theParameters.getParameter<edm::InputTag>("taus"));
-  token_photons_ = iC.consumes<pat::PhotonCollection>(theParameters.getParameter<edm::InputTag>("photons"));
-  token_tracks_ = iC.consumes<reco::TrackCollection>(theParameters.getParameter<edm::InputTag>("tracks"));
-  token_pfParticles_ = iC.consumes<reco::PFCandidateCollection>(theParameters.getParameter<edm::InputTag>("pfParticles"));
-  token_jets_ = iC.consumes<pat::JetCollection>(theParameters.getParameter<edm::InputTag>("jets"));
-  token_convPhotons_ = iC.consumes<reco::ConversionCollection>(theParameters.getParameter<edm::InputTag>("conversions"));
 
   // initialize attributes
   vertex_ = reco::Vertex();
@@ -165,19 +158,19 @@ void ParticleFitter::setVertex(const edm::Event& iEvent)
 
 void ParticleFitter::addParticles(ParticleDaughter& d, const edm::Event& iEvent)
 {
-  const auto pdgId = std::abs(d.pdgId());
-  const auto charge = (d.charge()!=-99 ? d.charge() : HepPDT::ParticleID(pdgId).threeCharge());
+  const auto& sid = d.sourceId();
   const auto& vertex = (vertex_.isFake() ? beamSpot2D_ : vertex_);
-  if (d.useSource()) { d.addParticles(iEvent); }
-  else if (pdgId==0 ) { d.addParticles(iEvent, token_tracks_, vertex); }
-  else if (pdgId<=6 ) { d.addParticles(iEvent, token_jets_, vertex);        }
-  else if (pdgId==11) { d.addParticles(iEvent, token_electrons_, vertex);   }
-  else if (pdgId==13) { d.addParticles(iEvent, token_muons_, vertex);       }
-  else if (pdgId==15) { d.addParticles(iEvent, token_taus_, vertex);        }
-  else if (d.pdgId()== 22) { d.addParticles(iEvent, token_photons_, vertex);     }
-  else if (d.pdgId()==-22) { d.addParticles(iEvent, token_convPhotons_, vertex); }
-  else if (charge==0) { d.addParticles(iEvent, token_pfParticles_, vertex); }
-  else                { d.addParticles(iEvent, token_tracks_, vertex);      }
+  if      (sid==Token::GenericParticle) { d.addParticles(iEvent); }
+  else if (sid==Token::Track          ) { d.addParticles(iEvent, token_tracks_, vertex);      }
+  else if (sid==Token::ParticleFlow   ) { d.addParticles(iEvent, token_pfParticles_, vertex); }
+  else if (sid==Token::Jet            ) { d.addParticles(iEvent, token_jets_, vertex);        }
+  else if (sid==Token::Electron       ) { d.addParticles(iEvent, token_electrons_, vertex);   }
+  else if (sid==Token::Muon           ) { d.addParticles(iEvent, token_muons_, vertex);       }
+  else if (sid==Token::Tau            ) { d.addParticles(iEvent, token_taus_, vertex);        }
+  else if (sid==Token::Photon         ) { d.addParticles(iEvent, token_photons_, vertex);     }
+  else if (sid==Token::Conversion     ) { d.addParticles(iEvent, token_convPhotons_, vertex); }
+  else if (sid==Token::Jet            ) { d.addParticles(iEvent, token_jets_, vertex);        }
+  else { throw std::logic_error(Form("[ERROR] Source ID %u is not valid!", sid)); }
 };
 
 
@@ -363,10 +356,11 @@ void ParticleFitter::swapDaughters(DoubleMap& swapDauColls, const pat::GenericPa
       const auto& dau = *dauColl[i];
       const auto& per = *dauColl[perIdx[i]];
       if (cand.charge()!=0 && dau.charge()!=per.charge()) break;
-      const auto& sourceID1 = (dau.hasUserInt("sourceID") ? dau.userInt("sourceID") : 0);
-      const auto& sourceID2 = (per.hasUserInt("sourceID") ? per.userInt("sourceID") : 0);
-      if (sourceID1!=sourceID2) break;
-      if (sourceID1==0 && dau.mass()!=per.mass()) break; // sourceID == 0 means that the daughter has PID, not necessary to swap it with another mass
+      if (!dau.hasUserInt("sourceId") || !per.hasUserInt("sourceId")) { throw std::logic_error("[ERROR] Missing sourceId when swapping!"); }
+      const auto& sourceId1 = dau.userInt("sourceId");
+      const auto& sourceId2 = per.userInt("sourceId");
+      if (sourceId1!=sourceId2) break;
+      if (sourceId1>Token::Track && dau.mass()!=per.mass()) break; // sourceId > Token::Track means that the daughter has PID, not necessary to swap it with another mass
       swapDauColl[i] = per.mass();
       p4 += math::XYZTLorentzVector(dau.px(), dau.py(), dau.pz(), std::sqrt(dau.p4().P2()+per.massSqr()));
     }
@@ -735,7 +729,7 @@ void ParticleFitter::matchPrimaryVertex(pat::GenericParticle& cand, const TransT
     // match primary vertex
     if (!(pca==GlobalPoint())) {
       for (const auto& pv : priVertices_) {
-        const bool& isGoodPV = (pv.position() == vertex_.position() || pv.tracksSize() >= puMap_.size() || fabs(pv.z()-vertex_.z()) > puMap_[pv.tracksSize()]);
+        const bool& isGoodPV = (pv.position() == vertex_.position() || pv.tracksSize() >= puMap_.size() || std::abs(pv.z()-vertex_.z()) > puMap_[pv.tracksSize()]);
         if (isGoodPV && std::abs(pv.z()-pca.z()) < std::abs(candPV.z()-pca.z())-0.4) { candPV = pv; }
       }
     }
@@ -784,6 +778,7 @@ ParticleDaughter::ParticleDaughter()
   particles_ = {};
   particlesRef_ = {};
   propToMuonSetup_ = 0;
+  source_id_ = Token::Unknown;
 };
 
 
@@ -809,24 +804,23 @@ void ParticleDaughter::clear()
 
 void ParticleDaughter::fillInfo(const edm::ParameterSet& pSet, const edm::ParameterSet& config, edm::ConsumesCollector& iC)
 {
-  if (pSet.existsAs<int>("pdgId")) {
-    pdgId_ = pSet.getParameter<int>("pdgId");
+  if (pSet.existsAs<unsigned int>("pdgId")) {
+    pdgId_ = pSet.getParameter<unsigned int>("pdgId");
   }
   if (pSet.existsAs<int>("charge")) {
     charge_ = pSet.getParameter<int>("charge");
   }
-  const auto pdgId = std::abs(pdgId_);
   if (pSet.existsAs<double>("mass")) {
     mass_ = pSet.getParameter<double>("mass");
   }
-  else if (MASS_.find(pdgId)!=MASS_.end()) {
-    mass_ = MASS_.at(pdgId);
+  else if (MASS_.find(pdgId_)!=MASS_.end()) {
+    mass_ = MASS_.at(pdgId_);
   }
   if (pSet.existsAs<double>("width")) {
     width_ = pSet.getParameter<double>("width");
   }
-  else if (WIDTH_.find(pdgId)!=WIDTH_.end()) {
-    width_ = WIDTH_.at(pdgId);
+  else if (WIDTH_.find(pdgId_)!=WIDTH_.end()) {
+    width_ = WIDTH_.at(pdgId_);
   }
   else { width_ = mass_*1e-6; }
   if (pSet.existsAs<std::string>("selection")) {
@@ -837,6 +831,15 @@ void ParticleDaughter::fillInfo(const edm::ParameterSet& pSet, const edm::Parame
   }
   if (pSet.existsAs<edm::InputTag>("source")) {
     token_source_ = iC.consumes<pat::GenericParticleCollection>(pSet.getParameter<edm::InputTag>("source"));
+    source_id_ = Token::GenericParticle;
+  }
+  else if (pSet.existsAs<unsigned int>("source")) {
+    const auto& sid = pSet.getParameter<unsigned int>("source");
+    if (sid>Token::Jet) { throw std::logic_error(Form("[ERROR] Source ID %u is not valid!", sid)); }
+    source_id_ = Token(sid);
+  }
+  if (source_id_==Token::Unknown) {
+    getSourceId(source_id_, pdgId_, config);
   }
   const auto& mvaSet = (pSet.existsAs<edm::InputTag>("mva") ? pSet : config);
   if (mvaSet.existsAs<edm::InputTag>("mva")) {
@@ -844,10 +847,10 @@ void ParticleDaughter::fillInfo(const edm::ParameterSet& pSet, const edm::Parame
   }
   if (config.existsAs<std::vector<std::string> >("dEdxInputs")) {
     for (const auto& input : config.getParameter<std::vector<std::string> >("dEdxInputs")){
-      tokens_dedx_.insert( std::make_pair(input, iC.consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag(input))));
+      tokens_dedx_.insert(std::make_pair(input, iC.consumes<edm::ValueMap<reco::DeDxData> >(edm::InputTag(input))));
     }
   }
-  if (pdgId==13 && (pSet.existsAs<bool>("propToMuon") && pSet.getParameter<bool>("propToMuon"))) {
+  if (source_id_==Token::Muon && (pSet.existsAs<bool>("propToMuon") && pSet.getParameter<bool>("propToMuon"))) {
     edm::ParameterSet conf;
     conf.addParameter("useSimpleGeometry", (pSet.existsAs<bool>("useSimpleGeometry") ? pSet.getParameter<bool>("useSimpleGeometry") : true)); // default: true
     conf.addParameter("useTrack", (pSet.existsAs<std::string>("useTrack") ? pSet.getParameter<std::string>("useTrack") : "none")); // default: none
@@ -883,7 +886,6 @@ void ParticleDaughter::addParticles(const edm::Event& event, const edm::EDGetTok
   StringCutObjectSelector<pat::GenericParticle, true> finalSelection(finalSelection_);
   // add particles
   ParticleMassSet particles;
-  if (handle.isValid()) { // DEBUG REMOVE cout
   for (size_t i=0; i<handle->size(); i++) {
     const auto& p = edm::Ref<std::vector<T> >(handle, i);
     if (!selection(*p)) continue;
@@ -892,6 +894,7 @@ void ParticleDaughter::addParticles(const edm::Event& event, const edm::EDGetTok
     if (charge_!=-99 && cand.charge()!=charge_) continue;
     cand.setPdgId(pdgId_);
     cand.setStatus(1);
+    cand.addUserInt("sourceId", source_id_);
     addData(cand, p, embedInfo);
     if (cand.track().isNonnull()) {
       const auto& trk = *cand.track();
@@ -912,7 +915,6 @@ void ParticleDaughter::addParticles(const edm::Event& event, const edm::EDGetTok
       particles.insert(cand);
     }
   }
-  }
   particles_.assign(particles.begin(), particles.end());
   particlesRef_.resize(particles_.size());
   for (size_t i=0; i<particles_.size(); i++) { particlesRef_[i] = pat::GenericParticleRef(&particles_, i); }
@@ -931,6 +933,9 @@ void ParticleDaughter::addParticles(const edm::Event& event)
     if (charge_!=-99 && cand.charge()!=charge_) continue;
     if (cand.hasUserData("daughters")) {
       cand.setStatus(2);
+    }
+    if (!cand.hasUserInt("sourceId")) {
+      cand.addUserInt("sourceId", source_id_);
     }
     if (finalSelection(cand)) {
       particles.insert(cand);
@@ -995,17 +1000,19 @@ void ParticleDaughter::addData(pat::GenericParticle& c, const reco::TrackRef& p,
 {
   c.setTrack(p, embedInfo);
   if (embedInfo) c.addUserData<reco::TrackRef>("trackRef", p);
-  c.addUserInt("sourceID", 1);
 };
 
 
 void ParticleDaughter::addData(pat::GenericParticle& c, const reco::PFCandidateRef& p, const bool& embedInfo)
 {
-  if (c.pdgId()==0) { c.setPdgId(p->pdgId()); }
+  if (c.pdgId()!=p->pdgId() && p->pdgId()>=11 && p->pdgId()<=22) {
+    c.setPdgId(p->pdgId());
+    math::PtEtaPhiMLorentzVector p4(c.pt(), c.eta(), c.phi(), MASS_.at(p->pdgId()));
+    c.setP4(p4);
+  }
   c.setTrack(p->trackRef(), embedInfo);
   if (embedInfo) c.addUserData<reco::TrackRef>("trackRef", p->trackRef());
   c.addUserData<reco::PFCandidate>("src", *p);
-  c.addUserInt("sourceID", 2);
 };
 
 

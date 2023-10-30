@@ -15,8 +15,8 @@
 //
 //
 
-#ifndef VertexCompositeAnalysis__Particle_FITTER_H
-#define VertexCompositeAnalysis__Particle_FITTER_H
+#ifndef VertexCompositeAnalysis_VertexCompositeProducer_ParticleFitter_H
+#define VertexCompositeAnalysis_VertexCompositeProducer_ParticleFitter_H
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/ESHandle.h"
@@ -118,10 +118,21 @@ const std::map<uint, double> MASS_ = {
 };
 const std::map<uint, float> WIDTH_ = {{211, 3.5E-7f}, {321, 1.6E-5f}, {2212, 1.6E-5f}};
 
+enum Token { Unknown = 0, GenericParticle = 1, Track = 2, ParticleFlow = 3, Electron = 4, Muon = 5, Tau = 6, Conversion = 7, Photon = 8, Jet = 9 };
 
 typedef std::set<pat::GenericParticleRef, ParticleComparator> ParticleRefSet;
 typedef std::set<pat::GenericParticle, ParticleMassComparator> ParticleMassSet;
 typedef std::vector<pat::GenericParticleRef> GenericParticleRefCollection;
+
+
+inline void getSourceId(Token& sid, const UInt_t& pid, const edm::ParameterSet& c) {
+  if      (pid==0 ) { sid = c.getParameter<edm::InputTag>("pfParticles").label().empty() ? Token::Track : Token::ParticleFlow; }
+  else if (pid<=6 ) { sid = Token::Jet; }
+  else if (pid==11) { sid = Token::Electron; }
+  else if (pid==13) { sid = Token::Muon; }
+  else if (pid==15) { sid = Token::Tau; }
+  else if (pid==22) { sid = c.getParameter<edm::InputTag>("photons").label().empty() ? Token::Conversion : Token::Photon; }
+}
 
 
 class ParticleDaughter {
@@ -130,13 +141,13 @@ class ParticleDaughter {
   ParticleDaughter(const edm::ParameterSet& pSet, const edm::ParameterSet& config, edm::ConsumesCollector&& iC);
   ~ParticleDaughter();
 
-  const int& pdgId() const { return pdgId_; }
+  const unsigned int& pdgId() const { return pdgId_; }
   const int& charge() const { return charge_; }
   const double& mass() const { return mass_; }
   const float& width() const { return width_; }
+  const Token& sourceId() const { return source_id_; }
   const pat::GenericParticleCollection& particles() const { return particles_; }
   const GenericParticleRefCollection& particlesRef() const { return particlesRef_; }
-  const bool useSource() const { return !token_source_.isUninitialized(); }
   
   template <class T>
   void addParticles(const edm::Event& event, const edm::EDGetTokenT<std::vector<T> >& token, const reco::Vertex& vertex, const bool embedInfo=true);
@@ -164,10 +175,11 @@ class ParticleDaughter {
   void setDeDx(pat::GenericParticle& c, const std::map<std::string, edm::Handle<edm::ValueMap<reco::DeDxData> > >& m);
   void addMuonL1Info(pat::GenericParticle& c, const edm::Handle<pat::TriggerObjectStandAloneMatch>& m);
 
-  int pdgId_;
+  unsigned int pdgId_;
   int charge_;
   double mass_;
   float width_;
+  Token source_id_;
   std::string selection_;
   std::string finalSelection_;
 
@@ -229,11 +241,31 @@ class ParticleFitter {
   void clear(std::vector<T>& v) { std::vector<T>().swap(v); };
 
  private:
-  int pdgId_;
-  bool doSwap_, matchVertex_, vtxSortByTrkSize_;
+  const unsigned int pdgId_;
+  const bool doSwap_, matchVertex_, vtxSortByTrkSize_;
+  const std::vector<UInt_t> fitAlgoV_;
+  const std::vector<double> puMap_;
+
+  const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> bField_esToken_;
+
+  const edm::EDGetTokenT<reco::BeamSpot> token_beamSpot_;
+  const edm::EDGetTokenT<reco::VertexCollection> token_vertices_;
+  const edm::EDGetTokenT<reco::TrackCollection> token_tracks_;
+  const edm::EDGetTokenT<reco::PFCandidateCollection> token_pfParticles_;
+  const edm::EDGetTokenT<pat::ElectronCollection> token_electrons_;
+  const edm::EDGetTokenT<pat::MuonCollection> token_muons_;
+  const edm::EDGetTokenT<pat::TauCollection> token_taus_;
+  const edm::EDGetTokenT<pat::PhotonCollection> token_photons_;
+  const edm::EDGetTokenT<reco::ConversionCollection> token_convPhotons_;
+  const edm::EDGetTokenT<pat::JetCollection> token_jets_;
+
+  const StringCutObjectSelector<pat::GenericParticle, false> preSelection_;
+  const StringCutObjectSelector<pat::GenericParticle, false> preMassSelection_;
+  const StringCutObjectSelector<pat::GenericParticle, false> pocaSelection_;
+  const StringCutObjectSelector<pat::GenericParticle, false> postSelection_;
+  const StringCutObjectSelector<pat::GenericParticle, false> finalSelection_;
+
   double mass_, width_;
-  std::vector<UInt_t> fitAlgoV_;
-  std::vector<double> puMap_;
   reco::BeamSpot beamSpot_;
   reco::Vertex beamSpot2D_, vertex_;
   reco::VertexCollection vertices_, priVertices_;
@@ -246,25 +278,7 @@ class ParticleFitter {
   reco::VertexRefProd vtxProd_;
   GenericParticleRefProd dauProd_;
 
-  edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> bField_esToken_;
   edm::ESHandle<MagneticField> bFieldHandle_;
-
-  edm::EDGetTokenT<reco::BeamSpot> token_beamSpot_;
-  edm::EDGetTokenT<reco::VertexCollection> token_vertices_;
-  edm::EDGetTokenT<pat::ElectronCollection> token_electrons_;
-  edm::EDGetTokenT<pat::MuonCollection> token_muons_;
-  edm::EDGetTokenT<pat::TauCollection> token_taus_;
-  edm::EDGetTokenT<pat::PhotonCollection> token_photons_;
-  edm::EDGetTokenT<reco::TrackCollection> token_tracks_;
-  edm::EDGetTokenT<reco::PFCandidateCollection> token_pfParticles_;
-  edm::EDGetTokenT<pat::JetCollection> token_jets_;
-  edm::EDGetTokenT<reco::ConversionCollection> token_convPhotons_;
-
-  StringCutObjectSelector<pat::GenericParticle, false> preSelection_;
-  StringCutObjectSelector<pat::GenericParticle, false> preMassSelection_;
-  StringCutObjectSelector<pat::GenericParticle, false> pocaSelection_;
-  StringCutObjectSelector<pat::GenericParticle, false> postSelection_;
-  StringCutObjectSelector<pat::GenericParticle, false> finalSelection_;
 };
 
 
