@@ -1,0 +1,11 @@
+<use name="FWCore/Framework"/>
+<use name="DataFormats/HeavyIonEvent"/>
+<use name="DataFormats/VertexReco"/>
+<use name="DataFormats/HepMCCandidate"/>
+<use name="DataFormats/Luminosity"/>
+<use name="RecoVertex/PrimaryVertexProducer"/>
+<use name="TrackingTools/Records"/>
+<use name="TrackingTools/IPTools"/>
+<use name="CalibFormats/HcalObjects"/>
+<use name="MuonAnalysis/MuonAssociators"/>
+<flags EDM_PLUGIN="1"/>
