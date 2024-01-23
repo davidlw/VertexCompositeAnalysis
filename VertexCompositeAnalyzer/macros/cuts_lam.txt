@@ -1,0 +1,23 @@
+set 1: AL 0.99999 DL 10  DCA 2
+set 2: AL 0.99995 DL 10  DCA 2
+set 3: AL 0.9999 DL 10  DCA 2
+set 4: AL 0.9995 DL 10  DCA 2
+
+
+set 5: AL 0.99995 DL 15  DCA 2
+set 6: AL 0.99995 DL 8  DCA 2
+
+set 7: AL 0.99995 DL 5  DCA 2 slightly better for low pT
+set 8: AL 0.9999 DL 5  DCA 2 slightly better for high pT
+
+set 12: AL 0.9999 DL 5  DCA 1.5 slightly better for high pT
+set 15: AL 0.99995 DL 5  DCA 1.5 slightly better for low pT
+
+set 13: Xi: AL 0.99995
+set 14: Xi: AL 0.99999
+
+set 9: AL 0.9999 DL 8  DCA 2
+
+set 10: AL 0.9999 DL 5  DCA 3
+set 11: AL 0.9999 DL 5  DCA 2.5
+
