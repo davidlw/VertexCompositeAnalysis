@@ -2,13 +2,13 @@
 
 Example of setting up and running gamma+gamma to dimuon tree
 
-cmsrel CMSSW_10_3_3_patch1
+cmsrel CMSSW_10_6_4_patch1
 
-cd CMSSW_10_3_3_patch1/src
+cd CMSSW_10_6_4_patch1/src
 
 cmsenv
 
-git clone -b 10_3_X https://github.com/davidlw/VertexCompositeAnalysis
+git clone -b 10_6_X https://github.com/davidlw/VertexCompositeAnalysis
 
 cd VertexCompositeAnalysis
 
@@ -16,4 +16,5 @@ scram b -j8
 
 cd VertexCompositeProducer/test
 
-cmsRun PbPbSkimAndTree2018_DiMuContBothGammaGamma_mc_cfg.py 
+## V0 reconstruction inside jets in pp using MINIAOD
+cmsRun ppRun2UL_V0Both_MiniAOD_cfg.py 
