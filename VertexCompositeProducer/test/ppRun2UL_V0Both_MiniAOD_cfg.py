@@ -13,8 +13,8 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 
 # Define the input source
 process.source = cms.Source("PoolSource",
-#        fileNames = cms.untracked.vstring('root://xrootd-cms.infn.it///store/data/Run2018C/JetHT/MINIAOD/12Nov2019_UL2018_rsb-v1/10000/015CDDF7-DBCB-094D-861E-54F73012741A.root'),
-        fileNames = cms.untracked.vstring('file:/eos/cms/store/group/phys_heavyions/flowcorr/JetHT/Ak8Jet500Skim_JetHT_Run2018D/210123_050442/0000/ppRun2UL_MINIAOD_17.root'),
+        fileNames = cms.untracked.vstring('root://xrootd-cms.infn.it///store/data/Run2018C/JetHT/MINIAOD/12Nov2019_UL2018_rsb-v1/10000/015CDDF7-DBCB-094D-861E-54F73012741A.root'),
+#        fileNames = cms.untracked.vstring('file:/eos/cms/store/group/phys_heavyions/flowcorr/JetHT/Ak8Jet500Skim_JetHT_Run2018D/210123_050442/0000/ppRun2UL_MINIAOD_17.root'),
 #        fileNames = cms.untracked.vstring('file:/eos/cms/store/group/phys_heavyions/flowcorr/QCD_Pt_470to600_TuneCP5_13TeV_pythia8/Ak8Jet500Skim_QCDPt470_Pythia8_UL18/210128_140537/0000/ppRun2UL_MINIAOD_10.root'),
 )
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
