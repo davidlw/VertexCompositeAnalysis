@@ -1,6 +1,6 @@
 # VertexCompositeAnalysis
 
-Example of setting up and running gamma+gamma to dimuon tree
+Example of setting up and running V0 reconstruction inside jets in pp
 
 cmsrel CMSSW_10_6_4_patch1
 
