@@ -110,8 +110,8 @@ process.lambdaana = particleAna.clone(
       'Flag_colEvtSel',
       'Flag_hfCoincFilter2Th4',
       'Flag_primaryVertexFilter',
-      'Flag_fPosFilterNTh8',
-      'Flag_fNegFilterNTh8' 
+      'Flag_fPosFilterNTh9p2',
+      'Flag_fNegFilterNTh8p6' 
   )
 )
 
@@ -157,10 +157,10 @@ process.schedule = cms.Schedule(
 process.Flag_colEvtSel = cms.Path(process.eventFilter * process.colEvtSel)
 process.Flag_hfCoincFilter2Th4 = cms.Path(process.eventFilter * process.hfCoincFilter2Th4)
 process.Flag_primaryVertexFilter = cms.Path(process.eventFilter * process.primaryVertexFilter)
-process.Flag_hfPosFilterNTh8 = cms.Path(process.eventFilter * process.hfPosFilterNTh8_seq)
-process.Flag_hfNegFilterNTh8 = cms.Path(process.eventFilter * process.hfNegFilterNTh8_seq)
+process.Flag_hfPosFilterNTh9p2 = cms.Path(process.eventFilter * process.hfPosFilterNTh9p2_seq)
+process.Flag_hfNegFilterNTh8p6 = cms.Path(process.eventFilter * process.hfNegFilterNTh8p6_seq)
 
-eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter2Th4 , process.Flag_primaryVertexFilter , process.Flag_hfPosFilterNTh8 , process.Flag_hfNegFilterNTh8 ]
+eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter2Th4 , process.Flag_primaryVertexFilter , process.Flag_hfPosFilterNTh9p2 , process.Flag_hfNegFilterNTh8p6 ]
 
 for P in eventFilterPaths:
     process.schedule.insert(0, P)

@@ -58,7 +58,7 @@ for i in range(0,1):
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'V0_'+key+'_PbPbSkimAndTree2023_20241003v2'
+    config.General.requestName = 'V0_'+key+'_PbPbSkimAndTree2023_20241003v3'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]
