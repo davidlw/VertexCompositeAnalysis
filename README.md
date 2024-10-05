@@ -21,3 +21,8 @@ cmsRun PbPbSkimAndTree2023_Phi_ParticleAnalyzer_cfg.py
 
 ## V0 reconstruction
 cmsRun PbPbSkimAndTree2023_V0_ParticleAnalyzer_cfg.py
+
+## To submit crab jobs
+source /cvmfs/cms.cern.ch/common/crab-setup.csh
+
+python3 crabMultiConfig_DATA2023_FORWARDSKIM_V0.py 

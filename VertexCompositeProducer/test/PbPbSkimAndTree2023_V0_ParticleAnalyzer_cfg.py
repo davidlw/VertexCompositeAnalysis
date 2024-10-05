@@ -16,7 +16,7 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 
 # Define the input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring("root://cmsxrootd.fnal.gov///store/hidata/HIRun2023A/HIForward0/AOD/PromptReco-v2/000/374/961/00000/fdb4d813-befb-4dbf-b7e8-937970cc7272.root"),
+    fileNames = cms.untracked.vstring("root://xrootd-cms.infn.it//store/hidata/HIRun2023A/HIForward0/AOD/16Jan2024-v1/2810000/044c4834-e8e7-46bd-ba8b-e3ad31947003.root"),
 )
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
@@ -110,6 +110,8 @@ process.lambdaana = particleAna.clone(
       'Flag_colEvtSel',
       'Flag_hfCoincFilter2Th4',
       'Flag_primaryVertexFilter',
+      'Flag_fPosFilterNTh8',
+      'Flag_fNegFilterNTh8' 
   )
 )
 
@@ -155,15 +157,17 @@ process.schedule = cms.Schedule(
 process.Flag_colEvtSel = cms.Path(process.eventFilter * process.colEvtSel)
 process.Flag_hfCoincFilter2Th4 = cms.Path(process.eventFilter * process.hfCoincFilter2Th4)
 process.Flag_primaryVertexFilter = cms.Path(process.eventFilter * process.primaryVertexFilter)
+process.Flag_hfPosFilterNTh8 = cms.Path(process.eventFilter * process.hfPosFilterNTh8_seq)
+process.Flag_hfNegFilterNTh8 = cms.Path(process.eventFilter * process.hfNegFilterNTh8_seq)
 
-eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter2Th4 , process.Flag_primaryVertexFilter ]
-
-process.eventFilter = cms.Sequence(
-    process.hltFilter *
-    process.primaryVertexFilter *
-    process.hfPosFilterNTh8_seq *
-    process.hfNegFilterNTh8_seq
-)
+eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter2Th4 , process.Flag_primaryVertexFilter , process.Flag_hfPosFilterNTh8 , process.Flag_hfNegFilterNTh8 ]
 
 for P in eventFilterPaths:
     process.schedule.insert(0, P)
+
+#process.load('PhysicsTools.PatAlgos.slimming.unpackedTracksAndVertices_cfi')
+#process.eventFilter.insert(0, process.unpackedTracksAndVertices)
+
+#from HLTrigger.Configuration.CustomConfigs import massReplaceInputTag
+#process = massReplaceInputTag(process,"offlinePrimaryVertices","unpackedTracksAndVertices")
+#process = massReplaceInputTag(process,"generalTracks","unpackedTracksAndVertices")

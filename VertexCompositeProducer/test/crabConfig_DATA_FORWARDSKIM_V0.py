@@ -27,8 +27,8 @@ config.section_('Site')
 config.Site.storageSite = 'T2_CH_CERN'
 
 ## Submit the muon PDs
-config.General.requestName = 'V0_HIForward0_HIRun2023A-PromptRec_20231206v3'
-config.Data.inputDataset = '/HIForward0/HIRun2023A-PromptReco-v2/AOD'
+config.General.requestName = 'V0_HIForward0_HIRun2023A-PromptRec_20241003v1'
+config.Data.inputDataset = '/HIForward0/HIRun2023A-16Jan2024-v1/AOD'
 config.Data.unitsPerJob = 20
 config.JobType.maxMemoryMB = 4000
 config.JobType.maxJobRuntimeMin = 2100
