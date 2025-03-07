@@ -517,7 +517,7 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
       {
         for (size_t filterIdx=0; filterIdx<triggerEvent->sizeFilters(); filterIdx++)
         {
-          const auto& filterName = triggerEvent->filterLabel(filterIdx);
+          const auto& filterName = std::string(triggerEvent->filterLabel(filterIdx));
           if (TString(filterName).Contains(TRegexp(TString(filterLabel)))) { filterIdxFound.emplace_back(filterIdx); }
         }
       }
@@ -529,7 +529,7 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
         {
           for (const auto& filterIdx : filterIdxFound)
           {
-            const auto& filterName = triggerEvent->filterLabel(filterIdx);
+            const auto& filterName = std::string(triggerEvent->filterLabel(filterIdx));
             if (hltConfig.moduleIndex(trgIdx, filterName)!=hltConfig.size(trgIdx)) { trgFilterIdxFound.emplace_back(trgIdx, filterIdx); }
           }
         }
@@ -566,7 +566,7 @@ ParticleAnalyzer::getTriggerData(const edm::Event& iEvent, const edm::EventSetup
       else if (pathLabel=="" && filterIdxFound.empty()) continue;
       // determine the trigger/filter name
       const auto triggerName = (triggerIndex>=0 ? hltPaths.at(triggerIndex) : std::string());
-      const auto filterName  = (isTrgEvtValid && filterIndex>=0 ? triggerEvent->filterLabel(filterIndex) : std::string());
+      const auto filterName  = (isTrgEvtValid && filterIndex>=0 ? std::string(triggerEvent->filterLabel(filterIndex)) : std::string());
       // determine the trigger decision
       std::array<bool,4> bit;
       bit[0] = (triggerIndex>=0 ? triggerResults->accept(triggerIndex) : false);
