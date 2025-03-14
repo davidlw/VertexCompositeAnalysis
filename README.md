@@ -8,7 +8,7 @@ cd CMSSW_15_0_0/src
 
 cmsenv
 
-git clone -b ParticleFitter_15_0_X https://github.com/stahlleiton/VertexCompositeAnalysis
+git clone -b ParticleFitter_15_0_X git@github.com:stahlleiton/VertexCompositeAnalysis.git
 git cms-merge-topic stahlleiton:ParticleAnalyzer_CMSSW_15_0_0
 scram b -j8
 
