@@ -139,12 +139,20 @@ process.antiomegaana = process.omegaana.clone(
   recoParticles = cms.InputTag("generalAntiOmegaCandidatesNew")
 )
 
+process.pfanalyzer = cms.EDAnalyzer( "ParticleFlowAnalyzer",
+    vertexSrc = cms.InputTag( "offlineSlimmedPrimaryVertices" ),
+    pfCandidateSrc = cms.InputTag( "packedPFCandidates" ),
+#    testSrc = cms.InputTag("dedxHarmonic2"),
+    hltresults = cms.InputTag("TriggerResults", "", "HLT"),
+    zdcDigiSrc = cms.InputTag("hcalDigis", "ZDC")
+)
+
 process.generalanaNewSeq = cms.Sequence(process.lambdaana * process.kshortana * process.xiana * process.omegaana
                                       * process.antilambdaana * process.antixiana * process.antiomegaana)
-process.generalana_step = cms.EndPath( process.generalanaNewSeq )
+process.generalana_step = cms.EndPath( process.generalanaNewSeq * process.pfanalyzer )
 
 # Define the output
-process.TFileService = cms.Service("TFileService", fileName = cms.string('v0_ana.root'))
+process.TFileService = cms.Service("TFileService", fileName = cms.string('v0andpf_ana.root'))
 
 # Define the process schedule
 process.schedule = cms.Schedule(
@@ -164,6 +172,13 @@ eventFilterPaths = [ process.Flag_colEvtSel , process.Flag_hfCoincFilter2Th4 , p
 
 for P in eventFilterPaths:
     process.schedule.insert(0, P)
+
+process.load("PhysicsTools.PatAlgos.slimming.packedPFCandidates_cff")
+process.eventFilter.insert(0, process.packedPFCandidates)
+
+process.load("PhysicsTools.PatAlgos.slimming.offlineSlimmedPrimaryVertices_cfi")
+process.load("CommonTools.RecoAlgos.primaryVertexAssociation_cfi")
+process.eventFilter.insert(0, process.primaryVertexAssociation * process.offlineSlimmedPrimaryVertices)
 
 #process.load('PhysicsTools.PatAlgos.slimming.unpackedTracksAndVertices_cfi')
 #process.eventFilter.insert(0, process.unpackedTracksAndVertices)

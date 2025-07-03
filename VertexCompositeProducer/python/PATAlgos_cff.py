@@ -144,6 +144,6 @@ def changeToMiniAOD(process):
         process.load('VertexCompositeAnalysis.VertexCompositeProducer.unpackedMuons_cfi')
         process.patMuons = process.unpackedMuons.clone()
 
-    from HLTrigger.Configuration.CustomConfigs import MassReplaceInputTag
+    from Configuration.Applications.ConfigBuilder import MassReplaceInputTag    
     process = MassReplaceInputTag(process,"offlinePrimaryVertices","unpackedTracksAndVertices")
     process = MassReplaceInputTag(process,"generalTracks","unpackedTracksAndVertices")

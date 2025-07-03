@@ -54,11 +54,11 @@ dataMap = {
             }
 
 for i in range(0,1):
-    dataMap[("HIForward"+str(i))] = { "PD": ("/HIForward"+str(i)+"/HIRun2023A-16Jan2024-v1/AOD"), "Units": 25, "Memory": 4000, "RunTime": 2100, "PSet": "PbPbSkimAndTree2023_V0_ParticleAnalyzer_cfg.py" } # UCC
+    dataMap[("HIForward"+str(i))] = { "PD": ("/HIForward"+str(i)+"/HIRun2023A-16Jan2024-v1/AOD"), "Units": 25, "Memory": 4000, "RunTime": 2100, "PSet": "PbPbSkimAndTree2023_DiMuCont_ParticleAnalyzer_cfg.py" } # UCC
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'V0_'+key+'_PbPbSkimAndTree2023_20241003v5'
+    config.General.requestName = 'DiMuCont_'+key+'_PbPbSkimAndTree2023_20250702v1'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]

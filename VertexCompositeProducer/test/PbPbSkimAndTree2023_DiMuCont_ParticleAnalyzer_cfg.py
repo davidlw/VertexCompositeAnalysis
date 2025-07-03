@@ -44,7 +44,7 @@ muonSelection = cms.string("(pt > 0.0 && abs(eta) < 2.5) && "+SoftIdReco)
 diMuSelection = cms.string("charge==0")
 hpMuSelection = cms.string("innerTrack.isNonnull && innerTrack.quality(\"highPurity\")")
 process.diMu = generalParticles.clone(
-    pdgId = cms.uint32(443),
+#    pdgId = cms.uint32(443),
     preSelection = diMuSelection,
     # daughter information
     daughterInfo = cms.VPSet([
@@ -87,7 +87,8 @@ process.goodDiMuons = cms.EDProducer("CandViewShallowCloneCombiner",
             decay = cms.string('goodMuons@+ goodMuons@-')
             )
 process.oneGoodDiMu = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("goodDiMuons"), minNumber = cms.uint32(1))
-process.diMuEvtSel = cms.Sequence(process.mergedMuons * process.twoMuons * process.hpMuons * process.maxTwoHPMuons * process.goodMuons * process.twoGoodMuons * process.goodDiMuons * process.oneGoodDiMu)
+#process.diMuEvtSel = cms.Sequence(process.mergedMuons * process.twoMuons * process.hpMuons * process.maxTwoHPMuons * process.goodMuons * process.twoGoodMuons * process.goodDiMuons * process.oneGoodDiMu)
+process.diMuEvtSel = cms.Sequence(process.mergedMuons * process.twoMuons * process.hpMuons * process.goodMuons * process.twoGoodMuons * process.goodDiMuons * process.oneGoodDiMu)
 
 # Add trigger selection
 import HLTrigger.HLTfilters.hltHighLevel_cfi

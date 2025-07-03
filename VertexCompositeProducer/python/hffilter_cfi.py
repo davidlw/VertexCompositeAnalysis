@@ -30,4 +30,3 @@ phfCoincFilter4Th6 = phfCoincFilter2Th4.clone(threshold = 6, minnumtowers = 4)
 phfCoincFilter5Th6 = phfCoincFilter2Th4.clone(threshold = 6, minnumtowers = 5)
 
 phfCoincFilter4Th2 = phfCoincFilter2Th4.clone(threshold = 2, minnumtowers = 4)
-
