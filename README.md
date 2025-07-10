@@ -2,6 +2,8 @@
 
 This package provides solutions for adapting the CMSSW CaloMuonMerger functionality to work with miniAOD files where muons are stored as `slimmedMuons` (packed candidates).
 
+**✅ Compatible with CMSSW_15_0_9** - See [CMSSW_15_0_9_Compatibility.md](CMSSW_15_0_9_Compatibility.md) for specific installation and configuration details.
+
 ## Problem Description
 
 The original `CaloMuonMerger.cc` module in CMSSW works with:
@@ -80,9 +82,12 @@ process.p = cms.Path(
 
 1. **Setup CMSSW environment:**
    ```bash
-   cmsrel CMSSW_X_Y_Z
-   cd CMSSW_X_Y_Z/src
+   # For CMSSW_15_0_9 (recommended)
+   cmsrel CMSSW_15_0_9
+   cd CMSSW_15_0_9/src
    cmsenv
+   
+   # For other versions, see CMSSW_15_0_9_Compatibility.md
    ```
 
 2. **Create your package structure:**

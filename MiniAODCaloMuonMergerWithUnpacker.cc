@@ -3,15 +3,20 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/Math/interface/deltaR.h"
+#include "DataFormats/Common/interface/Handle.h"
 
 #include <memory>
 #include <vector>
+#include <cmath>
+#include <algorithm>
 
 class MiniAODCaloMuonMergerWithUnpacker : public edm::stream::EDProducer<> {
 public:

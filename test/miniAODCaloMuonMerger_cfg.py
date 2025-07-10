@@ -10,7 +10,7 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 
 # Global tag - adjust for your data/MC and era
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2024_realistic', '')
 
 # Input source - replace with your miniAOD files
 process.source = cms.Source("PoolSource",
@@ -98,8 +98,9 @@ process.outpath = cms.EndPath(process.out)
 # Schedule
 process.schedule = cms.Schedule(process.p, process.outpath)
 
-# Print summary
+# Print summary and enable threaded framework
 process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(True),
-    allowUnscheduled = cms.untracked.bool(False)
+    numberOfThreads = cms.untracked.uint32(1),
+    numberOfStreams = cms.untracked.uint32(0)
 )
