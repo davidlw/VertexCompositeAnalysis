@@ -1,0 +1,3 @@
+<lcgdict>
+  <class name="pat::UserHolder<edm::Ref<std::vector<reco::Track>, reco::Track, edm::refhelper::FindUsingAdvance<std::vector<reco::Track>, reco::Track> > >" />
+</lcgdict>
