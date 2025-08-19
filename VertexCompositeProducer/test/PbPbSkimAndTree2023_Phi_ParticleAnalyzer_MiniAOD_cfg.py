@@ -114,7 +114,7 @@ process.phiAna = particleAna.clone(
 )
 
 # Define the output
-process.TFileService = cms.Service("TFileService", fileName = cms.string('/afs/cern.ch/user/d/davidlw/phi_ana.root'))
+process.TFileService = cms.Service("TFileService", fileName = cms.string('phi_ana.root'))
 process.p = cms.EndPath(process.phiAna)
 
 # Define the process schedule
