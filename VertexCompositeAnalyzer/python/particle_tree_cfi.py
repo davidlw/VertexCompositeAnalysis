@@ -5,6 +5,7 @@ particleAna = cms.EDAnalyzer('ParticleAnalyzer',
   # reconstructed information
   beamSpot = cms.InputTag("offlineBeamSpot"),
   primaryVertices = cms.InputTag("offlinePrimaryVertices"),
+  recoTracks = cms.untracked.InputTag("generalTracks"),
   recoParticles = cms.InputTag("generalParticles"),
   nTracksVMap = cms.untracked.InputTag("generalParticles:nTracks"),
 

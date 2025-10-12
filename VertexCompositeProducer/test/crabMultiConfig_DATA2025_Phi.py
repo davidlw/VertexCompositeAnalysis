@@ -24,7 +24,7 @@ config.Data.splitting = 'FileBased'
 #config.Data.inputDBS = 'global'
 #config.Data.splitting = 'LumiBased'
 #config.Data.totalUnits = 5000
-#config.Data.lumiMask = 'Cert_Collisions2023HI_374288_375823_Golden.json'
+#config.Data.lumiMask = 'Cert_Collisions2025OO_394153_394217_golden.json'
 #config.Data.runRange = '374288-375823'
 config.Data.publication = False
 config.JobType.allowUndistributedCMSSW = True
@@ -49,16 +49,21 @@ def submit(config):
 #############################################################################################
 
 dataMap = {
-#            "HIForward": { "PD": "/HIForward/HIRun2018A-04Apr2019-v1/AOD", "Units": 30, "Memory": 1800, "RunTime": 1400, "PSet": "PbPbSkimAndTree2018_DiMuContBoth_ZDC_ALLDIMU_cfg.py" },
-            "OO2025": { "PD": "/IonPhysics/anstahll-crab_Run394153_OORun2025-PromptReco-v1_Run3_2025_UPC_OXY_2025_07_15-0ea11c841dcbf2e6da5b143561e71ec4/USER", "Units": 2, "Memory": 2500, "RunTime": 1400, "PSet": "PbPbSkimAndTree2023_Phi_ParticleAnalyzer_MiniAOD_cfg.py" },
-            }
+#            "HIForward": { "PD": "/IonPhysics0/OORun2025-PromptReco-v1/MINIAOD", "Units": 30, "Memory": 1800, "RunTime": 1400, "PSet": "PbPbSkimAndTree2018_DiMuContBoth_ZDC_ALLDIMU_cfg.py" },
+            "pO2025": { "PD": "/IonPhysics/anstahll-crab_Run393952_pORun2025-PromptReco-v1_Run3_2025_UPC_OXY_2025_07_15-51afa4e8bacdf26874dd1aa6d35f1ea2/USER", "Units": 2, "Memory": 2500, "RunTime": 1400, "PSet": "PbPbSkimAndTree2023_Phi_ParticleAnalyzer_MiniAOD_cfg.py" },
+#            "OO2025": { "PD": "/IonPhysics/anstahll-crab_Run394153_OORun2025-PromptReco-v1_Run3_2025_UPC_OXY_2025_07_15-0ea11c841dcbf2e6da5b143561e71ec4/USER", "Units": 2, "Memory": 2500, "RunTime": 1400, "PSet": "PbPbSkimAndTree2023_Phi_ParticleAnalyzer_MiniAOD_cfg.py" },
+#            "OO2025": { "PD": "/IonPhysics/anstahll-crab_Run394153_OORun2025-PromptReco-v1_Run3_2025_OXY_2025_07_15-f6e5e6ba763337dca37aad6cb84b5fbd/USER", "Units": 2, "Memory": 2500, "RunTime": 1400, "PSet": "PbPbSkimAndTree2023_Phi_ParticleAnalyzer_MiniAOD_cfg.py" },
+}
 
 #for i in range(0,1):
-#    dataMap[("HIForward"+str(i))] = { "PD": ("/HIForward"+str(i)+"/HIRun2023A-16Jan2024-v1/AOD"), "Units": 25, "Memory": 4000, "RunTime": 2100, "PSet": "PbPbSkimAndTree2023_DiMuCont_ParticleAnalyzer_cfg.py" } # UCC
+#    dataMap[("IonPhysics"+str(i))] = { "PD": ("/IonPhysics"+str(i)+"/OORun2025-PromptReco-v1/MINIAOD"), "Units": 25, "Memory": 2500, "RunTime": 1500, "PSet": "PbPbSkimAndTree2023_Phi_ParticleAnalyzer_MiniAOD_cfg.py" } # OO
 
 ## Submit the muon PDs
 for key, val in dataMap.items():
-    config.General.requestName = 'Phi_'+key+'_OOSkimAndTree2025_20250819v1'
+#    config.General.requestName = 'Phi_'+key+'_OOPromptRecoSkimAndTree2025_20250819v1'
+#    config.General.requestName = 'Phi_'+key+'_OOPPRecoTestSkimAndTree2025_20250823v1'
+#    config.General.requestName = 'Phi_'+key+'_OOUPCRecoTestSkimAndTree2025_20250823v2'
+    config.General.requestName = 'Phi_'+key+'_pOUPCRecoTestSkimAndTree2025_20250823v2'
     config.Data.inputDataset = val["PD"]
     config.Data.unitsPerJob = val["Units"]
     config.JobType.maxMemoryMB = val["Memory"]

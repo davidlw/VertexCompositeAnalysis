@@ -17,6 +17,7 @@ primaryVertexRecoveryForUPC = cms.EDProducer('PrimaryVertexRecoveryForUPC',
       minPixelLayersWithHits = cms.int32(3),
       minPt = cms.double(1),
       minSiliconLayersWithHits = cms.int32(5),
+      minValidStripHits = cms.int32(0),      
       trackQuality = cms.string('highPurity')
     ),
     cms.PSet(
@@ -31,6 +32,7 @@ primaryVertexRecoveryForUPC = cms.EDProducer('PrimaryVertexRecoveryForUPC',
       minPixelLayersWithHits = cms.int32(3),
       minPt = cms.double(0.7),
       minSiliconLayersWithHits = cms.int32(5),
+      minValidStripHits = cms.int32(0),      
       trackQuality = cms.string('highPurity')
     ),
     cms.PSet(
@@ -45,6 +47,7 @@ primaryVertexRecoveryForUPC = cms.EDProducer('PrimaryVertexRecoveryForUPC',
       minPixelLayersWithHits = cms.int32(2),
       minPt = cms.double(0),
       minSiliconLayersWithHits = cms.int32(5),
+      minValidStripHits = cms.int32(0),      
       trackQuality = cms.string('any')
     ),
     cms.PSet(
@@ -59,6 +62,7 @@ primaryVertexRecoveryForUPC = cms.EDProducer('PrimaryVertexRecoveryForUPC',
       minPixelLayersWithHits = cms.int32(1),
       minPt = cms.double(0),
       minSiliconLayersWithHits = cms.int32(3),
+      minValidStripHits = cms.int32(0),      
       trackQuality = cms.string('any')
     ),
     cms.PSet(

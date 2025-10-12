@@ -62,12 +62,16 @@ process.hltFilter.HLTPaths = [
 # Add PbPb collision event selection
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.collisionEventSelection_cff')
 process.load('VertexCompositeAnalysis.VertexCompositeProducer.hfCoincFilter_cff')
+process.load('VertexCompositeAnalysis.VertexCompositeProducer.primaryVertexRecoveryForUPC_cfi')
+process.colEvtSel = cms.Sequence(process.hiClusterCompatibility)
+process.primaryVertexFilterRecoveryForUPC = process.primaryVertexFilter.clone(src = "primaryVertexRecoveryForUPC")
+process.primaryVertexFilterFiltered = process.primaryVertexFilter.clone(src = "filteredVertices")
 
 process.filteredVertices = cms.EDFilter(
     "VertexSelector",
-    src = cms.InputTag("offlinePrimaryVertices"),
-    cut = cms.string("!isFake && tracksSize <= 2"),
-    filter = cms.bool(True)
+    src = cms.InputTag("primaryVertexRecoveryForUPC"),
+    cut = cms.string("!isFake && tracksSize == 2"),
+    filter = cms.bool(False)
 )
 from CommonTools.RecoAlgos.trackWithVertexSelector_cfi import trackWithVertexSelector
 process.UPCOnlyTracks = trackWithVertexSelector.clone(
@@ -82,7 +86,9 @@ process.UPCOnlyTracks_seq = cms.Sequence(process.UPCOnlyTracks)
 
 # Define the event selection sequence
 process.eventFilter_HM = cms.Sequence(
-    process.hltFilter 
+    process.hltFilter *
+    process.colEvtSel *
+    process.primaryVertexRecoveryForUPC    
 #    process.filteredVertices *
 #    process.primaryVertexFilter 
    # process.hfPosFilterNTh200_seq *
@@ -95,17 +101,14 @@ process.phi_rereco_step = cms.Path(process.eventFilter_HM * process.UPCOnlyTrack
 
 # Add the VertexComposite tree
 from VertexCompositeAnalysis.VertexCompositeAnalyzer.particle_tree_cff import particleAna
-process.filteredPFCands = cms.EDFilter(
-    "PFCandidateSelector",
-    src = cms.InputTag("packedPFCandidates"),
-    cut = cms.string("pt > 0.0 & abs(eta) < 2.5")
-)
 process.phiAna = particleAna.clone(
     recoParticles = cms.InputTag("phi"),
-    pfCandidates = cms.untracked.InputTag("filteredPFCands"),
     selectEvents = cms.string("phi_rereco_step"),
+#    selectEvents = cms.string(""),
     eventFilterNames = cms.untracked.vstring(
-        'Flag_primaryVertexFilter'
+        'Flag_primaryVertexFilter',
+        'Flag_primaryVertexFilterRecoveryForUPC',
+        'Flag_primaryVertexFilterFiltered'        
     ),
     triggerInfo = cms.untracked.VPSet([
         # UPC zero bias triggers
@@ -113,10 +116,10 @@ process.phiAna = particleAna.clone(
         cms.PSet(path = cms.string('HLT_OxyL1SingleMuOpen_v*')),
     ]),
 )
-process.phiAna_seq = cms.Sequence(process.filteredPFCands*process.phiAna)
+
 # Define the output
 process.TFileService = cms.Service("TFileService", fileName = cms.string('phi_ana.root'))
-process.p = cms.EndPath(process.phiAna_seq)
+process.p = cms.EndPath(process.phiAna)
 
 # Define the process schedule
 process.schedule = cms.Schedule(
@@ -127,8 +130,10 @@ process.schedule = cms.Schedule(
 
 # Add the event selection filters
 process.Flag_primaryVertexFilter = cms.Path(process.eventFilter_HM * process.filteredVertices * process.primaryVertexFilter)
+process.Flag_primaryVertexFilterRecoveryForUPC = cms.Path(process.eventFilter_HM * process.filteredVertices * process.primaryVertexFilterRecoveryForUPC)
+process.Flag_primaryVertexFilterFiltered = cms.Path(process.eventFilter_HM * process.filteredVertices * process.primaryVertexFilterFiltered)
 
-eventFilterPaths = [ process.Flag_primaryVertexFilter ]
+eventFilterPaths = [ process.Flag_primaryVertexFilter, process.Flag_primaryVertexFilterRecoveryForUPC, process.Flag_primaryVertexFilterFiltered ]
 
 for P in eventFilterPaths:
     process.schedule.insert(0, P)
@@ -139,5 +144,7 @@ changeToMiniAOD(process)
 # apply vertex and track filter
 #process.primaryVertexFilter.src = cms.InputTag("filteredVertices")
 process.phi.tracks = cms.InputTag('UPCOnlyTracks')
-#process.phi.primaryVertices = cms.InputTag('filteredVertices')
-#process.phiAna.primaryVertices = cms.InputTag("filteredVertices")
+process.phi.primaryVertices = cms.InputTag('filteredVertices')
+#process.phi.primaryVertices = "primaryVertexRecoveryForUPC",
+process.phiAna.primaryVertices = cms.InputTag("filteredVertices")
+#process.phiAna.primaryVertices = cms.InputTag("primaryVertexRecoveryForUPC")
